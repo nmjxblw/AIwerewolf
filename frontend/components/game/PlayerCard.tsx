@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Player, Alignment } from "@/types";
 import { useAppContext } from "@/context/AppContext";
 import { t, tRole } from "@/lib/i18n";
+import { formatPersonaProfile } from "@/lib/personaLabels";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 
@@ -180,10 +181,7 @@ export function PlayerCard({
           <div className="mt-1 w-full space-y-0.5">
             {persona.mbti && (
               <p className="truncate text-[11px] leading-tight text-text-sub">
-                <span className="font-medium">{persona.mbti}</span>
-                {persona.style_label && (
-                  <span className="text-text-sub/70"> · {persona.style_label}</span>
-                )}
+                <span className="font-medium">{formatPersonaProfile(persona.mbti, persona.style_label)}</span>
               </p>
             )}
             {persona.basic_info && (

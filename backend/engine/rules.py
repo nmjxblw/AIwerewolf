@@ -37,7 +37,9 @@ def _legacy_spec(spec: _RegistryRoleSpec) -> RoleSpec:
     )
 
 
-ROLE_SPECS: dict[Role, RoleSpec] = {role: _legacy_spec(spec) for role, spec in ROLE_REGISTRY.items()}
+ROLE_SPECS: dict[Role, RoleSpec] = {
+    role: _legacy_spec(spec) for role, spec in ROLE_REGISTRY.items()
+}
 
 
 DEFAULT_ROLE_SET: tuple[Role, ...] = (
@@ -120,6 +122,61 @@ def get_role_configuration(player_count: int) -> tuple[Role, ...]:
     if player_count not in WOLFCHA_ROLE_CONFIGS:
         raise ValueError(f"Unsupported player count: {player_count}")
     return WOLFCHA_ROLE_CONFIGS[player_count]
+
+
+def build_custom_role_config(
+    player_count: int,
+    *,
+    exclude: Iterable[Role] | None = None,
+    include: Iterable[Role] | None = None,
+) -> tuple[Role, ...]:
+    """Build a custom role list by tweaking the standard player-count config.
+
+    Start from the standard ``WOLFCHA_ROLE_CONFIGS[player_count]`` template,
+    then:
+
+    - ``exclude``: remove each listed role (once per occurrence), replacing it
+      with a Villager to keep the player count unchanged.
+    - ``include``: force-add each listed role, trimming Villagers as needed to
+      keep the player count unchanged.  Roles in ``include`` that were also in
+      ``exclude`` are *not* re-added (exclude wins).
+
+    If ``include`` would crowd out too many Villagers (i.e. there aren't enough
+    Villagers to remove), ``ValueError`` is raised.
+
+    Examples in YAML (see ``configs/demo.yaml``)::
+
+        game:
+          player_count: 10
+          custom_roles:
+            exclude: [WhiteWolfKing]          # 10P without WWK
+            include: [Idiot]                  # 10P + Idiot (one fewer Villager)
+    """
+    base = list(get_role_configuration(player_count))
+    exclude_set = set(exclude or ())
+    include_list = list(include or ())
+
+    # 1. Apply excludes: replace each excluded role with Villager
+    if exclude_set:
+        for i in range(len(base)):
+            if base[i] in exclude_set:
+                base[i] = Role.VILLAGER
+
+    # 2. Apply includes: replace Villagers with included roles
+    if include_list:
+        # Filter out roles that were explicitly excluded (exclude wins)
+        include_list = [r for r in include_list if r not in exclude_set]
+        villager_indices = [i for i, r in enumerate(base) if r == Role.VILLAGER]
+        if len(include_list) > len(villager_indices):
+            raise ValueError(
+                f"Cannot include {len(include_list)} role(s) — only "
+                f"{len(villager_indices)} Villager slot(s) available in the "
+                f"{player_count}P config. Reduce 'include' or increase player_count."
+            )
+        for idx, role in zip(villager_indices, include_list):
+            base[idx] = role
+
+    return tuple(base)
 
 
 # Sanity check: the 7-12P configs are locked to playable roles only. Template

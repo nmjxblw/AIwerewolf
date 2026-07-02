@@ -1,4 +1,4 @@
-import { AgentType, GameState, RoomRecord } from "@/types";
+import { AgentType, CustomRolesConfig, GameState, RoomRecord } from "@/types";
 import { apiUrl } from "@/lib/api";
 
 export type GameMode = "ai" | "human";
@@ -11,6 +11,7 @@ interface CreateRoomParams {
   agentType: AgentType;
   mode: GameMode;
   humanSeat: number;
+  customRoles?: CustomRolesConfig;
 }
 
 interface HumanActionPayload {
@@ -23,20 +24,31 @@ async function parseJson<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-async function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
   try {
     return await fetch(input, { ...init, signal: controller.signal });
   } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") throw new Error("requestTimeout");
+    if (error instanceof DOMException && error.name === "AbortError")
+      throw new Error("requestTimeout");
     throw error;
   } finally {
     clearTimeout(timeout);
   }
 }
 
-export async function createRoom({ seed, playerCount, agentType, mode, humanSeat }: CreateRoomParams): Promise<RoomRecord> {
+export async function createRoom({
+  seed,
+  playerCount,
+  agentType,
+  mode,
+  humanSeat,
+  customRoles,
+}: CreateRoomParams): Promise<RoomRecord> {
   const params = new URLSearchParams({
     name: "Demo Room",
     seed: String(seed),
@@ -44,20 +56,46 @@ export async function createRoom({ seed, playerCount, agentType, mode, humanSeat
     agent_type: agentType,
   });
   if (mode === "human") params.set("human_seat", String(humanSeat));
+  if (customRoles) {
+    if (customRoles.exclude.length > 0)
+      params.set("exclude", customRoles.exclude.join(","));
+    if (customRoles.include.length > 0)
+      params.set("include", customRoles.include.join(","));
+  }
 
-  const response = await fetchWithTimeout(apiUrl(`/api/rooms?${params.toString()}`), { method: "POST" });
-  if (!response.ok) throw new Error(`Failed to create room (${response.status})`);
+  const response = await fetchWithTimeout(
+    apiUrl(`/api/rooms?${params.toString()}`),
+    { method: "POST" },
+  );
+  if (!response.ok)
+    throw new Error(`Failed to create room (${response.status})`);
   return parseJson<RoomRecord>(response);
 }
 
-export async function prepareRoom(roomId: string, showPrivate = false): Promise<GameState> {
-  const response = await fetchWithTimeout(apiUrl(`/api/rooms/${roomId}/prepare?show_private=${showPrivate ? "true" : "false"}`), { method: "POST" });
+export async function prepareRoom(
+  roomId: string,
+  showPrivate = false,
+): Promise<GameState> {
+  const response = await fetchWithTimeout(
+    apiUrl(
+      `/api/rooms/${roomId}/prepare?show_private=${showPrivate ? "true" : "false"}`,
+    ),
+    { method: "POST" },
+  );
   if (!response.ok) throw new Error(`Prepare failed (${response.status})`);
   return parseJson<GameState>(response);
 }
 
-export async function startRoom(roomId: string, showPrivate = false): Promise<GameState> {
-  const response = await fetchWithTimeout(apiUrl(`/api/rooms/${roomId}/start?show_private=${showPrivate ? "true" : "false"}`), { method: "POST" });
+export async function startRoom(
+  roomId: string,
+  showPrivate = false,
+): Promise<GameState> {
+  const response = await fetchWithTimeout(
+    apiUrl(
+      `/api/rooms/${roomId}/start?show_private=${showPrivate ? "true" : "false"}`,
+    ),
+    { method: "POST" },
+  );
   if (!response.ok) throw new Error(`Start failed (${response.status})`);
   return parseJson<GameState>(response);
 }
@@ -68,17 +106,26 @@ export async function fetchRoom(roomId: string): Promise<RoomRecord | null> {
   return parseJson<RoomRecord>(response);
 }
 
-export async function fetchReplayDownload(gameId: string, showPrivate = false): Promise<Record<string, unknown>> {
+export async function fetchReplayDownload(
+  gameId: string,
+  showPrivate = false,
+): Promise<Record<string, unknown>> {
   const params = new URLSearchParams({
     show_private: showPrivate ? "true" : "false",
     download: "false",
   });
-  const response = await fetchWithTimeout(apiUrl(`/api/replay/${gameId}.json?${params.toString()}`));
-  if (!response.ok) throw new Error(`Replay export failed (${response.status})`);
+  const response = await fetchWithTimeout(
+    apiUrl(`/api/replay/${gameId}.json?${params.toString()}`),
+  );
+  if (!response.ok)
+    throw new Error(`Replay export failed (${response.status})`);
   return parseJson<Record<string, unknown>>(response);
 }
 
-export async function submitHumanAction(roomId: string, data: HumanActionPayload): Promise<GameState> {
+export async function submitHumanAction(
+  roomId: string,
+  data: HumanActionPayload,
+): Promise<GameState> {
   const url = apiUrl(`/api/rooms/${roomId}/action`);
   const response = await fetchWithTimeout(url, {
     method: "POST",
@@ -94,14 +141,24 @@ export async function submitHumanAction(roomId: string, data: HumanActionPayload
   return parseJson<GameState>(response);
 }
 
-export async function pauseRoom(roomId: string): Promise<{ paused: boolean; status: string }> {
-  const response = await fetchWithTimeout(apiUrl(`/api/rooms/${roomId}/pause`), { method: "POST" });
+export async function pauseRoom(
+  roomId: string,
+): Promise<{ paused: boolean; status: string }> {
+  const response = await fetchWithTimeout(
+    apiUrl(`/api/rooms/${roomId}/pause`),
+    { method: "POST" },
+  );
   if (!response.ok) throw new Error(`Pause failed (${response.status})`);
   return parseJson<{ paused: boolean; status: string }>(response);
 }
 
-export async function resumeRoom(roomId: string): Promise<{ paused: boolean; status: string }> {
-  const response = await fetchWithTimeout(apiUrl(`/api/rooms/${roomId}/resume`), { method: "POST" });
+export async function resumeRoom(
+  roomId: string,
+): Promise<{ paused: boolean; status: string }> {
+  const response = await fetchWithTimeout(
+    apiUrl(`/api/rooms/${roomId}/resume`),
+    { method: "POST" },
+  );
   if (!response.ok) throw new Error(`Resume failed (${response.status})`);
   return parseJson<{ paused: boolean; status: string }>(response);
 }

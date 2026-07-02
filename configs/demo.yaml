@@ -1,8 +1,19 @@
 game:
   player_count: 7
   max_days: 8
-  # roles auto-derived from player_count via WOLFCHA_ROLE_CONFIGS:
-  #   2x Werewolf, Seer, Witch, Hunter, Guard, Villager
+  # ── 角色配置（三选一，优先级从高到低） ──
+  #
+  # 方式 1：直接列出所有角色（完全自定义）
+  # roles: [Werewolf, Werewolf, Seer, Witch, Hunter, Guard, Villager]
+  #
+  # 方式 2：基于标准配置 + 增减角色（推荐用于"勾选式"自定义）
+  # custom_roles:
+  #   base: 10                      # 以 10 人标准配置为基础
+  #   exclude: [WhiteWolfKing]      # 去掉白狼王 → 替换为村民
+  #   include: [Idiot]              # 强制加入白痴 → 挤掉一个村民
+  #
+  # 方式 3：只填 player_count，自动使用标准 WOLFCHA_ROLE_CONFIGS
+
 agents:
   type: llm
   seed: 7

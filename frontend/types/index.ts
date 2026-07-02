@@ -81,7 +81,10 @@ export enum EventType {
 }
 
 export type JsonPrimitive = string | number | boolean | null;
-export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  | JsonPrimitive
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 export type JsonRecord = Record<string, JsonValue>;
 
 export interface Persona {
@@ -233,6 +236,24 @@ export interface RoomCreateRequest {
   seed?: number;
   player_count?: number;
   agent_type?: string;
+  custom_roles?: CustomRolesConfig;
+}
+
+/** 自定义角色配置：基于标准人数模板增减角色 */
+export interface CustomRolesConfig {
+  /** 要从标准配置中移除的角色（转为村民） */
+  exclude: Role[];
+  /** 要强制加入的角色（挤掉村民） */
+  include: Role[];
+}
+
+/** 角色元数据（前端展示用） */
+export interface RoleMeta {
+  role: Role;
+  zhName: string;
+  alignment: Alignment;
+  isGod: boolean;
+  isPlayable: boolean;
 }
 
 export interface ValidationIssue {
@@ -288,7 +309,13 @@ export type WebSocketMessage =
   | { type: "paused"; state?: GameState; room?: RoomRecord }
   | { type: "room"; room: RoomRecord }
   | { type: "error"; message: string }
-  | { type: "stream_token"; player_id: string; player_name: string; delta: string; finish_reason?: string | null };
+  | {
+      type: "stream_token";
+      player_id: string;
+      player_name: string;
+      delta: string;
+      finish_reason?: string | null;
+    };
 
 export type WebSocketRequest = {
   action: "start";

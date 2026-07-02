@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useAppContext } from "@/context/AppContext";
-import { Language, AgentType, PrepareSnapshot, RoomInfoRow, RoomRecord, ViewMode } from "@/types";
+import { Language, AgentType, CustomRolesConfig, PrepareSnapshot, RoomInfoRow, RoomRecord, ViewMode } from "@/types";
 import { createRoom, prepareRoom } from "@/lib/gameApi";
 import { t } from "@/lib/i18n";
 import { AnimatedWerewolfBackground } from "@/components/game/AnimatedWerewolfBackground";
@@ -109,6 +109,7 @@ export default function LobbyPage() {
   const [playerCount, setPlayerCount] = useState(7);
   const [mode, setMode] = useState<"ai" | "human">("ai");
   const [humanSeat, setHumanSeat] = useState(1);
+  const [customRoles, setCustomRoles] = useState<CustomRolesConfig | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState("");
 
@@ -139,7 +140,7 @@ export default function LobbyPage() {
   async function handleCreateRoom() {
     setIsCreating(true); setError(""); setPrepareSnapshot(null);
     try {
-      const room = await createRoom({ seed, playerCount, agentType: AgentType.LLM, mode, humanSeat });
+      const room = await createRoom({ seed, playerCount, agentType: AgentType.LLM, mode, humanSeat, customRoles: customRoles ?? undefined });
       setCreatedRoom(room);
       if (mode === "ai") setPrepareSnapshot(await prepareRoom(room.id, viewMode === ViewMode.MODERATOR));
       setShowModal(true);
@@ -220,8 +221,10 @@ export default function LobbyPage() {
         <LobbyConfigCard
           language={language} playerCount={playerCount} mode={mode} humanSeat={humanSeat}
           isCreating={isCreating} error={showModal ? "" : error}
+          customRoles={customRoles}
           onPlayerCountChange={(nextCount) => { setPlayerCount(nextCount); if (humanSeat > nextCount) setHumanSeat(nextCount); }}
           onModeChange={setMode} onHumanSeatChange={setHumanSeat}
+          onCustomRolesChange={setCustomRoles}
           onCreateRoom={handleCreateRoom}
         />
       </div>

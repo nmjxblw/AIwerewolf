@@ -1,13 +1,4 @@
 {
-  "name": "ai-werewolf-frontend",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --port ${PORT:-3001}",
-    "build": "next build",
-    "start": "next start --port ${PORT:-3001}",
-    "lint": "eslint app components context hooks lib types --max-warnings=0"
-  },
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "clsx": "^2.1.1",
@@ -31,9 +22,18 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
   },
+  "name": "ai-werewolf-frontend",
   "overrides": {
     "next": {
       "postcss": "8.5.10"
     }
-  }
+  },
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3001",
+    "lint": "eslint app components context hooks lib types --max-warnings=0",
+    "start": "next start --port 3001"
+  },
+  "version": "0.1.0"
 }

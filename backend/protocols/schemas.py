@@ -15,6 +15,9 @@ class RoomCreateRequest:
     agent_type: str = "llm"
     human_seat: int | None = None
     rule_pack_id: str = "wolfcha-default"
+    custom_roles: dict | None = (
+        None  # {"exclude": ["WhiteWolfKing"], "include": ["Idiot"]}
+    )
 
 
 @dataclass
@@ -26,6 +29,7 @@ class RoomRecord:
     agent_type: str
     human_seat: int | None = None
     rule_pack_id: str = "wolfcha-default"
+    custom_roles: dict | None = None
     status: str = "idle"
     created_at: float = field(default_factory=time)
     updated_at: float = field(default_factory=time)

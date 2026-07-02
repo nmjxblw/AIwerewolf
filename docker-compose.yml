@@ -66,8 +66,8 @@ services:
   # ------------------------------------------------------------------
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: ${FRONTEND_CONTAINER_NAME:-werewolf-frontend}
     restart: unless-stopped
     depends_on:

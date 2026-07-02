@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { demoReplay, DemoReplayPlayer, DemoReplayStep } from "@/lib/demoReplayData";
+import { formatPersonaProfile } from "@/lib/personaLabels";
 
 const roleLabels: Record<string, string> = {
   Hunter: "猎人",
@@ -204,7 +205,7 @@ export default function FixedReplayDemoPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">{player.name}</p>
-                    <p className="truncate text-[11px] text-[#80684d]">{player.mbti} · {player.style}</p>
+                    <p className="truncate text-[11px] text-[#80684d]">{formatPersonaProfile(player.mbti, player.style)}</p>
                   </div>
                   <div className="text-right text-xs">
                     <p className="font-semibold">{displayRole(player, replayViewMode)}</p>

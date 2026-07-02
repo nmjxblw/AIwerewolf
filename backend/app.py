@@ -71,16 +71,22 @@ def _run_post_game_scoring(state: GameState) -> None:
     ensure_track_c_post_game_job(game_id, source="post_game_hook")
     job = claim_track_c_post_game_job(game_id)
     if job is None:
-        logger.info("Track C post-game job already claimed or completed for game %s", game_id)
+        logger.info(
+            "Track C post-game job already claimed or completed for game %s", game_id
+        )
         return
 
     try:
         result = run_post_game_scoring(state, game_id, return_details=True)
     except Exception as exc:
-        fail_track_c_post_game_job(game_id, str(exc), retryable=True, metadata={"stage": "post_game_scoring"})
+        fail_track_c_post_game_job(
+            game_id, str(exc), retryable=True, metadata={"stage": "post_game_scoring"}
+        )
         raise
     count = int(result.get("lessons_stored", 0) if isinstance(result, dict) else result)
-    promoted_count = int(result.get("promoted_count", 0) if isinstance(result, dict) else 0)
+    promoted_count = int(
+        result.get("promoted_count", 0) if isinstance(result, dict) else 0
+    )
 
     complete_track_c_post_game_job(
         game_id,
@@ -113,7 +119,9 @@ def _recover_track_c_post_game_jobs() -> int:
     stale_after_seconds = int(os.getenv("TRACK_C_JOB_STALE_SECONDS", "900"))
     logger = logging.getLogger(__name__)
     recovered = 0
-    for job in list_recoverable_track_c_post_game_jobs(limit=limit, stale_after_seconds=stale_after_seconds):
+    for job in list_recoverable_track_c_post_game_jobs(
+        limit=limit, stale_after_seconds=stale_after_seconds
+    ):
         game_id = str(job.get("game_id") or "")
         if not game_id:
             continue
@@ -130,7 +138,9 @@ def _recover_track_c_post_game_jobs() -> int:
             _run_post_game_scoring(state)
             recovered += 1
         except Exception:
-            logger.warning("Track C startup recovery failed for game %s", game_id, exc_info=True)
+            logger.warning(
+                "Track C startup recovery failed for game %s", game_id, exc_info=True
+            )
     return recovered
 
 
@@ -185,12 +195,14 @@ def _build_game(
     human_seat: Optional[int] = None,
     player_count: int = 10,
     rule_pack_id: str = "wolfcha-default",
+    custom_roles: dict | None = None,
     phase_delay_ms: float = 0,
 ) -> WerewolfGame:
     init_db()
     game = WerewolfGame(
         seed=seed,
         player_count=player_count,
+        custom_roles=custom_roles,
         phase_delay_ms=phase_delay_ms,
         persona_sampler=_sample_personas,
         on_game_start=_save_game_start,
@@ -476,7 +488,9 @@ def game_review_markdown(game_id: str, download: bool = True):
     headers = {}
     if download:
         headers["Content-Disposition"] = f'attachment; filename="review-{game_id}.md"'
-    return Response(content=payload, media_type="text/markdown; charset=utf-8", headers=headers)
+    return Response(
+        content=payload, media_type="text/markdown; charset=utf-8", headers=headers
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -536,7 +550,11 @@ def eval_role_scores(role: Optional[str] = None):
 
     experiment_dir = Path(__file__).resolve().parent.parent / "data" / "experiment"
     summary_path = experiment_dir / "discrimination_summary.json"
-    raw_files = sorted(experiment_dir.glob("role_*_*_seed_*.json")) if experiment_dir.exists() else []
+    raw_files = (
+        sorted(experiment_dir.glob("role_*_*_seed_*.json"))
+        if experiment_dir.exists()
+        else []
+    )
 
     per_role_counts: dict[str, dict[str, int]] = {}
     raw_records: list[dict] = []
@@ -561,7 +579,9 @@ def eval_role_scores(role: Optional[str] = None):
                     "variant": variant,
                     "seed": meta.get("seed"),
                     "game_id": payload.get("game_id"),
-                    "adjusted_final_score": payload.get("target_role_avg_adjusted_final_score"),
+                    "adjusted_final_score": payload.get(
+                        "target_role_avg_adjusted_final_score"
+                    ),
                     "role_task_score": payload.get("target_role_avg_role_task_score"),
                     "mistakes": payload.get("target_role_total_mistakes", 0),
                     "fallback": payload.get("fallback_decision_count", 0),
@@ -579,7 +599,9 @@ def eval_role_scores(role: Optional[str] = None):
 
     if role and summary:
         summary = dict(summary)
-        summary["per_role"] = [r for r in summary.get("per_role", []) if r.get("role") == role]
+        summary["per_role"] = [
+            r for r in summary.get("per_role", []) if r.get("role") == role
+        ]
 
     return {
         "available": summary is not None,
@@ -610,12 +632,18 @@ def run_track_c_dream_job(payload: Optional[Dict[str, Any]] = None):
     body = payload or {}
     report_ids = body.get("report_ids")
     from_version = str(body.get("from_version") or "v1")
-    return run_dream_job(list(report_ids) if isinstance(report_ids, list) else None, from_version=from_version)
+    return run_dream_job(
+        list(report_ids) if isinstance(report_ids, list) else None,
+        from_version=from_version,
+    )
 
 
 @app.get("/api/strategy/knowledge")
 def list_strategy_knowledge(
-    role: Optional[str] = None, phase: Optional[str] = None, status: Optional[str] = None, limit: int = 100
+    role: Optional[str] = None,
+    phase: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 100,
 ):
     from backend.db.persist import list_strategy_knowledge
 
@@ -634,7 +662,9 @@ def deprecate_strategy_knowledge(doc_id: str, payload: Optional[Dict[str, Any]] 
     from backend.db.persist import deprecate_strategy_knowledge
 
     try:
-        return deprecate_strategy_knowledge(doc_id, reason=str((payload or {}).get("reason") or "manual"))
+        return deprecate_strategy_knowledge(
+            doc_id, reason=str((payload or {}).get("reason") or "manual")
+        )
     except KeyError:
         raise HTTPException(status_code=404, detail="Knowledge doc not found")
 
@@ -712,7 +742,15 @@ def create_room(
     agent_type: str = "llm",
     human_seat: Optional[int] = None,
     rule_pack_id: str = "wolfcha-default",
+    exclude: str = "",
+    include: str = "",
 ):
+    custom_roles = None
+    if exclude or include:
+        custom_roles = {
+            "exclude": [r.strip() for r in exclude.split(",") if r.strip()],
+            "include": [r.strip() for r in include.split(",") if r.strip()],
+        }
     request = RoomCreateRequest(
         name=name,
         seed=seed,
@@ -720,6 +758,7 @@ def create_room(
         agent_type=agent_type,
         human_seat=human_seat,
         rule_pack_id=rule_pack_id,
+        custom_roles=custom_roles,
     )
     room = _rooms.create_room(request)
     return room.to_dict()
@@ -770,6 +809,7 @@ def create_room_game(room_id: str, show_private: bool = False):
         human_seat=room.human_seat,
         player_count=room.player_count,
         rule_pack_id=room.rule_pack_id,
+        custom_roles=room.custom_roles,
     )
     if room.human_seat is not None:
         _rooms.set_active_game(room_id, game)
@@ -833,7 +873,9 @@ def prepare_room_game(room_id: str, show_private: bool = False):
     except Exception:
         import logging
 
-        logging.getLogger(__name__).warning("save_game_start failed during room prepare", exc_info=True)
+        logging.getLogger(__name__).warning(
+            "save_game_start failed during room prepare", exc_info=True
+        )
     snapshot = game.state.snapshot(show_private=show_private)
     _rooms.record_snapshot(room_id, snapshot)
     return snapshot
@@ -864,7 +906,9 @@ def start_or_resume_room_game(room_id: str, show_private: bool = False):
 
 
 @app.post("/api/rooms/{room_id}/action")
-def submit_room_action(room_id: str, payload: Dict[str, Any], show_private: bool = False):
+def submit_room_action(
+    room_id: str, payload: Dict[str, Any], show_private: bool = False
+):
     try:
         game = _rooms.get_active_game(room_id)
     except KeyError:
@@ -879,7 +923,9 @@ def submit_room_action(room_id: str, payload: Dict[str, Any], show_private: bool
         room = _rooms.get_room(room_id)
     except KeyError:
         room = None
-    snapshot = state.snapshot(show_private=show_private or (room is not None and room.human_seat is not None))
+    snapshot = state.snapshot(
+        show_private=show_private or (room is not None and room.human_seat is not None)
+    )
     _rooms.record_snapshot(room_id, snapshot)
     if state.winner is not None:
         _rooms.record_game(room_id, state, snapshot)
@@ -1033,7 +1079,9 @@ async def stream_game(
                         break
                 for token_data in tokens_to_send:
                     await websocket.send_json({"type": "stream_token", **token_data})
-            await aio.sleep(0.08)  # poll every 80ms (was 300ms — felt sluggish during LLM turns)
+            await aio.sleep(
+                0.08
+            )  # poll every 80ms (was 300ms — felt sluggish during LLM turns)
         # Final flush so we don't drop snapshots queued between the last loop
         # iteration and done.set().
         with lock:
@@ -1089,7 +1137,9 @@ async def games_ws(websocket: WebSocket) -> None:
         while True:
             payload = await websocket.receive_json()
             if payload.get("action") != "start":
-                await websocket.send_json({"type": "error", "message": "Unsupported action"})
+                await websocket.send_json(
+                    {"type": "error", "message": "Unsupported action"}
+                )
                 continue
             seed = int(payload.get("seed", 7))
             agent_type = str(payload.get("agent_type", "llm"))
@@ -1098,7 +1148,12 @@ async def games_ws(websocket: WebSocket) -> None:
             await websocket.send_json({"type": "status", "status": "starting"})
             player_count = int(payload.get("player_count", 7))
             state = await stream_game(
-                websocket, seed, show_private, agent_type=agent_type, player_count=player_count, delay_ms=delay_ms
+                websocket,
+                seed,
+                show_private,
+                agent_type=agent_type,
+                player_count=player_count,
+                delay_ms=delay_ms,
             )
             final = state.snapshot(show_private=show_private)
             await websocket.send_json({"type": "complete", "state": final})
@@ -1120,11 +1175,16 @@ async def room_ws(websocket: WebSocket, room_id: str) -> None:
         while True:
             payload = await websocket.receive_json()
             if payload.get("action") != "start":
-                await websocket.send_json({"type": "error", "message": "Unsupported action"})
+                await websocket.send_json(
+                    {"type": "error", "message": "Unsupported action"}
+                )
                 continue
             if room.human_seat is not None:
                 await websocket.send_json(
-                    {"type": "error", "message": "Human rooms use /api/rooms/{room_id}/start and /action."}
+                    {
+                        "type": "error",
+                        "message": "Human rooms use /api/rooms/{room_id}/start and /action.",
+                    }
                 )
                 continue
             show_private = bool(payload.get("show_private", False))
@@ -1149,20 +1209,26 @@ async def room_ws(websocket: WebSocket, room_id: str) -> None:
                     _rooms.record_snapshot(room_id, final)
                     room = _rooms.set_room_status(room_id, "paused")
                     try:
-                        await websocket.send_json({"type": "paused", "state": final, "room": room.to_dict()})
+                        await websocket.send_json(
+                            {"type": "paused", "state": final, "room": room.to_dict()}
+                        )
                     except (RuntimeError, WebSocketDisconnect):
                         return
                 else:
                     _rooms.record_snapshot(room_id, final)
                     _rooms.set_room_status(room_id, "running")
                     try:
-                        await websocket.send_json({"type": "snapshot", "state": final, "room_id": room_id})
+                        await websocket.send_json(
+                            {"type": "snapshot", "state": final, "room_id": room_id}
+                        )
                     except (RuntimeError, WebSocketDisconnect):
                         return
                 continue
             room = _rooms.record_game(room_id, state, final)
             try:
-                await websocket.send_json({"type": "complete", "state": final, "room": room.to_dict()})
+                await websocket.send_json(
+                    {"type": "complete", "state": final, "room": room.to_dict()}
+                )
             except (RuntimeError, WebSocketDisconnect):
                 return
     except WebSocketDisconnect:
