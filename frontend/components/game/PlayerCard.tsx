@@ -60,7 +60,7 @@ export function PlayerCard({
   // isSpeaking: ring (box-shadow, no layout impact), no scale
   // isThinking: badge in proc area + subtle ring on container
   const containerClass = cn(
-    "relative grid min-h-[108px] px-3.5 py-3 rounded-card transition-all duration-300 select-none",
+    "relative grid min-h-[6rem] px-3.5 py-3 rounded-card transition-all duration-300 select-none",
     "bg-cardBackground",
     // 默认显示边框，高亮状态下隐藏默认边框避免和ring混杂
     !(isSpeaking || isThinking || isNightActive || isTarget) && "border border-border/70",
@@ -154,7 +154,7 @@ export function PlayerCard({
       </div>
 
       {/* ── Row 1 Right: Identity Badges ─────────────────── */}
-      <div style={{ gridArea: "badges" }} className="flex items-start justify-end gap-1 min-w-[72px] flex-wrap">
+      <div style={{ gridArea: "badges" }} className="flex items-start justify-end gap-1 min-w-[4rem] flex-wrap">
         {showOwnRole && (
           <span className="inline-flex text-[11px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-bold shrink-0">
             {language === "zh" ? "我" : "Me"}
@@ -199,7 +199,7 @@ export function PlayerCard({
       </div>
 
       {/* ── Row 3 Left: Process State ────────────────────── */}
-      <div style={{ gridArea: "proc" }} className="flex items-end gap-1 min-h-[22px] flex-wrap">
+      <div style={{ gridArea: "proc" }} className="flex items-end gap-1 min-h-[1.25rem] flex-wrap">
         {procLabel && (
           <span className={cn(
             "inline-flex whitespace-nowrap rounded-badge px-2 py-0.5 text-[11px] leading-tight transition-opacity duration-200",
@@ -215,7 +215,7 @@ export function PlayerCard({
       </div>
 
       {/* ── Row 3 Right: Result State ────────────────────── */}
-      <div style={{ gridArea: "result" }} className="flex items-end justify-end gap-1 min-h-[22px] flex-wrap">
+      <div style={{ gridArea: "result" }} className="flex items-end justify-end gap-1 min-h-[1.25rem] flex-wrap">
         {resultItems.map((item, i) => (
           <span key={i} className="inline-flex whitespace-nowrap text-[11px] text-text-sub/60 leading-tight">
             {item}

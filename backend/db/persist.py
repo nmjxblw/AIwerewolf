@@ -135,7 +135,9 @@ def _coerce_role(role: str) -> Role:
         return Role.VILLAGER
 
 
-def save_game_start(state: GameState, model_name: str = "", prompt_version: str = "v1") -> Game:
+def save_game_start(
+    state: GameState, model_name: str = "", prompt_version: str = "v1"
+) -> Game:
     db = SessionLocal()
     try:
         game = db.query(Game).filter(Game.id == state.id).first()
@@ -186,8 +188,16 @@ def save_event(game_id: str, event: GameEvent) -> None:
                 id=event.id,
                 game_id=game_id,
                 day=event.day,
-                phase=event.phase.value if hasattr(event.phase, "value") else str(event.phase),
-                event_type=event.type.value if hasattr(event.type, "value") else str(event.type),
+                phase=(
+                    event.phase.value
+                    if hasattr(event.phase, "value")
+                    else str(event.phase)
+                ),
+                event_type=(
+                    event.type.value
+                    if hasattr(event.type, "value")
+                    else str(event.type)
+                ),
                 actor_id=event.payload.get("actor_id"),
                 target_id=event.payload.get("target_id"),
                 visibility=event.visibility,
@@ -300,6 +310,54 @@ def save_decision(
         db.close()
 
 
+def save_prompt_snapshot(
+    game_id: str,
+    player_id: str,
+    day: int,
+    phase: str,
+    request: str,
+    *,
+    decision_id: str | None = None,
+    system_prompt: str | None = None,
+    user_prompt: str | None = None,
+    thinking: str | None = None,
+    response: str | None = None,
+    prompt_json: list | None = None,
+    model_name: str | None = None,
+    provider: str | None = None,
+    prompt_tokens: int | None = None,
+    completion_tokens: int | None = None,
+    latency_ms: int | None = None,
+) -> None:
+    from backend.db.models import PromptSnapshot
+
+    db = SessionLocal()
+    try:
+        db.add(
+            PromptSnapshot(
+                game_id=game_id,
+                player_id=player_id,
+                day=day,
+                phase=phase,
+                request=request,
+                decision_id=decision_id,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                thinking=thinking,
+                response=response,
+                prompt_json=prompt_json,
+                model_name=model_name,
+                provider=provider,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                latency_ms=latency_ms,
+            )
+        )
+        db.commit()
+    finally:
+        db.close()
+
+
 def save_vote(game_id: str, day: int, voter_id: str, target_id: str) -> None:
     db = SessionLocal()
     try:
@@ -309,10 +367,20 @@ def save_vote(game_id: str, day: int, voter_id: str, target_id: str) -> None:
         db.close()
 
 
-def save_snapshot(game_id: str, day: int, phase: str, truth: dict, public: dict) -> None:
+def save_snapshot(
+    game_id: str, day: int, phase: str, truth: dict, public: dict
+) -> None:
     db = SessionLocal()
     try:
-        db.add(GameSnapshot(game_id=game_id, day=day, phase=phase, truth_state=truth, public_state=public))
+        db.add(
+            GameSnapshot(
+                game_id=game_id,
+                day=day,
+                phase=phase,
+                truth_state=truth,
+                public_state=public,
+            )
+        )
         db.commit()
     finally:
         db.close()
@@ -342,8 +410,12 @@ def save_game_end(state: GameState) -> None:
         db.query(GameEvent).filter(GameEvent.game_id == state.id).delete()
         for seq, event in enumerate(state.events):
             payload = _clean(event.payload) if isinstance(event.payload, dict) else {}
-            phase = event.phase.value if hasattr(event.phase, "value") else str(event.phase)
-            event_type = event.type.value if hasattr(event.type, "value") else str(event.type)
+            phase = (
+                event.phase.value if hasattr(event.phase, "value") else str(event.phase)
+            )
+            event_type = (
+                event.type.value if hasattr(event.type, "value") else str(event.type)
+            )
             db.add(
                 GameEvent(
                     id=event.id,
@@ -353,10 +425,15 @@ def save_game_end(state: GameState) -> None:
                     day=event.day,
                     phase=phase,
                     event_type=event_type,
-                    actor_id=payload.get("actor_id") or payload.get("voter_id") or payload.get("hunter_id"),
-                    target_id=payload.get("target_id") or (payload.get("target") or {}).get("id")
-                    if isinstance(payload.get("target"), dict)
-                    else payload.get("target_id"),
+                    actor_id=payload.get("actor_id")
+                    or payload.get("voter_id")
+                    or payload.get("hunter_id"),
+                    target_id=(
+                        payload.get("target_id")
+                        or (payload.get("target") or {}).get("id")
+                        if isinstance(payload.get("target"), dict)
+                        else payload.get("target_id")
+                    ),
                     visibility=event.visibility,
                     content=payload,
                 )
@@ -372,18 +449,28 @@ def save_game_end(state: GameState) -> None:
                     player_id=record.player_id,
                     day=record.day,
                     phase=str(record.phase),
-                    observation=_clean(record.observation) if isinstance(record.observation, dict) else {},
+                    observation=(
+                        _clean(record.observation)
+                        if isinstance(record.observation, dict)
+                        else {}
+                    ),
                     legal_actions=list(record.legal_actions or []),
                     prompt_version=record.prompt_version or "v1",
                     raw_output=_clean(record.raw_output or ""),
-                    parsed_action=_clean(record.parsed_action) if isinstance(record.parsed_action, dict) else {},
+                    parsed_action=(
+                        _clean(record.parsed_action)
+                        if isinstance(record.parsed_action, dict)
+                        else {}
+                    ),
                     is_valid=bool(record.is_valid),
                     error_type=record.error_type,
                     latency_ms=record.latency_ms,
                     prompt_tokens=record.prompt_tokens,
                     completion_tokens=record.completion_tokens,
                     # v2 DecisionTrace fields
-                    candidate_actions=_clean(getattr(record, "candidate_actions", None) or []),
+                    candidate_actions=_clean(
+                        getattr(record, "candidate_actions", None) or []
+                    ),
                     visible_facts=_clean(getattr(record, "visible_facts", None) or []),
                     confidence=getattr(record, "confidence", None),
                     prompt_hash=getattr(record, "prompt_hash", None),
@@ -436,7 +523,10 @@ def save_game_end(state: GameState) -> None:
             agent_label = f"{p.agent_type or 'ai'}+{p.role.value}"
             entry = (
                 db.query(LeaderboardEntry)
-                .filter(LeaderboardEntry.name == agent_label, LeaderboardEntry.role == p.role.value)
+                .filter(
+                    LeaderboardEntry.name == agent_label,
+                    LeaderboardEntry.role == p.role.value,
+                )
                 .first()
             )
             if entry is None:
@@ -464,8 +554,12 @@ def save_game_end(state: GameState) -> None:
         pass
 
 
-def _ensure_track_c_post_game_job_row(db, game_id: str, *, source: str = "") -> TrackCPostGameJob:
-    row = db.query(TrackCPostGameJob).filter(TrackCPostGameJob.game_id == game_id).first()
+def _ensure_track_c_post_game_job_row(
+    db, game_id: str, *, source: str = ""
+) -> TrackCPostGameJob:
+    row = (
+        db.query(TrackCPostGameJob).filter(TrackCPostGameJob.game_id == game_id).first()
+    )
     if row is None:
         row = TrackCPostGameJob(
             game_id=game_id,
@@ -497,14 +591,24 @@ def ensure_track_c_post_game_job(game_id: str, *, source: str = "") -> dict[str,
         db.close()
 
 
-def claim_track_c_post_game_job(game_id: str, *, stale_after_seconds: int = 900) -> dict[str, Any] | None:
+def claim_track_c_post_game_job(
+    game_id: str, *, stale_after_seconds: int = 900
+) -> dict[str, Any] | None:
     """Claim a pending or stale running Track C job for execution."""
     init_db()
     db = SessionLocal()
     try:
-        row = db.query(TrackCPostGameJob).filter(TrackCPostGameJob.game_id == game_id).first()
+        row = (
+            db.query(TrackCPostGameJob)
+            .filter(TrackCPostGameJob.game_id == game_id)
+            .first()
+        )
         if row is None:
-            game = db.query(Game).filter(Game.id == game_id, Game.status == "finished").first()
+            game = (
+                db.query(Game)
+                .filter(Game.id == game_id, Game.status == "finished")
+                .first()
+            )
             if game is None:
                 return None
             row = _ensure_track_c_post_game_job_row(db, game_id, source="claim")
@@ -513,8 +617,14 @@ def claim_track_c_post_game_job(game_id: str, *, stale_after_seconds: int = 900)
         stale_cutoff = now - timedelta(seconds=max(1, stale_after_seconds))
         status = str(row.status or "")
         locked_at = _comparable_utc(row.locked_at)
-        is_claimable = status == "pending" or (status == "running" and (locked_at is None or locked_at < stale_cutoff))
-        if status == "completed" or not is_claimable or (row.attempts or 0) >= (row.max_attempts or 3):
+        is_claimable = status == "pending" or (
+            status == "running" and (locked_at is None or locked_at < stale_cutoff)
+        )
+        if (
+            status == "completed"
+            or not is_claimable
+            or (row.attempts or 0) >= (row.max_attempts or 3)
+        ):
             return None
 
         row.status = "running"
@@ -538,7 +648,11 @@ def complete_track_c_post_game_job(
     init_db()
     db = SessionLocal()
     try:
-        row = db.query(TrackCPostGameJob).filter(TrackCPostGameJob.game_id == game_id).first()
+        row = (
+            db.query(TrackCPostGameJob)
+            .filter(TrackCPostGameJob.game_id == game_id)
+            .first()
+        )
         if row is None:
             return None
         now = _now()
@@ -566,7 +680,11 @@ def fail_track_c_post_game_job(
     init_db()
     db = SessionLocal()
     try:
-        row = db.query(TrackCPostGameJob).filter(TrackCPostGameJob.game_id == game_id).first()
+        row = (
+            db.query(TrackCPostGameJob)
+            .filter(TrackCPostGameJob.game_id == game_id)
+            .first()
+        )
         if row is None:
             return None
         now = _now()
@@ -612,7 +730,9 @@ def list_recoverable_track_c_post_game_jobs(
                 )
             )
             .filter(TrackCPostGameJob.attempts < TrackCPostGameJob.max_attempts)
-            .order_by(TrackCPostGameJob.updated_at.asc(), TrackCPostGameJob.created_at.asc())
+            .order_by(
+                TrackCPostGameJob.updated_at.asc(), TrackCPostGameJob.created_at.asc()
+            )
             .limit(max(1, limit))
             .all()
         )
@@ -731,12 +851,18 @@ def _compute_player_metrics(state: GameState) -> list[dict]:
     return metrics
 
 
-def save_evaluation(game_id: str, player_id: str, metric_name: str, value: float, comment: str = "") -> None:
+def save_evaluation(
+    game_id: str, player_id: str, metric_name: str, value: float, comment: str = ""
+) -> None:
     db = SessionLocal()
     try:
         db.add(
             Evaluation(
-                game_id=game_id, player_id=player_id, metric_name=metric_name, metric_value=value, comment=comment
+                game_id=game_id,
+                player_id=player_id,
+                metric_name=metric_name,
+                metric_value=value,
+                comment=comment,
             )
         )
         db.commit()
@@ -793,7 +919,13 @@ def list_games(limit: int = 20) -> list[dict]:
         results = []
         for g in games:
             players = [
-                {"name": p.name, "role": p.role, "is_alive": p.is_alive, "seat_no": p.seat_no} for p in g.players
+                {
+                    "name": p.name,
+                    "role": p.role,
+                    "is_alive": p.is_alive,
+                    "seat_no": p.seat_no,
+                }
+                for p in g.players
             ]
             results.append(
                 {
@@ -812,6 +944,125 @@ def list_games(limit: int = 20) -> list[dict]:
         db.close()
 
 
+def export_game_thought_process(game_id: str) -> dict | None:
+    """Export all agent decisions with prompts, thinking and speeches for a game.
+
+    Returns a structured dict sorted by day, then by speaking/voting order.
+    Each entry contains the player's received prompt, their thinking, decision,
+    and public speech content.
+    """
+    from backend.db.models import PromptSnapshot
+
+    db = SessionLocal()
+    try:
+        decisions = (
+            db.query(AgentDecision)
+            .filter(AgentDecision.game_id == game_id)
+            .order_by(AgentDecision.created_at)
+            .all()
+        )
+        if not decisions:
+            return None
+
+        # Fetch prompt snapshots joined by decision
+        snapshots = {}
+        for ps in (
+            db.query(PromptSnapshot)
+            .filter(PromptSnapshot.game_id == game_id)
+            .order_by(PromptSnapshot.created_at)
+            .all()
+        ):
+            snapshots.setdefault(ps.player_id, []).append(ps)
+
+        # Fetch players
+        players = {
+            p.id: {"name": p.name, "role": p.role, "seat": p.seat_no}
+            for p in db.query(Player).filter(Player.game_id == game_id).all()
+        }
+
+        entries = []
+        for d in decisions:
+            player = players.get(d.player_id, {})
+            p_snaps = snapshots.get(d.player_id, [])
+            snap = next(
+                (s for s in reversed(p_snaps) if s.day == d.day and s.phase == d.phase),
+                None,
+            )
+
+            action = d.parsed_action or {}
+            entries.append(
+                {
+                    "day": d.day,
+                    "phase": d.phase,
+                    "player_id": d.player_id,
+                    "player_name": player.get("name", d.player_id),
+                    "player_role": player.get("role", ""),
+                    "player_seat": player.get("seat", 0),
+                    "request": (snap.request if snap else ""),
+                    "system_prompt": (snap.system_prompt if snap else None),
+                    "user_prompt": (snap.user_prompt if snap else None),
+                    "thinking": (snap.thinking if snap else None),
+                    "raw_response": d.raw_output or "",
+                    "action_type": action.get("action_type", ""),
+                    "target_id": action.get("target_id"),
+                    "speech": action.get("speech") or "",
+                    "reasoning": action.get("reasoning") or "",
+                    "latency_ms": d.latency_ms,
+                    "model": d.model_name or "",
+                    "provider": d.provider or "",
+                }
+            )
+
+        # Fallback: if no decisions recorded (game still running or using cognitive agents),
+        # build entries from game events (speeches + votes + deaths) with player info.
+        if not entries:
+            game = db.query(Game).filter(Game.id == game_id).first()
+            if game and game.events:
+                for e in sorted(game.events, key=lambda x: (x.seq or 0, x.created_at)):
+                    content = e.content or {}
+                    player_id = content.get("actor_id") or content.get("voter_id") or ""
+                    player = players.get(player_id, {})
+                    entry = {
+                        "day": e.day,
+                        "phase": e.phase,
+                        "player_id": player_id,
+                        "player_name": player.get(
+                            "name",
+                            content.get("actor_name")
+                            or content.get("voter_name")
+                            or "",
+                        ),
+                        "player_role": player.get("role", ""),
+                        "player_seat": player.get("seat", 0),
+                        "request": "",
+                        "system_prompt": None,
+                        "user_prompt": None,
+                        "thinking": None,
+                        "raw_response": "",
+                        "action_type": e.event_type or "",
+                        "target_id": content.get("target_id") or "",
+                        "speech": content.get("speech") or content.get("message") or "",
+                        "reasoning": content.get("reasoning") or "",
+                        "latency_ms": None,
+                        "model": "",
+                        "provider": "",
+                    }
+                    entries.append(entry)
+
+        return {
+            "game_id": game_id,
+            "total_decisions": len(entries),
+            "entries": entries,
+            "note": (
+                "基于游戏事件重建（决策记录尚未写入 DB）"
+                if not decisions and entries
+                else None
+            ),
+        }
+    finally:
+        db.close()
+
+
 def get_game_summary(game_id: str) -> dict | None:
     """Lightweight summary for frontend display."""
     db = SessionLocal()
@@ -825,7 +1076,9 @@ def get_game_summary(game_id: str) -> dict | None:
                 "phase": e.phase,
                 "ts": float(e.ts or 0.0),
                 "speaker": (e.content or {}).get("actor_name", ""),
-                "speaker_seat": _seat_of(game.players, (e.content or {}).get("actor_id")),
+                "speaker_seat": _seat_of(
+                    game.players, (e.content or {}).get("actor_id")
+                ),
                 "text": _clean(str((e.content or {}).get("speech", "")))[:400],
                 "tag": _speech_tag(e.content or {}),
             }
@@ -839,7 +1092,9 @@ def get_game_summary(game_id: str) -> dict | None:
                 "voter": (e.content or {}).get("voter_name", ""),
                 "voter_seat": _seat_of(game.players, (e.content or {}).get("voter_id")),
                 "target": (e.content or {}).get("target_name", ""),
-                "target_seat": _seat_of(game.players, (e.content or {}).get("target_id")),
+                "target_seat": _seat_of(
+                    game.players, (e.content or {}).get("target_id")
+                ),
             }
             for e in sorted(game.events, key=lambda x: (x.seq or 0, x.created_at))
             if e.event_type == "VOTE_CAST"
@@ -849,13 +1104,17 @@ def get_game_summary(game_id: str) -> dict | None:
                 "day": e.day,
                 "ts": float(e.ts or 0.0),
                 "player": (e.content or {}).get("player_name", ""),
-                "player_seat": _seat_of(game.players, (e.content or {}).get("player_id")),
+                "player_seat": _seat_of(
+                    game.players, (e.content or {}).get("player_id")
+                ),
                 "reason": (e.content or {}).get("reason", ""),
             }
             for e in sorted(game.events, key=lambda x: (x.seq or 0, x.created_at))
             if e.event_type == "PLAYER_DIED"
         ]
-        decision_count = db.query(AgentDecision).filter(AgentDecision.game_id == game_id).count()
+        decision_count = (
+            db.query(AgentDecision).filter(AgentDecision.game_id == game_id).count()
+        )
         return _clean(
             {
                 "id": game.id,
@@ -881,7 +1140,9 @@ def get_game_summary(game_id: str) -> dict | None:
                 "decision_count": decision_count,
                 "event_count": len(game.events),
                 "created_at": game.created_at.isoformat() if game.created_at else None,
-                "finished_at": game.finished_at.isoformat() if game.finished_at else None,
+                "finished_at": (
+                    game.finished_at.isoformat() if game.finished_at else None
+                ),
             }
         )
     finally:
@@ -904,7 +1165,10 @@ def get_replay(game_id: str, *, show_private: bool = False) -> dict | None:
         if game is None:
             return None
         snapshot = (
-            db.query(GameSnapshot).filter(GameSnapshot.game_id == game_id).order_by(GameSnapshot.day.desc()).first()
+            db.query(GameSnapshot)
+            .filter(GameSnapshot.game_id == game_id)
+            .order_by(GameSnapshot.day.desc())
+            .first()
         )
         sorted_events = sorted(game.events, key=lambda x: (x.seq or 0, x.created_at))
         events = [
@@ -974,7 +1238,10 @@ def get_replay(game_id: str, *, show_private: bool = False) -> dict | None:
                 "is_valid": row.is_valid,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
             }
-            for row in db.query(Vote).filter(Vote.game_id == game_id).order_by(Vote.day, Vote.created_at).all()
+            for row in db.query(Vote)
+            .filter(Vote.game_id == game_id)
+            .order_by(Vote.day, Vote.created_at)
+            .all()
         ]
         return _clean(
             {
@@ -996,7 +1263,11 @@ def get_replay(game_id: str, *, show_private: bool = False) -> dict | None:
                     }
                     for p in sorted(game.players, key=lambda x: x.seat_no)
                 ],
-                "snapshot": (snapshot.truth_state if show_private else snapshot.public_state) if snapshot else None,
+                "snapshot": (
+                    (snapshot.truth_state if show_private else snapshot.public_state)
+                    if snapshot
+                    else None
+                ),
                 "snapshots": snapshots,
                 "events": events,
                 "timeline": timeline,
@@ -1033,7 +1304,9 @@ def get_game_metrics(game_id: str) -> dict | None:
         game = db.query(Game).filter(Game.id == game_id).first()
         if game is None:
             return None
-        review = db.query(PublishedReview).filter(PublishedReview.game_id == game_id).first()
+        review = (
+            db.query(PublishedReview).filter(PublishedReview.game_id == game_id).first()
+        )
         if review is not None:
             payload = review.report_json or {}
             return _clean(
@@ -1041,7 +1314,9 @@ def get_game_metrics(game_id: str) -> dict | None:
                     "game_id": game_id,
                     "winner": game.winner,
                     "scoreboard": payload.get("scoreboard", []),
-                    "player_scores": payload.get("metadata", {}).get("player_scores", []),
+                    "player_scores": payload.get("metadata", {}).get(
+                        "player_scores", []
+                    ),
                     "speech_acts": review.speech_acts or [],
                     "suspicion_matrix": review.suspicion_matrix or [],
                     "validation": review.validation_result or {},
@@ -1070,12 +1345,18 @@ def get_leaderboard(*, role: str | None = None, limit: int = 20) -> list[dict]:
         approved = (
             db.query(PublishedReview)
             .filter(PublishedReview.publish_allowed.is_(True))
-            .order_by(PublishedReview.published_at.desc(), PublishedReview.created_at.desc())
+            .order_by(
+                PublishedReview.published_at.desc(), PublishedReview.created_at.desc()
+            )
             .limit(review_sample_limit)
             .all()
         )
         if approved:
-            reports = [reconstruct_review_report(row.report_json or {}) for row in approved if row.report_json]
+            reports = [
+                reconstruct_review_report(row.report_json or {})
+                for row in approved
+                if row.report_json
+            ]
             aggregated = LeaderboardAggregator().aggregate_all(reports)
             payload = {key: value.to_dict() for key, value in aggregated.items()}
             if role:
@@ -1092,7 +1373,13 @@ def get_leaderboard(*, role: str | None = None, limit: int = 20) -> list[dict]:
         query = db.query(LeaderboardEntry)
         if role:
             query = query.filter(LeaderboardEntry.role == role)
-        rows = query.order_by(LeaderboardEntry.win_rate.desc(), LeaderboardEntry.games_played.desc()).limit(limit).all()
+        rows = (
+            query.order_by(
+                LeaderboardEntry.win_rate.desc(), LeaderboardEntry.games_played.desc()
+            )
+            .limit(limit)
+            .all()
+        )
         return _clean(
             {
                 "legacy": [
@@ -1111,7 +1398,9 @@ def get_leaderboard(*, role: str | None = None, limit: int = 20) -> list[dict]:
                             "skill_efficiency": r.kpi_skill_efficiency,
                             "survival_value": r.kpi_survival_value,
                         },
-                        "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                        "updated_at": (
+                            r.updated_at.isoformat() if r.updated_at else None
+                        ),
                     }
                     for r in rows
                 ]
@@ -1125,7 +1414,9 @@ def get_review_reports(game_id: str) -> dict | None:
     db = SessionLocal()
     try:
         init_db()
-        published = db.query(PublishedReview).filter(PublishedReview.game_id == game_id).first()
+        published = (
+            db.query(PublishedReview).filter(PublishedReview.game_id == game_id).first()
+        )
         if published is not None:
             return _clean(
                 {
@@ -1145,8 +1436,16 @@ def get_review_reports(game_id: str) -> dict | None:
                     "repair_history": published.repair_history or [],
                     "metadata": published.extra_metadata or {},
                     "html_report": (published.extra_metadata or {}).get("html_report"),
-                    "created_at": published.created_at.isoformat() if published.created_at else None,
-                    "published_at": published.published_at.isoformat() if published.published_at else None,
+                    "created_at": (
+                        published.created_at.isoformat()
+                        if published.created_at
+                        else None
+                    ),
+                    "published_at": (
+                        published.published_at.isoformat()
+                        if published.published_at
+                        else None
+                    ),
                 }
             )
         rows = (
@@ -1207,7 +1506,11 @@ def save_published_review(state: GameState) -> dict[str, Any]:
     init_db()
     db = SessionLocal()
     try:
-        row = db.query(PublishedReview).filter(PublishedReview.game_id == state.id).first()
+        row = (
+            db.query(PublishedReview)
+            .filter(PublishedReview.game_id == state.id)
+            .first()
+        )
         if row is None:
             row = PublishedReview(game_id=state.id)
             db.add(row)
@@ -1302,7 +1605,9 @@ def _knowledge_row_to_dict(row: StrategyKnowledgeDoc) -> dict[str, Any]:
         "visibility_scope": row.visibility_scope or "public",
         "allowed_roles": row.allowed_roles,
         "deidentified": bool(row.deidentified),
-        "contains_current_game_private_info": bool(row.contains_current_game_private_info),
+        "contains_current_game_private_info": bool(
+            row.contains_current_game_private_info
+        ),
         # Applicability
         "applicability_role": row.applicability_role,
         "applicability_phase": row.applicability_phase,
@@ -1314,7 +1619,9 @@ def _knowledge_row_to_dict(row: StrategyKnowledgeDoc) -> dict[str, Any]:
     }
 
 
-def _upsert_strategy_knowledge_rows(db, docs: list[StrategyKnowledgeDocData]) -> list[dict[str, Any]]:
+def _upsert_strategy_knowledge_rows(
+    db, docs: list[StrategyKnowledgeDocData]
+) -> list[dict[str, Any]]:
     """Upsert strategy knowledge with cross-game deduplication.
 
     Keys dedup on (role, phase, recommended_action[:100]) across all games.
@@ -1357,7 +1664,9 @@ def _upsert_strategy_knowledge_rows(db, docs: list[StrategyKnowledgeDocData]) ->
         source_report_ids = list(doc.source_report_ids or [])
         source_item_ids = list(doc.source_item_ids or [])
         source_event_ids = list(doc.source_event_ids or [])
-        source_game_id = getattr(doc, "source_game_id", None) or (source_report_ids[0] if source_report_ids else None)
+        source_game_id = getattr(doc, "source_game_id", None) or (
+            source_report_ids[0] if source_report_ids else None
+        )
         source_decision_id = getattr(doc, "source_decision_id", None) or (
             source_item_ids[0] if source_item_ids else None
         )
@@ -1390,33 +1699,68 @@ def _upsert_strategy_knowledge_rows(db, docs: list[StrategyKnowledgeDocData]) ->
             total_games = existing_games + new_games
             if total_games > 0:
                 existing.quality_score = round(
-                    (existing.quality_score * existing_games + doc.quality_score * new_games) / total_games, 4
+                    (
+                        existing.quality_score * existing_games
+                        + doc.quality_score * new_games
+                    )
+                    / total_games,
+                    4,
                 )
             # Union source identifiers independently to preserve the evidence chain.
-            merged_sources = sorted(set((existing.source_report_ids or []) + source_report_ids))
-            merged_items = sorted(set((existing.source_item_ids or []) + source_item_ids))
+            merged_sources = sorted(
+                set((existing.source_report_ids or []) + source_report_ids)
+            )
+            merged_items = sorted(
+                set((existing.source_item_ids or []) + source_item_ids)
+            )
             existing.source_report_ids = merged_sources
             existing.source_item_ids = merged_items
-            existing.source_event_ids = sorted(set((existing.source_event_ids or []) + source_event_ids))
+            existing.source_event_ids = sorted(
+                set((existing.source_event_ids or []) + source_event_ids)
+            )
             existing.confidence = max(existing.confidence or 0, doc.confidence or 0)
-            if hasattr(existing, "experiment_id") and not getattr(existing, "experiment_id", None):
+            if hasattr(existing, "experiment_id") and not getattr(
+                existing, "experiment_id", None
+            ):
                 existing.experiment_id = getattr(doc, "experiment_id", None)
-            if hasattr(existing, "source_game_id") and not getattr(existing, "source_game_id", None):
+            if hasattr(existing, "source_game_id") and not getattr(
+                existing, "source_game_id", None
+            ):
                 existing.source_game_id = source_game_id
-            if hasattr(existing, "source_decision_id") and not getattr(existing, "source_decision_id", None):
+            if hasattr(existing, "source_decision_id") and not getattr(
+                existing, "source_decision_id", None
+            ):
                 existing.source_decision_id = source_decision_id
             existing.knowledge_epoch = max(
-                int(existing.knowledge_epoch or 0), int(getattr(doc, "knowledge_epoch", 0) or 0)
+                int(existing.knowledge_epoch or 0),
+                int(getattr(doc, "knowledge_epoch", 0) or 0),
             )
-            existing.version_group = existing.version_group or getattr(doc, "version_group", None)
-            existing.doc_version = getattr(doc, "doc_version", None) or existing.doc_version or "v1"
-            existing.parent_doc_id = existing.parent_doc_id or getattr(doc, "parent_doc_id", None)
+            existing.version_group = existing.version_group or getattr(
+                doc, "version_group", None
+            )
+            existing.doc_version = (
+                getattr(doc, "doc_version", None) or existing.doc_version or "v1"
+            )
+            existing.parent_doc_id = existing.parent_doc_id or getattr(
+                doc, "parent_doc_id", None
+            )
             existing.supersedes_doc_ids = sorted(
-                set((existing.supersedes_doc_ids or []) + list(getattr(doc, "supersedes_doc_ids", []) or []))
+                set(
+                    (existing.supersedes_doc_ids or [])
+                    + list(getattr(doc, "supersedes_doc_ids", []) or [])
+                )
             )
-            existing.maturity = getattr(doc, "maturity", None) or existing.maturity or "raw"
-            existing.validated_at = _parse_datetime(getattr(doc, "validated_at", None)) or existing.validated_at
-            existing.last_used_at = _parse_datetime(getattr(doc, "last_used_at", None)) or existing.last_used_at
+            existing.maturity = (
+                getattr(doc, "maturity", None) or existing.maturity or "raw"
+            )
+            existing.validated_at = (
+                _parse_datetime(getattr(doc, "validated_at", None))
+                or existing.validated_at
+            )
+            existing.last_used_at = (
+                _parse_datetime(getattr(doc, "last_used_at", None))
+                or existing.last_used_at
+            )
             existing.updated_at = _now()
 
             # Note: promotion from candidate → active is handled explicitly
@@ -1467,7 +1811,9 @@ def _upsert_strategy_knowledge_rows(db, docs: list[StrategyKnowledgeDocData]) ->
             row.validated_at = _parse_datetime(getattr(doc, "validated_at", None))
             row.last_used_at = _parse_datetime(getattr(doc, "last_used_at", None))
 
-            row.confidence_tier = getattr(doc, "confidence_tier", None) or "L3_strategic"
+            row.confidence_tier = (
+                getattr(doc, "confidence_tier", None) or "L3_strategic"
+            )
             row.judge_agreement = getattr(doc, "judge_agreement", None)
             row.times_upvoted = 0
             row.contradiction_count = 0
@@ -1483,9 +1829,15 @@ def _upsert_strategy_knowledge_rows(db, docs: list[StrategyKnowledgeDocData]) ->
             row.applicability_phase = getattr(doc, "applicability_phase", None)
             row.min_players = getattr(doc, "min_players", None)
             row.max_players = getattr(doc, "max_players", None)
-            row.required_public_facts = getattr(doc, "required_public_facts", None) or []
-            row.forbidden_public_facts = getattr(doc, "forbidden_public_facts", None) or []
-            row.required_private_state = getattr(doc, "required_private_state", None) or []
+            row.required_public_facts = (
+                getattr(doc, "required_public_facts", None) or []
+            )
+            row.forbidden_public_facts = (
+                getattr(doc, "forbidden_public_facts", None) or []
+            )
+            row.required_private_state = (
+                getattr(doc, "required_private_state", None) or []
+            )
 
             saved.append(_knowledge_row_to_dict(row))
 
@@ -1499,7 +1851,11 @@ def extract_strategy_knowledge_from_game(game_id: str) -> list[dict[str, Any]]:
         return []
     report_payload = payload.get("review_report") or payload
     report = reconstruct_review_report(report_payload)
-    validation = payload.get("validation_result") or report.metadata.get("validation_result") or {}
+    validation = (
+        payload.get("validation_result")
+        or report.metadata.get("validation_result")
+        or {}
+    )
     if validation:
         report.metadata["validation_result"] = validation
     if payload.get("publish_allowed") is not None:
@@ -1537,7 +1893,8 @@ def list_strategy_knowledge(
         superseded_doc_ids = {
             old_id
             for row in rows
-            if (row.status or "") in {"active", "candidate"} and (row.maturity or "raw") in {"refined", "canonical"}
+            if (row.status or "") in {"active", "candidate"}
+            and (row.maturity or "raw") in {"refined", "canonical"}
             for old_id in (row.supersedes_doc_ids or [])
         }
         rows = [row for row in rows if row.id not in superseded_doc_ids]
@@ -1547,7 +1904,10 @@ def list_strategy_knowledge(
                 maturity_rank.get(row.maturity or "raw", 0),
                 int(row.knowledge_epoch or 0),
                 float(row.quality_score or 0.0),
-                row.validated_at or row.updated_at or row.created_at or datetime.min.replace(tzinfo=timezone.utc),
+                row.validated_at
+                or row.updated_at
+                or row.created_at
+                or datetime.min.replace(tzinfo=timezone.utc),
             ),
             reverse=True,
         )
@@ -1569,7 +1929,11 @@ def retrieve_strategy_knowledge(query: StrategyRetrievalQuery) -> list[dict[str,
     init_db()
     db = SessionLocal()
     try:
-        rows = db.query(StrategyKnowledgeDoc).filter(StrategyKnowledgeDoc.status.in_(["active", "candidate"])).all()
+        rows = (
+            db.query(StrategyKnowledgeDoc)
+            .filter(StrategyKnowledgeDoc.status.in_(["active", "candidate"]))
+            .all()
+        )
         store = StrategyKnowledgeStore()
         docs = [StrategyKnowledgeDocData(**_knowledge_row_to_dict(row)) for row in rows]
         store.upsert_many(docs)
@@ -1591,16 +1955,25 @@ def retrieve_strategy_knowledge(query: StrategyRetrievalQuery) -> list[dict[str,
         for doc in candidates:
             if not confidence_allowed(doc):
                 continue
-            is_wolf = query.role in {"Werewolf", "WhiteWolfKing", "BigBadWolf", "WolfCub", "AlphaWolf"}
+            is_wolf = query.role in {
+                "Werewolf",
+                "WhiteWolfKing",
+                "BigBadWolf",
+                "WolfCub",
+                "AlphaWolf",
+            }
             if not visibility_allowed(doc, query.role, is_wolf):
                 continue
-            if leaks_current_game_private_info(doc, getattr(query, "game_id", "") or ""):
+            if leaks_current_game_private_info(
+                doc, getattr(query, "game_id", "") or ""
+            ):
                 continue
             if not applicability_matches(
                 doc,
                 query.role,
                 query.phase or "",
-                getattr(query, "rule_variant", "standard_competition_v1") or "standard_competition_v1",
+                getattr(query, "rule_variant", "standard_competition_v1")
+                or "standard_competition_v1",
                 getattr(query, "player_count", 0) or 0,
                 public_facts,
                 private_state,
@@ -1620,7 +1993,11 @@ def deprecate_strategy_knowledge(doc_id: str, reason: str = "") -> dict[str, Any
     init_db()
     db = SessionLocal()
     try:
-        row = db.query(StrategyKnowledgeDoc).filter(StrategyKnowledgeDoc.id == doc_id).first()
+        row = (
+            db.query(StrategyKnowledgeDoc)
+            .filter(StrategyKnowledgeDoc.id == doc_id)
+            .first()
+        )
         if row is None:
             raise KeyError(doc_id)
         row.status = "deprecated"
@@ -1653,7 +2030,11 @@ def record_knowledge_usage(payload: dict[str, Any]) -> dict[str, Any]:
             extra_metadata=payload.get("metadata") or {},
         )
         db.add(row)
-        doc = db.query(StrategyKnowledgeDoc).filter(StrategyKnowledgeDoc.id == row.knowledge_doc_id).first()
+        doc = (
+            db.query(StrategyKnowledgeDoc)
+            .filter(StrategyKnowledgeDoc.id == row.knowledge_doc_id)
+            .first()
+        )
         if doc is not None:
             if used and has_helpful:
                 doc.usage_count = int(doc.usage_count or 0) + 1
@@ -1669,19 +2050,36 @@ def record_knowledge_usage(payload: dict[str, Any]) -> dict[str, Any]:
             if should_deprecate:
                 doc.status = "deprecated"
         db.commit()
-        return {"id": row.id, "knowledge_doc_id": row.knowledge_doc_id, "helpful": row.helpful}
+        return {
+            "id": row.id,
+            "knowledge_doc_id": row.knowledge_doc_id,
+            "helpful": row.helpful,
+        }
     finally:
         db.close()
 
 
-def run_dream_job(report_ids: list[str] | None = None, *, from_version: str = "v1") -> dict[str, Any]:
+def run_dream_job(
+    report_ids: list[str] | None = None, *, from_version: str = "v1"
+) -> dict[str, Any]:
     init_db()
     db = SessionLocal()
     try:
-        query = db.query(PublishedReview).filter(PublishedReview.publish_allowed.is_(True))
+        query = db.query(PublishedReview).filter(
+            PublishedReview.publish_allowed.is_(True)
+        )
         if report_ids:
-            query = query.filter(PublishedReview.id.in_(report_ids) | PublishedReview.game_id.in_(report_ids))
-        rows = query.order_by(PublishedReview.published_at.desc(), PublishedReview.created_at.desc()).limit(30).all()
+            query = query.filter(
+                PublishedReview.id.in_(report_ids)
+                | PublishedReview.game_id.in_(report_ids)
+            )
+        rows = (
+            query.order_by(
+                PublishedReview.published_at.desc(), PublishedReview.created_at.desc()
+            )
+            .limit(30)
+            .all()
+        )
         reports = []
         for row in rows:
             if not row.report_json:
@@ -1751,7 +2149,9 @@ def list_role_strategy_cards(role: str | None = None) -> list[dict[str, Any]]:
         query = db.query(RoleStrategyCard)
         if role:
             query = query.filter(RoleStrategyCard.role == role)
-        rows = query.order_by(RoleStrategyCard.role, RoleStrategyCard.created_at.desc()).all()
+        rows = query.order_by(
+            RoleStrategyCard.role, RoleStrategyCard.created_at.desc()
+        ).all()
         return _clean([_role_card_to_dict(row) for row in rows])
     finally:
         db.close()
@@ -1767,7 +2167,10 @@ def apply_strategy_patch(patch_id: str) -> dict[str, Any]:
         role = patch.target_role or "global"
         baseline = (
             db.query(RoleStrategyCard)
-            .filter(RoleStrategyCard.role == role, RoleStrategyCard.version == patch.from_version)
+            .filter(
+                RoleStrategyCard.role == role,
+                RoleStrategyCard.version == patch.from_version,
+            )
             .first()
         )
         if baseline is None:
@@ -1799,7 +2202,12 @@ def apply_strategy_patch(patch_id: str) -> dict[str, Any]:
         )
         for operation in patch.operations or []:
             section = operation.get("section")
-            if section in {"speech_policy", "vote_policy", "skill_policy", "risk_rules"}:
+            if section in {
+                "speech_policy",
+                "vote_policy",
+                "skill_policy",
+                "risk_rules",
+            }:
                 values = list(getattr(card, section) or [])
                 values.append(str(operation.get("new_value") or ""))
                 setattr(card, section, values)
@@ -1811,7 +2219,9 @@ def apply_strategy_patch(patch_id: str) -> dict[str, Any]:
         db.close()
 
 
-def run_evolution_cycle(report_ids: list[str] | None = None, *, seeds: list[int] | None = None) -> dict[str, Any]:
+def run_evolution_cycle(
+    report_ids: list[str] | None = None, *, seeds: list[int] | None = None
+) -> dict[str, Any]:
     init_db()
     dream = run_dream_job(report_ids, from_version="v1")
     from backend.eval.evolution import TournamentRunner
@@ -1831,7 +2241,9 @@ def run_evolution_cycle(report_ids: list[str] | None = None, *, seeds: list[int]
                 from_version=patch_payload.get("from_version", "v1"),
                 to_version=patch_payload.get("to_version", ""),
                 source_report_ids=list(patch_payload.get("source_report_ids", [])),
-                source_knowledge_doc_ids=list(patch_payload.get("source_knowledge_doc_ids", [])),
+                source_knowledge_doc_ids=list(
+                    patch_payload.get("source_knowledge_doc_ids", [])
+                ),
                 source_evidence_ids=list(patch_payload.get("source_evidence_ids", [])),
                 operations=[],
                 expected_effects=list(patch_payload.get("expected_effects", [])),
@@ -1892,8 +2304,10 @@ def run_evolution_cycle(report_ids: list[str] | None = None, *, seeds: list[int]
                     baseline_wins=int(tournament.comparison.get("baseline_wins", 0)),
                     challenger_wins=int(tournament.comparison.get("candidate_wins", 0)),
                     delta_win_rate=(
-                        float(tournament.comparison.get("candidate_wins", 0)) / max(len(tournament.seeds), 1)
-                        - float(tournament.comparison.get("baseline_wins", 0)) / max(len(tournament.seeds), 1)
+                        float(tournament.comparison.get("candidate_wins", 0))
+                        / max(len(tournament.seeds), 1)
+                        - float(tournament.comparison.get("baseline_wins", 0))
+                        / max(len(tournament.seeds), 1)
                     ),
                     accepted=bool(tournament.decision.get("accepted")),
                     change_log=json.dumps(patch_payload, ensure_ascii=False),
@@ -1920,13 +2334,29 @@ def run_evolution_cycle(report_ids: list[str] | None = None, *, seeds: list[int]
                     item["tournament"]["comparison"].get("candidate_wins", 0)
                     / max(item["tournament"]["comparison"].get("total_games", 1), 1)
                 ),
-                "avg_score": item["tournament"]["comparison"].get("candidate_avg_score"),
-                "role_task_delta": item["tournament"]["comparison"].get("role_task_score_delta"),
-                "critical_mistakes_delta": item["tournament"]["comparison"].get("critical_mistakes_delta"),
-                "info_leak_count": item["tournament"]["comparison"].get("info_leak_count"),
-                "invalid_action_rate": item["tournament"]["comparison"].get("invalid_action_rate"),
-                "fallback_count": item["tournament"]["comparison"].get("candidate_fallback_count"),
-                "decision": "promote" if item["tournament"]["decision"].get("accepted") else "rollback",
+                "avg_score": item["tournament"]["comparison"].get(
+                    "candidate_avg_score"
+                ),
+                "role_task_delta": item["tournament"]["comparison"].get(
+                    "role_task_score_delta"
+                ),
+                "critical_mistakes_delta": item["tournament"]["comparison"].get(
+                    "critical_mistakes_delta"
+                ),
+                "info_leak_count": item["tournament"]["comparison"].get(
+                    "info_leak_count"
+                ),
+                "invalid_action_rate": item["tournament"]["comparison"].get(
+                    "invalid_action_rate"
+                ),
+                "fallback_count": item["tournament"]["comparison"].get(
+                    "candidate_fallback_count"
+                ),
+                "decision": (
+                    "promote"
+                    if item["tournament"]["decision"].get("accepted")
+                    else "rollback"
+                ),
             }
             for item in patch_results
         ]
@@ -1938,9 +2368,19 @@ def run_evolution_cycle(report_ids: list[str] | None = None, *, seeds: list[int]
                 "summary": {
                     "knowledge_docs": len(dream.get("knowledge_docs", [])),
                     "validated_patches": len(dream.get("candidate_patches", [])),
-                    "promoted": sum(1 for item in patch_results if item["patch"]["status"] == "promoted"),
-                    "rolled_back": sum(1 for item in patch_results if item["patch"]["status"] == "rolled_back"),
-                    "acceptance_pass_rate": acceptance_audit.get("overall_success_rate", 0.0),
+                    "promoted": sum(
+                        1
+                        for item in patch_results
+                        if item["patch"]["status"] == "promoted"
+                    ),
+                    "rolled_back": sum(
+                        1
+                        for item in patch_results
+                        if item["patch"]["status"] == "rolled_back"
+                    ),
+                    "acceptance_pass_rate": acceptance_audit.get(
+                        "overall_success_rate", 0.0
+                    ),
                     "acceptance_passed": acceptance_audit.get("passed", False),
                 },
                 "acceptance_audit": acceptance_audit,
@@ -1955,10 +2395,22 @@ def get_evolution_dashboard() -> dict[str, Any]:
     init_db()
     db = SessionLocal()
     try:
-        patches = db.query(StrategyPatch).order_by(StrategyPatch.created_at.desc()).limit(20).all()
-        tournaments = db.query(EvolutionTournament).order_by(EvolutionTournament.created_at.desc()).limit(20).all()
+        patches = (
+            db.query(StrategyPatch)
+            .order_by(StrategyPatch.created_at.desc())
+            .limit(20)
+            .all()
+        )
+        tournaments = (
+            db.query(EvolutionTournament)
+            .order_by(EvolutionTournament.created_at.desc())
+            .limit(20)
+            .all()
+        )
         active_versions = (
-            db.query(RoleStrategyCard).order_by(RoleStrategyCard.role, RoleStrategyCard.created_at.desc()).all()
+            db.query(RoleStrategyCard)
+            .order_by(RoleStrategyCard.role, RoleStrategyCard.created_at.desc())
+            .all()
         )
         # Only active entries, deduplicated by recommended_action,
         # with non-empty Chinese content, quality >= 0.7
@@ -1968,7 +2420,10 @@ def get_evolution_dashboard() -> dict[str, Any]:
             .filter(StrategyKnowledgeDoc.quality_score >= 0.70)
             .filter(StrategyKnowledgeDoc.recommended_action.isnot(None))
             .filter(StrategyKnowledgeDoc.recommended_action != "")
-            .order_by(StrategyKnowledgeDoc.quality_score.desc(), StrategyKnowledgeDoc.updated_at.desc())
+            .order_by(
+                StrategyKnowledgeDoc.quality_score.desc(),
+                StrategyKnowledgeDoc.updated_at.desc(),
+            )
             .limit(200)
             .all()
         )
@@ -2036,7 +2491,9 @@ def _lightweight_bc_acceptance_summary(db) -> dict[str, Any]:
     The full B/C audit builds retrieval stores and scans historical artifacts;
     that belongs in explicit acceptance commands, not the dashboard first paint.
     """
-    finished_games = db.query(sa_func.count(Game.id)).filter(Game.status == "finished").scalar() or 0
+    finished_games = (
+        db.query(sa_func.count(Game.id)).filter(Game.status == "finished").scalar() or 0
+    )
     reviews = db.query(sa_func.count(PublishedReview.id)).scalar() or 0
     knowledge_docs = db.query(sa_func.count(StrategyKnowledgeDoc.id)).scalar() or 0
     tournaments = db.query(sa_func.count(EvolutionTournament.id)).scalar() or 0
@@ -2086,7 +2543,9 @@ def _lightweight_bc_acceptance_summary(db) -> dict[str, Any]:
     passed = all(item.passed for item in metrics)
     return {
         "generated_at": _now().isoformat(),
-        "overall_success_rate": sum(float(item["success_rate"]) for item in metrics_payload)
+        "overall_success_rate": sum(
+            float(item["success_rate"]) for item in metrics_payload
+        )
         / max(len(metrics_payload), 1),
         "passed": passed,
         "metrics": metrics_payload,
@@ -2152,7 +2611,12 @@ def register_agent_version(payload: dict) -> dict:
 def list_evolution_rounds(*, limit: int = 20) -> list[dict]:
     db = SessionLocal()
     try:
-        rows = db.query(EvolutionRound).order_by(EvolutionRound.round_no.desc()).limit(limit).all()
+        rows = (
+            db.query(EvolutionRound)
+            .order_by(EvolutionRound.round_no.desc())
+            .limit(limit)
+            .all()
+        )
         return [
             {
                 "id": r.id,
@@ -2188,7 +2652,15 @@ def _stats_summary(values: list[float | int]) -> dict[str, float | int]:
     clients can render without null-checks.
     """
     if not values:
-        return {"count": 0, "min": 0, "max": 0, "avg": 0.0, "p50": 0.0, "p95": 0.0, "sum": 0}
+        return {
+            "count": 0,
+            "min": 0,
+            "max": 0,
+            "avg": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "sum": 0,
+        }
     ordered = sorted(values)
     n = len(ordered)
 
@@ -2243,7 +2715,11 @@ def _accumulate_bucket(bucket: dict[str, Any], decision: AgentDecision) -> None:
         bucket["prompt_tokens_sum"] += int(decision.prompt_tokens)
     if decision.completion_tokens:
         bucket["completion_tokens_sum"] += int(decision.completion_tokens)
-    speech = (decision.parsed_action or {}).get("speech") if isinstance(decision.parsed_action, dict) else None
+    speech = (
+        (decision.parsed_action or {}).get("speech")
+        if isinstance(decision.parsed_action, dict)
+        else None
+    )
     if isinstance(speech, str) and speech.strip():
         bucket["speech_lengths"].append(len(speech))
 
@@ -2254,7 +2730,9 @@ def _finalize_bucket(bucket: dict[str, Any]) -> None:
     bucket["latency_ms"] = _stats_summary(latencies)
     bucket["speech_char_len"] = _stats_summary(speech_lengths)
     bucket["validity_rate"] = (
-        round(bucket["valid_count"] / bucket["decision_count"], 4) if bucket["decision_count"] else 0.0
+        round(bucket["valid_count"] / bucket["decision_count"], 4)
+        if bucket["decision_count"]
+        else 0.0
     )
 
 
@@ -2280,7 +2758,9 @@ def _iter_review_items(payload: dict[str, Any] | None) -> list[dict[str, Any]]:
 
 def _decision_is_fallback(decision: AgentDecision) -> bool:
     parsed = decision.parsed_action if isinstance(decision.parsed_action, dict) else {}
-    metadata = parsed.get("metadata") if isinstance(parsed.get("metadata"), dict) else {}
+    metadata = (
+        parsed.get("metadata") if isinstance(parsed.get("metadata"), dict) else {}
+    )
     return (
         bool(metadata.get("fallback"))
         or bool(parsed.get("agent_fallback"))
@@ -2290,13 +2770,17 @@ def _decision_is_fallback(decision: AgentDecision) -> bool:
 
 def _decision_is_llm(decision: AgentDecision) -> bool:
     parsed = decision.parsed_action if isinstance(decision.parsed_action, dict) else {}
-    metadata = parsed.get("metadata") if isinstance(parsed.get("metadata"), dict) else {}
+    metadata = (
+        parsed.get("metadata") if isinstance(parsed.get("metadata"), dict) else {}
+    )
     source = str(metadata.get("source", "")).lower()
     if source == "llm" and not _decision_is_fallback(decision):
         return True
     if bool(metadata.get("fallback")) or source == "fallback":
         return False
-    return bool(decision.prompt_tokens or decision.completion_tokens) and not _decision_is_fallback(decision)
+    return bool(
+        decision.prompt_tokens or decision.completion_tokens
+    ) and not _decision_is_fallback(decision)
 
 
 def _knowledge_doc_has_embedding(doc: StrategyKnowledgeDocData) -> bool:
@@ -2306,13 +2790,17 @@ def _knowledge_doc_has_embedding(doc: StrategyKnowledgeDocData) -> bool:
 def _tournament_result_is_llm(result: dict[str, Any]) -> bool:
     if not isinstance(result, dict):
         return False
-    metadata = result.get("metadata") if isinstance(result.get("metadata"), dict) else {}
+    metadata = (
+        result.get("metadata") if isinstance(result.get("metadata"), dict) else {}
+    )
     runner_mode = str(metadata.get("runner_mode", "")).lower()
     if runner_mode != "llm":
         return False
     total = int(metadata.get("total_decisions") or metadata.get("decision_count") or 0)
     llm_count = int(metadata.get("llm_decision_count") or 0)
-    fallback_count = int(metadata.get("fallback_count") or metadata.get("fallback_decision_count") or 0)
+    fallback_count = int(
+        metadata.get("fallback_count") or metadata.get("fallback_decision_count") or 0
+    )
     if total <= 0 or fallback_count != 0:
         return False
     return llm_count / max(total, 1) >= 0.95
@@ -2320,7 +2808,9 @@ def _tournament_result_is_llm(result: dict[str, Any]) -> bool:
 
 def _tournament_is_llm(item: EvolutionTournament) -> bool:
     results = list(item.baseline_results or []) + list(item.candidate_results or [])
-    return bool(results) and all(_tournament_result_is_llm(result) for result in results)
+    return bool(results) and all(
+        _tournament_result_is_llm(result) for result in results
+    )
 
 
 def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[str, Any]:
@@ -2360,17 +2850,28 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
                 .all()
             )
         }
-        decisions = db.query(AgentDecision).filter(AgentDecision.game_id.in_(game_ids)).all()
+        decisions = (
+            db.query(AgentDecision).filter(AgentDecision.game_id.in_(game_ids)).all()
+        )
 
     reviews = (
         db.query(PublishedReview)
-        .order_by(PublishedReview.published_at.desc().nullslast(), PublishedReview.created_at.desc())
+        .order_by(
+            PublishedReview.published_at.desc().nullslast(),
+            PublishedReview.created_at.desc(),
+        )
         .limit(limit_games)
         .all()
     )
     review_payloads = [row.report_json or {} for row in reviews]
-    review_items = [item for payload in review_payloads for item in _iter_review_items(payload)]
-    evidence_items = [item for item in review_items if item.get("evidence_event_ids") or item.get("source_event_ids")]
+    review_items = [
+        item for payload in review_payloads for item in _iter_review_items(payload)
+    ]
+    evidence_items = [
+        item
+        for item in review_items
+        if item.get("evidence_event_ids") or item.get("source_event_ids")
+    ]
     approved_reviews = [row for row in reviews if row.publish_allowed]
 
     docs_total = db.query(StrategyKnowledgeDoc).count()
@@ -2386,11 +2887,17 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
     knowledge_sample_rows = (
         db.query(StrategyKnowledgeDoc)
         .filter(StrategyKnowledgeDoc.status != "deprecated")
-        .order_by(StrategyKnowledgeDoc.updated_at.desc().nullslast(), StrategyKnowledgeDoc.created_at.desc())
+        .order_by(
+            StrategyKnowledgeDoc.updated_at.desc().nullslast(),
+            StrategyKnowledgeDoc.created_at.desc(),
+        )
         .limit(20)
         .all()
     )
-    knowledge_docs = [StrategyKnowledgeDocData(**_knowledge_row_to_dict(row)) for row in knowledge_sample_rows]
+    knowledge_docs = [
+        StrategyKnowledgeDocData(**_knowledge_row_to_dict(row))
+        for row in knowledge_sample_rows
+    ]
     validator = KnowledgeDocValidator()
     sanitized_docs = [doc for doc in knowledge_docs if not validator.validate(doc)]
     embedded_docs = [doc for doc in knowledge_docs if _knowledge_doc_has_embedding(doc)]
@@ -2417,7 +2924,10 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
     validated_patches = [
         patch
         for patch in patches
-        if (isinstance(patch.validation_result, dict) and patch.validation_result.get("passed") is True)
+        if (
+            isinstance(patch.validation_result, dict)
+            and patch.validation_result.get("passed") is True
+        )
         or patch.status in {"validated", "applied", "promoted", "rolled_back"}
     ]
 
@@ -2431,7 +2941,9 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
         and int((item.comparison or {}).get("total_games") or 0) == 20
     ]
     fallback_free_tournaments = [
-        item for item in tournaments if int((item.comparison or {}).get("candidate_fallback_count") or 0) == 0
+        item
+        for item in tournaments
+        if int((item.comparison or {}).get("candidate_fallback_count") or 0) == 0
     ]
     llm_tournaments = [item for item in tournaments if _tournament_is_llm(item)]
     decided_tournaments = [
@@ -2444,7 +2956,8 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
     separated_tournaments = [
         item
         for item in tournaments
-        if abs(float((item.comparison or {}).get("target_role_avg_score_delta") or 0.0)) > 0.001
+        if abs(float((item.comparison or {}).get("target_role_avg_score_delta") or 0.0))
+        > 0.001
         or abs(
             float((item.comparison or {}).get("candidate_avg_score") or 0.0)
             - float((item.comparison or {}).get("baseline_avg_score") or 0.0)
@@ -2468,7 +2981,10 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
             step_id="B1",
             name="Replay persisted with events and snapshots",
             numerator=sum(
-                1 for game in finished_games if event_counts.get(game.id, 0) > 0 and snapshot_counts.get(game.id, 0) > 0
+                1
+                for game in finished_games
+                if event_counts.get(game.id, 0) > 0
+                and snapshot_counts.get(game.id, 0) > 0
             ),
             denominator=finished_total,
             threshold=1.0,
@@ -2478,7 +2994,9 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
             track="B",
             step_id="B2",
             name="Player scoreboard generated",
-            numerator=sum(1 for payload in review_payloads if payload.get("scoreboard")),
+            numerator=sum(
+                1 for payload in review_payloads if payload.get("scoreboard")
+            ),
             denominator=review_total,
             threshold=0.95,
             evidence="PublishedReview.report_json.scoreboard",
@@ -2506,7 +3024,9 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
             step_id="B5",
             name="BadCase or Highlight detected",
             numerator=sum(
-                1 for payload in review_payloads if payload.get("bad_cases") or payload.get("turning_points")
+                1
+                for payload in review_payloads
+                if payload.get("bad_cases") or payload.get("turning_points")
             ),
             denominator=review_total,
             threshold=0.70,
@@ -2525,7 +3045,9 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
             track="B",
             step_id="B7",
             name="Counterfactual coverage",
-            numerator=sum(1 for payload in review_payloads if payload.get("counterfactuals")),
+            numerator=sum(
+                1 for payload in review_payloads if payload.get("counterfactuals")
+            ),
             denominator=review_total,
             threshold=0.60,
             evidence="counterfactuals section",
@@ -2566,13 +3088,18 @@ def _build_bc_acceptance_audit_from_db(db, *, limit_games: int = 200) -> dict[st
             denominator=decision_total,
             threshold=0.95,
             evidence="AgentDecision.parsed_action.metadata.source == llm / token usage",
-            details={"llm_count": llm_count, "non_llm_count": max(decision_total - llm_count, 0)},
+            details={
+                "llm_count": llm_count,
+                "non_llm_count": max(decision_total - llm_count, 0),
+            },
         ),
         build_acceptance_step_metric(
             track="B",
             step_id="B12",
             name="Leaderboard data available",
-            numerator=1 if review_total > 0 or db.query(LeaderboardEntry).count() > 0 else 0,
+            numerator=(
+                1 if review_total > 0 or db.query(LeaderboardEntry).count() > 0 else 0
+            ),
             denominator=1,
             threshold=1.0,
             evidence="PublishedReview / LeaderboardEntry rows",
@@ -2701,7 +3228,9 @@ def get_runtime_metrics(game_id: str) -> dict | None:
         if game is None:
             return None
         players = db.query(Player).filter(Player.game_id == game_id).all()
-        decisions = db.query(AgentDecision).filter(AgentDecision.game_id == game_id).all()
+        decisions = (
+            db.query(AgentDecision).filter(AgentDecision.game_id == game_id).all()
+        )
 
         player_by_id = {p.id: p for p in players}
         global_bucket = _new_runtime_bucket()
@@ -2744,7 +3273,8 @@ def get_runtime_metrics(game_id: str) -> dict | None:
             "tokens": {
                 "prompt_sum": global_bucket["prompt_tokens_sum"],
                 "completion_sum": global_bucket["completion_tokens_sum"],
-                "total_sum": global_bucket["prompt_tokens_sum"] + global_bucket["completion_tokens_sum"],
+                "total_sum": global_bucket["prompt_tokens_sum"]
+                + global_bucket["completion_tokens_sum"],
             },
             "speech": {
                 "count": global_bucket["speech_char_len"]["count"],
@@ -2795,7 +3325,11 @@ def get_aggregate_metrics(limit_games: int = 200) -> dict[str, Any]:
                 duration_values.append((g.finished_at - g.started_at).total_seconds())
             day_counts.append(int(g.current_day or 0))
 
-        avg_duration = round(sum(duration_values) / len(duration_values), 3) if duration_values else 0.0
+        avg_duration = (
+            round(sum(duration_values) / len(duration_values), 3)
+            if duration_values
+            else 0.0
+        )
         avg_day = round(sum(day_counts) / len(day_counts), 3) if day_counts else 0.0
 
         game_ids = [g.id for g in games]
@@ -2813,53 +3347,93 @@ def get_aggregate_metrics(limit_games: int = 200) -> dict[str, Any]:
                 role_bucket = win_rate_role.setdefault(p.role, {"games": 0, "wins": 0})
                 role_bucket["games"] += 1
                 role_bucket["wins"] += 1 if player_won else 0
-                agent_bucket = win_rate_agent.setdefault(p.agent_type or "unknown", {"games": 0, "wins": 0})
+                agent_bucket = win_rate_agent.setdefault(
+                    p.agent_type or "unknown", {"games": 0, "wins": 0}
+                )
                 agent_bucket["games"] += 1
                 agent_bucket["wins"] += 1 if player_won else 0
             for bucket in win_rate_role.values():
-                bucket["win_rate"] = round(bucket["wins"] / bucket["games"], 4) if bucket["games"] else 0.0
+                bucket["win_rate"] = (
+                    round(bucket["wins"] / bucket["games"], 4)
+                    if bucket["games"]
+                    else 0.0
+                )
             for bucket in win_rate_agent.values():
-                bucket["win_rate"] = round(bucket["wins"] / bucket["games"], 4) if bucket["games"] else 0.0
+                bucket["win_rate"] = (
+                    round(bucket["wins"] / bucket["games"], 4)
+                    if bucket["games"]
+                    else 0.0
+                )
 
         runtime_bucket = _new_runtime_bucket()
         fallback_count = 0
         retrieval_used_count = 0
         if game_ids:
-            decisions = db.query(AgentDecision).filter(AgentDecision.game_id.in_(game_ids)).all()
+            decisions = (
+                db.query(AgentDecision)
+                .filter(AgentDecision.game_id.in_(game_ids))
+                .all()
+            )
             for d in decisions:
                 _accumulate_bucket(runtime_bucket, d)
-                meta = (d.parsed_action or {}).get("metadata") if isinstance(d.parsed_action, dict) else None
+                meta = (
+                    (d.parsed_action or {}).get("metadata")
+                    if isinstance(d.parsed_action, dict)
+                    else None
+                )
                 if isinstance(meta, dict):
                     if meta.get("fallback"):
                         fallback_count += 1
-                    if meta.get("retrieval_used") or (d.parsed_action or {}).get("retrieval_used"):
+                    if meta.get("retrieval_used") or (d.parsed_action or {}).get(
+                        "retrieval_used"
+                    ):
                         retrieval_used_count += 1
         _finalize_bucket(runtime_bucket)
 
         decision_total = runtime_bucket["decision_count"]
-        fallback_ratio = round(fallback_count / decision_total, 4) if decision_total else 0.0
-        retrieval_rate = round(retrieval_used_count / decision_total, 4) if decision_total else 0.0
+        fallback_ratio = (
+            round(fallback_count / decision_total, 4) if decision_total else 0.0
+        )
+        retrieval_rate = (
+            round(retrieval_used_count / decision_total, 4) if decision_total else 0.0
+        )
 
         published_total = db.query(PublishedReview).count()
-        approved = db.query(PublishedReview).filter(PublishedReview.publish_allowed.is_(True)).count()
+        approved = (
+            db.query(PublishedReview)
+            .filter(PublishedReview.publish_allowed.is_(True))
+            .count()
+        )
         review_status_counts: dict[str, int] = {}
         for status_value, count in (
-            db.query(PublishedReview.status, sa_func.count(PublishedReview.id)).group_by(PublishedReview.status).all()
+            db.query(PublishedReview.status, sa_func.count(PublishedReview.id))
+            .group_by(PublishedReview.status)
+            .all()
         ):
             review_status_counts[status_value or "unknown"] = int(count)
-        review_score_values = [float(s) for (s,) in db.query(PublishedReview.score).all() if s is not None]
-        avg_review_score = round(sum(review_score_values) / len(review_score_values), 4) if review_score_values else 0.0
+        review_score_values = [
+            float(s) for (s,) in db.query(PublishedReview.score).all() if s is not None
+        ]
+        avg_review_score = (
+            round(sum(review_score_values) / len(review_score_values), 4)
+            if review_score_values
+            else 0.0
+        )
 
         doc_status_counts: dict[str, int] = {}
         doc_type_counts: dict[str, int] = {}
         for status_value, count in (
-            db.query(StrategyKnowledgeDoc.status, sa_func.count(StrategyKnowledgeDoc.id))
+            db.query(
+                StrategyKnowledgeDoc.status, sa_func.count(StrategyKnowledgeDoc.id)
+            )
             .group_by(StrategyKnowledgeDoc.status)
             .all()
         ):
             doc_status_counts[status_value or "unknown"] = int(count)
         for type_value, count in (
-            db.query(StrategyKnowledgeDoc.doc_type, sa_func.count(StrategyKnowledgeDoc.id))
+            db.query(
+                StrategyKnowledgeDoc.doc_type, sa_func.count(StrategyKnowledgeDoc.id)
+            )
             .group_by(StrategyKnowledgeDoc.doc_type)
             .all()
         ):
@@ -2868,7 +3442,9 @@ def get_aggregate_metrics(limit_games: int = 200) -> dict[str, Any]:
 
         patch_status_counts: dict[str, int] = {}
         for status_value, count in (
-            db.query(StrategyPatch.status, sa_func.count(StrategyPatch.id)).group_by(StrategyPatch.status).all()
+            db.query(StrategyPatch.status, sa_func.count(StrategyPatch.id))
+            .group_by(StrategyPatch.status)
+            .all()
         ):
             patch_status_counts[status_value or "unknown"] = int(count)
         patches_total = db.query(StrategyPatch).count()
@@ -2880,7 +3456,9 @@ def get_aggregate_metrics(limit_games: int = 200) -> dict[str, Any]:
             if isinstance(t.decision, dict) and t.decision.get("accepted") is True
         )
         tournament_rejected = tournaments_total - tournament_accepted
-        acceptance_audit = _build_bc_acceptance_audit_from_db(db, limit_games=limit_games)
+        acceptance_audit = _build_bc_acceptance_audit_from_db(
+            db, limit_games=limit_games
+        )
 
         payload = {
             "games": {
@@ -2905,7 +3483,8 @@ def get_aggregate_metrics(limit_games: int = 200) -> dict[str, Any]:
                 "tokens": {
                     "prompt_sum": runtime_bucket["prompt_tokens_sum"],
                     "completion_sum": runtime_bucket["completion_tokens_sum"],
-                    "total_sum": runtime_bucket["prompt_tokens_sum"] + runtime_bucket["completion_tokens_sum"],
+                    "total_sum": runtime_bucket["prompt_tokens_sum"]
+                    + runtime_bucket["completion_tokens_sum"],
                 },
                 "speech_char_len": runtime_bucket["speech_char_len"],
             },
@@ -2934,7 +3513,9 @@ def get_aggregate_metrics(limit_games: int = 200) -> dict[str, Any]:
         db.close()
 
 
-def _wins_for_player(role: str, alignment_or_winner_guess: str, winner: str | None) -> bool:
+def _wins_for_player(
+    role: str, alignment_or_winner_guess: str, winner: str | None
+) -> bool:
     """Decide whether a single player won given the game winner and their role.
 
     Track-C tournament rows store winner as 'wolf' / 'village' / None; we infer
@@ -2994,7 +3575,11 @@ def get_role_model_leaderboard(
             query = query.filter(Game.finished_at >= since_iso)
         if game_ids:
             query = query.filter(Game.id.in_(game_ids))
-        games = query.order_by(Game.finished_at.desc().nullslast(), Game.created_at.desc()).limit(limit_games).all()
+        games = (
+            query.order_by(Game.finished_at.desc().nullslast(), Game.created_at.desc())
+            .limit(limit_games)
+            .all()
+        )
         winner_by_game = {g.id: g.winner for g in games}
 
         if not games:
@@ -3004,7 +3589,9 @@ def get_role_model_leaderboard(
                 "matrix": {},
             }
 
-        all_players = db.query(Player).filter(Player.game_id.in_([g.id for g in games])).all()
+        all_players = (
+            db.query(Player).filter(Player.game_id.in_([g.id for g in games])).all()
+        )
         # llm_only filter: drop any game that has at least one non-LLM seat.
         if llm_only:
             non_llm_game_ids: set[str] = set()
@@ -3035,7 +3622,9 @@ def get_role_model_leaderboard(
             total_wins = sum(int(b["wins"]) for b in role_buckets.values())
             for _role, bucket in role_buckets.items():
                 games_n = int(bucket["games"])
-                bucket["win_rate"] = round(int(bucket["wins"]) / games_n, 4) if games_n else 0.0
+                bucket["win_rate"] = (
+                    round(int(bucket["wins"]) / games_n, 4) if games_n else 0.0
+                )
             parts = agent_label.split("/", 1)
             agent_type_only = parts[0]
             model_only = parts[1] if len(parts) > 1 else ""
@@ -3046,7 +3635,9 @@ def get_role_model_leaderboard(
                     "model_name": model_only,
                     "games": total_games,
                     "wins": total_wins,
-                    "win_rate": round(total_wins / total_games, 4) if total_games else 0.0,
+                    "win_rate": (
+                        round(total_wins / total_games, 4) if total_games else 0.0
+                    ),
                     "by_role": role_buckets,
                 }
             )
@@ -3100,7 +3691,11 @@ def get_strategy_attribution(
             query = query.filter(Game.finished_at >= since_iso)
         if game_ids:
             query = query.filter(Game.id.in_(game_ids))
-        games = query.order_by(Game.finished_at.desc().nullslast(), Game.created_at.desc()).limit(limit_games).all()
+        games = (
+            query.order_by(Game.finished_at.desc().nullslast(), Game.created_at.desc())
+            .limit(limit_games)
+            .all()
+        )
         if not games:
             return {
                 "sample": {"games": 0},
@@ -3111,8 +3706,12 @@ def get_strategy_attribution(
         game_id_set = {g.id for g in games}
 
         if llm_only:
-            all_players = db.query(Player).filter(Player.game_id.in_(list(game_id_set))).all()
-            non_llm = {p.game_id for p in all_players if (p.agent_type or "").lower() != "llm"}
+            all_players = (
+                db.query(Player).filter(Player.game_id.in_(list(game_id_set))).all()
+            )
+            non_llm = {
+                p.game_id for p in all_players if (p.agent_type or "").lower() != "llm"
+            }
             game_id_set -= non_llm
 
         if not game_id_set:
@@ -3124,7 +3723,9 @@ def get_strategy_attribution(
             }
 
         feedback_rows = (
-            db.query(KnowledgeUsageFeedback).filter(KnowledgeUsageFeedback.game_id.in_(list(game_id_set))).all()
+            db.query(KnowledgeUsageFeedback)
+            .filter(KnowledgeUsageFeedback.game_id.in_(list(game_id_set)))
+            .all()
         )
 
         # Player.role lookup for the by_role_phase histogram (player_role isn't
@@ -3133,7 +3734,11 @@ def get_strategy_attribution(
         if feedback_rows:
             player_ids = {row.player_id for row in feedback_rows if row.player_id}
             if player_ids:
-                for pid, role in db.query(Player.id, Player.role).filter(Player.id.in_(list(player_ids))).all():
+                for pid, role in (
+                    db.query(Player.id, Player.role)
+                    .filter(Player.id.in_(list(player_ids)))
+                    .all()
+                ):
                     player_role_map[pid] = role or "unknown"
 
         usage_by_doc: dict[str, dict[str, Any]] = {}
@@ -3154,13 +3759,19 @@ def get_strategy_attribution(
             elif row.helpful is False:
                 entry["unhelpful"] += 1
             role_key = player_role_map.get(row.player_id, "unknown")
-            phase_key = (row.extra_metadata or {}).get("phase") if isinstance(row.extra_metadata, dict) else "unknown"
+            phase_key = (
+                (row.extra_metadata or {}).get("phase")
+                if isinstance(row.extra_metadata, dict)
+                else "unknown"
+            )
             role_phase_key = f"{role_key}:{phase_key or 'unknown'}"
             by_role_phase[role_phase_key] = by_role_phase.get(role_phase_key, 0) + 1
 
         if usage_by_doc:
             doc_rows = (
-                db.query(StrategyKnowledgeDoc).filter(StrategyKnowledgeDoc.id.in_(list(usage_by_doc.keys()))).all()
+                db.query(StrategyKnowledgeDoc)
+                .filter(StrategyKnowledgeDoc.id.in_(list(usage_by_doc.keys())))
+                .all()
             )
             doc_meta = {d.id: d for d in doc_rows}
         else:
@@ -3180,7 +3791,9 @@ def get_strategy_attribution(
                     "phase": doc_row.phase if doc_row else None,
                     "doc_type": doc_row.doc_type if doc_row else None,
                     "status": doc_row.status if doc_row else None,
-                    "quality_score": float(doc_row.quality_score or 0.0) if doc_row else 0.0,
+                    "quality_score": (
+                        float(doc_row.quality_score or 0.0) if doc_row else 0.0
+                    ),
                     "usage_count": usage,
                     "helpful": helpful,
                     "unhelpful": unhelpful,
@@ -3246,7 +3859,9 @@ def get_decision_trace_coverage(game_ids: list[str] | None = None) -> dict[str, 
             1
             for d in decisions
             if all(
-                getattr(d, f, None) is not None and getattr(d, f, None) != [] and getattr(d, f, None) != ""
+                getattr(d, f, None) is not None
+                and getattr(d, f, None) != []
+                and getattr(d, f, None) != ""
                 for f in _DECISION_TRACE_FIELDS
             )
         )

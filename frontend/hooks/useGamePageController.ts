@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppContext } from "@/context/AppContext";
-import { fetchReplayDownload, fetchRoom, pauseRoom, resumeRoom, startRoom, submitHumanAction } from "@/lib/gameApi";
+import {
+  fetchReplayDownload,
+  fetchRoom,
+  pauseRoom,
+  resumeRoom,
+  startRoom,
+  submitHumanAction,
+} from "@/lib/gameApi";
 import { t } from "@/lib/i18n";
 import { placeholderPlayers } from "@/lib/gameView";
 import { isRevealBlockingChat } from "@/lib/eventFilter";
@@ -21,17 +28,31 @@ export function useGamePageController(roomId: string) {
   const mode = searchParams.get("mode") || "ai";
   const humanSeat = Number(searchParams.get("human_seat") || 1);
   const {
-    language, setLanguage, viewMode, setViewMode, agentType,
-    room, setRoom, gameState, setGameState, isPlaying, setIsPlaying,
-    speed, seed,
+    language,
+    setLanguage,
+    viewMode,
+    setViewMode,
+    agentType,
+    room,
+    setRoom,
+    gameState,
+    setGameState,
+    isPlaying,
+    setIsPlaying,
+    speed,
+    seed,
   } = useAppContext();
 
   const [showWinnerPanel, setShowWinnerPanel] = useState(false);
   const winnerShownRef = useRef(false);
   const winnerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const reviewStatus = useReviewStatus(gameState?.id, { enabled: Boolean(gameState?.winner) });
+  const reviewStatus = useReviewStatus(gameState?.id, {
+    enabled: Boolean(gameState?.winner),
+  });
   const reportReady = reviewStatus.isReady;
-  const reportChecking = reviewStatus.isChecking || (Boolean(gameState?.winner) && reviewStatus.isLoading);
+  const reportChecking =
+    reviewStatus.isChecking ||
+    (Boolean(gameState?.winner) && reviewStatus.isLoading);
 
   // Auto-open result modal when game ends — delay to let end animation finish first
   useEffect(() => {
@@ -60,8 +81,19 @@ export function useGamePageController(roomId: string) {
   }, [gameState?.winner]);
 
   const [ballPos, setBallPos] = useState<{ x: number; y: number } | null>(null);
-  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0, moved: false });
-  const [statusTitle, setStatusTitle] = useState(gameState?.winner ? t("statusLoaded", language) : t("statusReady", language));
+  const dragRef = useRef({
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    origX: 0,
+    origY: 0,
+    moved: false,
+  });
+  const [statusTitle, setStatusTitle] = useState(
+    gameState?.winner
+      ? t("statusLoaded", language)
+      : t("statusReady", language),
+  );
   const [isPaused, setIsPaused] = useState(false);
   const latestGameStateRef = useRef(gameState);
   const autoStartedRef = useRef(false);
@@ -74,10 +106,15 @@ export function useGamePageController(roomId: string) {
   const [completedTick, setCompletedTick] = useState(0);
 
   // ── Phase timeout: 防止某阶段因缺少事件而永久卡住 ──────────────
-  const phaseFirstSeenRef = useRef<{ phase: string; timestamp: number }>({ phase: "", timestamp: 0 });
+  const phaseFirstSeenRef = useRef<{ phase: string; timestamp: number }>({
+    phase: "",
+    timestamp: 0,
+  });
   const [phaseTimeoutTick, setPhaseTimeoutTick] = useState(0);
   const PHASE_TIMEOUT_MS = 15000; // 15s 无进展则强制放行
-  const phaseTimeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const phaseTimeoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   // 记录触发超时时的阻塞阶段，防止竞态：超时回调可能在阶段已变化后执行
   const stuckPhaseRef = useRef<string>("");
 
@@ -107,12 +144,27 @@ export function useGamePageController(roomId: string) {
   }, [gameState?.events, completedTick]);
 
   const sessionKey = roomId;
-  const phase = usePhaseTransition(sessionKey, gameState, Boolean(gameState?.winner));
-  const scroll = useAutoScroll(gameState?.events?.length);
+  const phase = usePhaseTransition(
+    sessionKey,
+    gameState,
+    Boolean(gameState?.winner),
+  );
+  const scroll = useAutoScroll(gameState?.events);
   // 使用 displayGameState：眨眼期间冻结，动画结束后对齐最新
   const effectiveState = phase.displayGameState;
-  const derived = useGameDerivedState(effectiveState, humanSeat, isHumanMode, completedIdsRef.current, completedTick);
-  const voteDisplay = useVoteDisplay(gameState, completedIdsRef.current, completedTick, phase.isTransitioning);
+  const derived = useGameDerivedState(
+    effectiveState,
+    humanSeat,
+    isHumanMode,
+    completedIdsRef.current,
+    completedTick,
+  );
+  const voteDisplay = useVoteDisplay(
+    gameState,
+    completedIdsRef.current,
+    completedTick,
+    phase.isTransitioning,
+  );
 
   const roomStream = useRoomStream({
     roomId,
@@ -167,7 +219,13 @@ export function useGamePageController(roomId: string) {
   }, [roomId]);
 
   useEffect(() => {
-    if (mode === "human" && !isPlaying && !gameState?.pending_input && !gameState?.winner && !autoStartedRef.current) {
+    if (
+      mode === "human" &&
+      !isPlaying &&
+      !gameState?.pending_input &&
+      !gameState?.winner &&
+      !autoStartedRef.current
+    ) {
       autoStartedRef.current = true;
       startHumanGame();
     }
@@ -187,33 +245,35 @@ export function useGamePageController(roomId: string) {
   function retryRoom() {
     setFetchError(null);
     const controller = new AbortController();
-    fetchRoom(roomId).then((nextRoom) => {
-      if (controller.signal.aborted) return;
-      if (nextRoom) {
-        setRoom(nextRoom);
-        setFetchError(null);
-        if (!latestGameStateRef.current && nextRoom.latest_snapshot) {
-          setGameState(nextRoom.latest_snapshot);
-          if (mode === "human") autoStartedRef.current = true;
-          if (nextRoom.latest_snapshot.winner) {
-            setIsPlaying(false);
-            setStatusTitle(t("statusLoaded", language));
-          } else if (nextRoom.latest_snapshot.pending_input) {
-            setIsPlaying(true);
-            setStatusTitle(t("statusStreaming", language));
+    fetchRoom(roomId)
+      .then((nextRoom) => {
+        if (controller.signal.aborted) return;
+        if (nextRoom) {
+          setRoom(nextRoom);
+          setFetchError(null);
+          if (!latestGameStateRef.current && nextRoom.latest_snapshot) {
+            setGameState(nextRoom.latest_snapshot);
+            if (mode === "human") autoStartedRef.current = true;
+            if (nextRoom.latest_snapshot.winner) {
+              setIsPlaying(false);
+              setStatusTitle(t("statusLoaded", language));
+            } else if (nextRoom.latest_snapshot.pending_input) {
+              setIsPlaying(true);
+              setStatusTitle(t("statusStreaming", language));
+            }
           }
+        } else {
+          setFetchError(t("statusErrorDetail", language));
+          setIsPlaying(false);
+          setStatusTitle(t("statusError", language));
         }
-      } else {
-        setFetchError(t("statusErrorDetail", language));
+      })
+      .catch((e) => {
+        if (controller.signal.aborted) return;
+        setFetchError(String(e?.message || e || "Failed to load room"));
         setIsPlaying(false);
         setStatusTitle(t("statusError", language));
-      }
-    }).catch((e) => {
-      if (controller.signal.aborted) return;
-      setFetchError(String(e?.message || e || "Failed to load room"));
-      setIsPlaying(false);
-      setStatusTitle(t("statusError", language));
-    });
+      });
   }
 
   useEffect(() => {
@@ -294,7 +354,11 @@ export function useGamePageController(roomId: string) {
     }
   }
 
-  async function handleHumanAction(data: { target_id?: string | null; speech?: string | null; save?: boolean }) {
+  async function handleHumanAction(data: {
+    target_id?: string | null;
+    speech?: string | null;
+    save?: boolean;
+  }) {
     setFetchError(null);
     try {
       setIsPlaying(true);
@@ -315,8 +379,13 @@ export function useGamePageController(roomId: string) {
     return placeholderPlayers(from, to, language, humanSeat);
   }
 
-  function downloadGameRecord(payload: Record<string, unknown>, fileToken: string) {
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  function downloadGameRecord(
+    payload: Record<string, unknown>,
+    fileToken: string,
+  ) {
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     const suffix = new Date().toISOString().replace(/[:.]/g, "-");
@@ -328,10 +397,15 @@ export function useGamePageController(roomId: string) {
     URL.revokeObjectURL(url);
   }
 
-  function buildSnapshotExportPayload(state: NonNullable<typeof latestGameStateRef.current>) {
+  function buildSnapshotExportPayload(
+    state: NonNullable<typeof latestGameStateRef.current>,
+  ) {
     return {
       exported_at: new Date().toISOString(),
-      export_scope: viewMode === ViewMode.MODERATOR ? "global_view_snapshot" : "audience_view_snapshot",
+      export_scope:
+        viewMode === ViewMode.MODERATOR
+          ? "global_view_snapshot"
+          : "audience_view_snapshot",
       export_source: "frontend_snapshot",
       game: {
         id: state.id,
@@ -340,7 +414,9 @@ export function useGamePageController(roomId: string) {
         day: state.day,
         phase: state.phase,
         winner: state.winner ?? null,
-        alive_count: state.alive_count ?? state.players.filter((player) => player.alive).length,
+        alive_count:
+          state.alive_count ??
+          state.players.filter((player) => player.alive).length,
       },
       players: state.players,
       events: state.events,
@@ -361,11 +437,17 @@ export function useGamePageController(roomId: string) {
 
     if (state.id) {
       try {
-        const replay = await fetchReplayDownload(state.id, viewMode === ViewMode.MODERATOR);
+        const replay = await fetchReplayDownload(
+          state.id,
+          viewMode === ViewMode.MODERATOR,
+        );
         downloadGameRecord(
           {
             exported_at: new Date().toISOString(),
-            export_scope: viewMode === ViewMode.MODERATOR ? "persisted_replay_private" : "persisted_replay_public",
+            export_scope:
+              viewMode === ViewMode.MODERATOR
+                ? "persisted_replay_private"
+                : "persisted_replay_public",
             export_source: "backend_replay",
             replay,
           },
@@ -380,6 +462,28 @@ export function useGamePageController(roomId: string) {
     downloadGameRecord(buildSnapshotExportPayload(state), state.id || roomId);
   }
 
+  async function exportThoughtProcess() {
+    const gameId = latestGameStateRef.current?.id || roomId;
+    if (!gameId) return;
+    try {
+      const resp = await fetch(
+        `/api/games/${gameId}/thought-process?download=true`,
+      );
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `thought-process-${gameId}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // 静默失败
+    }
+  }
+
   // ── Phase timeout: force-complete stuck CHAT_MESSAGE events ──────
   // 当 phaseTimeoutTick 变化时，把超时时刻的阻塞阶段未完成 CHAT_MESSAGE 强制完成
   useEffect(() => {
@@ -390,7 +494,11 @@ export function useGamePageController(roomId: string) {
     if (!targetPhase) return;
     let changed = false;
     for (const e of events) {
-      if (e.type === "CHAT_MESSAGE" && e.phase === targetPhase && !completedIdsRef.current.has(e.id)) {
+      if (
+        e.type === "CHAT_MESSAGE" &&
+        e.phase === targetPhase &&
+        !completedIdsRef.current.has(e.id)
+      ) {
         completedIdsRef.current.add(e.id);
         changed = true;
       }
@@ -432,7 +540,13 @@ export function useGamePageController(roomId: string) {
     }
 
     return blockingPhase || gameState?.phase;
-  }, [gameState?.events, gameState?.phase, gameState?.winner, completedTick, phaseTimeoutTick]);
+  }, [
+    gameState?.events,
+    gameState?.phase,
+    gameState?.winner,
+    completedTick,
+    phaseTimeoutTick,
+  ]);
 
   // ── Phase timeout timer management (side effect, NOT in useMemo) ──
   useEffect(() => {
@@ -444,14 +558,16 @@ export function useGamePageController(roomId: string) {
       tracked.phase = currentBlockingPhase;
       tracked.timestamp = now;
       stuckPhaseRef.current = currentBlockingPhase;
-      if (phaseTimeoutTimerRef.current) clearTimeout(phaseTimeoutTimerRef.current);
+      if (phaseTimeoutTimerRef.current)
+        clearTimeout(phaseTimeoutTimerRef.current);
       phaseTimeoutTimerRef.current = setTimeout(() => {
         setPhaseTimeoutTick((n) => n + 1);
       }, PHASE_TIMEOUT_MS);
     }
 
     return () => {
-      if (phaseTimeoutTimerRef.current) clearTimeout(phaseTimeoutTimerRef.current);
+      if (phaseTimeoutTimerRef.current)
+        clearTimeout(phaseTimeoutTimerRef.current);
     };
   }, [displayPhase]);
 
@@ -484,6 +600,7 @@ export function useGamePageController(roomId: string) {
     resumeGame,
     isPaused,
     exportGameRecord,
+    exportThoughtProcess,
     placeholder,
     fetchError,
     retryRoom,

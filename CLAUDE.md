@@ -17,6 +17,7 @@
 - 当团队规模 >= 2 时本段失效，恢复 `skills/10-git-workflow.md` 和 `skills/70-ai-collaboration.md` 的多人 PR 规则。
 
 > 本段显式覆盖：
+>
 > - `skills/10-git-workflow.md` §一 “main 受保护、禁止直推”
 > - `skills/10-git-workflow.md` §三 “至少 1 人 approve” + 重灾区 “2 人 approve”
 > - `skills/10-git-workflow.md` §七 “禁止 AI 直接 git push 到 main”
@@ -226,7 +227,7 @@ talk, vote, attack, divine, guard, witch_save, witch_poison, shoot, boom, skip
 
 ```bash
 make dev
-# http://localhost:8000/docs
+# http://localhost:8001/docs
 ```
 
 前端默认：

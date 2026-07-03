@@ -15,9 +15,13 @@ class RoomCreateRequest:
     agent_type: str = "llm"
     human_seat: int | None = None
     rule_pack_id: str = "wolfcha-default"
-    custom_roles: dict | None = (
-        None  # {"exclude": ["WhiteWolfKing"], "include": ["Idiot"]}
-    )
+    custom_roles: dict | None = None
+    has_badge: bool = True
+    share_persona: bool = True
+    enable_strategy: bool = True
+    persona_names: list[str] | None = None
+    has_last_words: bool = True
+    parallel_speech: bool = True
 
 
 @dataclass
@@ -30,6 +34,12 @@ class RoomRecord:
     human_seat: int | None = None
     rule_pack_id: str = "wolfcha-default"
     custom_roles: dict | None = None
+    has_badge: bool = True
+    share_persona: bool = True
+    enable_strategy: bool = True
+    persona_names: list[str] | None = None
+    has_last_words: bool = True
+    parallel_speech: bool = True
     status: str = "idle"
     created_at: float = field(default_factory=time)
     updated_at: float = field(default_factory=time)
@@ -46,6 +56,13 @@ class RoomRecord:
         agent_type: str,
         human_seat: int | None = None,
         rule_pack_id: str = "wolfcha-default",
+        custom_roles: dict | None = None,
+        has_badge: bool = True,
+        share_persona: bool = True,
+        enable_strategy: bool = True,
+        persona_names: list[str] | None = None,
+        has_last_words: bool = True,
+        parallel_speech: bool = True,
     ) -> RoomRecord:
         return cls(
             id=str(uuid4()),
@@ -55,6 +72,13 @@ class RoomRecord:
             agent_type=agent_type,
             human_seat=human_seat,
             rule_pack_id=rule_pack_id,
+            custom_roles=custom_roles,
+            has_badge=has_badge,
+            share_persona=share_persona,
+            enable_strategy=enable_strategy,
+            persona_names=persona_names,
+            has_last_words=has_last_words,
+            parallel_speech=parallel_speech,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -66,6 +90,13 @@ class RoomRecord:
             "agent_type": self.agent_type,
             "human_seat": self.human_seat,
             "rule_pack_id": self.rule_pack_id,
+            "custom_roles": self.custom_roles,
+            "has_badge": self.has_badge,
+            "share_persona": self.share_persona,
+            "enable_strategy": self.enable_strategy,
+            "persona_names": self.persona_names,
+            "has_last_words": self.has_last_words,
+            "parallel_speech": self.parallel_speech,
             "status": self.status,
             "created_at": self.created_at,
             "updated_at": self.updated_at,

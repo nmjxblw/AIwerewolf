@@ -57,6 +57,10 @@ class LLMAgent(Agent):
         speech_temperature: float = 1.1,
         character: Character | None = None,
         strategy_bias: dict[str, list[str]] | None = None,
+        enable_strategy: bool = True,
+        has_badge: bool = True,
+        has_last_words: bool = True,
+        role_roster: list[str] | None = None,
     ):
         self.player_id = player_id
         self.view: PlayerView | None = None
@@ -65,6 +69,10 @@ class LLMAgent(Agent):
         self.temperature = temperature
         self.speech_temperature = speech_temperature
         self.provider = provider
+        self.enable_strategy = enable_strategy
+        self.has_badge = has_badge
+        self.has_last_words = has_last_words
+        self.role_roster = role_roster or []
         # api_key/base_url let factory route each player to a specific pool
         # entry (primary vs course-resource fallback) without polluting the
         # process env. Pass through to create_client only when present so
@@ -85,7 +93,9 @@ class LLMAgent(Agent):
         self.client = create_client(provider=self.provider, **client_kwargs)
         self.fallback = HeuristicAgent(player_id, seed=seed, character=character)
         self.character = character
-        self.strategy_bias = {key: list(value) for key, value in (strategy_bias or {}).items() if value}
+        self.strategy_bias = {
+            key: list(value) for key, value in (strategy_bias or {}).items() if value
+        }
         self.winner: str | None = None
         self.last_error: str | None = None
         self.recent_openings: list[str] = []
@@ -109,27 +119,45 @@ class LLMAgent(Agent):
         # Update belief state with new information
         if self.belief_state is not None:
             self.belief_state.update(view)
-        try:
-            from backend.db.persist import retrieve_strategy_knowledge
-            from backend.eval.evolution import RetrievedStrategyLesson
-            from backend.eval.evolution import StrategyRetrievalQuery
+        if self.enable_strategy:
+            try:
+                from backend.db.persist import retrieve_strategy_knowledge
+                from backend.eval.evolution import RetrievedStrategyLesson
+                from backend.eval.evolution import StrategyRetrievalQuery
 
-            rows = retrieve_strategy_knowledge(
-                StrategyRetrievalQuery(
-                    role=self.role.value,
-                    phase=view.phase,
-                    observation_summary=self._retrieval_observation_summary(view, request),
-                    situation_tags=[request, view.phase],
-                    persona_mbti=self.character.persona.mbti if self.character else None,
-                    persona_style=self.character.persona.style_label if self.character else None,
-                    top_k=3,
+                rows = retrieve_strategy_knowledge(
+                    StrategyRetrievalQuery(
+                        role=self.role.value,
+                        phase=view.phase,
+                        observation_summary=self._retrieval_observation_summary(
+                            view, request
+                        ),
+                        situation_tags=[request, view.phase],
+                        persona_mbti=(
+                            self.character.persona.mbti if self.character else None
+                        ),
+                        persona_style=(
+                            self.character.persona.style_label
+                            if self.character
+                            else None
+                        ),
+                        top_k=3,
+                    )
                 )
-            )
-            self.current_retrieval = [RetrievedStrategyLesson(**row) for row in rows]
-        except Exception:
-            strict = os.getenv("STRATEGY_RETRIEVAL_STRICT", "").strip().lower() in {"1", "true", "yes", "on"}
-            if strict:
-                raise
+                self.current_retrieval = [
+                    RetrievedStrategyLesson(**row) for row in rows
+                ]
+            except Exception:
+                strict = os.getenv("STRATEGY_RETRIEVAL_STRICT", "").strip().lower() in {
+                    "1",
+                    "true",
+                    "yes",
+                    "on",
+                }
+                if strict:
+                    raise
+                self.current_retrieval = []
+        else:
             self.current_retrieval = []
 
     def day_start(self) -> None:
@@ -141,7 +169,9 @@ class LLMAgent(Agent):
         today_chat_count = sum(
             1
             for e in view.public_events
-            if e.get("day") == view.day and e.get("type") == "CHAT_MESSAGE" and e.get("phase") == view.phase
+            if e.get("day") == view.day
+            and e.get("type") == "CHAT_MESSAGE"
+            and e.get("phase") == view.phase
         )
         is_first_speaker = today_chat_count == 0
         is_last_words = view.phase == "DAY_LAST_WORDS"
@@ -168,7 +198,9 @@ class LLMAgent(Agent):
         focus_angle = self._build_perspective_hints_xml()
 
         # --- Table-language examples ---
-        dialogue_examples = self._build_dialogue_examples(is_first_speaker, is_last_words)
+        dialogue_examples = self._build_dialogue_examples(
+            is_first_speaker, is_last_words
+        )
 
         # --- Style guardrails ---
         style_guardrails = self._build_style_guardrails()
@@ -188,7 +220,9 @@ class LLMAgent(Agent):
             user_prompt_parts.append(personality_block)
 
         transcript_text = (
-            "\n".join(today_transcript) if isinstance(today_transcript, list) else (today_transcript or "")
+            "\n".join(today_transcript)
+            if isinstance(today_transcript, list)
+            else (today_transcript or "")
         )
         if transcript_text:
             user_prompt_parts.append("【本日讨论记录】\n" + transcript_text)
@@ -250,7 +284,9 @@ class LLMAgent(Agent):
             meta["retrieved_knowledge_ids"] = []
             meta["retrieval_used"] = False
             return
-        meta["retrieved_knowledge_ids"] = [item.doc_id for item in self.current_retrieval]
+        meta["retrieved_knowledge_ids"] = [
+            item.doc_id for item in self.current_retrieval
+        ]
         meta["retrieval_query_summary"] = {
             "role": self.role.value,
             "phase": self._view().phase,
@@ -296,7 +332,9 @@ class LLMAgent(Agent):
             "boom": ("skill_policy", "risk_rules"),
             "transfer_badge": ("speech_policy", "vote_policy", "risk_rules"),
         }
-        sections = action_sections.get(action, ("speech_policy", "vote_policy", "skill_policy", "risk_rules"))
+        sections = action_sections.get(
+            action, ("speech_policy", "vote_policy", "skill_policy", "risk_rules")
+        )
         lines = [
             "【本局强制执行的策略规则 — 高优先级,必须严格遵守,不得擅自偏离】",
             "下列规则由本轮策略版本指定,优先级高于你的通用策略直觉。即使你认为某条规则不是最优,你也必须按这些规则的字面意思行动,不要二次判断、不要绕过。这是为了让本轮 A/B 锦标赛能精确归因到策略差异。",
@@ -334,14 +372,24 @@ class LLMAgent(Agent):
             parts.append(
                 "public:"
                 + " ".join(
-                    str(payload.get(key) or "") for key in ("message", "speech", "actor_name", "target_name", "reason")
+                    str(payload.get(key) or "")
+                    for key in (
+                        "message",
+                        "speech",
+                        "actor_name",
+                        "target_name",
+                        "reason",
+                    )
                 )
             )
         for event in private_tail:
             payload = event.get("payload") or {}
             parts.append(
                 "private:"
-                + " ".join(str(payload.get(key) or "") for key in ("kind", "message", "target_name", "action_type"))
+                + " ".join(
+                    str(payload.get(key) or "")
+                    for key in ("kind", "message", "target_name", "action_type")
+                )
             )
         return "\n".join(item for item in parts if item.strip())
 
@@ -363,16 +411,20 @@ class LLMAgent(Agent):
 
         # Part 2: Task section (varies by phase)
         if is_last_words:
-            task_line = "你已经出局，现在发表遗言。只能引用自己真实可见的信息和公开事实。"
-        elif str(phase) == "DAY_SHERIFF_CLOSING":
+            task_line = (
+                "你已经出局，现在发表遗言。只能引用自己真实可见的信息和公开事实。"
+            )
+        elif self.has_badge and str(phase) == "DAY_SHERIFF_CLOSING":
             task_line = (
                 "现在是警长归票总结阶段。你要用警长身份收束讨论："
                 "先用公开事实概括关键分歧，再明确给出今天建议集中投票的对象，"
                 "并给出一个备选焦点。主归票对象必须是当前存活、可被投票的玩家，"
                 "用 @N号:名字 点名；不要写成主持人总结，也不要只泛泛说继续观察。"
             )
-        elif "BADGE" in str(phase):
-            task_line = "现在是警徽相关发言阶段。围绕你的可见信息、角色边界和当前判断表达。"
+        elif self.has_badge and "BADGE" in str(phase):
+            task_line = (
+                "现在是警徽相关发言阶段。围绕你的可见信息、角色边界和当前判断表达。"
+            )
         elif str(phase) == "DAY_PK_SPEECH":
             task_line = "现在是PK发言。场上已经缩到少数焦点位。回应与你相关的公开质疑，保持事实和推断分离。"
         else:
@@ -401,7 +453,9 @@ class LLMAgent(Agent):
             "不需要总结全场、不需要逐一点评每个玩家。\n"
             "不需要每次都说「我是X号玩家」开头。\n"
             "至少点名 1 位存活玩家，并说明你提到他的公开依据。\n"
-            "尽量挂住 1 条真实桌面事实：某人的一句发言、一次投票、一次死亡信息、一次警徽动作。\n"
+            "尽量挂住 1 条真实桌面事实：某人的一句发言、一次投票、一次死亡信息"
+            + ("、一次警徽动作" if self.has_badge else "")
+            + "。\n"
             "可以分成 2-4 条消息气泡，每条 1-2 句完整的思考；首日信息少时可以明确说明信息边界。\n"
             "如果你是第一个发言，基于当前已经公开的信息表达你的初始观察。\n"
             "允许保留判断，但要说明保留判断的事实原因。\n"
@@ -411,8 +465,12 @@ class LLMAgent(Agent):
             "1. 分析角色声称时，关注逻辑一致性而非措辞规范：\n"
             "   - 多人声称同一角色 → 对比查人方向、发言逻辑、是否与已知信息矛盾\n"
             "   - 遗言中的身份声称 → 纳入可见信息参考\n"
-            "   - 警长竞选时的跳身份 → 要分析动机（是真跳还是狼人假跳？）\n"
-            "2. 引用具体信息：\n"
+            + (
+                "   - 警长竞选时的跳身份 → 要分析动机（是真跳还是狼人假跳？）\n"
+                if self.has_badge
+                else ""
+            )
+            + "2. 引用具体信息：\n"
             "   - 尽量引用某人的原话（用引号）来支持你的判断\n"
             "   - 不能只说“X可疑”，要说“X说了什么什么，这不对因为……”\n"
             "3. 关注逻辑而非措辞：\n"
@@ -475,7 +533,9 @@ class LLMAgent(Agent):
         lines.append(f"压力下的反应：{p.pressure_style or '冷静回应'}")
         lines.append(f"推理深度：{logic_map.get(m.logic_depth, '中等')}")
         lines.append(f"态度：{courage_map.get(m.courage, '看情况表态')}")
-        lines.append(f"对他人的信任度：{suspicion_map.get(m.suspicion_threshold, '中等')}")
+        lines.append(
+            f"对他人的信任度：{suspicion_map.get(m.suspicion_threshold, '中等')}"
+        )
         lines.append(f"桌面风格：{table_map.get(m.table_presence, '随和')}")
         if p.mistake_pattern:
             lines.append(f"你的一个弱点：{p.mistake_pattern}")
@@ -532,7 +592,9 @@ class LLMAgent(Agent):
 
         # Alive players list
         alive_players = [p for p in view.players if p["alive"]]
-        alive_lines = [f"  {p.get('seat', '?')}号 {p.get('name', '?')}" for p in alive_players]
+        alive_lines = [
+            f"  {p.get('seat', '?')}号 {p.get('name', '?')}" for p in alive_players
+        ]
         alive_list = "\n".join(alive_lines)
 
         # Dead players list
@@ -561,14 +623,63 @@ class LLMAgent(Agent):
         dead_info = "\n".join(dead_lines) if dead_lines else "无"
 
         # Sheriff
-        sheriff_seat = None
-        for p in view.players:
-            if p.get("badge") or p.get("is_sheriff"):
-                sheriff_seat = p.get("seat")
-                break
-        sheriff_info = f"{sheriff_seat}号" if sheriff_seat else "无"
+        sheriff_info = "无"
+        if self.has_badge:
+            for p in view.players:
+                if p.get("badge") or p.get("is_sheriff"):
+                    sheriff_seat = p.get("seat")
+                    sheriff_info = f"{sheriff_seat}号"
+                    break
 
         # Rules section
+        # 本局角色清单（告诉 LLM 哪些角色存在/不存在，避免胡说）
+        role_zh: dict[str, str] = {
+            "Werewolf": "狼人",
+            "WhiteWolfKing": "白狼王",
+            "Seer": "预言家",
+            "Witch": "女巫",
+            "Hunter": "猎人",
+            "Guard": "守卫",
+            "Idiot": "白痴",
+            "Villager": "村民",
+        }
+        all_possible = [
+            "Werewolf",
+            "WhiteWolfKing",
+            "Seer",
+            "Witch",
+            "Hunter",
+            "Guard",
+            "Idiot",
+        ]
+        present_roles = [role_zh.get(r, r) for r in self.role_roster if r != "Villager"]
+        absent_roles = [
+            role_zh.get(r, r) for r in all_possible if r not in self.role_roster
+        ]
+        role_info = (
+            "【本局职业配置——严禁编造不存在的职业】\n"
+            + (
+                f"本局存在的职业：{'、'.join(present_roles)}。\n"
+                if present_roles
+                else ""
+            )
+            + (
+                f"本局不存在的职业：{'、'.join(absent_roles)}。严禁提及这些职业的任何能力或猜测。\n"
+                if absent_roles
+                else ""
+            )
+            + "只讨论本局实际存在的职业，不要编造不存在的角色信息。\n"
+            + (
+                "本局有警长竞选和警徽传递机制。\n"
+                if self.has_badge
+                else "本局无警长竞选，没有警徽机制，不要提警长、警徽、归票等概念。\n"
+            )
+            + (
+                "本局被投票放逐的玩家可以发表遗言。\n"
+                if self.has_last_words
+                else "本局无遗言环节，被投票放逐的玩家不会发言。\n"
+            )
+        )
         rules = (
             "【规则提醒】\n"
             "- 阶段顺序：夜晚（狼人刀人）→ 天亮公布死亡 → 自由发言 → 投票。\n"
@@ -579,7 +690,11 @@ class LLMAgent(Agent):
             "- 第一夜（第0夜→第1天）：狼人刀人时没有任何信息（不知道谁是预言家/女巫/守卫），刀口是随机的。预言家第一夜查验也是盲查。所有人第一天白天开始时信息量极少，怀疑应该比较弱。\n"
             "- 第二夜起：狼人可以根据白天发言选择刀口；预言家可以根据白天发言选择查验目标；女巫可以根据白天信息决定用药。\n"
             "- 白天发言阶段：你只能看到公开的发言和投票结果，看不到其他人的角色和夜间行动。\n"
-            "- 遗言：被投票放逐的玩家可以发表遗言，被狼人杀死的玩家通常不能遗言。"
+            + (
+                "- 遗言：被投票放逐的玩家可以发表遗言，被狼人杀死的玩家通常不能遗言。\n"
+                if self.has_last_words
+                else ""
+            )
         )
 
         # History: past transcripts (simplified from events)
@@ -592,12 +707,16 @@ class LLMAgent(Agent):
                 payload = e.get("payload", {}) or {}
                 speech = (payload.get("speech") or "")[:80]
                 if speech:
-                    history_lines.append(f"  第{eday}天 {payload.get('actor_name', '?')}：{speech}")
+                    history_lines.append(
+                        f"  第{eday}天 {payload.get('actor_name', '?')}：{speech}"
+                    )
         for e in view.public_events:
             eday = e.get("day", 0)
             if eday < day and e.get("type") == "PLAYER_DIED":
                 payload = e.get("payload", {}) or {}
-                history_lines.append(f"  第{eday}天 {payload.get('player_name', '?')} 出局")
+                history_lines.append(
+                    f"  第{eday}天 {payload.get('player_name', '?')} 出局"
+                )
 
         # Vote history
         vote_lines = ["【历史投票】"]
@@ -614,7 +733,7 @@ class LLMAgent(Agent):
             vote_lines.append(f"  第{vday}天投票: {'; '.join(votes[-10:])}")
 
         # Role-specific private info
-        role_info = self._build_role_private_info()
+        private_role_info = self._build_role_private_info()
 
         # Assemble context
         context = (
@@ -624,11 +743,11 @@ class LLMAgent(Agent):
             f"存活玩家:\n{alive_list}\n"
             f"\n"
             f"【出局玩家】\n{dead_info}\n"
-            f"\n"
+            f"\n{roster_info}\n"
             f"警长: {sheriff_info}\n"
         )
-        if role_info:
-            context += f"\n{role_info}\n"
+        if private_role_info:
+            context += f"\n{private_role_info}\n"
         context += f"\n{rules}\n"
 
         if len(history_lines) > 1:
@@ -675,9 +794,13 @@ class LLMAgent(Agent):
             lines.append(f"毒药: {'已使用' if poison_used else '可用'}")
             for e in private:
                 if e.get("type") == "WITCH_SAVE":
-                    lines.append(f"你用解药救了 {e.get('payload', {}).get('target_name', '?')}")
+                    lines.append(
+                        f"你用解药救了 {e.get('payload', {}).get('target_name', '?')}"
+                    )
                 if e.get("type") == "WITCH_POISON":
-                    lines.append(f"你用毒药毒了 {e.get('payload', {}).get('target_name', '?')}")
+                    lines.append(
+                        f"你用毒药毒了 {e.get('payload', {}).get('target_name', '?')}"
+                    )
             return "\n".join(lines)
         # Wolf night discussion: summarize teammate votes and final target
         if self.role.value in ("werewolf", "white_wolf_king"):
@@ -736,7 +859,9 @@ class LLMAgent(Agent):
             if m.courage == "bold"
             else ("保守型，喜欢观察" if m.courage == "cautious" else "平衡型")
         )
-        voice_rules = ", ".join(p.voice_rules[:3]) if p.voice_rules else p.vocabulary_style
+        voice_rules = (
+            ", ".join(p.voice_rules[:3]) if p.voice_rules else p.vocabulary_style
+        )
         section = f"【角色设定】\n说话习惯: {voice_rules}\n风格: {risk_label}"
         if p.basic_info:
             section += f"\n背景: {p.basic_info}"
@@ -747,7 +872,11 @@ class LLMAgent(Agent):
         view = self._view()
         my_speeches = []
         for e in view.public_events:
-            if e.get("day") == view.day and e.get("type") == "CHAT_MESSAGE" and e.get("actor_id") == self.player_id:
+            if (
+                e.get("day") == view.day
+                and e.get("type") == "CHAT_MESSAGE"
+                and e.get("actor_id") == self.player_id
+            ):
                 speech = (e.get("payload", {}).get("speech") or "").strip()
                 if speech:
                     my_speeches.append(speech)
@@ -761,7 +890,11 @@ class LLMAgent(Agent):
         if is_last:
             today_speakers = set()
             for e in view.public_events:
-                if e.get("day") == view.day and e.get("type") == "CHAT_MESSAGE" and e.get("phase") == view.phase:
+                if (
+                    e.get("day") == view.day
+                    and e.get("type") == "CHAT_MESSAGE"
+                    and e.get("phase") == view.phase
+                ):
                     today_speakers.add(e.get("actor_id", ""))
             total = len(today_speakers) + 1
             return (
@@ -774,7 +907,11 @@ class LLMAgent(Agent):
         last_speaker = None
         last_speech = ""
         for e in view.public_events:
-            if e.get("day") == view.day and e.get("type") == "CHAT_MESSAGE" and e.get("phase") == view.phase:
+            if (
+                e.get("day") == view.day
+                and e.get("type") == "CHAT_MESSAGE"
+                and e.get("phase") == view.phase
+            ):
                 actor_id = e.get("actor_id", "")
                 p = self._player_by_id(actor_id)
                 if p:
@@ -907,18 +1044,31 @@ class LLMAgent(Agent):
 
         if style in {"aggressive", "commander", "ranger", "tactical", "interrogator"}:
             rules.append("你可以更强势，但强势要落在具体对象和理由上，不要空喊。")
-        if style in {"analytical", "matrix", "precise", "meticulous", "strategist", "theorist"}:
+        if style in {
+            "analytical",
+            "matrix",
+            "precise",
+            "meticulous",
+            "strategist",
+            "theorist",
+        }:
             rules.append("你说话要更像在对账：少抒情，多点‘因为/所以/如果’。")
         if style in {"warm", "harmonizer", "mediator", "caretaker", "rallier"}:
             rules.append("你的语气可以柔和，但最后还是要给出一个方向，不要只有安抚。")
         if style in {"poetic", "lyrical", "sensitive"}:
-            rules.append("你可以带一点意象或情绪色彩，但核心判断必须清楚，别把发言写成散文。")
+            rules.append(
+                "你可以带一点意象或情绪色彩，但核心判断必须清楚，别把发言写成散文。"
+            )
         if style in {"playful", "provocative", "tricky", "cosmopolitan", "curious"}:
             rules.append("可以带一点调侃或小钩子，但不要为了有趣牺牲清晰度。")
         if style in {"veteran", "observant", "still_water", "gentle", "observer"}:
             rules.append("你不需要说太多，但短发言里要留一个明确观察点。")
 
-        if "minimal" in voice or p.speech_length_habit.startswith("极短") or p.speech_length_habit == "短":
+        if (
+            "minimal" in voice
+            or p.speech_length_habit.startswith("极短")
+            or p.speech_length_habit == "短"
+        ):
             rules.append("控制在 2-3 条短气泡内，不要突然变成长篇大论。")
         if "structured" in voice or "precise" in voice or "formal" in voice:
             rules.append("尽量使用先判断后补一句依据的结构。")
@@ -939,7 +1089,9 @@ class LLMAgent(Agent):
             return ""
         return (
             "【避免重复】\n"
-            "不要再用你最近几轮这些开头方式：\n" + "\n".join(f"- {item}" for item in samples) + "\n这轮请换一个切入口。"
+            "不要再用你最近几轮这些开头方式：\n"
+            + "\n".join(f"- {item}" for item in samples)
+            + "\n这轮请换一个切入口。"
         )
 
     def _build_stance_block(self) -> str:
@@ -950,10 +1102,16 @@ class LLMAgent(Agent):
                 return ""
             from backend.agents.humanization import build_stance_summary
 
-            summary = build_stance_summary(fallback.public_stance, self.player_id, self._view())
+            summary = build_stance_summary(
+                fallback.public_stance, self.player_id, self._view()
+            )
             if not summary or summary == "（暂无明确立场）":
                 return ""
-            return "【你的连续立场】\n" + summary + "\n如果你要改变上一轮观点，必须说明触发原因。不要无理由突然转向。"
+            return (
+                "【你的连续立场】\n"
+                + summary
+                + "\n如果你要改变上一轮观点，必须说明触发原因。不要无理由突然转向。"
+            )
         except Exception:
             return ""
 
@@ -986,9 +1144,13 @@ class LLMAgent(Agent):
             f"- 桌面风格：{m.table_presence}（{'表达更主动' if m.table_presence == 'dominant' else '话不多但有重点' if m.table_presence == 'quiet' else '既会表达也会倾听'}）"
         )
         lines.append("")
-        lines.append("这些不是装饰——它们会影响你关注什么信息、如何判断、发言顺序和用词。")
+        lines.append(
+            "这些不是装饰——它们会影响你关注什么信息、如何判断、发言顺序和用词。"
+        )
         lines.append("不要只改变语气，要改变你关注的信息类型和判断方式。")
-        lines.append("例如：记忆偏向'first_impression'的人应该更执着于早期发现的疑点，不容易被后续发言动摇。")
+        lines.append(
+            "例如：记忆偏向'first_impression'的人应该更执着于早期发现的疑点，不容易被后续发言动摇。"
+        )
         return "\n".join(lines)
 
     def _build_perspective_hints_xml(self) -> str:
@@ -1023,7 +1185,9 @@ class LLMAgent(Agent):
 
     def attack(self) -> Decision:
         fallback = self.fallback.attack()
-        data = self._target_action("attack", fallback, "As a wolf, choose the highest-value night kill target.")
+        data = self._target_action(
+            "attack", fallback, "As a wolf, choose the highest-value night kill target."
+        )
         return Decision(
             self.player_id,
             ActionType.ATTACK,
@@ -1034,7 +1198,9 @@ class LLMAgent(Agent):
 
     def divine(self) -> Decision:
         fallback = self.fallback.divine()
-        data = self._target_action("divine", fallback, "As Seer, choose the best investigation target.")
+        data = self._target_action(
+            "divine", fallback, "As Seer, choose the best investigation target."
+        )
         return Decision(
             self.player_id,
             ActionType.DIVINE,
@@ -1045,7 +1211,9 @@ class LLMAgent(Agent):
 
     def guard(self) -> Decision:
         fallback = self.fallback.guard()
-        data = self._target_action("guard", fallback, "As Guard, choose one player to protect tonight.")
+        data = self._target_action(
+            "guard", fallback, "As Guard, choose one player to protect tonight."
+        )
         return Decision(
             self.player_id,
             ActionType.GUARD,
@@ -1070,9 +1238,19 @@ class LLMAgent(Agent):
         )
         default = {
             "reasoning": "; ".join(decision.reasoning for decision in fallback),
-            "save": bool(victim_id and any(item.action_type == ActionType.WITCH_SAVE for item in fallback)),
+            "save": bool(
+                victim_id
+                and any(item.action_type == ActionType.WITCH_SAVE for item in fallback)
+            ),
             "poison_target": self._name(
-                next((item.target_id for item in fallback if item.action_type == ActionType.WITCH_POISON), None)
+                next(
+                    (
+                        item.target_id
+                        for item in fallback
+                        if item.action_type == ActionType.WITCH_POISON
+                    ),
+                    None,
+                )
             ),
         }
         data, meta = self._ask_json(prompt, default, max_tokens=720)
@@ -1108,7 +1286,9 @@ class LLMAgent(Agent):
 
     def shoot(self) -> Decision:
         fallback = self.fallback.shoot()
-        data = self._target_action("shoot", fallback, "As Hunter, choose the best player to shoot immediately.")
+        data = self._target_action(
+            "shoot", fallback, "As Hunter, choose the best player to shoot immediately."
+        )
         return Decision(
             self.player_id,
             ActionType.SHOOT,
@@ -1122,7 +1302,11 @@ class LLMAgent(Agent):
         if fallback.action_type == ActionType.SKIP:
             default = {"reasoning": fallback.reasoning, "target": None, "boom": False}
         else:
-            default = {"reasoning": fallback.reasoning, "target": self._name(fallback.target_id), "boom": True}
+            default = {
+                "reasoning": fallback.reasoning,
+                "target": self._name(fallback.target_id),
+                "boom": True,
+            }
         prompt = self._build_action_prompt(
             action="boom",
             instructions=[
@@ -1171,7 +1355,11 @@ class LLMAgent(Agent):
         if not candidates:
             return fallback
         view = self._view()
-        cand_names = [self._format_player_tag(p) for p in view.players if p["id"] in candidates and p["alive"]]
+        cand_names = [
+            self._format_player_tag(p)
+            for p in view.players
+            if p["id"] in candidates and p["alive"]
+        ]
         if not cand_names:
             return fallback
         prompt = self._build_action_prompt(
@@ -1193,7 +1381,11 @@ class LLMAgent(Agent):
         destroy = bool(data.get("destroy"))
         target_name = data.get("target")
         # "撕"/"none" / null all mean destroy the badge.
-        if destroy or not target_name or str(target_name).strip().lower() in {"none", "null", "撕", "撕警徽"}:
+        if (
+            destroy
+            or not target_name
+            or str(target_name).strip().lower() in {"none", "null", "撕", "撕警徽"}
+        ):
             return Decision(
                 self.player_id,
                 ActionType.SKIP,
@@ -1272,11 +1464,19 @@ class LLMAgent(Agent):
         profile = ROLE_PROFILES.get(self.role, ROLE_PROFILES[Role.VILLAGER])
         strategy = get_action_strategy(action, self.role)
 
-        public_lines = [f"  [{event['type']}] {event['payload']}" for event in view.public_events[-20:]]
-        private_lines = [f"  [{event['type']}] {event['payload']}" for event in view.private_events[-8:]]
+        public_lines = [
+            f"  [{event['type']}] {event['payload']}"
+            for event in view.public_events[-20:]
+        ]
+        private_lines = [
+            f"  [{event['type']}] {event['payload']}"
+            for event in view.private_events[-8:]
+        ]
 
         alive_lines = [self._format_player_tag(p) for p in view.players if p["alive"]]
-        dead_lines = [self._format_player_tag(p) for p in view.players if not p["alive"]]
+        dead_lines = [
+            self._format_player_tag(p) for p in view.players if not p["alive"]
+        ]
 
         fact_sheet = self._build_fact_sheet()
 
@@ -1402,7 +1602,9 @@ class LLMAgent(Agent):
         today_chats = [
             e
             for e in view.public_events
-            if e.get("day") == view.day and e.get("type") == "CHAT_MESSAGE" and e.get("phase") == view.phase
+            if e.get("day") == view.day
+            and e.get("type") == "CHAT_MESSAGE"
+            and e.get("phase") == view.phase
         ]
         if not today_chats:
             return []
@@ -1414,7 +1616,9 @@ class LLMAgent(Agent):
             speech_text = (payload.get("speech") or "").strip()
             if not speech_text:
                 continue
-            tag = self._format_player_tag(self._player_by_id(actor_id) or {"seat": "?", "name": actor_id})
+            tag = self._format_player_tag(
+                self._player_by_id(actor_id) or {"seat": "?", "name": actor_id}
+            )
             # Semantic splitting: break into sentence-level bubbles
             import re as _re
 
@@ -1459,9 +1663,13 @@ class LLMAgent(Agent):
         dead_seats = [int(p.get("seat", -1)) for p in view.players if not p["alive"]]
         for ds in dead_seats:
             if ds > 0 and (abs(seat - ds) == 1 or abs(seat - ds) == total - 1):
-                dead_player = next((p for p in view.players if int(p.get("seat", -1)) == ds), None)
+                dead_player = next(
+                    (p for p in view.players if int(p.get("seat", -1)) == ds), None
+                )
                 if dead_player:
-                    hints.append(f"你和出局的{self._format_player_tag(dead_player)}座位相邻，可以从这个角度聊一句")
+                    hints.append(
+                        f"你和出局的{self._format_player_tag(dead_player)}座位相邻，可以从这个角度聊一句"
+                    )
                 else:
                     hints.append("你和出局的玩家座位相邻，可以从这个角度聊一句")
                 break
@@ -1491,19 +1699,26 @@ class LLMAgent(Agent):
                 for e in view.public_events:
                     if e.get("type") == "VOTE_CAST" and e.get("day") == day - 1:
                         payload = e.get("payload", {}) or {}
-                        if payload.get("target_id") in my_votes and payload.get("voter_id") != self.player_id:
+                        if (
+                            payload.get("target_id") in my_votes
+                            and payload.get("voter_id") != self.player_id
+                        ):
                             v = self._player_by_id(payload.get("voter_id", ""))
                             if v:
                                 same_voters.append(self._format_player_tag(v))
                 if same_voters:
                     names = "、".join(same_voters[:3])
-                    hints.append(f"昨天{names}和你投了同一个目标，可以想想这件事要不要提")
+                    hints.append(
+                        f"昨天{names}和你投了同一个目标，可以想想这件事要不要提"
+                    )
 
         # 5. Speak position (determined by counting today's speakers)
         today_spoken = sum(
             1
             for e in view.public_events
-            if e.get("day") == day and e.get("type") == "CHAT_MESSAGE" and e.get("phase") == view.phase
+            if e.get("day") == day
+            and e.get("type") == "CHAT_MESSAGE"
+            and e.get("phase") == view.phase
         )
         if today_spoken == 0:
             hints.append("你是第一个发言，没有人可以参考，可以先抛出一个起手判断")
@@ -1573,7 +1788,9 @@ class LLMAgent(Agent):
                     for _i, sent in enumerate(sentences[:4]):  # Cap at 4 bubbles
                         speeches.append(f"第{day}天{tag} {actor}：{sent[:120]}")
                     if len(sentences) > 4:
-                        speeches.append(f"第{day}天{tag} {actor}：...（共{len(sentences)}句）")
+                        speeches.append(
+                            f"第{day}天{tag} {actor}：...（共{len(sentences)}句）"
+                        )
             elif etype == "SYSTEM_MESSAGE":
                 msg = payload.get("message") or ""
                 if (
@@ -1640,7 +1857,9 @@ class LLMAgent(Agent):
                     f"发言习惯：{char.persona.speech_length_habit}，{char.persona.vocabulary_style}\n"
                     f"思考方式：{char.persona.reasoning_style}"
                 )
-            char_block = "\n\n你的个人设定（仅描述你自己，不是其他玩家）：\n" + persona_prompt
+            char_block = (
+                "\n\n你的个人设定（仅描述你自己，不是其他玩家）：\n" + persona_prompt
+            )
 
         # Wolfcha-style hidden communication profile: controls HOW you speak
         comm_profile = self._build_communication_profile()
@@ -1667,7 +1886,14 @@ class LLMAgent(Agent):
             bias_tail = self._build_strategy_bias_block("__all__")
             if bias_tail:
                 bias_tail = "\n\n" + bias_tail
-        return role_system + char_block + comm_profile + player_mind + constraints + bias_tail
+        return (
+            role_system
+            + char_block
+            + comm_profile
+            + player_mind
+            + constraints
+            + bias_tail
+        )
 
     def _build_communication_profile(self) -> str:
         """Build wolfcha-style hidden communication profile section."""
@@ -1716,17 +1942,26 @@ class LLMAgent(Agent):
         return "\n".join(lines)
 
     def _ask_json(
-        self, prompt: str, default: dict[str, Any], *, max_tokens: int = 640, action: str = ""
+        self,
+        prompt: str,
+        default: dict[str, Any],
+        *,
+        max_tokens: int = 640,
+        action: str = "",
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         if action == "talk":
             return self._ask_talk(prompt, default, max_tokens=max_tokens)
-        return self._ask_json_inner(prompt, default, max_tokens=max_tokens, action=action)
+        return self._ask_json_inner(
+            prompt, default, max_tokens=max_tokens, action=action
+        )
 
     def _ask_talk(
         self, prompt: str, default: dict[str, Any], *, max_tokens: int = 640
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         """Legacy method kept for compatibility — delegates to new wolfcha-style."""
-        return self._ask_json_inner(prompt, default, max_tokens=max_tokens, action="talk")
+        return self._ask_json_inner(
+            prompt, default, max_tokens=max_tokens, action="talk"
+        )
 
     def _ask_talk_wolfcha(
         self,
@@ -1766,7 +2001,9 @@ class LLMAgent(Agent):
             text = self.client.parse_response(resp).strip()
             reasoning = self.client.parse_thinking(resp)
             usage = resp.get("usage", {}) if isinstance(resp, dict) else {}
-            total_latency_ms += int(resp.get("_latency_ms", 0)) if isinstance(resp, dict) else 0
+            total_latency_ms += (
+                int(resp.get("_latency_ms", 0)) if isinstance(resp, dict) else 0
+            )
 
             # Parse JSON string array: ["msg1", "msg2"]
             segments = self._parse_speech_array(text)
@@ -1783,10 +2020,19 @@ class LLMAgent(Agent):
                     meta["segment_texts"] = segments
                     meta["usage"] = usage
                     meta["latency_ms"] = total_latency_ms
+                    meta["prompt_json"] = [
+                        {"role": m["role"], "content": (m["content"] or "")[:10000]}
+                        for m in messages
+                    ]
                     return speech, meta
 
             # Second attempt: retry with lower temp
-            retry_prompt = user_prompt + "\n\n" + self._anti_generic_retry_note() + "\n\n请输出JSON字符串数组。"
+            retry_prompt = (
+                user_prompt
+                + "\n\n"
+                + self._anti_generic_retry_note()
+                + "\n\n请输出JSON字符串数组。"
+            )
             resp2 = self.client.chat_sync(
                 messages=[
                     {"role": "system", "content": system_content},
@@ -1799,7 +2045,9 @@ class LLMAgent(Agent):
             text2 = self.client.parse_response(resp2).strip()
             reasoning2 = self.client.parse_thinking(resp2)
             usage2 = resp2.get("usage", {}) if isinstance(resp2, dict) else {}
-            total_latency_ms += int(resp2.get("_latency_ms", 0)) if isinstance(resp2, dict) else 0
+            total_latency_ms += (
+                int(resp2.get("_latency_ms", 0)) if isinstance(resp2, dict) else 0
+            )
             segments2 = self._parse_speech_array(text2)
             if segments2:
                 if not self._looks_generic_speech(segments2):
@@ -1818,7 +2066,11 @@ class LLMAgent(Agent):
 
             # Third attempt: just use raw text as speech (free-text fallback)
             cleaned = self._clean_speech_text(text)
-            if cleaned and len(cleaned) >= 2 and not self._looks_generic_speech([cleaned]):
+            if (
+                cleaned
+                and len(cleaned) >= 2
+                and not self._looks_generic_speech([cleaned])
+            ):
                 # Split long single-segment text into multi-bubble
                 segments = self._split_into_segments(cleaned)
                 meta["source"] = "llm"
@@ -1893,12 +2145,21 @@ class LLMAgent(Agent):
         opening = text[:20]
         # Strongly discourage the same safe first-day disclaimer pattern.
         starts_generic = any(opening.startswith(item) for item in opening_markers) and (
-            "信息" in opening or "观察" in opening or "不站边" in opening or "不给" in opening
+            "信息" in opening
+            or "观察" in opening
+            or "不站边" in opening
+            or "不给" in opening
         )
         return (
             starts_generic
             or hits >= 3
-            or (hits >= 2 and len(text) < 90 and "因为" not in text and "所以" not in text and "但" not in text)
+            or (
+                hits >= 2
+                and len(text) < 90
+                and "因为" not in text
+                and "所以" not in text
+                and "但" not in text
+            )
         )
 
     def _remember_opening(self, segments: list[str]) -> None:
@@ -1965,16 +2226,22 @@ class LLMAgent(Agent):
             if text.startswith(prefix):
                 text = text[len(prefix) :].strip()
         # Remove surrounding quotes
-        if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+        if (text.startswith('"') and text.endswith('"')) or (
+            text.startswith("'") and text.endswith("'")
+        ):
             text = text[1:-1].strip()
         # Remove code blocks
         if text.startswith("```"):
             lines = text.split("\n")
-            text = "\n".join(lines[1:-1] if lines and lines[-1].strip() == "```" else lines[1:]).strip()
+            text = "\n".join(
+                lines[1:-1] if lines and lines[-1].strip() == "```" else lines[1:]
+            ).strip()
         return text
 
     @staticmethod
-    def _split_into_segments(text: str, max_segments: int = 4, max_chars: int = 120) -> list[str]:
+    def _split_into_segments(
+        text: str, max_segments: int = 4, max_chars: int = 120
+    ) -> list[str]:
         """Split a single long speech into natural multi-bubble segments."""
         import re
 
@@ -1994,7 +2261,9 @@ class LLMAgent(Agent):
                 buffer = s
                 if len(segments) >= max_segments:
                     # Put remaining into last segment
-                    remaining = [s for i, s in enumerate(sentences) if i >= sentences.index(s)]
+                    remaining = [
+                        s for i, s in enumerate(sentences) if i >= sentences.index(s)
+                    ]
                     segments[-1] = "".join(remaining).strip()
                     break
             else:
@@ -2004,7 +2273,12 @@ class LLMAgent(Agent):
         return segments[:max_segments] if segments else [text]
 
     def _ask_json_inner(
-        self, prompt: str, default: dict[str, Any], *, max_tokens: int = 640, action: str = ""
+        self,
+        prompt: str,
+        default: dict[str, Any],
+        *,
+        max_tokens: int = 640,
+        action: str = "",
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         meta = {
             "provider": self.provider,
@@ -2070,8 +2344,14 @@ class LLMAgent(Agent):
                 text = self.client.parse_response(response).strip()
                 last_text = text
                 last_reasoning = self.client.parse_thinking(response)
-                last_usage = response.get("usage", {}) if isinstance(response, dict) else {}
-                total_latency_ms += int(response.get("_latency_ms", 0)) if isinstance(response, dict) else 0
+                last_usage = (
+                    response.get("usage", {}) if isinstance(response, dict) else {}
+                )
+                total_latency_ms += (
+                    int(response.get("_latency_ms", 0))
+                    if isinstance(response, dict)
+                    else 0
+                )
                 parsed = self._coerce_json(text)
                 if parsed is not None:
                     self.last_error = None
@@ -2082,12 +2362,18 @@ class LLMAgent(Agent):
                     meta["attempts"] = idx + 1
                     meta["usage"] = last_usage
                     meta["latency_ms"] = total_latency_ms
+                    meta["prompt_json"] = [
+                        {"role": m["role"], "content": (m["content"] or "")[:10000]}
+                        for m in attempt["messages"]
+                    ]
                     self._attach_retrieval_meta(meta)
                     return parsed, meta
             self.last_error = "json_parse_failed"
             meta["error"] = self.last_error
             meta["raw_text"] = last_text[:400]
-            meta["reasoning"] = (last_reasoning or "")[:2000] if "last_reasoning" in dir() else ""
+            meta["reasoning"] = (
+                (last_reasoning or "")[:2000] if "last_reasoning" in dir() else ""
+            )
             meta["usage"] = last_usage
             meta["latency_ms"] = total_latency_ms
             self._attach_retrieval_meta(meta)

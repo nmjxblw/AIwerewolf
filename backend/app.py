@@ -196,6 +196,12 @@ def _build_game(
     player_count: int = 10,
     rule_pack_id: str = "wolfcha-default",
     custom_roles: dict | None = None,
+    has_badge: bool = True,
+    share_persona: bool = True,
+    enable_strategy: bool = True,
+    persona_names: list[str] | None = None,
+    has_last_words: bool = True,
+    parallel_speech: bool = True,
     phase_delay_ms: float = 0,
 ) -> WerewolfGame:
     init_db()
@@ -203,6 +209,12 @@ def _build_game(
         seed=seed,
         player_count=player_count,
         custom_roles=custom_roles,
+        has_badge=has_badge,
+        share_persona=share_persona,
+        enable_strategy=enable_strategy,
+        persona_names=persona_names,
+        has_last_words=has_last_words,
+        parallel_speech=parallel_speech,
         phase_delay_ms=phase_delay_ms,
         persona_sampler=_sample_personas,
         on_game_start=_save_game_start,
@@ -493,6 +505,33 @@ def game_review_markdown(game_id: str, download: bool = True):
     )
 
 
+@app.get("/api/games/{game_id}/thought-process")
+def export_thought_process(game_id: str, download: bool = True):
+    """Export agent thought process: prompts, thinking, decisions, speeches.
+
+    Returns a structured JSON with all agent decisions ordered by day/sequence,
+    including the system prompt, user prompt, LLM thinking, raw response,
+    and public speech for every agent action in the game.
+    """
+    from backend.db.persist import export_game_thought_process
+
+    payload = export_game_thought_process(game_id)
+    if payload is None:
+        raise HTTPException(
+            status_code=404, detail="Game not found or no decisions recorded"
+        )
+    headers = {}
+    if download:
+        headers["Content-Disposition"] = (
+            f'attachment; filename="thought-process-{game_id}.json"'
+        )
+    return Response(
+        content=json.dumps(payload, ensure_ascii=False, indent=2, default=str),
+        media_type="application/json; charset=utf-8",
+        headers=headers,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Track C reserved endpoints — agent versions + self-evolution chain
 # ---------------------------------------------------------------------------
@@ -744,6 +783,12 @@ def create_room(
     rule_pack_id: str = "wolfcha-default",
     exclude: str = "",
     include: str = "",
+    has_badge: bool = True,
+    share_persona: bool = True,
+    enable_strategy: bool = True,
+    persona_names: str = "",
+    has_last_words: bool = True,
+    parallel_speech: bool = True,
 ):
     custom_roles = None
     if exclude or include:
@@ -759,6 +804,16 @@ def create_room(
         human_seat=human_seat,
         rule_pack_id=rule_pack_id,
         custom_roles=custom_roles,
+        has_badge=has_badge,
+        share_persona=share_persona,
+        enable_strategy=enable_strategy,
+        persona_names=(
+            [n.strip() for n in persona_names.split(",") if n.strip()]
+            if persona_names.strip()
+            else None
+        ),
+        has_last_words=has_last_words,
+        parallel_speech=parallel_speech,
     )
     room = _rooms.create_room(request)
     return room.to_dict()
@@ -810,6 +865,12 @@ def create_room_game(room_id: str, show_private: bool = False):
         player_count=room.player_count,
         rule_pack_id=room.rule_pack_id,
         custom_roles=room.custom_roles,
+        has_badge=room.has_badge,
+        share_persona=room.share_persona,
+        enable_strategy=room.enable_strategy,
+        persona_names=room.persona_names,
+        has_last_words=room.has_last_words,
+        parallel_speech=room.parallel_speech,
     )
     if room.human_seat is not None:
         _rooms.set_active_game(room_id, game)
@@ -854,6 +915,13 @@ def prepare_room_game(room_id: str, show_private: bool = False):
         human_seat=room.human_seat,
         player_count=room.player_count,
         rule_pack_id=room.rule_pack_id,
+        custom_roles=room.custom_roles,
+        has_badge=room.has_badge,
+        share_persona=room.share_persona,
+        enable_strategy=room.enable_strategy,
+        persona_names=room.persona_names,
+        has_last_words=room.has_last_words,
+        parallel_speech=room.parallel_speech,
     )
     _rooms.set_active_game(room_id, game)
     _rooms.reset_snapshot_buffer(room_id)
@@ -895,6 +963,13 @@ def start_or_resume_room_game(room_id: str, show_private: bool = False):
             human_seat=room.human_seat,
             player_count=room.player_count,
             rule_pack_id=room.rule_pack_id,
+            custom_roles=room.custom_roles,
+            has_badge=room.has_badge,
+            share_persona=room.share_persona,
+            enable_strategy=room.enable_strategy,
+            persona_names=room.persona_names,
+            has_last_words=room.has_last_words,
+            parallel_speech=room.parallel_speech,
         )
     _rooms.set_active_game(room_id, game)
     state = game.play_until_blocked()
@@ -1017,12 +1092,35 @@ async def stream_game(
             is_reused_running = game._play_started
 
     if game is None:
+        custom_roles = None
+        has_badge = True
+        share_persona = True
+        enable_strategy = True
+        has_last_words = True
+        parallel_speech = True
+        if room_id:
+            try:
+                room = _rooms.get_room(room_id)
+                custom_roles = room.custom_roles
+                has_badge = room.has_badge
+                share_persona = room.share_persona
+                enable_strategy = room.enable_strategy
+                has_last_words = room.has_last_words
+                parallel_speech = room.parallel_speech
+            except KeyError:
+                pass
         game = _build_game(
             seed=seed,
             agent_type=agent_type,
             player_count=player_count,
             rule_pack_id=rule_pack_id,
             phase_delay_ms=delay_ms,
+            custom_roles=custom_roles,
+            has_badge=has_badge,
+            share_persona=share_persona,
+            enable_strategy=enable_strategy,
+            has_last_words=has_last_words,
+            parallel_speech=parallel_speech,
         )
         if room_id:
             _rooms.set_active_game(room_id, game)

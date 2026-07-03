@@ -101,25 +101,31 @@ class Player:
     death_day: int | None = None
     death_reason: str | None = None
 
-    def public_dict(self) -> dict[str, Any]:
-        return {
+    def public_dict(self, share_persona: bool = True) -> dict[str, Any]:
+        data: dict[str, Any] = {
             "id": self.id,
             "seat": self.seat,
             "name": self.name,
             "alive": self.alive,
             "is_ai": self.is_ai,
             "agent_type": self.agent_type,
-            "persona": {
+        }
+        if share_persona and self.persona:
+            data["persona"] = {
                 "style_label": self.persona.get("style_label"),
                 "mbti": self.persona.get("mbti"),
             }
-            if self.persona
-            else None,
-        }
+        return data
 
     def private_dict(self) -> dict[str, Any]:
         data = self.public_dict()
-        data.update({"role": self.role.value, "alignment": self.alignment.value, "persona": self.persona or None})
+        data.update(
+            {
+                "role": self.role.value,
+                "alignment": self.alignment.value,
+                "persona": self.persona or None,
+            }
+        )
         return data
 
 
@@ -315,7 +321,11 @@ class GameState:
             "phase": self._public_phase(),
             "day": self.day,
             "players": [player.public_dict() for player in self.players],
-            "events": [self._public_event_dict(event) for event in self.events if event.visibility == "public"],
+            "events": [
+                self._public_event_dict(event)
+                for event in self.events
+                if event.visibility == "public"
+            ],
             "votes": dict(self.votes),
             "vote_history": dict(self.vote_history),
             "day_history": dict(self.day_history),
@@ -338,7 +348,10 @@ class GameState:
         }
 
     def _public_phase(self) -> str:
-        if self.phase.value.startswith("NIGHT_") and self.phase not in {Phase.NIGHT_START, Phase.NIGHT_RESOLVE}:
+        if self.phase.value.startswith("NIGHT_") and self.phase not in {
+            Phase.NIGHT_START,
+            Phase.NIGHT_RESOLVE,
+        }:
             return Phase.NIGHT_START.value
         return self.phase.value
 
@@ -402,7 +415,9 @@ class GameState:
         data["phase"] = self.phase.value
         data["players"] = [player.private_dict() for player in self.players]
         data["events"] = [event.to_dict() for event in self.events]
-        data["pending_input"] = self.pending_input.to_dict() if self.pending_input else None
+        data["pending_input"] = (
+            self.pending_input.to_dict() if self.pending_input else None
+        )
         data["night_actions"] = {
             "guard_target_id": self.night_actions.guard_target_id,
             "last_guard_target_id": self.night_actions.last_guard_target_id,

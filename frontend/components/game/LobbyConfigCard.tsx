@@ -31,10 +31,23 @@ interface LobbyConfigCardProps {
   language: Language; playerCount: number; mode: "ai" | "human";
   humanSeat: number; isCreating: boolean; error: string;
   customRoles: CustomRolesConfig | null;
+  hasBadge: boolean;
+  sharePersona: boolean;
+  enableStrategy: boolean;
+  personaNames: string[];
+  allPersonaNames: string[];
+  hasLastWords: boolean;
+  parallelSpeech: boolean;
   onPlayerCountChange: (value: number) => void;
   onModeChange: (mode: "ai" | "human") => void;
   onHumanSeatChange: (seat: number) => void;
   onCustomRolesChange: (config: CustomRolesConfig | null) => void;
+  onHasBadgeChange: (value: boolean) => void;
+  onSharePersonaChange: (value: boolean) => void;
+  onEnableStrategyChange: (value: boolean) => void;
+  onPersonaNamesChange: (names: string[]) => void;
+  onHasLastWordsChange: (value: boolean) => void;
+  onParallelSpeechChange: (value: boolean) => void;
   onCreateRoom: () => void;
 }
 
@@ -49,8 +62,12 @@ function roleLabel(role: Role, language: Language): string {
 
 export function LobbyConfigCard(props: LobbyConfigCardProps) {
   const { language, playerCount, mode, humanSeat, isCreating, error,
-    customRoles, onPlayerCountChange, onModeChange, onHumanSeatChange,
-    onCustomRolesChange, onCreateRoom } = props;
+    customRoles, hasBadge, sharePersona, enableStrategy,
+    personaNames, allPersonaNames, hasLastWords, parallelSpeech,
+    onPlayerCountChange, onModeChange, onHumanSeatChange,
+    onCustomRolesChange, onHasBadgeChange, onSharePersonaChange,
+    onEnableStrategyChange, onPersonaNamesChange, onHasLastWordsChange,
+    onParallelSpeechChange, onCreateRoom } = props;
 
   const isAi = mode === "ai";
 
@@ -256,6 +273,144 @@ export function LobbyConfigCard(props: LobbyConfigCardProps) {
           <span className="text-[10px] text-text-sub/30 bg-transparent rounded px-1.5 py-0.5">
             {effectiveRoles.filter((r) => r === Role.WEREWOLF).length} {language === "zh" ? "狼人" : "Wolf"}
           </span>
+        </div>
+      </div>
+
+      {/* ── 警长开关 ── */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-text-sub/70">
+          {language === "zh" ? "警长竞选" : "Sheriff Election"}
+        </span>
+        <button
+          data-testid="badge-toggle"
+          onClick={() => onHasBadgeChange(!hasBadge)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+            hasBadge ? "bg-primary" : "bg-border/50"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+              hasBadge ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* ── 共享人设开关 ── */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-text-sub/70">
+          {language === "zh" ? "共享风格标签和MBTI" : "Share persona & MBTI"}
+        </span>
+        <button
+          data-testid="persona-toggle"
+          onClick={() => onSharePersonaChange(!sharePersona)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+            sharePersona ? "bg-primary" : "bg-border/50"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+              sharePersona ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* ── Track C 策略开关 ── */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-text-sub/70">
+          {language === "zh" ? "Track C 跨局策略" : "Track C Strategies"}
+        </span>
+        <button
+          data-testid="strategy-toggle"
+          onClick={() => onEnableStrategyChange(!enableStrategy)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+            enableStrategy ? "bg-primary" : "bg-border/50"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+              enableStrategy ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* ── 遗言开关 ── */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-text-sub/70">
+          {language === "zh" ? "被投票出局遗言" : "Last Words on Vote-out"}
+        </span>
+        <button
+          data-testid="last-words-toggle"
+          onClick={() => onHasLastWordsChange(!hasLastWords)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+            hasLastWords ? "bg-primary" : "bg-border/50"
+          }`}
+        >
+          <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+            hasLastWords ? "translate-x-6" : "translate-x-1"
+          }`} />
+        </button>
+      </div>
+
+      {/* ── 并行发言开关 ── */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-text-sub/70">
+          {language === "zh" ? "并行发言" : "Parallel Speech"}
+        </span>
+        <button
+          data-testid="parallel-speech-toggle"
+          onClick={() => onParallelSpeechChange(!parallelSpeech)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
+            parallelSpeech ? "bg-primary" : "bg-border/50"
+          }`}
+        >
+          <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${
+            parallelSpeech ? "translate-x-6" : "translate-x-1"
+          }`} />
+        </button>
+      </div>
+
+      {/* ── 角色卡选择 ── */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs font-medium text-text-sub/60 uppercase tracking-wider">
+            {language === "zh" ? "角色卡选择" : "Personas"}
+          </span>
+          <span className="text-[10px] text-text-sub/40">
+            {personaNames.length > 0
+              ? `${language === "zh" ? "已选" : "Selected"} ${personaNames.length}`
+              : language === "zh" ? "全部可用" : "All available"}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-1 max-h-[120px] overflow-y-auto">
+          {allPersonaNames.map((name) => {
+            const selected = personaNames.length === 0 || personaNames.includes(name);
+            return (
+              <button
+                key={name}
+                onClick={() => {
+                  if (personaNames.length === 0) {
+                    onPersonaNamesChange(allPersonaNames.filter((n) => n !== name));
+                  } else if (selected) {
+                    const next = personaNames.filter((n) => n !== name);
+                    onPersonaNamesChange(next.length === allPersonaNames.length ? [] : next);
+                  } else {
+                    const next = [...personaNames, name];
+                    onPersonaNamesChange(next.length === allPersonaNames.length ? [] : next);
+                  }
+                }}
+                className={`px-2 py-0.5 rounded text-[11px] leading-tight transition-all duration-150 border ${
+                  selected
+                    ? "bg-primary/12 text-primary border-primary/25"
+                    : "text-text-sub/30 border-transparent hover:text-text-sub/50 hover:border-border/30"
+                }`}
+              >
+                {name}
+              </button>
+            );
+          })}
         </div>
       </div>
 

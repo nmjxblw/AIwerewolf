@@ -104,7 +104,7 @@ export function BadgePanel({ gameState, language, activeSpeakerId, displayPhase,
 
   return (
     <div className={cn(
-      isBadgeElection 
+      isBadgeElection
         ? "mx-4 mt-3 rounded-xl border border-border/50 bg-cardBackground/60 backdrop-blur-sm overflow-hidden"
         : "border-b border-border bg-gradient-to-b from-cardBackground/95 to-cardBackground/90 backdrop-blur-sm px-5 py-4 shadow-sm"
     )}>
@@ -167,7 +167,7 @@ export function BadgePanel({ gameState, language, activeSpeakerId, displayPhase,
               return (
                 <div
                   key={tid}
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-3 py-1.5 rounded-lg border border-border/40 bg-background/50 text-xs"
+                  className="inline-flex items-center gap-1.5 min-h-[2.5rem] px-3 py-1.5 rounded-lg border border-border/40 bg-background/50 text-xs"
                 >
                   <span className="font-medium text-textPrimary">
                     {p ? `${p.seat}号 ${p.name}` : tid}
@@ -193,7 +193,7 @@ export function BadgePanel({ gameState, language, activeSpeakerId, displayPhase,
           {language === "zh" ? "全部发言完成后进入投票环节" : "Voting begins after all speeches"}
         </div>
       )}
-      
+
       {/* 等待投票区域，和VotePanel统一 */}
       {(isBadgeElection) && !allVoted && (
         <div className="px-4 py-2 border-t border-border/20">

@@ -58,7 +58,7 @@ export function CountdownTimer({ seconds, onExpire, isActive }: CountdownTimerPr
       </div>
       <span
         className={cn(
-          "text-xs font-mono min-w-[36px] text-right tabular-nums",
+          "text-xs font-mono min-w-[2rem] text-right tabular-nums",
           isDanger
             ? "text-danger font-bold animate-pulse-loading"
             : isWarn

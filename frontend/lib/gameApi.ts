@@ -12,6 +12,12 @@ interface CreateRoomParams {
   mode: GameMode;
   humanSeat: number;
   customRoles?: CustomRolesConfig;
+  hasBadge?: boolean;
+  sharePersona?: boolean;
+  enableStrategy?: boolean;
+  personaNames?: string[];
+  hasLastWords?: boolean;
+  parallelSpeech?: boolean;
 }
 
 interface HumanActionPayload {
@@ -48,6 +54,12 @@ export async function createRoom({
   mode,
   humanSeat,
   customRoles,
+  hasBadge,
+  sharePersona,
+  enableStrategy,
+  personaNames,
+  hasLastWords,
+  parallelSpeech,
 }: CreateRoomParams): Promise<RoomRecord> {
   const params = new URLSearchParams({
     name: "Demo Room",
@@ -56,6 +68,18 @@ export async function createRoom({
     agent_type: agentType,
   });
   if (mode === "human") params.set("human_seat", String(humanSeat));
+  if (hasBadge !== undefined)
+    params.set("has_badge", hasBadge ? "true" : "false");
+  if (sharePersona !== undefined)
+    params.set("share_persona", sharePersona ? "true" : "false");
+  if (enableStrategy !== undefined)
+    params.set("enable_strategy", enableStrategy ? "true" : "false");
+  if (personaNames && personaNames.length > 0)
+    params.set("persona_names", personaNames.join(","));
+  if (hasLastWords !== undefined)
+    params.set("has_last_words", hasLastWords ? "true" : "false");
+  if (parallelSpeech !== undefined)
+    params.set("parallel_speech", parallelSpeech ? "true" : "false");
   if (customRoles) {
     if (customRoles.exclude.length > 0)
       params.set("exclude", customRoles.exclude.join(","));

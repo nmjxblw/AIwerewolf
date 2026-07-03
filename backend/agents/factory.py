@@ -142,13 +142,17 @@ def _normalize_agent_type(agent_type: str | None) -> str:
         return "llm"
     if normalized == "heuristic":
         raise ValueError("heuristic agents are disabled for games; use agent_type=llm")
-    raise ValueError(f"Unsupported agent_type={agent_type!r}; only llm is allowed for AI seats")
+    raise ValueError(
+        f"Unsupported agent_type={agent_type!r}; only llm is allowed for AI seats"
+    )
 
 
 def _resolve_retrieval_policy(config: dict[str, Any]) -> str:
     """Resolve the default cognitive retrieval policy for game agents."""
     return str(
-        config.get("retrieval_policy") or os.getenv("AIWEREWOLF_RETRIEVAL_POLICY", "") or "same_role_all_mbti"
+        config.get("retrieval_policy")
+        or os.getenv("AIWEREWOLF_RETRIEVAL_POLICY", "")
+        or "same_role_all_mbti"
     ).strip()
 
 
@@ -161,7 +165,9 @@ def _has_explicit_llm_binding(config: dict[str, Any]) -> bool:
     return any(config.get(key) for key in ("provider", "model", "api_key", "base_url"))
 
 
-def create_agents(players: list[Player], agent_config: dict[str, Any] | None = None) -> dict[str, Agent]:
+def create_agents(
+    players: list[Player], agent_config: dict[str, Any] | None = None
+) -> dict[str, Agent]:
     """Create LLM-backed agents for each AI seat."""
     config = agent_config or {}
     seed = int(config.get("seed", 7))
@@ -185,7 +191,9 @@ def create_agents(players: list[Player], agent_config: dict[str, Any] | None = N
 
         player.is_ai = True
         player_config = _config_for_player(config, role_models, player)
-        player_agent_type = _normalize_agent_type(str(player_config.get("type", agent_type)))
+        player_agent_type = _normalize_agent_type(
+            str(player_config.get("type", agent_type))
+        )
         player.agent_type = player_agent_type
 
         model_override = player_config.get("model")
@@ -193,7 +201,11 @@ def create_agents(players: list[Player], agent_config: dict[str, Any] | None = N
         api_key_override = player_config.get("api_key")
         base_url_override = player_config.get("base_url")
 
-        if not _has_explicit_llm_binding(player_config) and pool_rng is not None and pool_specs:
+        if (
+            not _has_explicit_llm_binding(player_config)
+            and pool_rng is not None
+            and pool_specs
+        ):
             spec = pool_rng.choice(pool_specs)
             model_override = spec["model"]
             api_key_override = spec["api_key"]
@@ -217,7 +229,13 @@ def create_agents(players: list[Player], agent_config: dict[str, Any] | None = N
             player_seat=player.seat,
             character=character,
             strategy_bias=player_config.get("strategy_bias") or strategy_bias,
-            retrieval_policy=str(player_config.get("retrieval_policy") or default_retrieval_policy),
+            retrieval_policy=str(
+                player_config.get("retrieval_policy") or default_retrieval_policy
+            ),
+            feature_flags={
+                **(player_config.get("feature_flags") or {}),
+                "enable_strategy": config.get("enable_strategy", True),
+            },
         )
 
     return agents
@@ -230,7 +248,9 @@ def _config_for_player(
 ) -> dict[str, Any]:
     player_config = deepcopy(config)
     player_config.pop("role_models", None)
-    role_config = role_models.get(player.role.value) or role_models.get(player.role.name)
+    role_config = role_models.get(player.role.value) or role_models.get(
+        player.role.name
+    )
     if role_config:
         player_config.update(role_config)
     return player_config

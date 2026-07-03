@@ -28,15 +28,24 @@ class PlayerView:
 class Visibility:
     """Builds per-agent views and keeps private role information isolated."""
 
+    def __init__(self, share_persona: bool = True):
+        self.share_persona = share_persona
+
     def for_player(self, state: GameState, player_id: str) -> PlayerView:
         player = state.player(player_id)
-        public_events = [event.to_dict() for event in state.events if event.visibility == "public"]
+        public_events = [
+            event.to_dict() for event in state.events if event.visibility == "public"
+        ]
         private_events = [
-            event.to_dict() for event in state.events if event.visibility == "private" and player_id in event.visible_to
+            event.to_dict()
+            for event in state.events
+            if event.visibility == "private" and player_id in event.visible_to
         ]
         known_wolves = []
         if player.alignment == Alignment.WOLF:
-            known_wolves = [p.private_dict() for p in state.players if p.alignment == Alignment.WOLF]
+            known_wolves = [
+                p.private_dict() for p in state.players if p.alignment == Alignment.WOLF
+            ]
 
         return PlayerView(
             player_id=player_id,
@@ -57,7 +66,7 @@ class Visibility:
             return target.private_dict()
         if viewer.alignment == Alignment.WOLF and target.alignment == Alignment.WOLF:
             return target.private_dict()
-        return target.public_dict()
+        return target.public_dict(share_persona=self.share_persona)
 
     def _observations(self, events: list[dict[str, Any]]) -> list[str]:
         observations: list[str] = []
@@ -77,7 +86,11 @@ class Visibility:
         elif state.phase == Phase.DAY_VOTE and state.pk_targets:
             target_ids = set(state.pk_targets)
         elif state.phase == Phase.NIGHT_WOLF_ACTION:
-            target_ids = {target.id for target in state.alive_players if target.alignment != Alignment.WOLF}
+            target_ids = {
+                target.id
+                for target in state.alive_players
+                if target.alignment != Alignment.WOLF
+            }
         elif state.phase in {
             Phase.DAY_VOTE,
             Phase.NIGHT_SEER_ACTION,
@@ -99,5 +112,12 @@ class Visibility:
                 continue
             if target.id == player.id and not include_self:
                 continue
-            targets.append({"id": target.id, "seat": target.seat, "name": target.name, "alive": target.alive})
+            targets.append(
+                {
+                    "id": target.id,
+                    "seat": target.seat,
+                    "name": target.name,
+                    "alive": target.alive,
+                }
+            )
         return targets

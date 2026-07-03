@@ -9,6 +9,7 @@ import { useAppContext } from "@/context/AppContext";
 import { Language, AgentType, CustomRolesConfig, PrepareSnapshot, RoomInfoRow, RoomRecord, ViewMode } from "@/types";
 import { createRoom, prepareRoom } from "@/lib/gameApi";
 import { t } from "@/lib/i18n";
+import { loadGamePreferences, saveGamePreferences } from "@/lib/preferences";
 import { AnimatedWerewolfBackground } from "@/components/game/AnimatedWerewolfBackground";
 import { LobbyConfigCard } from "@/components/game/LobbyConfigCard";
 import { PrepareModal } from "@/components/game/PrepareModal";
@@ -110,7 +111,41 @@ export default function LobbyPage() {
   const [mode, setMode] = useState<"ai" | "human">("ai");
   const [humanSeat, setHumanSeat] = useState(1);
   const [customRoles, setCustomRoles] = useState<CustomRolesConfig | null>(null);
+  const [hasBadge, setHasBadge] = useState(true);
+  const [sharePersona, setSharePersona] = useState(true);
+  const [enableStrategy, setEnableStrategy] = useState(true);
+  const [personaNames, setPersonaNames] = useState<string[]>([]);
+  const [allPersonaNames, setAllPersonaNames] = useState<string[]>([]);
+  const [hasLastWords, setHasLastWords] = useState(true);
+  const [parallelSpeech, setParallelSpeech] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+
+  // 客户端挂载后从 localStorage 恢复偏好（避免 SSR hydration 不匹配）
+  useEffect(() => {
+    const prefs = loadGamePreferences();
+    setPlayerCount(prefs.playerCount);
+    setMode(prefs.mode);
+    setHumanSeat(prefs.humanSeat);
+    setCustomRoles(prefs.customRoles);
+    setHasBadge(prefs.hasBadge);
+    setSharePersona(prefs.sharePersona);
+    setEnableStrategy(prefs.enableStrategy);
+    setHasLastWords(prefs.hasLastWords);
+    setParallelSpeech(prefs.parallelSpeech);
+  }, []);
+
+  // 获取角色卡列表
+  useEffect(() => {
+    fetch("/api/personas")
+      .then((r) => r.json())
+      .then((data) => {
+        const names: string[] = Array.isArray(data)
+          ? data.map((p: { name: string }) => p.name).filter(Boolean)
+          : [];
+        setAllPersonaNames(names);
+      })
+      .catch(() => {});
+  }, []);
   const [error, setError] = useState("");
 
   const [showModal, setShowModal] = useState(false);
@@ -140,7 +175,8 @@ export default function LobbyPage() {
   async function handleCreateRoom() {
     setIsCreating(true); setError(""); setPrepareSnapshot(null);
     try {
-      const room = await createRoom({ seed, playerCount, agentType: AgentType.LLM, mode, humanSeat, customRoles: customRoles ?? undefined });
+      saveGamePreferences({ playerCount, mode, humanSeat, customRoles, hasBadge, sharePersona, enableStrategy, hasLastWords, parallelSpeech });
+      const room = await createRoom({ seed, playerCount, agentType: AgentType.LLM, mode, humanSeat, customRoles: customRoles ?? undefined, hasBadge, sharePersona, enableStrategy, personaNames: personaNames.length > 0 ? personaNames : undefined, hasLastWords, parallelSpeech });
       setCreatedRoom(room);
       if (mode === "ai") setPrepareSnapshot(await prepareRoom(room.id, viewMode === ViewMode.MODERATOR));
       setShowModal(true);
@@ -221,10 +257,14 @@ export default function LobbyPage() {
         <LobbyConfigCard
           language={language} playerCount={playerCount} mode={mode} humanSeat={humanSeat}
           isCreating={isCreating} error={showModal ? "" : error}
-          customRoles={customRoles}
+          customRoles={customRoles} hasBadge={hasBadge} sharePersona={sharePersona} enableStrategy={enableStrategy}
+          personaNames={personaNames} allPersonaNames={allPersonaNames} hasLastWords={hasLastWords} parallelSpeech={parallelSpeech}
           onPlayerCountChange={(nextCount) => { setPlayerCount(nextCount); if (humanSeat > nextCount) setHumanSeat(nextCount); }}
           onModeChange={setMode} onHumanSeatChange={setHumanSeat}
-          onCustomRolesChange={setCustomRoles}
+          onCustomRolesChange={setCustomRoles} onHasBadgeChange={setHasBadge}
+          onSharePersonaChange={setSharePersona} onEnableStrategyChange={setEnableStrategy}
+          onPersonaNamesChange={setPersonaNames} onHasLastWordsChange={setHasLastWords}
+          onParallelSpeechChange={setParallelSpeech}
           onCreateRoom={handleCreateRoom}
         />
       </div>

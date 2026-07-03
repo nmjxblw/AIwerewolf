@@ -108,7 +108,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-后端 `http://localhost:8000/docs`，前端 `http://localhost:3001`。
+后端 `http://localhost:8001/docs`，前端 `http://localhost:3001`。
 
 ### 方式二：手动安装
 
@@ -117,7 +117,7 @@ cp .env.example .env
 python3.12 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
-make dev                              # 后端 http://localhost:8000/docs
+make dev                              # 后端 http://localhost:8001/docs
 ```
 
 ```bash
@@ -132,7 +132,7 @@ npm run dev                           # 前端 http://localhost:3001
 
 | 入口 | 路由 | 展示内容 |
 |---|---|---|
-| API 文档 | `http://localhost:8000/docs` | 后端接口、房间、对局、复盘、策略知识 API |
+| API 文档 | `http://localhost:8001/docs` | 后端接口、房间、对局、复盘、策略知识 API |
 | 大厅 | `http://localhost:3001/` | 创建房间、选择 AI/Human 席位、进入对局 |
 | 对局观战 | `/room/[id]/play` | 阶段流转、玩家状态、发言、投票、事件流、观众视角 |
 | 真人操作 | `/room/[id]/human` | 真人玩家身份视图、目标选择、行动提交 |
@@ -178,7 +178,7 @@ AIwerewolf/
 |---|---|
 | 代码仓库 | `backend/`, `frontend/`, `configs/`, `scripts/`, `tests/` |
 | 产品原型 | Next.js 前端：大厅、观战、真人操作、复盘、人格配置 |
-| Demo 链接 | 本地后端 `http://localhost:8000/docs`，本地前端 `http://localhost:3001` |
+| Demo 链接 | 本地后端 `http://localhost:8001/docs`，本地前端 `http://localhost:3001` |
 | 项目介绍文档 | `docs/FINAL_SHOWCASE_REPORT.md`, `docs/ENGINEERING_ARCHITECTURE.md`, `docs/PROJECT_MODULE_DESIGN.md`, `docs/prd.md` |
 | 轻量展示资产 | `docs/assets/ai-werewolf-icon.svg` |
 

@@ -237,6 +237,7 @@ export interface RoomCreateRequest {
   player_count?: number;
   agent_type?: string;
   custom_roles?: CustomRolesConfig;
+  has_badge?: boolean;
 }
 
 /** 自定义角色配置：基于标准人数模板增减角色 */
