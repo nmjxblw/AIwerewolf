@@ -42,20 +42,29 @@ def build_game_context(obs: Observation) -> str:
     dead_list = ", ".join(f"{p.seat}号:{p.name}" for p in obs.dead) or "无"
     sheriff = _find_sheriff_from_obs(obs)
 
+    sheriff_line = [f"警长: {sheriff}"] if obs.has_badge else []
     lines = [
         "【游戏状态】",
         f"天: {obs.day}  |  阶段: {obs.phase}  |  存活: {len(obs.alive)}/{len(obs.alive) + len(obs.dead)}",
         f"你的身份: {obs.player_role}  |  你的座位: {obs.player_seat}号:{obs.player_name}",
-        f"警长: {sheriff}",
+        *sheriff_line,
         f"存活玩家: {alive_list}",
         f"死亡玩家: {dead_list}",
     ]
 
-    # Rules reminder
+    # Rules summary — based on actual game role roster, NOT player claims
     lines.append("")
     lines.append("【规则摘要】")
-    lines.append("投票放逐狼人。预言家每晚查验一人。女巫有解药+毒药各一。")
-    lines.append("猎人死亡可开枪。守卫每晚守护一人（不能连守）。")
+    lines.append("投票放逐狼人。")
+    roster = obs.role_roster if obs.role_roster else []
+    if "Seer" in roster:
+        lines.append("预言家每晚查验一人。")
+    if "Witch" in roster:
+        lines.append("女巫有解药+毒药各一。")
+    if "Hunter" in roster:
+        lines.append("猎人死亡可开枪。")
+    if "Guard" in roster:
+        lines.append("守卫每晚守护一人（不能连守）。")
 
     return "\n".join(lines)
 
@@ -215,7 +224,9 @@ def _build_speech_task(phase: str, is_first: bool, is_last_words: bool) -> str:
     if "BADGE" in str(phase):
         return "【警徽竞选发言】当前是警徽相关发言阶段。围绕你的可见信息、角色边界和当前判断表达。"
     if "PK" in str(phase):
-        return "【PK发言】场上已有少数焦点位。回应与你相关的公开质疑，保持事实和推断分离。"
+        return (
+            "【PK发言】场上已有少数焦点位。回应与你相关的公开质疑，保持事实和推断分离。"
+        )
     if is_first:
         return "【首个发言】第一个发言。基于当前已经公开的信息表达你的初始观察。"
     return "【白天发言】从上一个发言者的观点切入，认同、质疑、补充都可以。不需要面面俱到，只说此刻最在意的一点。"
@@ -312,7 +323,9 @@ def build_strategy_bias_block(strategy_bias: dict, action: str) -> str:
         "witch_act": ("skill_policy", "risk_rules"),
     }
 
-    sections = action_sections.get(action, ("speech_policy", "vote_policy", "skill_policy", "risk_rules"))
+    sections = action_sections.get(
+        action, ("speech_policy", "vote_policy", "skill_policy", "risk_rules")
+    )
     lines = [
         "【本局强制策略规则 — 高优先级，必须严格遵守】",
         "下列规则由本轮策略版本指定，优先级高于你的通用策略直觉。",

@@ -105,7 +105,7 @@ def _mwt(day, target, votes):
 
 def _md(day, player, reason, phase=None):
     if phase is None:
-        phase = Phase.DAY_RESOLVE if reason == "vote" else Phase.NIGHT_RESOLVE
+        phase = Phase.DAY_RESOLVE if reason == "voted_out" else Phase.NIGHT_RESOLVE
     return GameEvent.create(
         day=day,
         phase=phase,

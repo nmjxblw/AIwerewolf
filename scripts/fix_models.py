@@ -66,7 +66,7 @@ def generate_synthetic_opportunities(n: int = 300) -> list[dict]:
             },
             "outcome_features": {
                 "target_died_same_phase": bool(rng.random() > 0.7),
-                "target_died_reason": rng.choice(["vote", "wolf", "hunter", "witch", ""]),
+                "target_died_reason": rng.choice(["voted_out", "werewolf_killed", "hunter_killed", "witch_killed", ""]),
                 "actor_died_same_phase": bool(rng.random() > 0.9),
             },
             "action_features": {

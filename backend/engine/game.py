@@ -294,7 +294,7 @@ class WerewolfGame:
             players=players,
             max_days=max_days,
         )
-        self.visibility = Visibility(share_persona=share_persona)
+        self.visibility = Visibility(share_persona=share_persona, has_badge=has_badge)
         self.validator = ActionValidator()
         self.observer = observer
         self.phase_manager = PhaseManager()
@@ -1260,15 +1260,19 @@ class WerewolfGame:
         if wolf_target_id:
             if both_guarded_and_saved:
                 # 同守同救（奶穿）→ 死
-                deaths.append({"player_id": wolf_target_id, "reason": "milk_through"})
+                deaths.append(
+                    {"player_id": wolf_target_id, "reason": "guard_witch_conflict"}
+                )
             elif not witch_save and wolf_target_id != guard_target_id:
                 # 既没被守也没被救 → 死
-                deaths.append({"player_id": wolf_target_id, "reason": "wolf"})
+                deaths.append(
+                    {"player_id": wolf_target_id, "reason": "werewolf_killed"}
+                )
             # else: 只被守或只被救（但不同时）→ 活
 
         poison_target_id = self.state.night_actions.witch_poison_target_id
         if poison_target_id:
-            deaths.append({"player_id": poison_target_id, "reason": "poison"})
+            deaths.append({"player_id": poison_target_id, "reason": "witch_killed"})
 
         unique_deaths = []
         seen: set[str] = set()
@@ -1548,7 +1552,7 @@ class WerewolfGame:
             {"message": f"{target.name} was voted out."},
         )
         self._last_words_phase(target_id) if self.has_last_words else None
-        self._kill(target_id, "vote")
+        self._kill(target_id, "voted_out")
         # Check win immediately after death — skip hunter/badge on decided game
         if self._check_win():
             self._mark_phase_done(Phase.DAY_RESOLVE)
@@ -1597,7 +1601,7 @@ class WerewolfGame:
                     "hunter shoot target is invalid",
                 )
             return
-        self._kill(decision.target_id or "", "hunter")
+        self._kill(decision.target_id or "", "hunter_killed")
         target = self.state.player(decision.target_id or "")
         self._log(
             EventType.HUNTER_SHOT,
@@ -1705,8 +1709,8 @@ class WerewolfGame:
         self._set_phase(Phase.WHITE_WOLF_KING_BOOM)
         self.state.abilities.white_wolf_king_boom_used = True
         target = self.state.player(decision.target_id or "")
-        self._kill(king.id, "boom")
-        self._kill(target.id, "boom")
+        self._kill(king.id, "white_wolf_king_boom")
+        self._kill(target.id, "white_wolf_king_boom")
         self.state.day_history[self.state.day] = {
             **self.state.day_history.get(self.state.day, {}),
             "whiteWolfKingBoom": {
@@ -2115,7 +2119,7 @@ class WerewolfGame:
         player.death_reason = reason
         if self.has_badge and self.state.badge.holder_id == player.id:
             self.pending_badge_transfer_from_id = player.id
-        if player.role == Role.HUNTER and reason == "poison":
+        if player.role == Role.HUNTER and reason == "witch_killed":
             self.state.abilities.hunter_can_shoot = False
         self._log(
             EventType.PLAYER_DIED,

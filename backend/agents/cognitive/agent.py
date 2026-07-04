@@ -44,6 +44,7 @@ from backend.agents.cognitive.prompts import build_system_prompt
 from backend.agents.cognitive.social_model import DeceptionSignal
 from backend.engine.models import ActionType
 from backend.engine.models import Decision
+from backend.engine.visibility import PlayerView
 
 
 class CognitiveAgent:
@@ -152,7 +153,8 @@ class CognitiveAgent:
         self._tracker = BeliefTracker()
 
         # Game state (set by engine via initialize/update)
-        self._view: Any = None
+
+        self._view: PlayerView = None
 
         # Role-specific tracking
         self._guard_history: list[str] = []
@@ -175,7 +177,7 @@ class CognitiveAgent:
 
     # === Agent Protocol ===
 
-    def initialize(self, view: Any, game_setting: dict) -> None:
+    def initialize(self, view: PlayerView, game_setting: dict) -> None:
         self._view = view
         self.player_name = view.self_player.get("name", self.player_id)
         self.player_seat = view.self_player.get("seat", 0)
@@ -189,7 +191,7 @@ class CognitiveAgent:
         # Wolf team view is built on-demand in attack() from current PlayerView
         # (legally visible teammate list + public events + belief tracker).
 
-    def update(self, view: Any, request: str) -> None:
+    def update(self, view: PlayerView, request: str) -> None:
         self._view = view
         # Clear cached analysis when phase changes (new turn/new action type)
         new_phase = f"{view.day}:{view.phase}"
@@ -917,7 +919,7 @@ class CognitiveAgent:
                             day=self.memory.day,
                         )
 
-    def _has_meaningful_new_info_since_speech(self, obs) -> bool:
+    def _has_meaningful_new_info_since_speech(self, obs: Observation) -> bool:
         """Check if there are meaningful new events since this agent's last speech.
 
         Returns True if there's a reason to re-evaluate the vote (new role claims,

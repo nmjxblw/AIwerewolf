@@ -230,6 +230,7 @@ def _build_game(
                 "seed": seed,
                 "human_seat": human_seat,
                 "character_map": game.characters,
+                "enable_strategy": enable_strategy,
             },
         )
     )

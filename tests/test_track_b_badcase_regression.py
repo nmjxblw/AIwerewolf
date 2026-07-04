@@ -165,7 +165,7 @@ def _make_wolf_tally(day: int, target: Player, votes: dict[str, str]) -> GameEve
 
 def _make_death(day: int, player: Player, reason: str, *, phase: Phase | None = None) -> GameEvent:
     if phase is None:
-        phase = Phase.DAY_RESOLVE if reason == "vote" else Phase.NIGHT_RESOLVE
+        phase = Phase.DAY_RESOLVE if reason == "voted_out" else Phase.NIGHT_RESOLVE
     return GameEvent.create(
         day=day,
         phase=phase,

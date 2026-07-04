@@ -463,7 +463,8 @@ export function useGamePageController(roomId: string) {
   }
 
   async function exportThoughtProcess() {
-    const gameId = latestGameStateRef.current?.id || roomId;
+    const gameId =
+      room?.current_game_id || latestGameStateRef.current?.id || roomId;
     if (!gameId) return;
     try {
       const resp = await fetch(

@@ -901,7 +901,7 @@ class ReviewBonusDetector:
                     for event in state.events
                     if event.type == EventType.PLAYER_DIED
                     and event.day == day
-                    and event.payload.get("reason") == "vote"
+                    and event.payload.get("reason") == "voted_out"
                 ),
                 None,
             )
@@ -1422,7 +1422,7 @@ class ReviewBonusDetector:
         return any(
             event.type == EventType.PLAYER_DIED
             and event.payload.get("player_id") == player_id
-            and event.payload.get("reason") == "vote"
+            and event.payload.get("reason") == "voted_out"
             for event in state.events
         )
 
@@ -2261,7 +2261,7 @@ class MetricsCalculator:
             if target is None:
                 continue
             value = 1.0 if target.role.value in self.POWER_ROLES else 0.6
-            if self._died_by_reason(state, target.id, "wolf", event.day):
+            if self._died_by_reason(state, target.id, "werewolf_killed", event.day):
                 value += 0.1
             values.append(self._clamp(value))
         return 0.0 if not values else self._clamp(sum(values) / len(values))
@@ -2410,7 +2410,7 @@ class MetricsCalculator:
             if (
                 target_id
                 and self._is_majority_wolf_target(state, target_id, event.day)
-                and not self._died_by_reason(state, target_id, "wolf", event.day)
+                and not self._died_by_reason(state, target_id, "werewolf_killed", event.day)
             ):
                 successes += 1
         return self._clamp(successes / len(guard_events))
@@ -2600,7 +2600,7 @@ class MetricsCalculator:
         return any(
             event.type == EventType.PLAYER_DIED
             and event.payload.get("player_id") == player_id
-            and event.payload.get("reason") == "vote"
+            and event.payload.get("reason") == "voted_out"
             for event in state.events
         )
 
@@ -3814,7 +3814,7 @@ class CounterfactualAnalyzer:
                     for event in state.events
                     if event.type == EventType.PLAYER_DIED
                     and event.day == day
-                    and event.payload.get("reason") == "vote"
+                    and event.payload.get("reason") == "voted_out"
                 ),
                 None,
             )
@@ -4080,7 +4080,7 @@ class CounterfactualAnalyzer:
             if wolf_target_id and not witch_save_used:
                 wolf_victim = self._target_player_by_id(state, wolf_target_id)
                 if wolf_victim and wolf_victim.role in {Role.SEER, Role.WITCH, Role.HUNTER, Role.GUARD}:
-                    if self._died_by_reason(state, wolf_target_id, "wolf", day):
+                    if self._died_by_reason(state, wolf_target_id, "werewolf_killed", day):
                         # Exact replay: what if witch saved the key role?
                         orig_result, cf_result = replay_night_with_change(
                             original_snapshot,
@@ -4353,7 +4353,7 @@ class CounterfactualAnalyzer:
             night_deaths = [
                 e
                 for e in state.events
-                if e.type == EventType.PLAYER_DIED and e.day == day and e.payload.get("reason") == "wolf"
+                if e.type == EventType.PLAYER_DIED and e.day == day and e.payload.get("reason") == "werewolf_killed"
             ]
             if not night_deaths:
                 continue  # No one died from wolf attack — guard did their job or witch saved

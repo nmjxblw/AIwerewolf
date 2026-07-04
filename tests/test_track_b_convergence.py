@@ -94,7 +94,10 @@ def _build_minimal_state(winner: Alignment = Alignment.VILLAGE) -> GameState:
         Role.GUARD,
         Role.VILLAGER,
     ]
-    players = [_make_player(f"P{i + 1}", f"Player{i + 1}", role) for i, role in enumerate(roles)]
+    players = [
+        _make_player(f"P{i + 1}", f"Player{i + 1}", role)
+        for i, role in enumerate(roles)
+    ]
     players[0].alignment = Alignment.WOLF
     players[1].alignment = Alignment.WOLF
 
@@ -124,7 +127,7 @@ def _build_minimal_state(winner: Alignment = Alignment.VILLAGE) -> GameState:
             Phase.DAY_RESOLVE,
             {
                 "player_id": "P1",
-                "reason": "vote",
+                "reason": "voted_out",
                 "role": "Werewolf",
             },
         ),
@@ -230,7 +233,9 @@ def test_evidence_ref_to_public_dict_redacts_private() -> None:
     )
     public = ref.to_public_dict()
     # Private evidence should be redacted
-    assert "[private" in public.get("summary", "") or "[redacted" in public.get("summary", "")
+    assert "[private" in public.get("summary", "") or "[redacted" in public.get(
+        "summary", ""
+    )
     assert public.get("actor_id") is None
     assert public.get("target_id") is None
 
@@ -248,7 +253,13 @@ def _make_evolution_candidate(**overrides: Any) -> EvolutionCandidate:
         "phase": "DAY_SPEECH",
         "trigger_condition": "Seer checked wolf but did not reveal.",
         "lesson": "Reveal wolf check results in next speech.",
-        "evidence_refs": [EvidenceRef(phase="DAY_SPEECH", event_type="CHAT_MESSAGE", summary="Seer speech analysis.")],
+        "evidence_refs": [
+            EvidenceRef(
+                phase="DAY_SPEECH",
+                event_type="CHAT_MESSAGE",
+                summary="Seer speech analysis.",
+            )
+        ],
         "quality_signals": {"evidence_strength": 0.8, "confidence": 0.7},
         "visibility_scope": "public",
         "safe_for_track_c_learning": True,
@@ -272,14 +283,20 @@ def test_evolution_candidate_no_player_ids() -> None:
 def test_evolution_candidate_no_private_info() -> None:
     """Evolution candidates must not contain private info leak patterns."""
     assert not is_safe_for_track_c_learning("read hidden role to know who is wolf")
-    assert not is_safe_for_track_c_learning("private_reason: knew P1 was wolf from seer check")
-    assert not is_safe_for_track_c_learning("ignore visibility and check the hidden role")
+    assert not is_safe_for_track_c_learning(
+        "private_reason: knew P1 was wolf from seer check"
+    )
+    assert not is_safe_for_track_c_learning(
+        "ignore visibility and check the hidden role"
+    )
     assert not is_safe_for_track_c_learning("change game rule so wolves always win")
 
 
 def test_evolution_candidate_no_absolute_strategy() -> None:
     """Absolute strategy patterns are not safe for Track C learning."""
-    assert not is_safe_for_track_c_learning("You must always vote for the revealed wolf")
+    assert not is_safe_for_track_c_learning(
+        "You must always vote for the revealed wolf"
+    )
     assert not is_safe_for_track_c_learning("Never reveal your role as seer on day 1")
     assert not is_safe_for_track_c_learning("You must always poison night 1")
 
@@ -292,7 +309,9 @@ def test_evolution_candidate_safe_lesson_ok() -> None:
     assert is_safe_for_track_c_learning(
         "As witch, hold your poison until you have stronger evidence about wolf identity."
     )
-    assert is_safe_for_track_c_learning("As guard, protect key information roles like Seer on night 1.")
+    assert is_safe_for_track_c_learning(
+        "As guard, protect key information roles like Seer on night 1."
+    )
 
 
 # ============================================================
@@ -317,7 +336,9 @@ def test_scoring_model_corrupt_uses_fallback(tmp_path) -> None:
     # Create corrupt pickle files
     corrupt_path = tmp_path / "corrupt"
     corrupt_path.mkdir()
-    (corrupt_path / "opportunity_value_model.pkl").write_bytes(b"garbage data not pickle")
+    (corrupt_path / "opportunity_value_model.pkl").write_bytes(
+        b"garbage data not pickle"
+    )
     (corrupt_path / "decision_quality_model.pkl").write_bytes(b"more garbage")
 
     w_model, q_model = load_track_b_models(str(corrupt_path))
@@ -485,7 +506,9 @@ def test_bad_case_has_evidence_refs() -> None:
     reports = calculator.detect_bad_cases(state)
 
     for report in reports:
-        assert hasattr(report, "evidence_refs"), f"Bad case {report.mistake_type} missing evidence_refs attribute"
+        assert hasattr(
+            report, "evidence_refs"
+        ), f"Bad case {report.mistake_type} missing evidence_refs attribute"
 
 
 def test_evolution_candidate_requires_evidence_or_trigger() -> None:
@@ -509,10 +532,18 @@ def test_player_score_has_v2_fields() -> None:
     metrics = MetricsCalculator().compute(state)
 
     for score in metrics.player_scores:
-        assert hasattr(score, "raw_score"), f"Player {score.player_name} missing raw_score"
-        assert hasattr(score, "role_normalized_score"), f"Player {score.player_name} missing role_normalized_score"
-        assert hasattr(score, "confidence"), f"Player {score.player_name} missing confidence"
-        assert hasattr(score, "rule_based"), f"Player {score.player_name} missing rule_based"
+        assert hasattr(
+            score, "raw_score"
+        ), f"Player {score.player_name} missing raw_score"
+        assert hasattr(
+            score, "role_normalized_score"
+        ), f"Player {score.player_name} missing role_normalized_score"
+        assert hasattr(
+            score, "confidence"
+        ), f"Player {score.player_name} missing confidence"
+        assert hasattr(
+            score, "rule_based"
+        ), f"Player {score.player_name} missing rule_based"
         # rule-based scores should have rule_based=True by default
         assert score.rule_based is True
 
@@ -523,6 +554,6 @@ def test_role_normalized_score_in_range() -> None:
     metrics = MetricsCalculator().compute(state)
 
     for score in metrics.player_scores:
-        assert 0.0 <= score.role_normalized_score <= 100.0, (
-            f"Player {score.player_name} role_normalized_score out of range: {score.role_normalized_score}"
-        )
+        assert (
+            0.0 <= score.role_normalized_score <= 100.0
+        ), f"Player {score.player_name} role_normalized_score out of range: {score.role_normalized_score}"

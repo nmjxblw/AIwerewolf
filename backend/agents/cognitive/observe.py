@@ -17,6 +17,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from backend.engine.visibility import PlayerView
 
 # ============================================================
 # Structured observation types
@@ -25,66 +26,94 @@ from typing import Optional
 
 @dataclass
 class PlayerInfo:
-    """Public information about a single player."""
+    """玩家公开信息。"""
 
     id: str
+    """玩家唯一 ID"""
     name: str
+    """玩家名称"""
     seat: int
+    """座位号（1-based）"""
     alive: bool
+    """是否存活"""
     role: str = "unknown"
+    """公开可见的角色（通常为 unknown，死亡翻牌后可见）"""
 
 
 @dataclass
 class SpeechInfo:
-    """A speech made in the current round."""
+    """一条玩家发言记录。"""
 
     player_id: str
+    """发言者 ID"""
     player_name: str
+    """发言者名称"""
     seat: int
+    """发言者座位号"""
     content: str
+    """发言内容原文"""
 
 
 @dataclass
 class VoteInfo:
-    """A vote cast in a round."""
+    """一条投票记录。"""
 
     voter_id: str
+    """投票者 ID"""
     voter_name: str
+    """投票者名称"""
     target_id: str
+    """被投票玩家 ID"""
     target_name: str
+    """被投票玩家名称"""
     day: int = 0
+    """投票所在天数"""
 
 
 @dataclass
 class DeathInfo:
-    """A player death."""
+    """一条玩家死亡记录。"""
 
     player_id: str
+    """死亡玩家 ID"""
     player_name: str
+    """死亡玩家名称"""
     seat: int
-    cause: str  # "wolf", "vote", "witch", "hunter"
+    """死亡玩家座位号"""
+    cause: str
+    """死因：werewolf_killed(狼杀) / voted_out(投票放逐) / witch_killed(女巫毒杀) / hunter_killed(猎人开枪) / white_wolf_king_boom(白狼王自爆) / guard_witch_conflict(奶穿)"""
     revealed_role: str = ""
+    """死亡翻牌时揭示的角色（空字符串表示未翻牌）"""
 
 
 @dataclass
 class RoleClaim:
-    """A role claim extracted from speech or system events."""
+    """从发言或系统事件中提取的角色声称。"""
 
     player_name: str
+    """声称者名称"""
     player_id: str
+    """声称者 ID"""
     seat: int
+    """声称者座位号"""
     claimed_role: str
+    """声称的角色名（预言家/女巫/猎人/守卫）"""
     day: int
-    context: str  # "badge_election", "day_speech", "last_words", "revealed_on_death"
+    """声称所在天数"""
+    context: str
+    """声称语境：day_speech(白天发言) / revealed_on_death(死亡翻牌)"""
 
 
 @dataclass
 class Contradiction:
-    """A detected contradiction (e.g., multiple claims of same unique role)."""
+    """检测到的矛盾（例如多人声称同一唯一角色）。"""
 
     role: str
-    claimants: List[str]  # player names
+    """被声称的角色"""
+    claimants: List[str]
+    """声称该角色的玩家名称列表"""
     description: str
+    """矛盾的人类可读描述"""
 
 
 # ============================================================
@@ -109,7 +138,16 @@ class BeliefTracker:
         self.votes: List[VoteInfo] = []
         self.deaths: List[DeathInfo] = []
         self.contradictions: List[Contradiction] = []
-        self._unique_roles = {"预言家", "女巫", "猎人", "守卫", "Seer", "Witch", "Hunter", "Guard"}
+        self._unique_roles = {
+            "预言家",
+            "女巫",
+            "猎人",
+            "守卫",
+            "Seer",
+            "Witch",
+            "Hunter",
+            "Guard",
+        }
         self._processed_speech_ids: set = set()
         self._seen_vote_keys: set = set()
         self._seen_death_keys: set = set()
@@ -251,7 +289,9 @@ class BeliefTracker:
         if self.claims:
             lines = ["=== 角色声称 ==="]
             for c in self.claims[-8:]:
-                lines.append(f"  {c.seat}号:{c.player_name} 声称是 {c.claimed_role} (D{c.day}, {c.context})")
+                lines.append(
+                    f"  {c.seat}号:{c.player_name} 声称是 {c.claimed_role} (D{c.day}, {c.context})"
+                )
             parts.append("\n".join(lines))
 
         if self.contradictions:
@@ -283,48 +323,77 @@ class BeliefTracker:
 
 @dataclass
 class Observation:
-    """Structured extraction of what the agent can see.
+    """Agent 当前可见的游戏状态结构化提取。
 
-    This is the ONLY output of the observation layer.
-    Everything downstream (think, act) consumes this — not raw view.
+    这是观察层的唯一输出。下游所有模块（推理、决策）都消费这个结构，
+    不直接消费原始 PlayerView。
+
+    构建入口：observe(view, role, tracker) → Observation
     """
 
-    # Identity
+    # ── 身份 ──
     player_id: str
+    """玩家唯一 ID"""
     player_name: str
+    """玩家名称"""
     player_seat: int
+    """玩家座位号（1-based）"""
     player_role: str
+    """玩家身份（Werewolf / Seer / Witch / Villager 等）"""
 
-    # Game state
+    # ── 游戏状态 ──
     day: int
+    """当前天数（0 = 第0夜准备阶段）"""
     phase: str
+    """当前阶段名（NIGHT_WOLF_ACTION / DAY_SPEECH / DAY_VOTE 等）"""
 
-    # Players
+    # ── 玩家列表 ──
     alive: List[PlayerInfo] = field(default_factory=list)
+    """存活玩家列表"""
     dead: List[PlayerInfo] = field(default_factory=list)
+    """死亡玩家列表（含死亡翻牌角色信息）"""
     legal_targets: List[PlayerInfo] = field(default_factory=list)
+    """当前行动合法目标列表（由引擎根据阶段和角色计算）"""
 
-    # Current round
+    # ── 本轮事件 ──
     speeches: List[SpeechInfo] = field(default_factory=list)
+    """本轮（当天+当前阶段）所有玩家发言记录"""
     votes: List[VoteInfo] = field(default_factory=list)
+    """本轮投票记录"""
 
-    # History
+    # ── 历史 ──
     deaths: List[DeathInfo] = field(default_factory=list)
+    """全局死亡记录（含死因和翻牌角色）"""
 
-    # Private info (role-specific)
+    # ── 私有信息（角色专属） ──
     private: Dict[str, Any] = field(default_factory=dict)
+    """角色私有信息。狼人含 known_wolves（狼队友列表），预言家含 seer_check（查验结果），女巫含 witch_victim（被刀玩家）"""
 
-    # Social signals
+    # ── 社交信号 ──
     mentioned_by: List[str] = field(default_factory=list)
+    """本轮发言中提到当前玩家的其他玩家名称列表"""
     adjacent_dead: List[str] = field(default_factory=list)
+    """座位相邻的死亡玩家名称列表（用于生成\"邻座死亡\"视角提示）"""
 
-    # Belief tracker output (new — from BeliefTracker)
+    # ── 游戏配置 ──
+    role_roster: List[str] = field(default_factory=list)
+    """本局实际角色清单（来自游戏引擎配置，非玩家声称）。
+    用于 prompt 构建中的规则摘要，例如判断本局是否有预言家/女巫/守卫/猎人。"""
+    has_badge: bool = True
+    """本局是否有警长/警徽机制（来自前端 toggle）。False 时 prompt 不显示警长相关内容。"""
+
+    # ── BeliefTracker 输出 ──
     role_claims: List[RoleClaim] = field(default_factory=list)
+    """全局角色声称记录（来自 BeliefTracker 的状态追踪）"""
     contradictions: List[Contradiction] = field(default_factory=list)
+    """检测到的角色声称矛盾（如多人声称预言家）"""
     belief_summary: str = ""
+    """BeliefTracker 生成的局势摘要文本（直接注入 prompt）"""
 
 
-def observe(view: Any, role: str, tracker: Optional[BeliefTracker] = None) -> Observation:
+def observe(
+    view: PlayerView, role: str, tracker: Optional[BeliefTracker] = None
+) -> Observation:
     """Build an Observation from a PlayerView.
 
     Args:
@@ -411,7 +480,8 @@ def observe(view: Any, role: str, tracker: Optional[BeliefTracker] = None) -> Ob
     known_wolves = list(getattr(view, "known_wolves", []) or [])
     if known_wolves:
         obs.private["known_wolves"] = [
-            f"{wolf.get('seat', '?')}号:{wolf.get('name', wolf.get('id', '?'))}" for wolf in known_wolves
+            f"{wolf.get('seat', '?')}号:{wolf.get('name', wolf.get('id', '?'))}"
+            for wolf in known_wolves
         ]
     for e in view.private_events:
         payload = e.get("payload", {}) or {}
@@ -433,6 +503,10 @@ def observe(view: Any, role: str, tracker: Optional[BeliefTracker] = None) -> Ob
         diff = abs(d.seat - obs.player_seat)
         if diff == 1 or diff == total_seats - 1:
             obs.adjacent_dead.append(d.player_name)
+
+    # Role roster (actual game config, not claimed roles)
+    obs.role_roster = list(getattr(view, "role_roster", []) or [])
+    obs.has_badge = bool(getattr(view, "has_badge", True))
 
     # Belief tracker integration
     if tracker is not None:
@@ -456,7 +530,9 @@ def format_observation(obs: Observation) -> str:
     ]
 
     if obs.legal_targets:
-        lines.append(f"合法目标：{'，'.join(f'{p.seat}号:{p.name}' for p in obs.legal_targets)}")
+        lines.append(
+            f"合法目标：{'，'.join(f'{p.seat}号:{p.name}' for p in obs.legal_targets)}"
+        )
 
     if obs.speeches:
         lines.append("\n=== 今日发言 ===")
@@ -469,10 +545,10 @@ def format_observation(obs: Observation) -> str:
             lines.append(f"  {v.voter_name} -> {v.target_name}")
 
     if obs.deaths:
-        lines.append("\n=== 死亡记录 ===")
+        lines.append("\n=== 淘汰记录 ===")
         for d in obs.deaths:
             role_str = f"({d.revealed_role})" if d.revealed_role else ""
-            lines.append(f"  第{d.seat}号:{d.player_name} {role_str}（{d.cause}）")
+            lines.append(f"  第{d.seat}号:{d.player_name} {role_str} | 原因：{d.cause}")
 
     if obs.role_claims:
         lines.append("\n=== 角色声称 ===")
@@ -514,7 +590,10 @@ def _find_player(view: Any, player_id: str) -> dict:
 def _detect_role_claim(speech: str) -> Optional[str]:
     """Detect if a speech contains a role claim. Returns role name or None."""
     patterns = [
-        (r"(?:我是|我就是|我是真的)\s*(?:一个\s*)?(预言家|女巫|猎人|守卫|村民|白狼王|狼人)", 1),
+        (
+            r"(?:我是|我就是|我是真的)\s*(?:一个\s*)?(预言家|女巫|猎人|守卫|村民|白狼王|狼人)",
+            1,
+        ),
         (r"(?:跳|报)\s*(?:一个\s*)?(预言家|女巫|猎人|守卫)", 1),
         (r"(?:身份.*?是|底牌.*?是)\s*(预言家|女巫|猎人|守卫|村民|白狼王|狼人)", 1),
     ]

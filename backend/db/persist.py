@@ -961,11 +961,9 @@ def export_game_thought_process(game_id: str) -> dict | None:
             .order_by(AgentDecision.created_at)
             .all()
         )
-        if not decisions:
-            return None
 
-        # Fetch prompt snapshots joined by decision
-        snapshots = {}
+        # Fetch prompt snapshots
+        snapshots: dict[str, list] = {}
         for ps in (
             db.query(PromptSnapshot)
             .filter(PromptSnapshot.game_id == game_id)
@@ -980,84 +978,131 @@ def export_game_thought_process(game_id: str) -> dict | None:
             for p in db.query(Player).filter(Player.game_id == game_id).all()
         }
 
-        entries = []
-        for d in decisions:
-            player = players.get(d.player_id, {})
-            p_snaps = snapshots.get(d.player_id, [])
-            snap = next(
-                (s for s in reversed(p_snaps) if s.day == d.day and s.phase == d.phase),
-                None,
-            )
-
-            action = d.parsed_action or {}
-            entries.append(
-                {
-                    "day": d.day,
-                    "phase": d.phase,
-                    "player_id": d.player_id,
-                    "player_name": player.get("name", d.player_id),
-                    "player_role": player.get("role", ""),
-                    "player_seat": player.get("seat", 0),
-                    "request": (snap.request if snap else ""),
-                    "system_prompt": (snap.system_prompt if snap else None),
-                    "user_prompt": (snap.user_prompt if snap else None),
-                    "thinking": (snap.thinking if snap else None),
-                    "raw_response": d.raw_output or "",
-                    "action_type": action.get("action_type", ""),
-                    "target_id": action.get("target_id"),
-                    "speech": action.get("speech") or "",
-                    "reasoning": action.get("reasoning") or "",
-                    "latency_ms": d.latency_ms,
-                    "model": d.model_name or "",
-                    "provider": d.provider or "",
-                }
-            )
-
-        # Fallback: if no decisions recorded (game still running or using cognitive agents),
-        # build entries from game events (speeches + votes + deaths) with player info.
-        if not entries:
-            game = db.query(Game).filter(Game.id == game_id).first()
-            if game and game.events:
-                for e in sorted(game.events, key=lambda x: (x.seq or 0, x.created_at)):
-                    content = e.content or {}
-                    player_id = content.get("actor_id") or content.get("voter_id") or ""
-                    player = players.get(player_id, {})
-                    entry = {
-                        "day": e.day,
-                        "phase": e.phase,
-                        "player_id": player_id,
-                        "player_name": player.get(
-                            "name",
-                            content.get("actor_name")
-                            or content.get("voter_name")
-                            or "",
-                        ),
+        # ── Path A: AgentDecision records exist (game finished, decisions flushed) ──
+        if decisions:
+            entries = []
+            for d in decisions:
+                player = players.get(d.player_id, {})
+                p_snaps = snapshots.get(d.player_id, [])
+                snap = next(
+                    (
+                        s
+                        for s in reversed(p_snaps)
+                        if s.day == d.day and s.phase == d.phase
+                    ),
+                    None,
+                )
+                action = d.parsed_action or {}
+                entries.append(
+                    {
+                        "day": d.day,
+                        "phase": d.phase,
+                        "player_id": d.player_id,
+                        "player_name": player.get("name", d.player_id),
                         "player_role": player.get("role", ""),
                         "player_seat": player.get("seat", 0),
-                        "request": "",
-                        "system_prompt": None,
-                        "user_prompt": None,
-                        "thinking": None,
-                        "raw_response": "",
-                        "action_type": e.event_type or "",
-                        "target_id": content.get("target_id") or "",
-                        "speech": content.get("speech") or content.get("message") or "",
-                        "reasoning": content.get("reasoning") or "",
-                        "latency_ms": None,
-                        "model": "",
-                        "provider": "",
+                        "request": (snap.request if snap else ""),
+                        "system_prompt": (snap.system_prompt if snap else None),
+                        "user_prompt": (snap.user_prompt if snap else None),
+                        "thinking": (snap.thinking if snap else None),
+                        "raw_response": d.raw_output or "",
+                        "action_type": action.get("action_type", ""),
+                        "target_id": action.get("target_id"),
+                        "speech": action.get("speech") or "",
+                        "reasoning": action.get("reasoning") or "",
+                        "latency_ms": d.latency_ms,
+                        "model": d.model_name or "",
+                        "provider": d.provider or "",
                     }
-                    entries.append(entry)
+                )
+            return {
+                "game_id": game_id,
+                "total_decisions": len(entries),
+                "entries": entries,
+                "note": None,
+            }
 
+        # ── Path B: No AgentDecision yet (game still running) ──
+        # Build entries directly from PromptSnapshot + Player records
+        if not snapshots:
+            # Last resort: try game events fallback
+            game = db.query(Game).filter(Game.id == game_id).first()
+            if game and game.events:
+                entries = []
+                for e in sorted(game.events, key=lambda x: (x.seq or 0, x.created_at)):
+                    content = e.content or {}
+                    pid = content.get("actor_id") or content.get("voter_id") or ""
+                    player = players.get(pid, {})
+                    entries.append(
+                        {
+                            "day": e.day,
+                            "phase": e.phase,
+                            "player_id": pid,
+                            "player_name": player.get(
+                                "name",
+                                content.get("actor_name")
+                                or content.get("voter_name")
+                                or "",
+                            ),
+                            "player_role": player.get("role", ""),
+                            "player_seat": player.get("seat", 0),
+                            "request": "",
+                            "system_prompt": None,
+                            "user_prompt": None,
+                            "thinking": None,
+                            "raw_response": "",
+                            "action_type": e.event_type or "",
+                            "target_id": content.get("target_id") or "",
+                            "speech": content.get("speech")
+                            or content.get("message")
+                            or "",
+                            "reasoning": content.get("reasoning") or "",
+                            "latency_ms": None,
+                            "model": "",
+                            "provider": "",
+                        }
+                    )
+                return {
+                    "game_id": game_id,
+                    "total_decisions": len(entries),
+                    "entries": entries,
+                    "note": "基于游戏事件重建（PromptSnapshot 和 AgentDecision 均未写入 DB）",
+                }
+            return None
+
+        # Path C: PromptSnapshots exist, build from them
+        entries = []
+        for pid, p_snaps in snapshots.items():
+            player = players.get(pid, {})
+            for snap in sorted(p_snaps, key=lambda s: (s.day, s.created_at)):
+                entries.append(
+                    {
+                        "day": snap.day,
+                        "phase": snap.phase,
+                        "player_id": pid,
+                        "player_name": player.get("name", pid),
+                        "player_role": player.get("role", ""),
+                        "player_seat": player.get("seat", 0),
+                        "request": snap.request or "",
+                        "system_prompt": snap.system_prompt,
+                        "user_prompt": snap.user_prompt,
+                        "thinking": snap.thinking,
+                        "raw_response": (snap.response or "")[:5000],
+                        "action_type": snap.request or "",
+                        "target_id": None,
+                        "speech": "",
+                        "reasoning": "",
+                        "latency_ms": snap.latency_ms,
+                        "model": snap.model_name or "",
+                        "provider": snap.provider or "",
+                    }
+                )
+        entries.sort(key=lambda e: (e["day"], e["player_seat"], e["phase"]))
         return {
             "game_id": game_id,
             "total_decisions": len(entries),
             "entries": entries,
-            "note": (
-                "基于游戏事件重建（决策记录尚未写入 DB）"
-                if not decisions and entries
-                else None
-            ),
+            "note": "基于 PromptSnapshot 重建（游戏进行中，AgentDecision 尚未写入 DB）",
         }
     finally:
         db.close()

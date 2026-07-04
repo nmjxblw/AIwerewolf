@@ -107,7 +107,7 @@ def make_seer_result(day: int, seer: Player, target: Player, *, is_wolf: bool) -
 def make_death(day: int, player: Player, reason: str) -> GameEvent:
     return GameEvent.create(
         day=day,
-        phase=Phase.DAY_RESOLVE if reason == "vote" else Phase.NIGHT_RESOLVE,
+        phase=Phase.DAY_RESOLVE if reason == "voted_out" else Phase.NIGHT_RESOLVE,
         type=EventType.PLAYER_DIED,
         visibility="public",
         payload={"player_id": player.id, "player_name": player.name, "reason": reason},

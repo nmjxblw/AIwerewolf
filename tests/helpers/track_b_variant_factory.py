@@ -144,12 +144,60 @@ KILL_TARGET_VALUES = {
 
 # Seat configuration templates
 SEAT_CONFIGS = [
-    {"W1": "P1", "W2": "P2", "Se": "P3", "Wi": "P4", "Gu": "P5", "Hu": "P6", "Vi": "P7"},
-    {"W1": "P4", "W2": "P6", "Se": "P1", "Wi": "P2", "Gu": "P3", "Hu": "P5", "Vi": "P7"},
-    {"W1": "P2", "W2": "P7", "Se": "P5", "Wi": "P1", "Gu": "P3", "Hu": "P4", "Vi": "P6"},
-    {"W1": "P3", "W2": "P5", "Se": "P6", "Wi": "P1", "Gu": "P2", "Hu": "P4", "Vi": "P7"},
-    {"W1": "P1", "W2": "P5", "Se": "P7", "Wi": "P3", "Gu": "P2", "Hu": "P4", "Vi": "P6"},
-    {"W1": "P6", "W2": "P7", "Se": "P2", "Wi": "P4", "Gu": "P1", "Hu": "P3", "Vi": "P5"},
+    {
+        "W1": "P1",
+        "W2": "P2",
+        "Se": "P3",
+        "Wi": "P4",
+        "Gu": "P5",
+        "Hu": "P6",
+        "Vi": "P7",
+    },
+    {
+        "W1": "P4",
+        "W2": "P6",
+        "Se": "P1",
+        "Wi": "P2",
+        "Gu": "P3",
+        "Hu": "P5",
+        "Vi": "P7",
+    },
+    {
+        "W1": "P2",
+        "W2": "P7",
+        "Se": "P5",
+        "Wi": "P1",
+        "Gu": "P3",
+        "Hu": "P4",
+        "Vi": "P6",
+    },
+    {
+        "W1": "P3",
+        "W2": "P5",
+        "Se": "P6",
+        "Wi": "P1",
+        "Gu": "P2",
+        "Hu": "P4",
+        "Vi": "P7",
+    },
+    {
+        "W1": "P1",
+        "W2": "P5",
+        "Se": "P7",
+        "Wi": "P3",
+        "Gu": "P2",
+        "Hu": "P4",
+        "Vi": "P6",
+    },
+    {
+        "W1": "P6",
+        "W2": "P7",
+        "Se": "P2",
+        "Wi": "P4",
+        "Gu": "P1",
+        "Hu": "P3",
+        "Vi": "P5",
+    },
 ]
 
 
@@ -165,7 +213,14 @@ def _uid():
 
 
 def _mp(pid, name, role, alive=True):
-    return Player(id=pid, seat=int(pid[1:]), name=name, role=role, alignment=ALIGNMENT_BY_ROLE[role], alive=alive)
+    return Player(
+        id=pid,
+        seat=int(pid[1:]),
+        name=name,
+        role=role,
+        alignment=ALIGNMENT_BY_ROLE[role],
+        alive=alive,
+    )
 
 
 def _mv(day, voter, target):
@@ -174,7 +229,12 @@ def _mv(day, voter, target):
         phase=Phase.DAY_VOTE,
         type=EventType.VOTE_CAST,
         visibility="public",
-        payload={"voter_id": voter.id, "voter_name": voter.name, "target_id": target.id, "target_name": target.name},
+        payload={
+            "voter_id": voter.id,
+            "voter_name": voter.name,
+            "target_id": target.id,
+            "target_name": target.name,
+        },
     )
 
 
@@ -184,7 +244,12 @@ def _ms(day, actor, speech, phase=Phase.DAY_SPEECH):
         phase=phase,
         type=EventType.CHAT_MESSAGE,
         visibility="public",
-        payload={"actor_id": actor.id, "actor_name": actor.name, "speech": speech, "last_words": False},
+        payload={
+            "actor_id": actor.id,
+            "actor_name": actor.name,
+            "speech": speech,
+            "last_words": False,
+        },
     )
 
 
@@ -194,7 +259,12 @@ def _mna(day, actor, atype, target, phase=Phase.NIGHT_WOLF_ACTION):
         phase=phase,
         type=EventType.NIGHT_ACTION,
         visibility="private",
-        payload={"actor_id": actor.id, "actor_name": actor.name, "action_type": atype, "target_id": target.id},
+        payload={
+            "actor_id": actor.id,
+            "actor_name": actor.name,
+            "action_type": atype,
+            "target_id": target.id,
+        },
         visible_to=[actor.id],
     )
 
@@ -205,7 +275,12 @@ def _msr(day, seer, target, is_wolf):
         phase=Phase.NIGHT_SEER_ACTION,
         type=EventType.PRIVATE_INFO,
         visibility="private",
-        payload={"kind": "seer_result", "target_id": target.id, "target_name": target.name, "is_wolf": is_wolf},
+        payload={
+            "kind": "seer_result",
+            "target_id": target.id,
+            "target_name": target.name,
+            "is_wolf": is_wolf,
+        },
         visible_to=[seer.id],
     )
 
@@ -216,14 +291,19 @@ def _mwt(day, target, votes):
         phase=Phase.NIGHT_WOLF_ACTION,
         type=EventType.PRIVATE_INFO,
         visibility="private",
-        payload={"kind": "wolf_attack_tally", "target_id": target.id, "target_name": target.name, "votes": votes},
+        payload={
+            "kind": "wolf_attack_tally",
+            "target_id": target.id,
+            "target_name": target.name,
+            "votes": votes,
+        },
         visible_to=list(votes.keys()),
     )
 
 
 def _md(day, player, reason, phase=None):
     if phase is None:
-        phase = Phase.DAY_RESOLVE if reason == "vote" else Phase.NIGHT_RESOLVE
+        phase = Phase.DAY_RESOLVE if reason == "voted_out" else Phase.NIGHT_RESOLVE
     return GameEvent.create(
         day=day,
         phase=phase,
@@ -302,7 +382,15 @@ def build_variant_fixture(
     hu = _mp(hu_id, f"猎人{hu_id}", Role.HUNTER)
     vi = _mp(vi_id, f"村民{vi_id}", Role.VILLAGER)
     players = [w1, w2, se, wi, gu, hu, vi]
-    player_by_role = {"W1": w1, "W2": w2, "Se": se, "Wi": wi, "Gu": gu, "Hu": hu, "Vi": vi}
+    player_by_role = {
+        "W1": w1,
+        "W2": w2,
+        "Se": se,
+        "Wi": wi,
+        "Gu": gu,
+        "Hu": hu,
+        "Vi": vi,
+    }
 
     # Resolve kill target
     if kill_target_role == "Seer":
@@ -323,16 +411,26 @@ def build_variant_fixture(
     w1_text = w1_template[wolf_speech_variant % len(w1_template)]
 
     if wolf2_speech_type:
-        t2 = (WOLF_GOOD_SPEECHES if wolf2_speech_type in WOLF_GOOD_SPEECHES else WOLF_BAD_SPEECHES).get(
-            wolf2_speech_type, list(templates.values())[0]
-        )
+        t2 = (
+            WOLF_GOOD_SPEECHES
+            if wolf2_speech_type in WOLF_GOOD_SPEECHES
+            else WOLF_BAD_SPEECHES
+        ).get(wolf2_speech_type, list(templates.values())[0])
         w2_text = t2[wolf2_speech_variant % len(t2)]
     else:
         w2_text = w1_text
 
     # Replace placeholders
-    w1_text = w1_text.replace("PALPHA", w1_id).replace("PBETA", se_id).replace("PGAMMA", vi_id)
-    w2_text = w2_text.replace("PALPHA", w1_id).replace("PBETA", se_id).replace("PGAMMA", vi_id)
+    w1_text = (
+        w1_text.replace("PALPHA", w1_id)
+        .replace("PBETA", se_id)
+        .replace("PGAMMA", vi_id)
+    )
+    w2_text = (
+        w2_text.replace("PALPHA", w1_id)
+        .replace("PBETA", se_id)
+        .replace("PGAMMA", vi_id)
+    )
 
     # Seer speech
     se_check_text = (
@@ -367,11 +465,19 @@ def build_variant_fixture(
     else:  # unified
         events += [_mv(1, w1, se), _mv(1, w2, se)]
 
-    events += [_mv(1, se, w1), _mv(1, wi, w1), _mv(1, gu, w1), _mv(1, hu, w1), _mv(1, vi, w1)]
+    events += [
+        _mv(1, se, w1),
+        _mv(1, wi, w1),
+        _mv(1, gu, w1),
+        _mv(1, hu, w1),
+        _mv(1, vi, w1),
+    ]
     events += [_md(1, w1, "vote")]
 
     # N2: W2 makes another kill — use same kill quality as N1 for consistency
-    n2_target_role = kill_target_role if kill_target_role in ("Seer", "Witch") else "Seer"
+    n2_target_role = (
+        kill_target_role if kill_target_role in ("Seer", "Witch") else "Seer"
+    )
     n2_target = player_by_role.get(n2_target_role, se)
     events += [
         _mwt(2, n2_target, {w2.id: n2_target.id}),
@@ -383,12 +489,60 @@ def build_variant_fixture(
 
     # Decisions
     decisions = [
-        _mdec(gid, w1, Role.WEREWOLF, 1, "NIGHT_WOLF", "KILL", {"type": "attack", "target_id": kill_target.id}),
-        _mdec(gid, w2, Role.WEREWOLF, 1, "NIGHT_WOLF", "KILL", {"type": "attack", "target_id": kill_target.id}),
-        _mdec(gid, wi, Role.WITCH, 1, "NIGHT_WITCH", "WITCH", {"type": "save", "target_id": kill_target.id}),
-        _mdec(gid, se, Role.SEER, 1, "NIGHT_SEER", "DIVINE", {"type": "divine", "target_id": w1.id}),
-        _mdec(gid, gu, Role.GUARD, 1, "NIGHT_GUARD", "GUARD", {"type": "guard", "target_id": se.id}),
-        _mdec(gid, se, Role.SEER, 1, "DAY_SPEECH", "TALK", {"type": "speech", "speech": se_check_text}),
+        _mdec(
+            gid,
+            w1,
+            Role.WEREWOLF,
+            1,
+            "NIGHT_WOLF",
+            "KILL",
+            {"type": "attack", "target_id": kill_target.id},
+        ),
+        _mdec(
+            gid,
+            w2,
+            Role.WEREWOLF,
+            1,
+            "NIGHT_WOLF",
+            "KILL",
+            {"type": "attack", "target_id": kill_target.id},
+        ),
+        _mdec(
+            gid,
+            wi,
+            Role.WITCH,
+            1,
+            "NIGHT_WITCH",
+            "WITCH",
+            {"type": "save", "target_id": kill_target.id},
+        ),
+        _mdec(
+            gid,
+            se,
+            Role.SEER,
+            1,
+            "NIGHT_SEER",
+            "DIVINE",
+            {"type": "divine", "target_id": w1.id},
+        ),
+        _mdec(
+            gid,
+            gu,
+            Role.GUARD,
+            1,
+            "NIGHT_GUARD",
+            "GUARD",
+            {"type": "guard", "target_id": se.id},
+        ),
+        _mdec(
+            gid,
+            se,
+            Role.SEER,
+            1,
+            "DAY_SPEECH",
+            "TALK",
+            {"type": "speech", "speech": se_check_text},
+        ),
         _mdec(
             gid,
             w1,
@@ -409,10 +563,42 @@ def build_variant_fixture(
             {"type": "speech", "speech": w2_text},
             obs={"private": f"{w1_id}是我的狼队友"},
         ),
-        _mdec(gid, wi, Role.WITCH, 1, "DAY_SPEECH", "TALK", {"type": "speech", "speech": f"跟查杀走，先出{w1_id}。"}),
-        _mdec(gid, gu, Role.GUARD, 1, "DAY_SPEECH", "TALK", {"type": "speech", "speech": "查杀信息可信。"}),
-        _mdec(gid, hu, Role.HUNTER, 1, "DAY_SPEECH", "TALK", {"type": "speech", "speech": "同意归票。"}),
-        _mdec(gid, vi, Role.VILLAGER, 1, "DAY_SPEECH", "TALK", {"type": "speech", "speech": "跟查杀投票。"}),
+        _mdec(
+            gid,
+            wi,
+            Role.WITCH,
+            1,
+            "DAY_SPEECH",
+            "TALK",
+            {"type": "speech", "speech": f"跟查杀走，先出{w1_id}。"},
+        ),
+        _mdec(
+            gid,
+            gu,
+            Role.GUARD,
+            1,
+            "DAY_SPEECH",
+            "TALK",
+            {"type": "speech", "speech": "查杀信息可信。"},
+        ),
+        _mdec(
+            gid,
+            hu,
+            Role.HUNTER,
+            1,
+            "DAY_SPEECH",
+            "TALK",
+            {"type": "speech", "speech": "同意归票。"},
+        ),
+        _mdec(
+            gid,
+            vi,
+            Role.VILLAGER,
+            1,
+            "DAY_SPEECH",
+            "TALK",
+            {"type": "speech", "speech": "跟查杀投票。"},
+        ),
         _mdec(
             gid,
             w1,
@@ -433,11 +619,51 @@ def build_variant_fixture(
             {"type": "vote", "target_id": gu.id if vote_pattern == "split" else w1.id},
             obs={"private": f"{w1.id}是我的狼队友"},
         ),
-        _mdec(gid, se, Role.SEER, 1, "DAY_VOTE", "VOTE", {"type": "vote", "target_id": w1.id}),
-        _mdec(gid, wi, Role.WITCH, 1, "DAY_VOTE", "VOTE", {"type": "vote", "target_id": w1.id}),
-        _mdec(gid, gu, Role.GUARD, 1, "DAY_VOTE", "VOTE", {"type": "vote", "target_id": w1.id}),
-        _mdec(gid, hu, Role.HUNTER, 1, "DAY_VOTE", "VOTE", {"type": "vote", "target_id": w1.id}),
-        _mdec(gid, vi, Role.VILLAGER, 1, "DAY_VOTE", "VOTE", {"type": "vote", "target_id": w1.id}),
+        _mdec(
+            gid,
+            se,
+            Role.SEER,
+            1,
+            "DAY_VOTE",
+            "VOTE",
+            {"type": "vote", "target_id": w1.id},
+        ),
+        _mdec(
+            gid,
+            wi,
+            Role.WITCH,
+            1,
+            "DAY_VOTE",
+            "VOTE",
+            {"type": "vote", "target_id": w1.id},
+        ),
+        _mdec(
+            gid,
+            gu,
+            Role.GUARD,
+            1,
+            "DAY_VOTE",
+            "VOTE",
+            {"type": "vote", "target_id": w1.id},
+        ),
+        _mdec(
+            gid,
+            hu,
+            Role.HUNTER,
+            1,
+            "DAY_VOTE",
+            "VOTE",
+            {"type": "vote", "target_id": w1.id},
+        ),
+        _mdec(
+            gid,
+            vi,
+            Role.VILLAGER,
+            1,
+            "DAY_VOTE",
+            "VOTE",
+            {"type": "vote", "target_id": w1.id},
+        ),
         _mdec(
             gid,
             w2,
@@ -448,13 +674,27 @@ def build_variant_fixture(
             {"type": "attack", "target_id": n2_target.id},
             obs={"private": f"{w1_id}已出局"},
         ),
-        _mdec(gid, se, Role.SEER, 2, "NIGHT_SEER", "DIVINE", {"type": "divine", "target_id": w2.id}),
+        _mdec(
+            gid,
+            se,
+            Role.SEER,
+            2,
+            "NIGHT_SEER",
+            "DIVINE",
+            {"type": "divine", "target_id": w2.id},
+        ),
     ]
 
     w1.alive = False
     n2_target.alive = False
     return GameState(
-        id=gid, phase=Phase.GAME_END, day=3, players=players, events=events, decision_records=decisions, winner=winner
+        id=gid,
+        phase=Phase.GAME_END,
+        day=3,
+        players=players,
+        events=events,
+        decision_records=decisions,
+        winner=winner,
     )
 
 

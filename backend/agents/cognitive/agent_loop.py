@@ -616,7 +616,7 @@ class AgentLoop:
         blocks.append(self._task_for_action(role, obs))
 
         track_c_strategy_text = ""
-        if self._feature_enabled("COGNITIVE_ENABLE_TRACK_C", True):
+        if self._feature_enabled("enable_strategy", True):
             track_c_strategy_text = _build_track_c_strategy_block(
                 obs,
                 self._action_type,
@@ -700,7 +700,7 @@ class AgentLoop:
         if legal_target_text and self._action_type in {"vote", "night"}:
             blocks.append("【本次合法目标约束】\n" + legal_target_text.strip())
         track_c_strategy_text = ""
-        if self._feature_enabled("COGNITIVE_ENABLE_TRACK_C", True):
+        if self._feature_enabled("enable_strategy", True):
             track_c_strategy_text = _build_track_c_strategy_block(
                 obs,
                 self._action_type,
@@ -774,7 +774,16 @@ class AgentLoop:
         return base
 
     def _feature_enabled(self, env_var: str, default: bool = True) -> bool:
-        return _feature_value_from_config(self._feature_flags, env_var, default)
+        # Check feature_flags dict first (set by factory from frontend toggle)
+        if self._feature_flags and env_var in self._feature_flags:
+            return bool(self._feature_flags[env_var])
+        # Backward compat: also check legacy COGNITIVE_ENABLE_TRACK_C env var
+        # when the standard key is enable_strategy
+        if env_var == "enable_strategy":
+            legacy = os.getenv("COGNITIVE_ENABLE_TRACK_C", "").strip().lower()
+            if legacy:
+                return legacy in ("1", "true", "yes", "on")
+        return _feature_enabled(env_var, default)
 
     def _format_tools(self, tools: Dict[str, Any]) -> str:
         """Format tool descriptions for the system prompt (text fallback mode)."""
@@ -1031,14 +1040,24 @@ class AgentLoop:
 
             obs = self._current_obs
             system_text = ""
-            user_text = ""
+            user_parts: list[str] = []
             for m in messages:
                 role = getattr(m, "type", "") or getattr(m, "role", "")
                 content = getattr(m, "content", "") or ""
                 if role == "system":
                     system_text = content
-                elif role == "human" or role == "user":
-                    user_text = content
+                elif role in ("human", "user"):
+                    user_parts.append(content)
+                elif role in ("ai", "assistant", "tool"):
+                    # Include async tool results / assistant responses for full context
+                    role_label = getattr(m, "type", "ai")
+                    if hasattr(m, "tool_call_id"):
+                        user_parts.append(
+                            f"[工具结果 {m.tool_call_id}]\n{content[:2000]}"
+                        )
+                    elif content:
+                        user_parts.append(f"[{role_label}]\n{content[:1000]}")
+            user_text = "\n\n---\n\n".join(user_parts)
 
             content = getattr(resp, "content", "") or ""
             usage = getattr(resp, "usage_metadata", None) or {}
