@@ -55,7 +55,7 @@ class BFS_Simulator:
         )
         self.gc_interval: int = int(kwargs.get("gc_interval", 2000))
         self.pruned_by_limits: int = 0
-        self.stop_reason: str = "completed"
+        self.stop_reason: str = "模拟完成"
         self.random: Random = Random(
             int(kwargs.get("random_seed", time.time_ns() % (2**32 - 1)))
         )  # 初始化随机数生成器
@@ -504,13 +504,13 @@ class BFS_Simulator:
                 self.max_runtime_seconds is not None
                 and time.monotonic() - start_time >= self.max_runtime_seconds
             ):
-                self.stop_reason = "max_runtime_seconds_reached"
+                self.stop_reason = "到达最大运行时间"
                 break
             if (
                 self.max_processed_states is not None
                 and processed_states >= self.max_processed_states
             ):
-                self.stop_reason = "max_processed_states_reached"
+                self.stop_reason = "达到最大处理状态数"
                 break
 
             # DFS 使用栈顶弹出，BFS 使用队头弹出；DFS 在大分支场景下通常内存压力更小。
