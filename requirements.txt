@@ -9,3 +9,6 @@ langchain-core>=0.2
 jieba>=0.42.1
 numpy>=1.26
 scikit-learn>=1.4
+matplotlib
+tqdm
+pandas

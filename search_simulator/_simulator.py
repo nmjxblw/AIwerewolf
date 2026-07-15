@@ -1,13 +1,19 @@
 import sys
 import os
 import logging
-from collections import defaultdict, deque
+from collections import defaultdict, deque, OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
 import time
 import copy
 import json
 import gc
 import textwrap
+import threading
+from typing import Any, Callable, cast
+import matplotlib
+
+matplotlib.use(os.environ.get("SEARCH_SIMULATOR_MPL_BACKEND", "Agg"), force=True)
 
 # 在导入 pyplot 之前先下调第三方库 logger，避免导入阶段刷屏。
 # logging.getLogger("matplotlib").setLevel(logging.WARNING)
@@ -21,18 +27,13 @@ import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
 
-try:
-    from ._player import Player
-except ImportError:
-    from _player import Player
-
-try:
-    from ._game_state import GameState
-except ImportError:
-    from _game_state import GameState
+from ._player import Player
+from ._game_state import GameState
+from ._sqlite_lru_signature_store import _SQLiteLRUSignatureStore
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class SearchSimulator:
     """全树搜索模拟器，包含可视化，用于探索狼人杀游戏的所有可能局面。"""
@@ -51,6 +52,14 @@ class SearchSimulator:
         """ 存储已访问的状态指纹，用于去重 """
         self.ending_signatures: set[str] = set()
         """ 存储已收敛的终局状态指纹，用于去重 """
+        self.signature_cache: _SQLiteLRUSignatureStore | None = None
+        """ 状态签名缓存（内存 LRU + SQLite 持久化） """
+        self.signature_cache_db_path: Path = Path("search_simulator_cache.sqlite3")
+        """ 状态签名 SQLite 路径 """
+        self.signature_lru_capacity: int = 150_000
+        """ 状态签名内存 LRU 容量 """
+        self.signature_commit_interval: int = 2_000
+        """ 状态签名批量写入 SQLite 的提交间隔 """
         self.state_parent_index: dict[int, int | None] = {}
         """ 存储每个状态节点的父节点 ID，用于回溯路径 """
         self.state_action_index: dict[int, str] = {}
@@ -59,6 +68,8 @@ class SearchSimulator:
         """ 存储每个状态节点的玩家存活快照（用于可视化标签） """
         self._next_state_id: int = 0
         """ 用于分配唯一的状态节点 ID """
+        self._state_index_lock = threading.Lock()
+        """ 并行扩展时用于保护 state_id 与索引写入 """
 
         self.max_processed_states: int | None = None
         """ 最多处理的状态节点数（默认不限） """
@@ -74,6 +85,18 @@ class SearchSimulator:
         """ 单个状态白天阶段最多保留分支数（默认不限） """
         self.gc_interval: int = 2000
         """ 垃圾回收间隔（默认 2000） """
+        self.parallel_workers: int = 1
+        """ 并行扩展线程数（1 表示关闭并行） """
+        self.enable_plot: bool = True
+        """ 是否在运行结束后绘制状态树 """
+        self.max_nodes_for_plot: int = 2500
+        """ 超过该节点数时跳过绘图，避免图形后端崩溃 """
+        self.max_plot_width_inches: float = 60.0
+        """ 绘图最大宽度（英寸） """
+        self.max_plot_height_inches: float = 40.0
+        """ 绘图最大高度（英寸） """
+        self.plot_dpi: int = 140
+        """ 绘图输出 DPI """
 
         self.pruned_by_limits: int = 0
         """ 记录因阈值裁剪分支数 """
@@ -90,8 +113,18 @@ class SearchSimulator:
         """ 已处理的状态节点总数 """
         self.start_time: float = 0.0
         """ 模拟开始时间戳（monotonic） """
+        self.iteration_callback: Callable[[dict[str, Any]], None] | None = None
+        """ 每处理一个节点后触发的回调（用于 GUI 实时展示） """
 
         self.load_config(**kwargs)
+
+    def __del__(self) -> None:
+        cache: _SQLiteLRUSignatureStore | None = getattr(self, "signature_cache", None)
+        if cache is not None:
+            try:
+                cache.close()
+            except Exception:
+                pass
 
     def _assign_state_identity(
         self,
@@ -102,16 +135,17 @@ class SearchSimulator:
     ) -> None:
         """为游戏状态分配唯一的 state_id，并记录父节点和动作标签。"""
 
-        game_state.state_id = self._next_state_id
-        game_state.parent_state_id = parent_state_id
-        self.state_parent_index[game_state.state_id] = parent_state_id
-        self.state_action_index[game_state.state_id] = action_label
-        players = self._normalize_players(game_state)
-        self.state_players_snapshot[game_state.state_id] = [
-            f"{index}:{player.role}{'存活' if player.is_alive else '死亡'}"
-            for index, player in enumerate(players)
-        ]
-        self._next_state_id += 1
+        with self._state_index_lock:
+            game_state.state_id = self._next_state_id
+            game_state.parent_state_id = parent_state_id
+            self.state_parent_index[game_state.state_id] = parent_state_id
+            self.state_action_index[game_state.state_id] = action_label
+            players = self._normalize_players(game_state)
+            self.state_players_snapshot[game_state.state_id] = [
+                f"{index}:{player.role}{'存活' if player.is_alive else '死亡'}"
+                for index, player in enumerate(players)
+            ]
+            self._next_state_id += 1
 
     def _build_state_path(self, state_id: int) -> list[int]:
         """构建从根节点到当前节点的 state_id 路径。"""
@@ -209,6 +243,21 @@ class SearchSimulator:
             ensure_ascii=False,
             separators=(",", ":"),
         )
+
+    def _register_signature(self, namespace: str, signature: str) -> bool:
+        """写入签名并返回是否首次出现。"""
+
+        if self.signature_cache is None:
+            target = (
+                self.visited_states
+                if namespace == "visited"
+                else self.ending_signatures
+            )
+            if signature in target:
+                return False
+            target.add(signature)
+            return True
+        return self.signature_cache.add(namespace, signature)
 
     def _apply_deaths_with_chain(
         self, game_state: GameState, death_indices: list[int]
@@ -522,6 +571,24 @@ class SearchSimulator:
         """ 存储已访问的状态指纹，用于去重"""
         self.ending_signatures = set()
         """ 存储已收敛的终局状态指纹，用于去重"""
+        self.signature_cache_db_path = Path(
+            kwargs.get("signature_cache_db_path", "search_simulator_cache.sqlite3")
+        )
+        """ 状态签名 SQLite 路径"""
+        self.signature_lru_capacity = int(kwargs.get("signature_lru_capacity", 150_000))
+        """ 状态签名内存 LRU 容量"""
+        self.signature_commit_interval = int(
+            kwargs.get("signature_commit_interval", 2_000)
+        )
+        """ 状态签名批量写入 SQLite 的提交间隔"""
+        if self.signature_cache is not None:
+            self.signature_cache.close()
+        self.signature_cache = _SQLiteLRUSignatureStore(
+            self.signature_cache_db_path,
+            lru_capacity=self.signature_lru_capacity,
+            commit_interval=self.signature_commit_interval,
+        )
+        self.signature_cache.reset()
         self.state_parent_index = {}
         """ 存储每个状态节点的父节点 ID，用于回溯路径"""
         self.state_action_index = {}
@@ -546,6 +613,18 @@ class SearchSimulator:
         """ 单个状态白天阶段最多保留分支数（默认不限）"""
         self.gc_interval = int(kwargs.get("gc_interval", 2000))
         """ 垃圾回收间隔（默认 2000）"""
+        self.parallel_workers = max(1, int(kwargs.get("parallel_workers", 1)))
+        """ 并行扩展线程数（1 表示关闭并行） """
+        self.enable_plot = bool(kwargs.get("enable_plot", True))
+        """ 是否在运行结束后绘制状态树 """
+        self.max_nodes_for_plot = int(kwargs.get("max_nodes_for_plot", 2500))
+        """ 超过该节点数时跳过绘图，避免图形后端崩溃 """
+        self.max_plot_width_inches = float(kwargs.get("max_plot_width_inches", 60.0))
+        """ 绘图最大宽度（英寸） """
+        self.max_plot_height_inches = float(kwargs.get("max_plot_height_inches", 40.0))
+        """ 绘图最大高度（英寸） """
+        self.plot_dpi = int(kwargs.get("plot_dpi", 140))
+        """ 绘图输出 DPI """
         self.pruned_by_limits = 0
         """ 记录因阈值裁剪分支数"""
         self.stop_reason = "模拟完成"
@@ -596,10 +675,110 @@ class SearchSimulator:
             initial_state, parent_state_id=None, action_label="根状态"
         )
         self.queue: deque[GameState] = deque([initial_state])  # 初始化队列
-        self.visited_states.add(self._state_signature(initial_state))
+        self._register_signature("visited", self._state_signature(initial_state))
         self.wins = {}
         self.processed_states = 0
         self.start_time = 0.0
+        callback = kwargs.get("iteration_callback")
+        self.iteration_callback = (
+            cast(Callable[[dict[str, Any]], None], callback)
+            if callable(callback)
+            else None
+        )
+
+    def _build_iteration_snapshot(self, game_state: GameState) -> dict[str, Any]:
+        """构建当前迭代节点的摘要，供 GUI 实时展示。"""
+
+        players = self._normalize_players(game_state)
+        alive_count = sum(1 for player in players if player.is_alive)
+        action_label = self.state_action_index.get(game_state.state_id, "未知")
+        action_label = action_label.replace("\n", " ").strip()
+        if len(action_label) > 56:
+            action_label = action_label[:53] + "..."
+
+        elapsed = 0.0
+        if self.start_time > 0.0:
+            elapsed = max(0.0, time.monotonic() - self.start_time)
+
+        return {
+            "state_id": game_state.state_id,
+            "parent_state_id": game_state.parent_state_id,
+            "night_count": game_state.night_count,
+            "day_count": game_state.day_count,
+            "alive_count": alive_count,
+            "total_players": len(players),
+            "is_game_over": bool(game_state.is_game_over),
+            "action_label": action_label,
+            "processed_states": self.processed_states,
+            "queue_length": len(self.queue),
+            "elapsed_seconds": elapsed,
+        }
+
+    def _emit_iteration_snapshot(self, game_state: GameState) -> None:
+        """向外部发送迭代节点摘要，异常时吞掉以保证主流程稳定。"""
+
+        if self.iteration_callback is None:
+            return
+        try:
+            self.iteration_callback(self._build_iteration_snapshot(game_state))
+        except Exception:
+            logger.debug("迭代回调执行失败，已忽略。", exc_info=True)
+
+    def _should_stop_run(self) -> bool:
+        """检查是否触发停止条件。"""
+
+        if (
+            self.max_runtime_seconds is not None
+            and time.monotonic() - self.start_time >= self.max_runtime_seconds
+        ):
+            self.stop_reason = "到达最大运行时间"
+            return True
+        if (
+            self.max_processed_states is not None
+            and self.processed_states >= self.max_processed_states
+        ):
+            self.stop_reason = "达到最大处理状态数"
+            return True
+        return False
+
+    def _pop_next_state(self) -> GameState:
+        """按搜索模式从容器取出下一个状态。"""
+
+        if self.search_mode == "dfs":
+            return self.queue.pop()
+        return self.queue.popleft()
+
+    def _iter_day_state_groups(
+        self,
+        night_states: list[GameState],
+        executor: ThreadPoolExecutor | None,
+    ):
+        """统一包装白天阶段的串行/并行分支展开。"""
+
+        if executor is not None and len(night_states) > 1:
+            return executor.map(self._resolve_day_vote, night_states)
+        return (self._resolve_day_vote(state) for state in night_states)
+
+    def _handle_day_state(self, day_state: GameState) -> None:
+        """处理单个白天结果状态：终局统计或继续入队。"""
+
+        is_over, result = self._check_game_over(day_state)
+        day_state.is_game_over = is_over
+        if is_over:
+            ending_signature = self._state_signature(day_state)
+            if not self._register_signature("ending", ending_signature):
+                return
+            self.endings.append((day_state, result))
+            self.wins[result] = self.wins.get(result, 0) + 1
+            return
+
+        state_signature = self._state_signature(day_state)
+        if not self._register_signature("visited", state_signature):
+            return
+        if self.max_queue_size is not None and len(self.queue) >= self.max_queue_size:
+            self.pruned_by_limits += 1
+            return
+        self.queue.append(day_state)
 
     def run(self):
         """运行模拟器，探索所有可能的游戏局面。"""
@@ -608,62 +787,51 @@ class SearchSimulator:
         self.wins = {}
         self.start_time = time.monotonic()
         self.processed_states = 0
-        while self.queue:
-            if (
-                self.max_runtime_seconds is not None
-                and time.monotonic() - self.start_time >= self.max_runtime_seconds
-            ):
-                self.stop_reason = "到达最大运行时间"
-                break
-            if (
-                self.max_processed_states is not None
-                and self.processed_states >= self.max_processed_states
-            ):
-                self.stop_reason = "达到最大处理状态数"
-                break
+        day_expand_executor: ThreadPoolExecutor | None = None
+        if self.parallel_workers > 1:
+            day_expand_executor = ThreadPoolExecutor(
+                max_workers=self.parallel_workers,
+                thread_name_prefix="sim-day-expand",
+            )
 
-            # DFS 使用栈顶弹出，BFS 使用队头弹出；DFS 在大分支场景下通常内存压力更小。
-            if self.search_mode == "dfs":
-                current_state = self.queue.pop()
-            else:
-                current_state = self.queue.popleft()
-            self.processed_states += 1
-            if current_state.is_game_over:
-                continue
+        try:
+            while self.queue:
+                if self._should_stop_run():
+                    break
 
-            # 先展开夜晚，再展开白天；每个新局面都先做去重，避免重复分支刷爆队列。
-            for night_state in self._resolve_night(current_state):
-                for day_state in self._resolve_day_vote(night_state):
-                    is_over, result = self._check_game_over(day_state)
-                    day_state.is_game_over = is_over
-                    if is_over:
-                        # 终局也按状态指纹去重，避免同一盘面因为不同路径被重复统计。
-                        ending_signature = self._state_signature(day_state)
-                        if ending_signature in self.ending_signatures:
-                            continue
-                        self.ending_signatures.add(ending_signature)
-                        # logger.debug(f"游戏结束: {result}")
-                        self.endings.append((day_state, result))
-                        self.wins[result] = self.wins.get(result, 0) + 1
-                    else:
-                        # 只把未访问过的中间状态继续推进到下一轮 BFS。
-                        state_signature = self._state_signature(day_state)
-                        if state_signature in self.visited_states:
-                            continue
-                        self.visited_states.add(state_signature)
-                        if (
-                            self.max_queue_size is not None
-                            and len(self.queue) >= self.max_queue_size
-                        ):
-                            self.pruned_by_limits += 1
-                            continue
-                        self.queue.append(day_state)
+                current_state = self._pop_next_state()
+                self.processed_states += 1
+                self._emit_iteration_snapshot(current_state)
+                if current_state.is_game_over:
+                    continue
 
-            if self.gc_interval > 0 and self.processed_states % self.gc_interval == 0:
-                gc.collect()
+                # 先展开夜晚，再展开白天；每个新局面都先做去重，避免重复分支刷爆队列。
+                night_states = self._resolve_night(current_state)
+                day_state_groups = self._iter_day_state_groups(
+                    night_states,
+                    day_expand_executor,
+                )
 
+                for day_states in day_state_groups:
+                    for day_state in day_states:
+                        self._handle_day_state(day_state)
+
+                if (
+                    self.gc_interval > 0
+                    and self.processed_states % self.gc_interval == 0
+                ):
+                    gc.collect()
+        finally:
+            if day_expand_executor is not None:
+                day_expand_executor.shutdown(wait=True, cancel_futures=False)
+
+        if self.signature_cache is not None:
+            self.signature_cache.flush()
         self.report_results()
-        self.draw_plt()
+        if self.enable_plot:
+            self.draw_plt()
+        else:
+            logger.info("已禁用绘图（enable_plot=False）")
 
     def report_results(self):
         """报告模拟结果，包括终局统计和运行信息。"""
@@ -705,6 +873,18 @@ class SearchSimulator:
             f"因阈值裁剪分支数: {self.pruned_by_limits}\n"
             f"运行耗时(秒): {time.monotonic() - self.start_time:.2f}\n"
         )
+        if self.signature_cache is not None:
+            cache_stats = self.signature_cache.stats_snapshot()
+            msg += (
+                "签名缓存统计:\n"
+                f"  sqlite文件: {self.signature_cache_db_path}\n"
+                f"  LRU容量: {cache_stats['lru_capacity']}\n"
+                f"  LRU命中: {cache_stats['lru_hits']}\n"
+                f"  SQLite命中: {cache_stats['sqlite_hits']}\n"
+                f"  新增签名: {cache_stats['inserted']}\n"
+                f"  visited LRU大小: {cache_stats['visited_lru_size']}\n"
+                f"  ending LRU大小: {cache_stats['ending_lru_size']}\n"
+            )
 
         logger.info(f"游戏结束统计:\n{msg}")
 
@@ -728,6 +908,13 @@ class SearchSimulator:
 
         if not plotted_nodes:
             logger.info("没有可绘制的节点，跳过绘图")
+            return
+        if len(plotted_nodes) > self.max_nodes_for_plot:
+            logger.warning(
+                "可绘制节点数为 %s，超过阈值 %s，跳过绘图以避免后端崩溃",
+                len(plotted_nodes),
+                self.max_nodes_for_plot,
+            )
             return
 
         children_map: dict[int, list[int]] = defaultdict(list)
@@ -809,8 +996,19 @@ class SearchSimulator:
 
         max_x = max(x_pos.values()) if x_pos else 0.0
         max_y = max(y_pos.values()) if y_pos else 0.0
-        fig_width = max(16.0, max_x * 0.5 + 10.0)
-        fig_height = max(10.0, max_y * 1.0 + 6.0)
+        raw_fig_width = max(16.0, max_x * 0.5 + 10.0)
+        raw_fig_height = max(10.0, max_y * 1.0 + 6.0)
+        fig_width = min(raw_fig_width, max(8.0, self.max_plot_width_inches))
+        fig_height = min(raw_fig_height, max(6.0, self.max_plot_height_inches))
+        dpi = min(max(self.plot_dpi, 72), 220)
+        if fig_width < raw_fig_width or fig_height < raw_fig_height:
+            logger.warning(
+                "绘图尺寸从 %.2fx%.2f 英寸裁剪为 %.2fx%.2f 英寸，避免图形后端内存/像素限制",
+                raw_fig_width,
+                raw_fig_height,
+                fig_width,
+                fig_height,
+            )
         with plt.rc_context({"font.family": plot_font, "axes.unicode_minus": False}):
             fig, ax = plt.subplots(
                 figsize=(fig_width, fig_height), constrained_layout=True
@@ -963,6 +1161,6 @@ class SearchSimulator:
             ax.invert_yaxis()
 
             output_path = Path("search_tree.png")
-            fig.savefig(output_path, dpi=200)
+            fig.savefig(output_path, dpi=dpi)
             plt.close(fig)
         logger.info("状态树图已保存到: %s", output_path)
