@@ -10,9 +10,9 @@ import gc
 import textwrap
 
 # 在导入 pyplot 之前先下调第三方库 logger，避免导入阶段刷屏。
-logging.getLogger("matplotlib").setLevel(logging.WARNING)
-logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
-logging.getLogger("PIL").setLevel(logging.WARNING)
+# logging.getLogger("matplotlib").setLevel(logging.WARNING)
+# logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
+# logging.getLogger("PIL").setLevel(logging.WARNING)
 
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
@@ -32,7 +32,7 @@ except ImportError:
     from _game_state import GameState
 
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.DEBUG)
 
 class SearchSimulator:
     """全树搜索模拟器，包含可视化，用于探索狼人杀游戏的所有可能局面。"""
@@ -55,6 +55,8 @@ class SearchSimulator:
         """ 存储每个状态节点的父节点 ID，用于回溯路径 """
         self.state_action_index: dict[int, str] = {}
         """ 存储每个状态节点的动作，用于回溯路径 """
+        self.state_players_snapshot: dict[int, list[str]] = {}
+        """ 存储每个状态节点的玩家存活快照（用于可视化标签） """
         self._next_state_id: int = 0
         """ 用于分配唯一的状态节点 ID """
 
@@ -104,6 +106,11 @@ class SearchSimulator:
         game_state.parent_state_id = parent_state_id
         self.state_parent_index[game_state.state_id] = parent_state_id
         self.state_action_index[game_state.state_id] = action_label
+        players = self._normalize_players(game_state)
+        self.state_players_snapshot[game_state.state_id] = [
+            f"{index}:{player.role}{'存活' if player.is_alive else '死亡'}"
+            for index, player in enumerate(players)
+        ]
         self._next_state_id += 1
 
     def _build_state_path(self, state_id: int) -> list[int]:
@@ -387,19 +394,25 @@ class SearchSimulator:
                     )
                     for resolved_state in resolved_states:
                         resolved_state.night_count += 1
-                        guard_text = "无" if guard_target is None else str(guard_target)
-                        if witch_action == "毒杀" and poison_target_index is not None:
-                            witch_text = f"毒杀→{poison_target_index}"
-                        elif witch_action == "救活":
-                            witch_text = "救活"
-                        else:
-                            witch_text = "无"
-                        action_label = (
-                            f"夜晚 狼刀→{wolf_target_index};"
-                            f" 守卫→{guard_text};"
-                            f" 女巫={witch_text};"
-                            f" 死亡={sorted(set(deaths))}"
-                        )
+                        action_parts: list[str] = [f"夜晚 狼刀→{wolf_target_index}"]
+                        if guard_index is not None:
+                            guard_text = (
+                                "无" if guard_target is None else str(guard_target)
+                            )
+                            action_parts.append(f"守卫→{guard_text}")
+                        if witch_index is not None:
+                            if (
+                                witch_action == "毒杀"
+                                and poison_target_index is not None
+                            ):
+                                witch_text = f"毒杀→{poison_target_index}"
+                            elif witch_action == "救活":
+                                witch_text = "救活"
+                            else:
+                                witch_text = "无"
+                            action_parts.append(f"女巫={witch_text}")
+                        action_parts.append(f"死亡={sorted(set(deaths))}")
+                        action_label = "; ".join(action_parts)
                         self._assign_state_identity(
                             resolved_state,
                             parent_state_id=game_state.state_id,
@@ -513,6 +526,8 @@ class SearchSimulator:
         """ 存储每个状态节点的父节点 ID，用于回溯路径"""
         self.state_action_index = {}
         """ 存储每个状态节点的动作，用于回溯路径"""
+        self.state_players_snapshot = {}
+        """ 存储每个状态节点的玩家存活快照（用于可视化标签）"""
         self._next_state_id = 0
         """ 用于分配唯一的状态节点 ID"""
         self.max_processed_states = kwargs.get("max_processed_states")
@@ -730,8 +745,10 @@ class SearchSimulator:
 
         x_pos: dict[int, float] = {}
         y_pos: dict[int, float] = {}
-        leaf_gap = 1.6
-        depth_gap = 1.5
+        # 增大节点间距，并根据节点数量做轻量自适应，优先保证标签可读性。
+        node_count = len(plotted_nodes)
+        leaf_gap = max(3.6, min(6.8, 3.8 + node_count * 0.01))
+        depth_gap = 2.8
         next_leaf_x = 0.0
 
         def assign_position(node_id: int, depth: int) -> float:
@@ -792,8 +809,8 @@ class SearchSimulator:
 
         max_x = max(x_pos.values()) if x_pos else 0.0
         max_y = max(y_pos.values()) if y_pos else 0.0
-        fig_width = max(12.0, max_x * 0.35 + 6.0)
-        fig_height = max(9.0, max_y * 0.9 + 5.0)
+        fig_width = max(16.0, max_x * 0.5 + 10.0)
+        fig_height = max(10.0, max_y * 1.0 + 6.0)
         with plt.rc_context({"font.family": plot_font, "axes.unicode_minus": False}):
             fig, ax = plt.subplots(
                 figsize=(fig_width, fig_height), constrained_layout=True
@@ -845,7 +862,18 @@ class SearchSimulator:
                     )
                 return "\n".join(wrapped_lines)
 
+            def format_player_status_text(node_id: int) -> str:
+                statuses = self.state_players_snapshot.get(node_id, [])
+                if not statuses:
+                    return "无" if has_cjk_font else "N/A"
+                return wrap_action_text(", ".join(statuses), width=18, max_lines=5)
+
             # 节点标签展示 state_id + 父节点行动（即到达该节点时的动作）。
+            # 标签固定在节点正下方，水平居中，不做水平偏移。
+            def label_offset_for_node(node_id: int) -> tuple[int, int]:
+                _ = node_id
+                return 0, -18
+
             for node_id in sorted_nodes:
                 action_label = self.state_action_index.get(node_id, "")
                 if node_id in roots:
@@ -858,25 +886,28 @@ class SearchSimulator:
                         node_id,
                         "未结束" if has_cjk_font else "Ongoing",
                     )
+                    player_text = format_player_status_text(node_id)
                     node_text = (
-                        f"#{node_id}\n行动:\n{action_text}\n对局结果:\n{wrap_action_text(result_text)}"
+                        f"#{node_id}\n行动:\n{action_text}\n存活状态:\n{player_text}\n对局结果:\n{wrap_action_text(result_text)}"
                         if has_cjk_font
-                        else f"#{node_id}\nParentAction:\n{action_text}\nResult:\n{wrap_action_text(result_text)}"
+                        else f"#{node_id}\nParentAction:\n{action_text}\nAliveState:\n{player_text}\nResult:\n{wrap_action_text(result_text)}"
                     )
                 else:
+                    player_text = format_player_status_text(node_id)
                     node_text = (
-                        f"#{node_id}\n行动:\n{action_text}"
+                        f"#{node_id}\n行动:\n{action_text}\n存活状态:\n{player_text}"
                         if has_cjk_font
-                        else f"#{node_id}\nParentAction:\n{action_text}"
+                        else f"#{node_id}\nParentAction:\n{action_text}\nAliveState:\n{player_text}"
                     )
+                x_offset, y_offset = label_offset_for_node(node_id)
                 ax.annotate(
                     node_text,
                     xy=(x_pos[node_id], y_pos[node_id]),
-                    xytext=(10, 8),
+                    xytext=(x_offset, y_offset),
                     textcoords="offset points",
-                    fontsize=5.3,
-                    va="bottom",
-                    ha="left",
+                    fontsize=5.1,
+                    va="top",
+                    ha="center",
                     color="#222222",
                     linespacing=1.25,
                     bbox={

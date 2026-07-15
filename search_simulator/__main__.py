@@ -7,13 +7,13 @@ import argparse
 
 """ 基于BFS模拟狼人杀游戏的结果"""
 logging.basicConfig(
-    level=logging.DEBUG,
     format=r"[%(asctime)s.%(msecs)03d][%(pathname)s:%(lineno)d][%(levelname)s]"
     + os.linesep
     + r"%(message)s"
     + os.linesep,
 )
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 if __name__ == "__main__":
 
