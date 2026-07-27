@@ -1,34 +1,19 @@
-import sys
-import os
+import copy
+import gc
+import json
 import logging
-from collections import defaultdict, deque, OrderedDict
+import threading
+import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
-import time
-import copy
-import json
-import gc
-import textwrap
-import threading
-from typing import Any, Callable, cast
-import matplotlib
-
-matplotlib.use(os.environ.get("SEARCH_SIMULATOR_MPL_BACKEND", "Agg"), force=True)
-
-# 在导入 pyplot 之前先下调第三方库 logger，避免导入阶段刷屏。
-# logging.getLogger("matplotlib").setLevel(logging.WARNING)
-# logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
-# logging.getLogger("PIL").setLevel(logging.WARNING)
-
-import matplotlib.pyplot as plt
-from matplotlib import font_manager
-from matplotlib.lines import Line2D
-import pandas as pd
 from pathlib import Path
-from tqdm import tqdm
+from typing import Any
+from typing import Callable
+from typing import cast
 
-from ._player import Player
 from ._game_state import GameState
+from ._player import Player
 from ._sqlite_lru_signature_store import _SQLiteLRUSignatureStore
 
 logger = logging.getLogger(__name__)
@@ -36,7 +21,7 @@ logger.setLevel(logging.DEBUG)
 
 
 class SearchSimulator:
-    """全树搜索模拟器，包含可视化，用于探索狼人杀游戏的所有可能局面。"""
+    """全树搜索模拟器，用于探索狼人杀游戏的所有可能局面。"""
 
     def __init__(self, **kwargs):
         logger.debug("开始初始化Search Simulator")
@@ -44,6 +29,8 @@ class SearchSimulator:
         """ 标记是否包含神职角色 """
         self.include_sheriff = False  # 标记是否启用警长归票机制
         """ 标记是否启用警长归票机制 """
+        self.smart_vote = False
+        """ 是否启用智能投票剪枝与预言家查验缓存 """
         self.endings: list[tuple[GameState, str]] = []  # 存储游戏结束的状态
         """ 存储游戏结束的状态，包含状态对象和结果描述 """
 
@@ -87,17 +74,6 @@ class SearchSimulator:
         """ 垃圾回收间隔（默认 2000） """
         self.parallel_workers: int = 1
         """ 并行扩展线程数（1 表示关闭并行） """
-        self.enable_plot: bool = True
-        """ 是否在运行结束后绘制状态树 """
-        self.max_nodes_for_plot: int = 2500
-        """ 超过该节点数时跳过绘图，避免图形后端崩溃 """
-        self.max_plot_width_inches: float = 60.0
-        """ 绘图最大宽度（英寸） """
-        self.max_plot_height_inches: float = 40.0
-        """ 绘图最大高度（英寸） """
-        self.plot_dpi: int = 140
-        """ 绘图输出 DPI """
-
         self.pruned_by_limits: int = 0
         """ 记录因阈值裁剪分支数 """
         self.stop_reason: str = "模拟完成"
@@ -178,6 +154,21 @@ class SearchSimulator:
     def _is_wolf_role(self, role: str) -> bool:
         return role in {"狼人", "白狼王"}
 
+    def _seer_check_results(self, game_state: GameState) -> dict[int, bool]:
+        """返回预言家查验缓存，必要时初始化。"""
+
+        if game_state.seer_check_results is None:
+            game_state.seer_check_results = {}
+        return game_state.seer_check_results
+
+    def _alive_seer_index(self, game_state: GameState) -> int | None:
+        seer_indices = self._alive_indices(
+            game_state,
+            predicate=lambda player: player.role == "预言家"
+            and player.skills.get("查验", 0) != 0,
+        )
+        return seer_indices[0] if seer_indices else None
+
     def _alive_indices(
         self,
         game_state: GameState,
@@ -229,6 +220,10 @@ class SearchSimulator:
         signature_payload = [
             game_state.night_count,
             game_state.last_guard_target_index,
+            sorted(
+                (int(index), bool(is_wolf))
+                for index, is_wolf in (game_state.seer_check_results or {}).items()
+            ),
             [
                 [
                     player.role,
@@ -285,6 +280,41 @@ class SearchSimulator:
         if player_index < 0 or player_index >= len(game_state.players):
             return
         game_state.players[player_index].is_alive = False
+        if game_state.players[player_index].role == "预言家":
+            game_state.seer_check_results = {}
+
+    def _iter_seer_check_branches(
+        self, game_state: GameState
+    ) -> list[tuple[GameState, str]]:
+        """在 smart_vote 下展开预言家夜晚查验分支。"""
+
+        if not self.smart_vote:
+            return [(game_state, "")]
+        seer_index = self._alive_seer_index(game_state)
+        if seer_index is None:
+            return [(game_state, "")]
+
+        known_results = self._seer_check_results(game_state)
+        targets = [
+            index
+            for index in self._alive_indices(game_state, exclude_indices={seer_index})
+            if index not in known_results
+        ]
+        if not targets:
+            return [(game_state, "预言家查验=无")]
+
+        branches: list[tuple[GameState, str]] = []
+        for target_index in targets:
+            checked_state = copy.deepcopy(game_state)
+            checked_results = self._seer_check_results(checked_state)
+            is_wolf = self._is_wolf_role(checked_state.players[target_index].role)
+            checked_results[target_index] = is_wolf
+            self._consume_skill(checked_state.players[seer_index], "查验")
+            alignment_text = "狼人阵营" if is_wolf else "好人阵营"
+            branches.append(
+                (checked_state, f"预言家查验→{target_index}({alignment_text})")
+            )
+        return branches
 
     def _resolve_death_chain(
         self, game_state: GameState, player_index: int
@@ -297,7 +327,7 @@ class SearchSimulator:
 
         player = game_state.players[player_index]
         if player.is_alive:
-            player.is_alive = False
+            self._kill_player(game_state, player_index)
         branches = [game_state]
 
         if player.role == "猎人" and player.skills.get("开枪", 0) > 0:
@@ -438,48 +468,258 @@ class SearchSimulator:
                     if witch_action == "毒杀" and poison_target_index is not None:
                         deaths.append(poison_target_index)
 
-                    resolved_states = self._apply_deaths_with_chain(
-                        branch_state, deaths
-                    )
-                    for resolved_state in resolved_states:
-                        resolved_state.night_count += 1
-                        action_parts: list[str] = [f"夜晚 狼刀→{wolf_target_index}"]
-                        if guard_index is not None:
-                            guard_text = (
-                                "无" if guard_target is None else str(guard_target)
-                            )
-                            action_parts.append(f"守卫→{guard_text}")
-                        if witch_index is not None:
-                            if (
-                                witch_action == "毒杀"
-                                and poison_target_index is not None
-                            ):
-                                witch_text = f"毒杀→{poison_target_index}"
-                            elif witch_action == "救活":
-                                witch_text = "救活"
-                            else:
-                                witch_text = "无"
-                            action_parts.append(f"女巫={witch_text}")
-                        action_parts.append(f"死亡={sorted(set(deaths))}")
-                        action_label = "; ".join(action_parts)
-                        self._assign_state_identity(
-                            resolved_state,
-                            parent_state_id=game_state.state_id,
-                            action_label=action_label,
+                    seer_check_branches = self._iter_seer_check_branches(branch_state)
+                    for checked_state, seer_action_text in seer_check_branches:
+                        resolved_states = self._apply_deaths_with_chain(
+                            checked_state, deaths
                         )
-                        signature = self._state_signature(resolved_state)
-                        if signature in local_seen:
-                            continue
-                        local_seen.add(signature)
-                        night_states.append(resolved_state)
-                        if (
-                            self.max_night_branches_per_state is not None
-                            and len(night_states) >= self.max_night_branches_per_state
-                        ):
-                            self.pruned_by_limits += 1
-                            return night_states
+                        for resolved_state in resolved_states:
+                            resolved_state.night_count += 1
+                            action_parts: list[str] = [
+                                f"夜晚 狼刀→{wolf_target_index}"
+                            ]
+                            if guard_index is not None:
+                                guard_text = (
+                                    "无" if guard_target is None else str(guard_target)
+                                )
+                                action_parts.append(f"守卫→{guard_text}")
+                            if witch_index is not None:
+                                if (
+                                    witch_action == "毒杀"
+                                    and poison_target_index is not None
+                                ):
+                                    witch_text = f"毒杀→{poison_target_index}"
+                                elif witch_action == "救活":
+                                    witch_text = "救活"
+                                else:
+                                    witch_text = "无"
+                                action_parts.append(f"女巫={witch_text}")
+                            if seer_action_text:
+                                action_parts.append(seer_action_text)
+                            action_parts.append(f"死亡={sorted(set(deaths))}")
+                            action_label = "; ".join(action_parts)
+                            self._assign_state_identity(
+                                resolved_state,
+                                parent_state_id=game_state.state_id,
+                                action_label=action_label,
+                            )
+                            signature = self._state_signature(resolved_state)
+                            if signature in local_seen:
+                                continue
+                            local_seen.add(signature)
+                            night_states.append(resolved_state)
+                            if (
+                                self.max_night_branches_per_state is not None
+                                and len(night_states)
+                                >= self.max_night_branches_per_state
+                            ):
+                                self.pruned_by_limits += 1
+                                return night_states
 
         return night_states
+
+    def _allowed_vote_targets(
+        self, game_state: GameState, voter_index: int, alive_indices: list[int]
+    ) -> list[int]:
+        targets = [index for index in alive_indices if index != voter_index]
+        if not self.smart_vote or game_state.players[voter_index].role != "预言家":
+            return targets
+
+        known_results = self._seer_check_results(game_state)
+        known_wolves = [
+            index
+            for index in targets
+            if known_results.get(index) is True and game_state.players[index].is_alive
+        ]
+        if known_wolves:
+            return known_wolves
+
+        known_good = {
+            index
+            for index, is_wolf in known_results.items()
+            if not is_wolf and game_state.players[index].is_alive
+        }
+        return [index for index in targets if index not in known_good]
+
+    def _bounded_vote_flow_feasible(
+        self,
+        voter_indices: list[int],
+        target_indices: list[int],
+        allowed_targets_by_voter: dict[int, list[int]],
+        target_lower: dict[int, int],
+        target_upper: dict[int, int],
+    ) -> bool:
+        voter_count = len(voter_indices)
+        target_count = len(target_indices)
+        source = 0
+        first_voter = 1
+        first_target = first_voter + voter_count
+        sink = first_target + target_count
+        super_source = sink + 1
+        super_sink = sink + 2
+        node_count = super_sink + 1
+        target_node_by_index = {
+            target_index: first_target + offset
+            for offset, target_index in enumerate(target_indices)
+        }
+        graph: list[list[int]] = [[] for _ in range(node_count)]
+        capacity: list[list[int]] = [
+            [0 for _ in range(node_count)] for _ in range(node_count)
+        ]
+        balance = [0 for _ in range(node_count)]
+
+        def add_capacity_edge(from_node: int, to_node: int, cap: int) -> None:
+            if capacity[from_node][to_node] == 0 and capacity[to_node][from_node] == 0:
+                graph[from_node].append(to_node)
+                graph[to_node].append(from_node)
+            capacity[from_node][to_node] += cap
+
+        def add_bounded_edge(
+            from_node: int, to_node: int, lower: int, upper: int
+        ) -> None:
+            if upper < lower:
+                return
+            balance[from_node] -= lower
+            balance[to_node] += lower
+            add_capacity_edge(from_node, to_node, upper - lower)
+
+        for offset, voter_index in enumerate(voter_indices):
+            voter_node = first_voter + offset
+            add_bounded_edge(source, voter_node, 1, 1)
+            for target_index in allowed_targets_by_voter.get(voter_index, []):
+                target_node = target_node_by_index[target_index]
+                add_bounded_edge(voter_node, target_node, 0, 1)
+
+        for target_index in target_indices:
+            add_bounded_edge(
+                target_node_by_index[target_index],
+                sink,
+                target_lower[target_index],
+                target_upper[target_index],
+            )
+
+        add_bounded_edge(sink, source, 0, len(voter_indices))
+
+        required_flow = 0
+        for node, node_balance in enumerate(balance):
+            if node_balance > 0:
+                add_capacity_edge(super_source, node, node_balance)
+                required_flow += node_balance
+            elif node_balance < 0:
+                add_capacity_edge(node, super_sink, -node_balance)
+
+        def bfs_level() -> list[int]:
+            level = [-1 for _ in range(node_count)]
+            queue: deque[int] = deque([super_source])
+            level[super_source] = 0
+            while queue:
+                node = queue.popleft()
+                for next_node in graph[node]:
+                    if level[next_node] < 0 and capacity[node][next_node] > 0:
+                        level[next_node] = level[node] + 1
+                        queue.append(next_node)
+            return level
+
+        def dfs_flow(node: int, flow: int, level: list[int], cursor: list[int]) -> int:
+            if node == super_sink:
+                return flow
+            while cursor[node] < len(graph[node]):
+                next_node = graph[node][cursor[node]]
+                if (
+                    level[next_node] == level[node] + 1
+                    and capacity[node][next_node] > 0
+                ):
+                    pushed = dfs_flow(
+                        next_node,
+                        min(flow, capacity[node][next_node]),
+                        level,
+                        cursor,
+                    )
+                    if pushed > 0:
+                        capacity[node][next_node] -= pushed
+                        capacity[next_node][node] += pushed
+                        return pushed
+                cursor[node] += 1
+            return 0
+
+        max_flow = 0
+        while True:
+            level = bfs_level()
+            if level[super_sink] < 0:
+                break
+            cursor = [0 for _ in range(node_count)]
+            while True:
+                pushed = dfs_flow(super_source, 10**9, level, cursor)
+                if pushed == 0:
+                    break
+                max_flow += pushed
+                if max_flow == required_flow:
+                    return True
+        return max_flow == required_flow
+
+    def _vote_outcome_is_feasible(
+        self,
+        alive_indices: list[int],
+        allowed_targets_by_voter: dict[int, list[int]],
+        top_candidates: tuple[int, ...],
+    ) -> bool:
+        alive_count = len(alive_indices)
+        top_candidate_set = set(top_candidates)
+        non_top_count = alive_count - len(top_candidates)
+        for max_votes in range(1, alive_count + 1):
+            if len(top_candidates) * max_votes > alive_count:
+                continue
+            if alive_count > len(top_candidates) * max_votes + non_top_count * (
+                max_votes - 1
+            ):
+                continue
+            target_lower = {
+                index: max_votes if index in top_candidate_set else 0
+                for index in alive_indices
+            }
+            target_upper = {
+                index: max_votes if index in top_candidate_set else max_votes - 1
+                for index in alive_indices
+            }
+            if self._bounded_vote_flow_feasible(
+                alive_indices,
+                alive_indices,
+                allowed_targets_by_voter,
+                target_lower,
+                target_upper,
+            ):
+                return True
+        return False
+
+    def _build_smart_vote_outcomes(
+        self, game_state: GameState, alive_indices: list[int]
+    ) -> set[tuple[int, ...]]:
+        allowed_targets_by_voter = {
+            voter_index: self._allowed_vote_targets(
+                game_state, voter_index, alive_indices
+            )
+            for voter_index in alive_indices
+        }
+        if any(not targets for targets in allowed_targets_by_voter.values()):
+            return set()
+
+        candidate_outcomes: set[tuple[int, ...]] = {
+            (player_index,) for player_index in alive_indices
+        }
+        if self.include_sheriff:
+            candidate_outcomes.update(combinations(alive_indices, 2))
+            if len(alive_indices) > 2:
+                candidate_outcomes.add(tuple(alive_indices))
+
+        return {
+            outcome
+            for outcome in candidate_outcomes
+            if self._vote_outcome_is_feasible(
+                alive_indices,
+                allowed_targets_by_voter,
+                outcome,
+            )
+        }
 
     def _resolve_day_vote(self, game_state: GameState) -> list[GameState]:
         """解析白天投票阶段，返回可能的后续分支。"""
@@ -491,14 +731,25 @@ class SearchSimulator:
         if len(alive_indices) <= 1:
             return [copy.deepcopy(game_state)]
 
-        vote_outcomes: set[tuple[int, ...]] = {
-            (player_index,) for player_index in alive_indices
-        }
-        if self.include_sheriff:
-            # 先覆盖最常见的双人平票，再补充“多人全平票”场景。
-            vote_outcomes.update(combinations(alive_indices, 2))
-            if len(alive_indices) > 2:
-                vote_outcomes.add(tuple(alive_indices))
+        if self.smart_vote:
+            vote_outcomes = self._build_smart_vote_outcomes(game_state, alive_indices)
+            if not vote_outcomes:
+                idle_state = copy.deepcopy(game_state)
+                self._assign_state_identity(
+                    idle_state,
+                    parent_state_id=game_state.state_id,
+                    action_label="白天 无有效投票结果",
+                )
+                return [idle_state]
+        else:
+            vote_outcomes: set[tuple[int, ...]] = {
+                (player_index,) for player_index in alive_indices
+            }
+            if self.include_sheriff:
+                # 先覆盖最常见的双人平票，再补充“多人全平票”场景。
+                vote_outcomes.update(combinations(alive_indices, 2))
+                if len(alive_indices) > 2:
+                    vote_outcomes.add(tuple(alive_indices))
 
         day_states: list[GameState] = []
         local_seen: set[str] = set()
@@ -567,6 +818,8 @@ class SearchSimulator:
         """ 标记是否包含神职角色"""
         self.include_sheriff = bool(kwargs.get("include_sheriff", False))
         """ 标记是否启用警长归票机制"""
+        self.smart_vote = bool(kwargs.get("smart_vote", False))
+        """ 是否启用智能投票剪枝与预言家查验缓存"""
         self.visited_states = set()
         """ 存储已访问的状态指纹，用于去重"""
         self.ending_signatures = set()
@@ -615,16 +868,6 @@ class SearchSimulator:
         """ 垃圾回收间隔（默认 2000）"""
         self.parallel_workers = max(1, int(kwargs.get("parallel_workers", 1)))
         """ 并行扩展线程数（1 表示关闭并行） """
-        self.enable_plot = bool(kwargs.get("enable_plot", True))
-        """ 是否在运行结束后绘制状态树 """
-        self.max_nodes_for_plot = int(kwargs.get("max_nodes_for_plot", 2500))
-        """ 超过该节点数时跳过绘图，避免图形后端崩溃 """
-        self.max_plot_width_inches = float(kwargs.get("max_plot_width_inches", 60.0))
-        """ 绘图最大宽度（英寸） """
-        self.max_plot_height_inches = float(kwargs.get("max_plot_height_inches", 40.0))
-        """ 绘图最大高度（英寸） """
-        self.plot_dpi = int(kwargs.get("plot_dpi", 140))
-        """ 绘图输出 DPI """
         self.pruned_by_limits = 0
         """ 记录因阈值裁剪分支数"""
         self.stop_reason = "模拟完成"
@@ -827,340 +1070,3 @@ class SearchSimulator:
 
         if self.signature_cache is not None:
             self.signature_cache.flush()
-        self.report_results()
-        if self.enable_plot:
-            self.draw_plt()
-        else:
-            logger.info("已禁用绘图（enable_plot=False）")
-
-    def report_results(self):
-        """报告模拟结果，包括终局统计和运行信息。"""
-        # 保存游戏结束状态到文件
-        with open("endings.json", "w", encoding="utf-8") as f:
-            json.dump(
-                [
-                    {
-                        "state_id": state.state_id,
-                        "parent_state_id": state.parent_state_id,
-                        "state_path": self._build_state_path(state.state_id),
-                        "state_path_with_actions": self._build_labeled_state_path(
-                            state.state_id
-                        ),
-                        "player_state": [
-                            {
-                                "role": player.role,
-                                "is_alive": player.is_alive,
-                                "skills": player.skills,
-                            }
-                            for player in state.players
-                        ],
-                        "result": result,
-                    }
-                    for state, result in self.endings
-                ],
-                f,
-                ensure_ascii=False,
-                indent=4,
-            )
-        msg = f"总共模拟了 {len(self.endings)} 个终局\n"
-        for result, count in sorted(self.wins.items()):
-            msg += f"{result:<50} \t次数: {count:>5}\n"
-        msg += (
-            f"搜索模式: {self.search_mode}\n"
-            f"停止原因: {self.stop_reason}\n"
-            f"已处理状态数: {self.processed_states}\n"
-            f"当前待处理容器长度: {len(self.queue)}\n"
-            f"因阈值裁剪分支数: {self.pruned_by_limits}\n"
-            f"运行耗时(秒): {time.monotonic() - self.start_time:.2f}\n"
-        )
-        if self.signature_cache is not None:
-            cache_stats = self.signature_cache.stats_snapshot()
-            msg += (
-                "签名缓存统计:\n"
-                f"  sqlite文件: {self.signature_cache_db_path}\n"
-                f"  LRU容量: {cache_stats['lru_capacity']}\n"
-                f"  LRU命中: {cache_stats['lru_hits']}\n"
-                f"  SQLite命中: {cache_stats['sqlite_hits']}\n"
-                f"  新增签名: {cache_stats['inserted']}\n"
-                f"  visited LRU大小: {cache_stats['visited_lru_size']}\n"
-                f"  ending LRU大小: {cache_stats['ending_lru_size']}\n"
-            )
-
-        logger.info(f"游戏结束统计:\n{msg}")
-
-    def draw_plt(self):
-        """根据缓存中的结果，从根节点绘制成树形图，涵盖节点过程"""
-        if not self.state_parent_index:
-            logger.info("状态索引为空，跳过绘图")
-            return
-        plt.axis("off")  # 关闭坐标轴显示
-        # 仅绘制可以从根节点到达终局的路径，避免把重复/去重前的噪声分支全部铺开。
-        terminal_state_ids = [
-            state.state_id for state, _ in self.endings if state.state_id >= 0
-        ]
-        if terminal_state_ids:
-            plotted_nodes: set[int] = set()
-            for state_id in terminal_state_ids:
-                plotted_nodes.update(self._build_state_path(state_id))
-        else:
-            # 未产生终局时退化为绘制当前已记录索引。
-            plotted_nodes = set(self.state_parent_index.keys())
-
-        if not plotted_nodes:
-            logger.info("没有可绘制的节点，跳过绘图")
-            return
-        if len(plotted_nodes) > self.max_nodes_for_plot:
-            logger.warning(
-                "可绘制节点数为 %s，超过阈值 %s，跳过绘图以避免后端崩溃",
-                len(plotted_nodes),
-                self.max_nodes_for_plot,
-            )
-            return
-
-        children_map: dict[int, list[int]] = defaultdict(list)
-        roots: list[int] = []
-        for node_id in sorted(plotted_nodes):
-            parent_id = self.state_parent_index.get(node_id)
-            if parent_id is None or parent_id not in plotted_nodes:
-                roots.append(node_id)
-                continue
-            children_map[parent_id].append(node_id)
-
-        for node_id in children_map:
-            children_map[node_id].sort()
-        roots = sorted(set(roots))
-
-        x_pos: dict[int, float] = {}
-        y_pos: dict[int, float] = {}
-        # 增大节点间距，并根据节点数量做轻量自适应，优先保证标签可读性。
-        node_count = len(plotted_nodes)
-        leaf_gap = max(3.6, min(6.8, 3.8 + node_count * 0.01))
-        depth_gap = 2.8
-        next_leaf_x = 0.0
-
-        def assign_position(node_id: int, depth: int) -> float:
-            nonlocal next_leaf_x
-            y_pos[node_id] = float(depth) * depth_gap
-            children = children_map.get(node_id, [])
-            if not children:
-                x_pos[node_id] = next_leaf_x
-                next_leaf_x += leaf_gap
-                return x_pos[node_id]
-
-            child_xs = [assign_position(child_id, depth + 1) for child_id in children]
-            x_pos[node_id] = sum(child_xs) / len(child_xs)
-            return x_pos[node_id]
-
-        for root_id in roots:
-            assign_position(root_id, depth=0)
-
-        # 标记终局节点及颜色。
-        terminal_result_by_id = {
-            state.state_id: result for state, result in self.endings
-        }
-        node_colors: list[str] = []
-        for node_id in sorted(plotted_nodes):
-            result = terminal_result_by_id.get(node_id)
-            if result is None:
-                node_colors.append("#5B8FF9")  # 中间状态
-            elif "好人" in result:
-                node_colors.append("#52C41A")  # 好人胜
-            else:
-                node_colors.append("#F5222D")  # 狼人胜或其他终局
-
-        def resolve_plot_font() -> tuple[str, bool]:
-            preferred_fonts = [
-                "Microsoft YaHei",
-                "SimHei",
-                "Noto Sans CJK SC",
-                "PingFang SC",
-                "WenQuanYi Zen Hei",
-                "Source Han Sans SC",
-                "Arial Unicode MS",
-            ]
-            available_fonts = {font.name for font in font_manager.fontManager.ttflist}
-            for font_name in preferred_fonts:
-                if font_name in available_fonts:
-                    return font_name, True
-            return "DejaVu Sans", False
-
-        plot_font, has_cjk_font = resolve_plot_font()
-        title_text = (
-            "搜索模拟器状态树" if has_cjk_font else "Search Simulator State Tree"
-        )
-        xlabel_text = "深度" if has_cjk_font else "Depth"
-        ylabel_text = "分支序号" if has_cjk_font else "Branch Order"
-        intermediate_label = "中间状态" if has_cjk_font else "Intermediate"
-        village_win_label = "好人胜终局" if has_cjk_font else "Village Win"
-        wolf_win_label = "狼人胜终局" if has_cjk_font else "Wolf Win"
-
-        max_x = max(x_pos.values()) if x_pos else 0.0
-        max_y = max(y_pos.values()) if y_pos else 0.0
-        raw_fig_width = max(16.0, max_x * 0.5 + 10.0)
-        raw_fig_height = max(10.0, max_y * 1.0 + 6.0)
-        fig_width = min(raw_fig_width, max(8.0, self.max_plot_width_inches))
-        fig_height = min(raw_fig_height, max(6.0, self.max_plot_height_inches))
-        dpi = min(max(self.plot_dpi, 72), 220)
-        if fig_width < raw_fig_width or fig_height < raw_fig_height:
-            logger.warning(
-                "绘图尺寸从 %.2fx%.2f 英寸裁剪为 %.2fx%.2f 英寸，避免图形后端内存/像素限制",
-                raw_fig_width,
-                raw_fig_height,
-                fig_width,
-                fig_height,
-            )
-        with plt.rc_context({"font.family": plot_font, "axes.unicode_minus": False}):
-            fig, ax = plt.subplots(
-                figsize=(fig_width, fig_height), constrained_layout=True
-            )
-
-            # 先画边，再画点，保证节点覆盖在线条上方。
-            for node_id in sorted(plotted_nodes):
-                parent_id = self.state_parent_index.get(node_id)
-                if parent_id is None or parent_id not in plotted_nodes:
-                    continue
-                ax.plot(
-                    [x_pos[parent_id], x_pos[node_id]],
-                    [y_pos[parent_id], y_pos[node_id]],
-                    color="#BFBFBF",
-                    linewidth=0.8,
-                    zorder=1,
-                )
-
-            sorted_nodes = sorted(plotted_nodes)
-            ax.scatter(
-                [x_pos[node_id] for node_id in sorted_nodes],
-                [y_pos[node_id] for node_id in sorted_nodes],
-                s=24,
-                c=node_colors,
-                edgecolors="#333333",
-                linewidths=0.3,
-                zorder=2,
-            )
-
-            def wrap_action_text(
-                text: str, *, width: int = 14, max_lines: int = 4
-            ) -> str:
-                normalized = text.strip() or ("未知动作" if has_cjk_font else "Unknown")
-                wrapped_lines = textwrap.wrap(
-                    normalized,
-                    width=width,
-                    break_long_words=False,
-                    break_on_hyphens=False,
-                )
-                if not wrapped_lines:
-                    wrapped_lines = [normalized]
-                if len(wrapped_lines) > max_lines:
-                    wrapped_lines = wrapped_lines[:max_lines]
-                    last_line = wrapped_lines[-1]
-                    wrapped_lines[-1] = (
-                        f"{last_line[: max(1, width - 3)]}..."
-                        if len(last_line) >= width
-                        else f"{last_line}..."
-                    )
-                return "\n".join(wrapped_lines)
-
-            def format_player_status_text(node_id: int) -> str:
-                statuses = self.state_players_snapshot.get(node_id, [])
-                if not statuses:
-                    return "无" if has_cjk_font else "N/A"
-                return wrap_action_text(", ".join(statuses), width=18, max_lines=5)
-
-            # 节点标签展示 state_id + 父节点行动（即到达该节点时的动作）。
-            # 标签固定在节点正下方，水平居中，不做水平偏移。
-            def label_offset_for_node(node_id: int) -> tuple[int, int]:
-                _ = node_id
-                return 0, -18
-
-            for node_id in sorted_nodes:
-                action_label = self.state_action_index.get(node_id, "")
-                if node_id in roots:
-                    action_text = "根状态" if has_cjk_font else "Root"
-                else:
-                    action_text = wrap_action_text(action_label)
-                is_leaf = len(children_map.get(node_id, [])) == 0
-                if is_leaf:
-                    result_text = terminal_result_by_id.get(
-                        node_id,
-                        "未结束" if has_cjk_font else "Ongoing",
-                    )
-                    player_text = format_player_status_text(node_id)
-                    node_text = (
-                        f"#{node_id}\n行动:\n{action_text}\n存活状态:\n{player_text}\n对局结果:\n{wrap_action_text(result_text)}"
-                        if has_cjk_font
-                        else f"#{node_id}\nParentAction:\n{action_text}\nAliveState:\n{player_text}\nResult:\n{wrap_action_text(result_text)}"
-                    )
-                else:
-                    player_text = format_player_status_text(node_id)
-                    node_text = (
-                        f"#{node_id}\n行动:\n{action_text}\n存活状态:\n{player_text}"
-                        if has_cjk_font
-                        else f"#{node_id}\nParentAction:\n{action_text}\nAliveState:\n{player_text}"
-                    )
-                x_offset, y_offset = label_offset_for_node(node_id)
-                ax.annotate(
-                    node_text,
-                    xy=(x_pos[node_id], y_pos[node_id]),
-                    xytext=(x_offset, y_offset),
-                    textcoords="offset points",
-                    fontsize=5.1,
-                    va="top",
-                    ha="center",
-                    color="#222222",
-                    linespacing=1.25,
-                    bbox={
-                        "boxstyle": "round,pad=0.2",
-                        "facecolor": "#FFFFFF",
-                        "edgecolor": "#999999",
-                        "linewidth": 0.5,
-                        "alpha": 0.85,
-                    },
-                    zorder=3,
-                )
-
-            legend_handles = [
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="#5B8FF9",
-                    markersize=6,
-                    label=intermediate_label,
-                ),
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="#52C41A",
-                    markersize=6,
-                    label=village_win_label,
-                ),
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="#F5222D",
-                    markersize=6,
-                    label=wolf_win_label,
-                ),
-            ]
-            ax.legend(handles=legend_handles, loc="upper right", fontsize=8)
-
-            ax.set_title(title_text, fontsize=12)
-            axis_branch_text = "分支序号" if has_cjk_font else "Branch Order"
-            axis_depth_text = "深度（TD）" if has_cjk_font else "Depth (TD)"
-            ax.set_xlabel(axis_branch_text, fontsize=10)
-            ax.set_ylabel(axis_depth_text, fontsize=10)
-            ax.set_yticks(
-                [depth * depth_gap for depth in range(int(max_y / depth_gap) + 1)]
-            )
-            ax.grid(axis="y", linestyle="--", linewidth=0.5, alpha=0.3)
-            ax.invert_yaxis()
-
-            output_path = Path("search_tree.png")
-            fig.savefig(output_path, dpi=dpi)
-            plt.close(fig)
-        logger.info("状态树图已保存到: %s", output_path)

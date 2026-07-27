@@ -1,6 +1,18 @@
-import sqlite3
-from pathlib import Path
 from collections import OrderedDict
+from pathlib import Path
+
+from sqlalchemy import Column
+from sqlalchemy import Index
+from sqlalchemy import MetaData
+from sqlalchemy import String
+from sqlalchemy import Table
+from sqlalchemy import create_engine
+from sqlalchemy import delete
+from sqlalchemy import select
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.engine import URL
+from sqlalchemy.engine import Connection
+from sqlalchemy.engine import Engine
 
 
 class _SQLiteLRUSignatureStore:
@@ -29,26 +41,23 @@ class _SQLiteLRUSignatureStore:
         }
 
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(str(self.db_path))
-        self._conn.execute("PRAGMA journal_mode=WAL")
-        self._conn.execute("PRAGMA synchronous=NORMAL")
-        self._conn.execute("PRAGMA temp_store=MEMORY")
-        self._conn.execute("""
-            CREATE TABLE IF NOT EXISTS state_signatures (
-                namespace TEXT NOT NULL,
-                signature TEXT NOT NULL,
-                PRIMARY KEY (namespace, signature)
-            )
-            """)
-        self._conn.execute("""
-            CREATE INDEX IF NOT EXISTS idx_state_signatures_namespace
-            ON state_signatures(namespace)
-            """)
-        self._conn.commit()
+        self._metadata = MetaData()
+        self._state_signatures = Table(
+            "state_signatures",
+            self._metadata,
+            Column("namespace", String, primary_key=True, nullable=False),
+            Column("signature", String, primary_key=True, nullable=False),
+            Index("idx_state_signatures_namespace", "namespace"),
+        )
+        self._engine: Engine = create_engine(
+            URL.create("sqlite", database=str(self.db_path))
+        )
+        self._metadata.create_all(self._engine)
+        self._conn: Connection = self._engine.connect()
 
     def reset(self) -> None:
         """清空所有缓存和数据库记录。"""
-        self._conn.execute("DELETE FROM state_signatures")
+        self._conn.execute(delete(self._state_signatures))
         self._conn.commit()
         self._pending_writes = 0
         for cache in self._lru_cache.values():
@@ -64,15 +73,15 @@ class _SQLiteLRUSignatureStore:
             self._stats["lru_hits"] += 1
             return True
 
-        row = self._conn.execute(
-            """
-            SELECT 1
-            FROM state_signatures
-            WHERE namespace = ? AND signature = ?
-            LIMIT 1
-            """,
-            (namespace, signature),
-        ).fetchone()
+        query = (
+            select(self._state_signatures.c.namespace)
+            .where(
+                self._state_signatures.c.namespace == namespace,
+                self._state_signatures.c.signature == signature,
+            )
+            .limit(1)
+        )
+        row = self._conn.execute(query).fetchone()
         if row is None:
             return False
 
@@ -88,14 +97,19 @@ class _SQLiteLRUSignatureStore:
             self._stats["lru_hits"] += 1
             return False
 
-        cursor = self._conn.execute(
-            """
-            INSERT OR IGNORE INTO state_signatures(namespace, signature)
-            VALUES (?, ?)
-            """,
-            (namespace, signature),
+        statement = sqlite_insert(self._state_signatures).values(
+            namespace=namespace,
+            signature=signature,
         )
-        inserted = cursor.rowcount > 0
+        result = self._conn.execute(
+            statement.on_conflict_do_nothing(
+                index_elements=[
+                    self._state_signatures.c.namespace,
+                    self._state_signatures.c.signature,
+                ]
+            )
+        )
+        inserted = result.rowcount > 0
         if inserted:
             self._pending_writes += 1
             self._stats["inserted"] += 1
@@ -117,6 +131,7 @@ class _SQLiteLRUSignatureStore:
             self.flush()
         finally:
             self._conn.close()
+            self._engine.dispose()
 
     def stats_snapshot(self) -> dict[str, int]:
         """返回当前缓存和数据库的统计信息。"""

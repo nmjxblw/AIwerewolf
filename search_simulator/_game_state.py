@@ -20,6 +20,9 @@ class GameState:
     """ 已完成的白天次数（首日为 0）"""
     last_guard_target_index: int | None = None  # 上一晚守卫守护的玩家索引
     """ 上一晚守卫守护的玩家索引"""
+    # 预言家查验缓存：目标索引 -> 是否狼人阵营。
+    seer_check_results: dict[int, bool] | None = None
+    """ 预言家查验缓存，预言家淘汰时清空。"""
     state_id: int = -1  # 当前状态节点 ID
     """ 当前状态节点 ID"""
     parent_state_id: int | None = None  # 父状态节点 ID
