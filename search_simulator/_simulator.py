@@ -290,6 +290,18 @@ class SearchSimulator:
         if game_state.players[player_index].role == "预言家":
             game_state.seer_check_results = {}
 
+    def _white_wolf_king_boom_targets(
+        self, game_state: GameState, player_index: int
+    ) -> list[int]:
+        targets = self._alive_indices(game_state, exclude_indices={player_index})
+        if not self.smart_vote:
+            return targets
+        return [
+            target_index
+            for target_index in targets
+            if not self._is_wolf_role(game_state.players[target_index].role)
+        ]
+
     def _iter_seer_check_branches(
         self, game_state: GameState
     ) -> list[tuple[GameState, str]]:
@@ -358,7 +370,7 @@ class SearchSimulator:
             # 白狼王倒地后同样会触发带走一人，这里和猎人一样做分支展开。
             next_branches = []
             for state in branches:
-                targets = self._alive_indices(state, exclude_indices={player_index})
+                targets = self._white_wolf_king_boom_targets(state, player_index)
                 if not targets:
                     next_branches.append(state)
                     continue
