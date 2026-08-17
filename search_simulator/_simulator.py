@@ -53,6 +53,8 @@ class SearchSimulator:
         """ 存储每个状态节点的动作，用于回溯路径 """
         self.state_players_snapshot: dict[int, list[str]] = {}
         """ 存储每个状态节点的玩家存活快照（用于可视化标签） """
+        self.state_depth_index: dict[int, int] = {}
+        """ 存储每个状态节点的分支深度（根节点为 0） """
         self._next_state_id: int = 0
         """ 用于分配唯一的状态节点 ID """
         self._state_index_lock = threading.Lock()
@@ -114,8 +116,13 @@ class SearchSimulator:
         with self._state_index_lock:
             game_state.state_id = self._next_state_id
             game_state.parent_state_id = parent_state_id
+            if parent_state_id is None:
+                game_state.depth = 0
+            else:
+                game_state.depth = self.state_depth_index.get(parent_state_id, -1) + 1
             self.state_parent_index[game_state.state_id] = parent_state_id
             self.state_action_index[game_state.state_id] = action_label
+            self.state_depth_index[game_state.state_id] = game_state.depth
             players = self._normalize_players(game_state)
             self.state_players_snapshot[game_state.state_id] = [
                 f"{index}:{player.role}{'存活' if player.is_alive else '死亡'}"
@@ -848,6 +855,8 @@ class SearchSimulator:
         """ 存储每个状态节点的动作，用于回溯路径"""
         self.state_players_snapshot = {}
         """ 存储每个状态节点的玩家存活快照（用于可视化标签）"""
+        self.state_depth_index = {}
+        """ 存储每个状态节点的分支深度（根节点为 0）"""
         self._next_state_id = 0
         """ 用于分配唯一的状态节点 ID"""
         self.max_processed_states = kwargs.get("max_processed_states")

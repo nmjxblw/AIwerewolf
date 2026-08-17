@@ -27,3 +27,5 @@ class GameState:
     """ 当前状态节点 ID"""
     parent_state_id: int | None = None  # 父状态节点 ID
     """ 父状态节点 ID"""
+    depth: int = 0  # 当前分支节点深度（根节点为 0）
+    """ 当前分支节点深度（根节点为 0）"""
