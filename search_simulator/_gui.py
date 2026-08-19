@@ -292,7 +292,7 @@ def launch_gui(
     toggle_box.grid(row=1, column=1, sticky="w", pady=4)
     attach_tooltip(toggle_box, "toggle")
 
-    lookahead_var = tk.StringVar(value=str(defaults.get("lookahead_depth", 2)))
+    lookahead_var = tk.StringVar(value=_optional_default_text(defaults.get("lookahead_depth")))
     ttk.Label(online_frame, text=t("label.lookahead_depth")).grid(
         row=2, column=0, sticky="w", padx=(0, 8), pady=4
     )

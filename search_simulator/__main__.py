@@ -102,7 +102,20 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
     return simulator
 
 
+def _install_crash_handlers() -> None:
+    """安装全局崩溃处理器；安装失败不应阻断主流程。"""
+    try:
+        from ._crash_handler import install_crash_handlers
+    except ImportError:
+        from search_simulator._crash_handler import install_crash_handlers
+    try:
+        install_crash_handlers()
+    except Exception:
+        pass
+
+
 def main() -> None:
+    _install_crash_handlers()
     _, _, _, build_parser, _, launch_gui = _import_runtime_modules()
     parser = build_parser()
     args: argparse.Namespace = parser.parse_args()

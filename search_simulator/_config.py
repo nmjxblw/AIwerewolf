@@ -131,7 +131,7 @@ ARGUMENT_SPECS: tuple[ArgumentSpec, ...] = (
     ),
     ArgumentSpec(
         ("--lookahead_depth",),
-        {"type": int, "default": 2, "help": t("help.lookahead_depth")},
+        {"type": int, "default": None, "help": t("help.lookahead_depth")},
     ),
     ArgumentSpec(
         ("--tactics",),

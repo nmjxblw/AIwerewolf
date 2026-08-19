@@ -31,6 +31,7 @@ def run_online_reference(simulator, root, *, depth) -> dict:
     """深度驱动参考路径：从 root 决策到真终局/未决，产出 trace。"""
     toggle = simulator.toggle
     lambda_risk = simulator.lambda_risk
+    cache: dict = {}  # 跨决策步共享换位表，全深度评估只对状态 DAG 遍历一趟
 
     def eval_interval(state, *, seen=frozenset()):
         return evaluate(
@@ -40,6 +41,7 @@ def run_online_reference(simulator, root, *, depth) -> dict:
             toggle=toggle,
             lambda_risk=lambda_risk,
             seen=seen,
+            cache=cache,
         )
 
     root_iv = eval_interval(root)

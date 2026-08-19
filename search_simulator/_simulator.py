@@ -917,7 +917,7 @@ class SearchSimulator:
         """ 迭代风险参数 λ ∈ [0,1]"""
         self.toggle = str(kwargs.get("toggle", "conservative")).lower()
         """ 乐观/保守开关：optimistic | conservative"""
-        _lookahead = kwargs.get("lookahead_depth", 2)
+        _lookahead = kwargs.get("lookahead_depth")
         self.lookahead_depth = (
             None
             if _lookahead is None

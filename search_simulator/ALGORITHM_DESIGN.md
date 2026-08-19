@@ -237,3 +237,5 @@ while not 终局:
 4. **i18n**：由「双语文案映射 + 语言下拉」收敛为 `t(key, *args, **kwargs)` 单表；语言切换隐藏、默认 zh-CN；领域数据不翻译。
 5. **布局**：三栏弹性布局、窗口 `1560x760`，λ slider 带实时数值标签。
 6. **自定义状态编辑器**：实际实现比 §A9 早期设想更简洁（玩家 TreeView + 编辑对话框 + 文本字段），「合法性检测/Spinbox/身份探知勾选行」未落地，见 `CODE_CHANGES.md` §4.8。
+7. **前瞻深度默认全深度**：`lookahead_depth` 默认由 `2` 改为 `None`；`evaluate` 增加换位表 `cache`（以 `(签名, depth)` 缓存），`run_online_reference` 跨步共享，使全深度评估等价于状态 DAG 一趟遍历。§7 边界 7「bounded depth ≤3 可接受」改为「全深度默认，靠换位表 + 环检测控制开销」。
+8. **崩溃处理器**：新增 `_crash_handler.py` 记录未捕获异常与 C 级致命错误（`faulthandler`），日志 `search_simulator_crash.log`。

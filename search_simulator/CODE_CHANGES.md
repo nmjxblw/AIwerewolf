@@ -203,9 +203,19 @@ pytest tests/test_search_simulator_online.py -q
 ### 4.7 Python 3.14 兼容性修复
 - **闭包/cell 损坏**：`_bounded_vote_flow_feasible` 的嵌套函数抽为模块级 `_flow_add_capacity_edge` / `_flow_add_bounded_edge` / `_flow_bfs_level` / `_flow_dfs`（显式参数，不再闭包捕获可变状态），修复非确定性的 `'cell' object is not an iterator` / `'int' object is not callable`。
 - **线程安全**：工作线程改用 `queue.Queue` + 主线程 `_poll_main_queue` 轮询，不再从非主线程 `root.after`（修复 `RuntimeError: main thread is not in main loop`）。
+- **递归特化闪退（补充）**：`_flow_dfs` 的递归实现触发 CPython 3.14.0 特化解释器 `_PyEval_EvalFrameDefault: Executing a cache` 致命错误（7人2狼 smart_vote 全战术 深度5 在线决策闪退）；改为**显式栈迭代实现**（去掉递归与内联 `min` 调用），7人2狼 smart_vote 穷举结果不变（1214=656/442/90/26）。
 
 ### 4.8 自定义状态编辑器：实际实现比清单更简洁
 - 实际为「玩家 TreeView（职业/存活/技能三列）+ 添加/删除/编辑对话框 + phase/night/day/守卫守护索引/预言家查验文本字段」。
 - 清单 §2.4 描述的「合法性检测（狼≥1、狼<总数、神职各≤1、技能与职业一致）、技能 Spinbox、预言家身份探知勾选行、非法组合红字提示」**未落地**，属待办；`_build_custom_state()` 目前不做合法性校验，`phase`/`day_count`/`seer_check_results` 直接由输入构建。
 
 > 后续若要补上编辑器合法性校验，建议在 `_build_custom_state()` 内复用 `_simulator` 的胜负/角色约束做前置检查，并回写红字提示与「禁止运行」门控。
+
+### 4.9 前瞻深度默认全深度 + 换位表提速
+- `--lookahead_depth` 默认由 `2` 改为 `None`（全深度）：深度过浅会在到达终局前返回未决区间，导致 reward 计算无意义；全深度让 `evaluate` 递归到真终局（退化环由 `seen` 路径签名兜底）。
+- `_minimax.evaluate` 增加换位表（transposition table）`cache`，以 `(签名, depth)` 缓存子图价值；`run_online_reference` 跨决策步共享同一 `cache`，使全深度评估退化为对状态 DAG 的一趟遍历（等价于穷举搜索的复杂度），避免同一状态被不同路径反复重算的指数级重复。
+- 未引入 numpy/GPU：本算法瓶颈是「游戏树的组合爆炸 + 复杂 Python 状态转移（deepcopy/角色技能判定/Dinic 流）」，属不规则树遍历，无法向量化；区间 `merge` 本身是 O(n) 常数级。换位表才是对症的提速手段。
+
+### 4.10 全局崩溃处理器 `_crash_handler.py`
+- 新增 `install_crash_handlers()`：`sys.excepthook` / `threading.excepthook` / `sys.unraisablehook` 落盘，`faulthandler.enable(file)` 转储 C 级致命错误（`Py_FatalError` / 段错误）线程栈。
+- 日志默认 `search_simulator_crash.log`（`*.log` 已 gitignore），可用环境变量 `SEARCH_SIMULATOR_CRASH_LOG` 覆盖；`__main__.py` 在 `main()` 入口安装（失败不阻断主流程）。
