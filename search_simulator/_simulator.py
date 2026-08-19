@@ -308,8 +308,9 @@ class SearchSimulator:
 
     def _state_signature(self, game_state: GameState) -> str:
         """生成当前游戏状态的唯一签名，用于去重。"""
-
         # 用稳定 JSON 串做状态指纹，避免大规模运行时的 tuple/generator 异常。
+        # 注意：CPython 3.14.0 对元组/生成器在热路径上的特化存在段错误风险，
+        # 故此处保持 json.dumps 序列化，不要改回 tuple + repr。
         players = self._normalize_players(game_state)
         signature_payload = [
             game_state.night_count,

@@ -24,6 +24,8 @@ def evaluate(
     - cache：换位表（transposition table），以 (签名, depth) 缓存子图价值，
       使全深度（depth=None）评估退化为对状态 DAG 的一趟遍历，避免同一状态被
       不同路径反复重算导致的指数级重复工作。
+    - 缓存值采用「打包元组 (lower, upper)」紧凑存储（AoS 打包），命中时再还原为
+      RewardInterval，减少每个缓存条目持有的 dataclass 对象数量与对象抖动。
     """
     if cache is None:
         cache = {}
@@ -36,7 +38,7 @@ def evaluate(
     key = (signature, depth)
     cached = cache.get(key)
     if cached is not None:
-        return cached
+        return RewardInterval(cached[0], cached[1])
 
     is_over, result = oracle._check_game_over(state)
     if is_over:
@@ -62,5 +64,5 @@ def evaluate(
         ]
         value = merge(child_intervals, toggle=toggle, lambda_risk=lambda_risk)
 
-    cache[key] = value
+    cache[key] = (value.lower, value.upper)
     return value
