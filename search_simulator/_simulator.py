@@ -53,26 +53,41 @@ def _flow_bfs_level(graph, capacity, node_count, super_source):
 
 
 def _flow_dfs(node, flow, level, cursor, graph, capacity, super_sink):
-    """Dinic DFS 增广。"""
-    if node == super_sink:
-        return flow
-    while cursor[node] < len(graph[node]):
-        next_node = graph[node][cursor[node]]
-        if level[next_node] == level[node] + 1 and capacity[node][next_node] > 0:
-            pushed = _flow_dfs(
-                next_node,
-                min(flow, capacity[node][next_node]),
-                level,
-                cursor,
-                graph,
-                capacity,
-                super_sink,
-            )
-            if pushed > 0:
-                capacity[node][next_node] -= pushed
-                capacity[next_node][node] += pushed
-                return pushed
-        cursor[node] += 1
+    """Dinic DFS 增广（迭代 + 显式栈）。
+
+    用显式栈替代递归实现，规避 CPython 3.14.0 特化解释器在递归调用上
+    触发的 ``_PyEval_EvalFrameDefault: Executing a cache`` 致命错误。
+    """
+    stack = [(node, flow)]
+    path_edges: list[tuple[int, int]] = []
+    while stack:
+        current, cur_flow = stack[-1]
+        if current == super_sink:
+            pushed = cur_flow
+            for u, v in reversed(path_edges):
+                capacity[u][v] -= pushed
+                capacity[v][u] += pushed
+            return pushed
+
+        advanced = False
+        while cursor[current] < len(graph[current]):
+            nxt = graph[current][cursor[current]]
+            if level[nxt] == level[current] + 1 and capacity[current][nxt] > 0:
+                path_edges.append((current, nxt))
+                next_flow = cur_flow
+                if capacity[current][nxt] < next_flow:
+                    next_flow = capacity[current][nxt]
+                stack.append((nxt, next_flow))
+                advanced = True
+                break
+            cursor[current] += 1
+
+        if not advanced:
+            stack.pop()
+            if path_edges:
+                path_edges.pop()
+            if stack:
+                cursor[stack[-1][0]] += 1
     return 0
 
 
