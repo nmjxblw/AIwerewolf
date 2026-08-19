@@ -204,6 +204,7 @@ pytest tests/test_search_simulator_online.py -q
 - **闭包/cell 损坏**：`_bounded_vote_flow_feasible` 的嵌套函数抽为模块级 `_flow_add_capacity_edge` / `_flow_add_bounded_edge` / `_flow_bfs_level` / `_flow_dfs`（显式参数，不再闭包捕获可变状态），修复非确定性的 `'cell' object is not an iterator` / `'int' object is not callable`。
 - **线程安全**：工作线程改用 `queue.Queue` + 主线程 `_poll_main_queue` 轮询，不再从非主线程 `root.after`（修复 `RuntimeError: main thread is not in main loop`）。
 - **递归特化闪退（补充）**：`_flow_dfs` 的递归实现触发 CPython 3.14.0 特化解释器 `_PyEval_EvalFrameDefault: Executing a cache` 致命错误（7人2狼 smart_vote 全战术 深度5 在线决策闪退）；改为**显式栈迭代实现**（去掉递归与内联 `min` 调用），7人2狼 smart_vote 穷举结果不变（1214=656/442/90/26）。
+- **deepcopy 访问越界（补充）**：`copy.deepcopy` 在全深度/多线程下触发 `Windows fatal exception: access violation`（`copy.py _keep_alive` use-after-free，CPython 3.14.0 缺陷）。改为 `GameState.clone()` 手动深拷贝（只复制 players/skills/seer_check_results/players_snapshot 等可变容器），并移除 `_simulator.py` 的 `copy` 依赖；穷举结果不变。
 
 ### 4.8 自定义状态编辑器：实际实现比清单更简洁
 - 实际为「玩家 TreeView（职业/存活/技能三列）+ 添加/删除/编辑对话框 + phase/night/day/守卫守护索引/预言家查验文本字段」。

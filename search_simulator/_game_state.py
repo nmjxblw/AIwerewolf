@@ -1,4 +1,4 @@
-﻿from dataclasses import dataclass, field
+from dataclasses import dataclass, field
 
 try:
     from search_simulator._player import Player
@@ -84,4 +84,35 @@ class GameState:
             ),
             parent_state_id=None,
             depth=0,
+        )
+
+    def clone(self) -> "GameState":
+        """手动深拷贝。
+
+        用显式字段拷贝替代 ``copy.deepcopy``：CPython 3.14.0 的 ``copy.deepcopy``
+        在长时间/多线程下会在 ``_keep_alive`` 触发 use-after-free（Windows access
+        violation）。这里只复制可变容器（players/skills/seer_check_results/
+        players_snapshot），标量字段直接共享。
+        """
+        return GameState(
+            players=[
+                Player(role=p.role, is_alive=p.is_alive, skills=dict(p.skills))
+                for p in self.players
+            ],
+            is_game_over=self.is_game_over,
+            night_count=self.night_count,
+            day_count=self.day_count,
+            phase=self.phase,
+            last_guard_target_index=self.last_guard_target_index,
+            seer_check_results=(
+                dict(self.seer_check_results)
+                if self.seer_check_results is not None
+                else None
+            ),
+            reward_interval=self.reward_interval,
+            action_label=self.action_label,
+            players_snapshot=list(self.players_snapshot),
+            state_id=self.state_id,
+            parent_state_id=self.parent_state_id,
+            depth=self.depth,
         )

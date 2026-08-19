@@ -1,4 +1,3 @@
-import copy
 import gc
 import json
 import logging
@@ -400,7 +399,7 @@ class SearchSimulator:
 
         branches: list[tuple[GameState, str]] = []
         for target_index in targets:
-            checked_state = copy.deepcopy(game_state)
+            checked_state = game_state.clone()
             checked_results = self._seer_check_results(checked_state)
             is_wolf = self._is_wolf_role(checked_state.players[target_index].role)
             checked_results[target_index] = is_wolf
@@ -434,7 +433,7 @@ class SearchSimulator:
                     next_branches.append(state)
                     continue
                 for target_index in targets:
-                    branch = copy.deepcopy(state)
+                    branch = state.clone()
                     self._consume_skill(branch.players[player_index], "开枪")
                     self._kill_player(branch, target_index)
                     next_branches.extend(
@@ -451,7 +450,7 @@ class SearchSimulator:
                     next_branches.append(state)
                     continue
                 for target_index in targets:
-                    branch = copy.deepcopy(state)
+                    branch = state.clone()
                     self._consume_skill(branch.players[player_index], "带走击杀")
                     self._kill_player(branch, target_index)
                     next_branches.extend(
@@ -491,7 +490,7 @@ class SearchSimulator:
         if "no_kill" in self.tactics and wolf_targets:
             wolf_targets = list(wolf_targets) + [None]
         if not wolf_targets:
-            idle_state = copy.deepcopy(game_state)
+            idle_state = game_state.clone()
             idle_state.night_count += 1
             self._assign_state_identity(
                 idle_state,
@@ -531,7 +530,7 @@ class SearchSimulator:
                 )
 
             for guard_target in guard_targets:
-                base_state = copy.deepcopy(game_state)
+                base_state = game_state.clone()
                 if guard_index is not None:
                     self._consume_skill(base_state.players[guard_index], "保护")
                 base_state.last_guard_target_index = guard_target
@@ -562,7 +561,7 @@ class SearchSimulator:
                             witch_actions.append(("毒杀", poison_target_index))
 
                 for witch_action, poison_target_index in witch_actions:
-                    branch_state = copy.deepcopy(base_state)
+                    branch_state = base_state.clone()
                     witch_saved = False
                     if witch_index is not None and witch_action == "使用解药":
                         self._consume_skill(branch_state.players[witch_index], "解药")
@@ -820,12 +819,12 @@ class SearchSimulator:
         # 2) 启用警长时，平票最高票由警长归票，强制放逐 1 人并展开分支。
         alive_indices = self._alive_indices(game_state)
         if len(alive_indices) <= 1:
-            return [copy.deepcopy(game_state)]
+            return [game_state.clone()]
 
         if self.smart_vote:
             vote_outcomes = self._build_smart_vote_outcomes(game_state, alive_indices)
             if not vote_outcomes:
-                idle_state = copy.deepcopy(game_state)
+                idle_state = game_state.clone()
                 self._assign_state_identity(
                     idle_state,
                     parent_state_id=game_state.state_id,
@@ -848,7 +847,7 @@ class SearchSimulator:
         for top_candidates in vote_outcomes:
             # 单人最高票：直接出局；平票：必须在平票者中淘汰一人。
             for vote_target_index in top_candidates:
-                day_state = copy.deepcopy(game_state)
+                day_state = game_state.clone()
                 for branched_state in self._resolve_death_chain(
                     day_state, vote_target_index
                 ):
@@ -1032,7 +1031,11 @@ class SearchSimulator:
             )  # 添加普通村民角色
         logger.debug(t("log.roles", [player.role for player in self.players]))
         initial_state = GameState(
-            players=copy.deepcopy(self.players), is_game_over=False
+            players=[
+                Player(role=p.role, is_alive=p.is_alive, skills=dict(p.skills))
+                for p in self.players
+            ],
+            is_game_over=False
         )
         self._assign_state_identity(
             initial_state, parent_state_id=None, action_label=t("action.root")
@@ -1215,7 +1218,7 @@ class SearchSimulator:
         )
 
         if start_state is not None:
-            root = copy.deepcopy(start_state)
+            root = start_state.clone()
             self._assign_state_identity(
                 root, parent_state_id=None, action_label=t("action.root")
             )
