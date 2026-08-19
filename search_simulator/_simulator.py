@@ -451,7 +451,7 @@ class SearchSimulator:
                         wolf_target_index != witch_index or can_self_save
                     )
                     if can_save:
-                        witch_actions.append(("救活", None))
+                        witch_actions.append(("使用解药", None))
 
                     if witch_player.skills.get("毒药", 0) > 0:
                         poison_targets = self._alive_indices(
@@ -463,7 +463,7 @@ class SearchSimulator:
                 for witch_action, poison_target_index in witch_actions:
                     branch_state = copy.deepcopy(base_state)
                     witch_saved = False
-                    if witch_index is not None and witch_action == "救活":
+                    if witch_index is not None and witch_action == "使用解药":
                         self._consume_skill(branch_state.players[witch_index], "解药")
                         witch_saved = True
                     elif (
@@ -508,8 +508,8 @@ class SearchSimulator:
                                     and poison_target_index is not None
                                 ):
                                     witch_text = f"毒杀→{poison_target_index}"
-                                elif witch_action == "救活":
-                                    witch_text = "救活"
+                                elif witch_action == "使用解药":
+                                    witch_text = "使用解药"
                                 else:
                                     witch_text = "无"
                                 action_parts.append(f"女巫={witch_text}")

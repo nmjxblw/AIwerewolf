@@ -25,21 +25,20 @@ def save_endings_json(
         json.dump(
             [
                 {
-                    "state_id": state.state_id,
-                    "parent_state_id": state.parent_state_id,
-                    "state_path": build_state_path(state.state_id),
-                    "state_path_with_actions": build_labeled_state_path(
-                        state.state_id
-                    ),
-                    "player_state": [
+                    "节点ID": state.state_id,
+                    "父节点ID": state.parent_state_id,
+                    "状态路径": build_state_path(state.state_id),
+                    "带操作的状态路径": build_labeled_state_path(state.state_id),
+                    "玩家状态": [
                         {
-                            "role": player.role,
-                            "is_alive": player.is_alive,
-                            "skills": player.skills,
+                            "角色": player.role,
+                            "是否存活": player.is_alive,
+                            "技能": player.skills,
                         }
                         for player in state.players
                     ],
-                    "result": result,
+                    "结果": result,
+                    "深度": state.depth,
                 }
                 for state, result in endings
             ],
