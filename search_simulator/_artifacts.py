@@ -4,6 +4,7 @@ import logging
 import time
 
 from ._reporting import report_results
+from ._i18n import t
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -18,9 +19,15 @@ def emit_simulation_artifacts(
     plot_dpi: int,
     text_tree_output_path: str,
     max_text_tree_nodes: int,
+    phase_callback=None,
 ) -> None:
     """输出模拟器运行产物，包括终局 JSON、统计日志和可视化结果。"""
 
+    def _report(phase: str) -> None:
+        if phase_callback is not None:
+            phase_callback(phase)
+
+    _report("report")
     cache_stats = (
         simulator.signature_cache.stats_snapshot()
         if simulator.signature_cache is not None
@@ -41,6 +48,7 @@ def emit_simulation_artifacts(
         signature_cache_db_path=simulator.signature_cache_db_path,
     )
     if enable_plot:
+        _report("plot")
         from ._plotting import draw_state_tree
 
         draw_state_tree(
@@ -53,9 +61,10 @@ def emit_simulation_artifacts(
             plot_dpi=plot_dpi,
         )
     else:
-        logger.info("已禁用绘图（enable_plot=False）")
+        logger.info(t("log.plot_disabled"))
 
     if enable_text_tree:
+        _report("text_tree")
         from ._text_tree import export_text_state_tree
 
         export_text_state_tree(

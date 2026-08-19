@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Callable
 
 from ._game_state import GameState
+from ._i18n import t
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -24,7 +25,7 @@ def export_text_state_tree(
     """导出类似 tree 命令的文本状态树。"""
 
     if not state_parent_index:
-        logger.info("状态索引为空，跳过文本树导出")
+        logger.info(t("log.text_tree_empty_index"))
         return
 
     terminal_state_ids = [state.state_id for state, _ in endings if state.state_id >= 0]
@@ -36,13 +37,11 @@ def export_text_state_tree(
         tree_nodes = set(state_parent_index.keys())
 
     if not tree_nodes:
-        logger.info("没有可导出的文本树节点，跳过文本树导出")
+        logger.info(t("log.text_tree_no_nodes"))
         return
     if len(tree_nodes) > max_text_tree_nodes:
         logger.warning(
-            "文本树节点数为 %s，超过阈值 %s，跳过文本树导出",
-            len(tree_nodes),
-            max_text_tree_nodes,
+            t("log.text_tree_too_many", len(tree_nodes), max_text_tree_nodes)
         )
         return
 
@@ -82,7 +81,7 @@ def export_text_state_tree(
 
     path = Path(output_path)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    logger.info("文本状态树已保存到: %s", path)
+    logger.info(t("log.text_tree_saved", path))
 
 
 def _append_node_lines(
@@ -122,8 +121,8 @@ def _format_node_label(
     state_players_snapshot: dict[int, list[str]],
     terminal_result_by_id: dict[int, str],
 ) -> str:
-    action_label = state_action_index.get(node_id, "未知").replace("\n", " ").strip()
-    player_status = ", ".join(state_players_snapshot.get(node_id, [])) or "无"
+    action_label = state_action_index.get(node_id, t("action.unknown")).replace("\n", " ").strip()
+    player_status = ", ".join(state_players_snapshot.get(node_id, [])) or t("plot.none")
     result = terminal_result_by_id.get(node_id)
     parts = [
         f"#{node_id}",

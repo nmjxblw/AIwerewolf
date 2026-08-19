@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import sys
@@ -41,7 +42,25 @@ def _import_runtime_modules():
     )
 
 
-def _run_simulation(args: argparse.Namespace):
+def _load_start_state(args):
+    """从 CLI 参数解析自定义起始状态（JSON 字符串或文件路径）。"""
+    try:
+        from search_simulator._game_state import GameState
+    except ImportError:
+        from ._game_state import GameState
+
+    if getattr(args, "start_state_json", None):
+        return GameState.from_dict(json.loads(args.start_state_json))
+    if getattr(args, "start_state_path", None):
+        from pathlib import Path
+
+        return GameState.from_dict(
+            json.loads(Path(args.start_state_path).read_text(encoding="utf-8-sig"))
+        )
+    return None
+
+
+def _run_simulation(args: argparse.Namespace, phase_callback=None):
     (
         artifact_arg_keys,
         simulator_arg_keys,
@@ -62,6 +81,10 @@ def _run_simulation(args: argparse.Namespace):
         simulator_kwargs["iteration_callback"] = callback
 
     simulator = SearchSimulator(**simulator_kwargs)
+    if simulator.policy == "online":
+        simulator.run_online(start_state=_load_start_state(args))
+        return simulator
+
     simulator.run()
 
     artifact_kwargs = {
@@ -73,6 +96,7 @@ def _run_simulation(args: argparse.Namespace):
         simulator,
         enable_plot=not args.disable_plot,
         enable_text_tree=args.export_text_tree,
+        phase_callback=phase_callback,
         **artifact_kwargs,
     )
     return simulator

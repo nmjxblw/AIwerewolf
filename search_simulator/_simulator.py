@@ -13,6 +13,7 @@ from typing import Callable
 from typing import cast
 
 from ._game_state import GameState
+from ._i18n import t
 from ._player import Player
 from ._sqlite_lru_signature_store import _SQLiteLRUSignatureStore
 
@@ -20,11 +21,66 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+def _flow_add_capacity_edge(graph, capacity, from_node, to_node, cap):
+    """流网络辅助：加一条容量边。"""
+    if capacity[from_node][to_node] == 0 and capacity[to_node][from_node] == 0:
+        graph[from_node].append(to_node)
+        graph[to_node].append(from_node)
+    capacity[from_node][to_node] += cap
+
+
+def _flow_add_bounded_edge(graph, capacity, balance, from_node, to_node, lower, upper):
+    """流网络辅助：加一条带下界/上界的边。"""
+    if upper < lower:
+        return
+    balance[from_node] -= lower
+    balance[to_node] += lower
+    _flow_add_capacity_edge(graph, capacity, from_node, to_node, upper - lower)
+
+
+def _flow_bfs_level(graph, capacity, node_count, super_source):
+    """Dinic BFS 分层。"""
+    level = [-1] * node_count
+    level[super_source] = 0
+    queue = deque([super_source])
+    while queue:
+        node = queue.popleft()
+        for next_node in graph[node]:
+            if level[next_node] < 0 and capacity[node][next_node] > 0:
+                level[next_node] = level[node] + 1
+                queue.append(next_node)
+    return level
+
+
+def _flow_dfs(node, flow, level, cursor, graph, capacity, super_sink):
+    """Dinic DFS 增广。"""
+    if node == super_sink:
+        return flow
+    while cursor[node] < len(graph[node]):
+        next_node = graph[node][cursor[node]]
+        if level[next_node] == level[node] + 1 and capacity[node][next_node] > 0:
+            pushed = _flow_dfs(
+                next_node,
+                min(flow, capacity[node][next_node]),
+                level,
+                cursor,
+                graph,
+                capacity,
+                super_sink,
+            )
+            if pushed > 0:
+                capacity[node][next_node] -= pushed
+                capacity[next_node][node] += pushed
+                return pushed
+        cursor[node] += 1
+    return 0
+
+
 class SearchSimulator:
     """全树搜索模拟器，用于探索狼人杀游戏的所有可能局面。"""
 
     def __init__(self, **kwargs):
-        logger.debug("开始初始化Search Simulator")
+        logger.debug(t("log.init_start"))
         self.has_clergies = False  # 标记是否包含神职角色
         """ 标记是否包含神职角色 """
         self.include_sheriff = False  # 标记是否启用警长归票机制
@@ -78,7 +134,7 @@ class SearchSimulator:
         """ 并行扩展线程数（1 表示关闭并行） """
         self.pruned_by_limits: int = 0
         """ 记录因阈值裁剪分支数 """
-        self.stop_reason: str = "模拟完成"
+        self.stop_reason: str = t("stop.sim_done")
         """ 模拟停止的原因 """
 
         self.players: list[Player] = []
@@ -124,10 +180,13 @@ class SearchSimulator:
             self.state_action_index[game_state.state_id] = action_label
             self.state_depth_index[game_state.state_id] = game_state.depth
             players = self._normalize_players(game_state)
-            self.state_players_snapshot[game_state.state_id] = [
+            snapshot = [
                 f"{index}:{player.role}{'存活' if player.is_alive else '死亡'}"
                 for index, player in enumerate(players)
             ]
+            game_state.action_label = action_label
+            game_state.players_snapshot = snapshot
+            self.state_players_snapshot[game_state.state_id] = snapshot
             self._next_state_id += 1
 
     def _build_state_path(self, state_id: int) -> list[int]:
@@ -153,7 +212,7 @@ class SearchSimulator:
             {
                 "state_id": node_id,
                 "parent_state_id": self.state_parent_index.get(node_id),
-                "action_label": self.state_action_index.get(node_id, "未知"),
+                "action_label": self.state_action_index.get(node_id, t("action.unknown")),
             }
             for node_id in id_path
         ]
@@ -181,7 +240,7 @@ class SearchSimulator:
         game_state: GameState,
         *,
         exclude_indices: set[int] | None = None,
-        predicate=None,
+        predicate: Callable[[Player], bool] | None = None,
     ) -> list[int]:
         """返回当前游戏状态中存活玩家的索引列表，可选排除指定索引或按条件过滤。"""
 
@@ -226,6 +285,8 @@ class SearchSimulator:
         players = self._normalize_players(game_state)
         signature_payload = [
             game_state.night_count,
+            game_state.day_count,
+            game_state.phase,
             game_state.last_guard_target_index,
             sorted(
                 (int(index), bool(is_wolf))
@@ -385,14 +446,35 @@ class SearchSimulator:
 
         return branches
 
+    def _witch_has_antidote(self, game_state: GameState) -> bool:
+        """是否存在存活且解药可用的女巫。"""
+        return bool(
+            self._alive_indices(
+                game_state,
+                predicate=lambda player: player.role == "女巫"
+                and player.skills.get("解药", 0) > 0,
+            )
+        )
+
+    def _wolf_targets_for_night(self, game_state: GameState) -> list[int]:
+        """狼人可选刀口目标（含「骗刀」战术扩展）。"""
+        alive = self._alive_indices(game_state)
+        targets = [
+            index
+            for index in alive
+            if not self._is_wolf_role(game_state.players[index].role)
+        ]
+        if "self_kill" in self.tactics and self._witch_has_antidote(game_state):
+            targets = list(alive)
+        return targets
+
     def _resolve_night(self, game_state: GameState) -> list[GameState]:
         """解析夜晚阶段，返回可能的后续分支。"""
 
         # 夜晚阶段：狼人刀人 -> 守卫保护 -> 女巫单药决策 -> 死亡连锁。
-        wolf_targets = self._alive_indices(
-            game_state,
-            predicate=lambda player: not self._is_wolf_role(player.role),
-        )
+        wolf_targets = self._wolf_targets_for_night(game_state)
+        if "no_kill" in self.tactics and wolf_targets:
+            wolf_targets = list(wolf_targets) + [None]
         if not wolf_targets:
             idle_state = copy.deepcopy(game_state)
             idle_state.night_count += 1
@@ -439,19 +521,23 @@ class SearchSimulator:
                     self._consume_skill(base_state.players[guard_index], "保护")
                 base_state.last_guard_target_index = guard_target
 
-                guard_saved = guard_target == wolf_target_index
+                guard_saved = (
+                    wolf_target_index is not None and guard_target == wolf_target_index
+                )
 
                 witch_actions: list[tuple[str, int | None]] = [("无", None)]
                 if witch_index is not None and base_state.players[witch_index].is_alive:
                     witch_player = base_state.players[witch_index]
-                    can_self_save = (
-                        wolf_target_index == witch_index and game_state.night_count == 0
-                    )
-                    can_save = witch_player.skills.get("解药", 0) > 0 and (
-                        wolf_target_index != witch_index or can_self_save
-                    )
-                    if can_save:
-                        witch_actions.append(("使用解药", None))
+                    if wolf_target_index is not None:
+                        can_self_save = (
+                            wolf_target_index == witch_index
+                            and game_state.night_count == 0
+                        )
+                        can_save = witch_player.skills.get("解药", 0) > 0 and (
+                            wolf_target_index != witch_index or can_self_save
+                        )
+                        if can_save:
+                            witch_actions.append(("使用解药", None))
 
                     if witch_player.skills.get("毒药", 0) > 0:
                         poison_targets = self._alive_indices(
@@ -480,9 +566,11 @@ class SearchSimulator:
                         wolf_kill_applies = False
                     else:
                         wolf_kill_applies = True
+                    if wolf_target_index is None:
+                        wolf_kill_applies = False  # 空刀：本夜无狼刀死亡
 
                     deaths: list[int] = []
-                    if wolf_kill_applies:
+                    if wolf_kill_applies and wolf_target_index is not None:
                         deaths.append(wolf_target_index)
                     if witch_action == "毒杀" and poison_target_index is not None:
                         deaths.append(poison_target_index)
@@ -494,8 +582,13 @@ class SearchSimulator:
                         )
                         for resolved_state in resolved_states:
                             resolved_state.night_count += 1
+                            wolf_target_text = (
+                                "空刀"
+                                if wolf_target_index is None
+                                else str(wolf_target_index)
+                            )
                             action_parts: list[str] = [
-                                f"夜晚 狼刀→{wolf_target_index}"
+                                f"夜晚 狼刀→{wolf_target_text}"
                             ]
                             if guard_index is not None:
                                 guard_text = (
@@ -587,88 +680,52 @@ class SearchSimulator:
         ]
         balance = [0 for _ in range(node_count)]
 
-        def add_capacity_edge(from_node: int, to_node: int, cap: int) -> None:
-            if capacity[from_node][to_node] == 0 and capacity[to_node][from_node] == 0:
-                graph[from_node].append(to_node)
-                graph[to_node].append(from_node)
-            capacity[from_node][to_node] += cap
-
-        def add_bounded_edge(
-            from_node: int, to_node: int, lower: int, upper: int
-        ) -> None:
-            if upper < lower:
-                return
-            balance[from_node] -= lower
-            balance[to_node] += lower
-            add_capacity_edge(from_node, to_node, upper - lower)
-
         for offset, voter_index in enumerate(voter_indices):
             voter_node = first_voter + offset
-            add_bounded_edge(source, voter_node, 1, 1)
+            _flow_add_bounded_edge(graph, capacity, balance, source, voter_node, 1, 1)
             for target_index in allowed_targets_by_voter.get(voter_index, []):
                 target_node = target_node_by_index[target_index]
-                add_bounded_edge(voter_node, target_node, 0, 1)
+                _flow_add_bounded_edge(
+                    graph, capacity, balance, voter_node, target_node, 0, 1
+                )
 
         for target_index in target_indices:
-            add_bounded_edge(
+            _flow_add_bounded_edge(
+                graph,
+                capacity,
+                balance,
                 target_node_by_index[target_index],
                 sink,
                 target_lower[target_index],
                 target_upper[target_index],
             )
 
-        add_bounded_edge(sink, source, 0, len(voter_indices))
+        _flow_add_bounded_edge(
+            graph, capacity, balance, sink, source, 0, len(voter_indices)
+        )
 
         required_flow = 0
-        for node, node_balance in enumerate(balance):
+        for bal_node, node_balance in enumerate(balance):
             if node_balance > 0:
-                add_capacity_edge(super_source, node, node_balance)
+                _flow_add_capacity_edge(
+                    graph, capacity, super_source, bal_node, node_balance
+                )
                 required_flow += node_balance
             elif node_balance < 0:
-                add_capacity_edge(node, super_sink, -node_balance)
-
-        def bfs_level() -> list[int]:
-            level = [-1 for _ in range(node_count)]
-            queue: deque[int] = deque([super_source])
-            level[super_source] = 0
-            while queue:
-                node = queue.popleft()
-                for next_node in graph[node]:
-                    if level[next_node] < 0 and capacity[node][next_node] > 0:
-                        level[next_node] = level[node] + 1
-                        queue.append(next_node)
-            return level
-
-        def dfs_flow(node: int, flow: int, level: list[int], cursor: list[int]) -> int:
-            if node == super_sink:
-                return flow
-            while cursor[node] < len(graph[node]):
-                next_node = graph[node][cursor[node]]
-                if (
-                    level[next_node] == level[node] + 1
-                    and capacity[node][next_node] > 0
-                ):
-                    pushed = dfs_flow(
-                        next_node,
-                        min(flow, capacity[node][next_node]),
-                        level,
-                        cursor,
-                    )
-                    if pushed > 0:
-                        capacity[node][next_node] -= pushed
-                        capacity[next_node][node] += pushed
-                        return pushed
-                cursor[node] += 1
-            return 0
+                _flow_add_capacity_edge(
+                    graph, capacity, bal_node, super_sink, -node_balance
+                )
 
         max_flow = 0
         while True:
-            level = bfs_level()
+            level = _flow_bfs_level(graph, capacity, node_count, super_source)
             if level[super_sink] < 0:
                 break
-            cursor = [0 for _ in range(node_count)]
+            cursor = [0] * node_count
             while True:
-                pushed = dfs_flow(super_source, 10**9, level, cursor)
+                pushed = _flow_dfs(
+                    super_source, 10**9, level, cursor, graph, capacity, super_sink
+                )
                 if pushed == 0:
                     break
                 max_flow += pushed
@@ -831,7 +888,7 @@ class SearchSimulator:
 
     def load_config(self, **kwargs):
         """加载配置,并重置模拟器状态。"""
-        logger.debug("加载Search Simulator配置")
+        logger.debug(t("log.load_config"))
         # 这两个集合分别用于：过滤待展开的重复局面，以及去重已经收敛的终局。
         self.has_clergies = False
         """ 标记是否包含神职角色"""
@@ -839,6 +896,33 @@ class SearchSimulator:
         """ 标记是否启用警长归票机制"""
         self.smart_vote = bool(kwargs.get("smart_vote", False))
         """ 是否启用智能投票剪枝与预言家查验缓存"""
+        self.policy = str(kwargs.get("policy", "exhaustive")).lower()
+        """ 运行模式：exhaustive（穷举）或 online（在线参考决策）"""
+        self.lambda_risk = float(kwargs.get("lambda_risk", 1.0))
+        """ 迭代风险参数 λ ∈ [0,1]"""
+        self.toggle = str(kwargs.get("toggle", "conservative")).lower()
+        """ 乐观/保守开关：optimistic | conservative"""
+        _lookahead = kwargs.get("lookahead_depth", 2)
+        self.lookahead_depth = (
+            None
+            if _lookahead is None
+            or (isinstance(_lookahead, (int, float)) and _lookahead < 0)
+            else int(_lookahead)
+        )
+        """ 前瞻深度（决策点计；None=全深度）"""
+        _tactics = kwargs.get("tactics")
+        self.tactics = (
+            {token.strip() for token in str(_tactics).split(",") if token.strip()}
+            if _tactics
+            else set()
+        )
+        """ 启用的夜间战术集合：self_kill(骗刀) / no_kill(空刀)"""
+        self.online_trace_path = str(
+            kwargs.get("online_trace_path", "online_trace.json")
+        )
+        """ 在线参考轨迹输出路径"""
+        self.compare_with_exact = bool(kwargs.get("compare_with_exact", False))
+        """ 是否与全深度精确值对照"""
         self.visited_states = set()
         """ 存储已访问的状态指纹，用于去重"""
         self.ending_signatures = set()
@@ -891,7 +975,7 @@ class SearchSimulator:
         """ 并行扩展线程数（1 表示关闭并行） """
         self.pruned_by_limits = 0
         """ 记录因阈值裁剪分支数"""
-        self.stop_reason = "模拟完成"
+        self.stop_reason = t("stop.sim_done")
         """ 模拟停止的原因"""
         self.players = []  # 初始化角色列表
         """ 玩家列表，包含所有参与游戏的角色对象 """
@@ -931,13 +1015,15 @@ class SearchSimulator:
                     )
                 ]
             )  # 添加普通村民角色
-        logger.debug(f"角色列表: {[player.role for player in self.players]}")
+        logger.debug(t("log.roles", [player.role for player in self.players]))
         initial_state = GameState(
             players=copy.deepcopy(self.players), is_game_over=False
         )
         self._assign_state_identity(
-            initial_state, parent_state_id=None, action_label="根状态"
+            initial_state, parent_state_id=None, action_label=t("action.root")
         )
+        self.initial_state = initial_state
+        """ 初始根状态（在线模式复用）"""
         self.queue: deque[GameState] = deque([initial_state])  # 初始化队列
         self._register_signature("visited", self._state_signature(initial_state))
         self.wins = {}
@@ -955,7 +1041,7 @@ class SearchSimulator:
 
         players = self._normalize_players(game_state)
         alive_count = sum(1 for player in players if player.is_alive)
-        action_label = self.state_action_index.get(game_state.state_id, "未知")
+        action_label = self.state_action_index.get(game_state.state_id, t("action.unknown"))
         action_label = action_label.replace("\n", " ").strip()
         if len(action_label) > 56:
             action_label = action_label[:53] + "..."
@@ -986,7 +1072,7 @@ class SearchSimulator:
         try:
             self.iteration_callback(self._build_iteration_snapshot(game_state))
         except Exception:
-            logger.debug("迭代回调执行失败，已忽略。", exc_info=True)
+            logger.debug(t("log.callback_failed"), exc_info=True)
 
     def _should_stop_run(self) -> bool:
         """检查是否触发停止条件。"""
@@ -995,13 +1081,13 @@ class SearchSimulator:
             self.max_runtime_seconds is not None
             and time.monotonic() - self.start_time >= self.max_runtime_seconds
         ):
-            self.stop_reason = "到达最大运行时间"
+            self.stop_reason = t("stop.max_runtime")
             return True
         if (
             self.max_processed_states is not None
             and self.processed_states >= self.max_processed_states
         ):
-            self.stop_reason = "达到最大处理状态数"
+            self.stop_reason = t("stop.max_processed")
             return True
         return False
 
@@ -1047,7 +1133,7 @@ class SearchSimulator:
     def run(self):
         """运行模拟器，探索所有可能的游戏局面。"""
 
-        logger.debug(f"开始运行 Simulator (search_mode={self.search_mode})")
+        logger.debug(t("log.run_start", self.search_mode))
         self.wins = {}
         self.start_time = time.monotonic()
         self.processed_states = 0
@@ -1091,3 +1177,44 @@ class SearchSimulator:
 
         if self.signature_cache is not None:
             self.signature_cache.flush()
+
+    def transition(self, current_game_state: GameState) -> list[GameState]:
+        """封装 GameState 迭代更新：按 phase 分发到夜/昼结算。"""
+        if current_game_state.phase == "night":
+            next_states = self._resolve_night(current_game_state)
+            for state in next_states:
+                state.phase = "day"
+        else:
+            next_states = self._resolve_day_vote(current_game_state)
+            for state in next_states:
+                state.phase = "night"
+                state.day_count = current_game_state.day_count + 1
+        return next_states
+
+    def run_online(self, start_state: GameState | None = None):
+        """运行在线参考决策：从根/自定义状态沿参考路径决策到真终局。"""
+        from ._online_policy import (
+            evaluate_against_exact,
+            emit_online_artifacts,
+            run_online_reference,
+        )
+
+        if start_state is not None:
+            root = copy.deepcopy(start_state)
+            self._assign_state_identity(
+                root, parent_state_id=None, action_label=t("action.root")
+            )
+        else:
+            root = self.initial_state
+
+        # 神职屠边判定以实际根状态为准（自定义状态可能与 include_* 不一致）
+        self.has_clergies = any(
+            player.role in {"预言家", "女巫", "守卫", "猎人"}
+            for player in root.players
+        )
+
+        trace = run_online_reference(self, root, depth=self.lookahead_depth)
+        emit_online_artifacts(self, trace)
+        if self.compare_with_exact:
+            evaluate_against_exact(self, root, trace)
+        return trace

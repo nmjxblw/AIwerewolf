@@ -16,6 +16,7 @@ from matplotlib import font_manager
 from matplotlib.lines import Line2D
 
 from ._game_state import GameState
+from ._i18n import t, t_en
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -40,7 +41,7 @@ def draw_state_tree(
     """根据搜索索引绘制状态树。"""
 
     if not state_parent_index:
-        logger.info("状态索引为空，跳过绘图")
+        logger.info(t("log.plot_empty_index"))
         return
     plt.axis("off")
     terminal_state_ids = [state.state_id for state, _ in endings if state.state_id >= 0]
@@ -52,13 +53,11 @@ def draw_state_tree(
         plotted_nodes = set(state_parent_index.keys())
 
     if not plotted_nodes:
-        logger.info("没有可绘制的节点，跳过绘图")
+        logger.info(t("log.plot_no_nodes"))
         return
     if len(plotted_nodes) > max_nodes_for_plot:
         logger.warning(
-            "可绘制节点数为 %s，超过阈值 %s，跳过绘图以避免后端崩溃",
-            len(plotted_nodes),
-            max_nodes_for_plot,
+            t("log.plot_too_many", len(plotted_nodes), max_nodes_for_plot)
         )
         return
 
@@ -157,10 +156,10 @@ def draw_state_tree(
         return "DejaVu Sans", False
 
     plot_font, has_cjk_font = resolve_plot_font()
-    title_text = "搜索模拟器状态树" if has_cjk_font else "Search Simulator State Tree"
-    intermediate_label = "中间状态" if has_cjk_font else "Intermediate"
-    village_win_label = "好人胜终局" if has_cjk_font else "Village Win"
-    wolf_win_label = "狼人胜终局" if has_cjk_font else "Wolf Win"
+    title_text = t("plot.title") if has_cjk_font else t_en("plot.title")
+    intermediate_label = t("plot.intermediate") if has_cjk_font else t_en("plot.intermediate")
+    village_win_label = t("plot.village_win") if has_cjk_font else t_en("plot.village_win")
+    wolf_win_label = t("plot.wolf_win") if has_cjk_font else t_en("plot.wolf_win")
 
     max_x = max(x_pos.values()) if x_pos else 0.0
     min_x = min(x_pos.values()) if x_pos else 0.0
@@ -175,12 +174,14 @@ def draw_state_tree(
     )
     dpi = min(max(plot_dpi, 72), 220)
     logger.info(
-        "绘图尺寸自动计算为 %.2fx%.2f 英寸，叶子节点=%s，leaf_gap=%.2f，depth_gap=%.2f",
-        fig_width,
-        fig_height,
-        leaf_count,
-        leaf_gap,
-        depth_gap,
+        t(
+            "log.plot_size",
+            fig_width,
+            fig_height,
+            leaf_count,
+            leaf_gap,
+            depth_gap,
+        )
     )
     with plt.rc_context({"font.family": plot_font, "axes.unicode_minus": False}):
         fig, ax = plt.subplots(figsize=(fig_width, fig_height), constrained_layout=True)
@@ -261,8 +262,8 @@ def draw_state_tree(
         ax.legend(handles=legend_handles, loc="upper right", fontsize=8)
 
         ax.set_title(title_text, fontsize=12)
-        axis_branch_text = "分支序号" if has_cjk_font else "Branch Order"
-        axis_depth_text = "深度（TD）" if has_cjk_font else "Depth (TD)"
+        axis_branch_text = t("plot.axis_branch") if has_cjk_font else t_en("plot.axis_branch")
+        axis_depth_text = t("plot.axis_depth") if has_cjk_font else t_en("plot.axis_depth")
         ax.set_xlabel(axis_branch_text, fontsize=10)
         ax.set_ylabel(axis_depth_text, fontsize=10)
         ax.set_yticks([depth * depth_gap for depth in range(int(max_y / depth_gap) + 1)])
@@ -275,7 +276,7 @@ def draw_state_tree(
         path = Path(output_path)
         fig.savefig(path, dpi=dpi)
         plt.close(fig)
-    logger.info("状态树图已保存到: %s", output_path)
+    logger.info(t("log.plot_saved", output_path))
 
 
 def _build_plot_labels(
@@ -291,23 +292,28 @@ def _build_plot_labels(
     for node_id in sorted(plotted_nodes):
         action_label = state_action_index.get(node_id, "")
         if node_id in roots:
-            action_text = "根状态"
+            action_text = t("plot.root_action")
         else:
             action_text = _wrap_label_text(action_label, width=22, max_lines=4)
         statuses = state_players_snapshot.get(node_id, [])
         player_text = (
             _wrap_label_text(", ".join(statuses), width=28, max_lines=5)
             if statuses
-            else "无"
+            else t("plot.none")
         )
         if not children_map.get(node_id):
-            result_text = terminal_result_by_id.get(node_id, "未结束")
+            result_text = terminal_result_by_id.get(node_id, t("plot.unfinished"))
             labels[node_id] = (
-                f"#{node_id}\n行动:\n{action_text}\n存活状态:\n{player_text}\n"
-                f"对局结果:\n{_wrap_label_text(result_text, width=24, max_lines=3)}"
+                f"#{node_id}\n{t('plot.action_label')}:\n{action_text}\n"
+                f"{t('plot.alive_status')}:\n{player_text}\n"
+                f"{t('plot.result_label')}:\n"
+                f"{_wrap_label_text(result_text, width=24, max_lines=3)}"
             )
         else:
-            labels[node_id] = f"#{node_id}\n行动:\n{action_text}\n存活状态:\n{player_text}"
+            labels[node_id] = (
+                f"#{node_id}\n{t('plot.action_label')}:\n{action_text}\n"
+                f"{t('plot.alive_status')}:\n{player_text}"
+            )
     return labels
 
 
@@ -398,3 +404,46 @@ def _compute_figure_size(
     width = max(14.0, layout_width + horizontal_margin_inches * 2)
     height = max(10.0, (max_depth + 1) * (label_height_inches + 1.5) + 4.0)
     return width, height
+
+
+def draw_reference_path(trace, *, output_path: Path | str = "online_path.png", plot_dpi: int = 140) -> None:
+    """绘制在线参考路径：每步的 reward 区间（竖直误差条）。"""
+    steps = trace.get("steps") or []
+    if not steps:
+        logger.info(t("log.ref_path_empty"))
+        return
+
+    x = list(range(1, len(steps) + 1))
+    lows = [float(s["chosen_interval"][0]) for s in steps]
+    highs = [float(s["chosen_interval"][1]) for s in steps]
+    mids = [(lo + hi) / 2.0 for lo, hi in zip(lows, highs)]
+
+    preferred_fonts = [
+        "Microsoft YaHei",
+        "SimHei",
+        "Noto Sans CJK SC",
+        "Arial Unicode MS",
+    ]
+    available_fonts = {font.name for font in font_manager.fontManager.ttflist}
+    plot_font = next((f for f in preferred_fonts if f in available_fonts), "DejaVu Sans")
+    has_cjk = plot_font in preferred_fonts
+    title = t("plot.ref_title") if has_cjk else t_en("plot.ref_title")
+    ylabel = t("plot.ref_ylabel") if has_cjk else t_en("plot.ref_ylabel")
+
+    with plt.rc_context({"font.family": plot_font, "axes.unicode_minus": False}):
+        fig, ax = plt.subplots(figsize=(max(8.0, len(steps) * 1.4), 5.5))
+        ax.vlines(x, lows, highs, color="#5B8FF9", linewidth=2.5, zorder=2)
+        ax.scatter(x, mids, color="#5B8FF9", s=32, zorder=3)
+        ax.axhline(0.0, color="#cccccc", linewidth=0.8)
+        ax.set_xticks(x)
+        ax.set_xticklabels(
+            [f"#{s['step']}\n{s['chosen_action'][:14]}" for s in steps], fontsize=6.5
+        )
+        ax.set_ylim(-1.08, 1.08)
+        ax.set_ylabel(ylabel)
+        ax.set_title(f"{title}  outcome={trace.get('outcome')}")
+        ax.grid(axis="y", linestyle="--", alpha=0.3)
+        fig.tight_layout()
+        fig.savefig(Path(output_path), dpi=min(max(plot_dpi, 72), 220))
+        plt.close(fig)
+    logger.info(t("log.ref_path_saved", output_path))

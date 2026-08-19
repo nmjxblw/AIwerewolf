@@ -81,6 +81,9 @@ nosetests.xml
 *.sqlite3-*
 search_simulator_cache.sqlite3
 endings.json
+online_trace.json
+online_eval.json
+search_tree.txt
 search_tree.png
 
 # ---- Heavy local data / experiment outputs ----

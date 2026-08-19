@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Callable
 
 from ._game_state import GameState
+from ._i18n import t
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -39,6 +40,7 @@ def save_endings_json(
                     ],
                     "结果": result,
                     "深度": state.depth,
+                    "reward_interval": state.reward_interval,
                 }
                 for state, result in endings
             ],
@@ -63,27 +65,27 @@ def build_results_report(
 ) -> str:
     """构建搜索结果摘要文本。"""
 
-    msg = f"总共模拟了 {len(endings)} 个终局\n"
+    msg = t("report.total_endings", len(endings))
     for result, count in sorted(wins.items()):
-        msg += f"{result:<50} \t次数: {count:>5}\n"
+        msg += t("report.result_count", result, count)
     msg += (
-        f"搜索模式: {search_mode}\n"
-        f"停止原因: {stop_reason}\n"
-        f"已处理状态数: {processed_states}\n"
-        f"当前待处理容器长度: {queue_length}\n"
-        f"因阈值裁剪分支数: {pruned_by_limits}\n"
-        f"运行耗时(秒): {runtime_seconds:.2f}\n"
+        t("report.search_mode", search_mode)
+        + t("report.stop_reason", stop_reason)
+        + t("report.processed", processed_states)
+        + t("report.queue_length", queue_length)
+        + t("report.pruned", pruned_by_limits)
+        + t("report.runtime", runtime_seconds)
     )
     if cache_stats is not None:
         msg += (
-            "签名缓存统计:\n"
-            f"  sqlite文件: {signature_cache_db_path}\n"
-            f"  LRU容量: {cache_stats['lru_capacity']}\n"
-            f"  LRU命中: {cache_stats['lru_hits']}\n"
-            f"  SQLite命中: {cache_stats['sqlite_hits']}\n"
-            f"  新增签名: {cache_stats['inserted']}\n"
-            f"  visited LRU大小: {cache_stats['visited_lru_size']}\n"
-            f"  ending LRU大小: {cache_stats['ending_lru_size']}\n"
+            t("report.cache_stats_title")
+            + t("report.cache_db", signature_cache_db_path)
+            + t("report.cache_lru_capacity", cache_stats["lru_capacity"])
+            + t("report.cache_lru_hits", cache_stats["lru_hits"])
+            + t("report.cache_sqlite_hits", cache_stats["sqlite_hits"])
+            + t("report.cache_inserted", cache_stats["inserted"])
+            + t("report.cache_visited_size", cache_stats["visited_lru_size"])
+            + t("report.cache_ending_size", cache_stats["ending_lru_size"])
         )
     return msg
 
@@ -124,4 +126,4 @@ def report_results(
         cache_stats=cache_stats,
         signature_cache_db_path=signature_cache_db_path,
     )
-    logger.info("游戏结束统计:\n%s", report_text)
+    logger.info(t("log.game_end_stats", report_text))
