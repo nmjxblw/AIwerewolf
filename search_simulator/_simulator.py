@@ -11,6 +11,8 @@ from typing import Any
 from typing import Callable
 from typing import cast
 
+from ._flow import bounded_vote_flow_feasible
+from ._flow import vote_outcome_is_feasible
 from ._game_state import GameState
 from ._i18n import t
 from ._player import Player
@@ -20,74 +22,86 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def _flow_add_capacity_edge(graph, capacity, from_node, to_node, cap):
-    """流网络辅助：加一条容量边。"""
-    if capacity[from_node][to_node] == 0 and capacity[to_node][from_node] == 0:
-        graph[from_node].append(to_node)
-        graph[to_node].append(from_node)
-    capacity[from_node][to_node] += cap
+def _build_night_action_label(
+    *,
+    wolf_target_index,
+    guard_index,
+    guard_target,
+    witch_index,
+    witch_action,
+    poison_target_index,
+    seer_action_text,
+    deaths,
+) -> str:
+    """拼装夜晚行动文本标签（狼刀/守卫/女巫/预言家查验/死亡），显式传参。"""
+    wolf_target_text = (
+        "空刀" if wolf_target_index is None else str(wolf_target_index)
+    )
+    action_parts: list[str] = [f"夜晚 狼刀→{wolf_target_text}"]
+    if guard_index is not None:
+        guard_text = "无" if guard_target is None else str(guard_target)
+        action_parts.append(f"守卫→{guard_text}")
+    if witch_index is not None:
+        if witch_action == "毒杀" and poison_target_index is not None:
+            witch_text = f"毒杀→{poison_target_index}"
+        elif witch_action == "使用解药":
+            witch_text = "使用解药"
+        else:
+            witch_text = "无"
+        action_parts.append(f"女巫={witch_text}")
+    if seer_action_text:
+        action_parts.append(seer_action_text)
+    action_parts.append(f"死亡={sorted(set(deaths))}")
+    return "; ".join(action_parts)
 
 
-def _flow_add_bounded_edge(graph, capacity, balance, from_node, to_node, lower, upper):
-    """流网络辅助：加一条带下界/上界的边。"""
-    if upper < lower:
-        return
-    balance[from_node] -= lower
-    balance[to_node] += lower
-    _flow_add_capacity_edge(graph, capacity, from_node, to_node, upper - lower)
+def _build_day_action_label(top_candidates, vote_target_index) -> str:
+    """拼装白天投票放逐的文本标签，显式传参。"""
+    return f"白天 投票最高={list(top_candidates)}; 放逐={vote_target_index}"
 
 
-def _flow_bfs_level(graph, capacity, node_count, super_source):
-    """Dinic BFS 分层。"""
-    level = [-1] * node_count
-    level[super_source] = 0
-    queue = deque([super_source])
-    while queue:
-        node = queue.popleft()
-        for next_node in graph[node]:
-            if level[next_node] < 0 and capacity[node][next_node] > 0:
-                level[next_node] = level[node] + 1
-                queue.append(next_node)
-    return level
+def _build_players_from_kwargs(kwargs: dict) -> tuple[list[Player], bool]:
+    """根据配置 kwargs 构建初始玩家列表，返回 (players, has_clergies)。"""
+    players: list[Player] = []
+    has_clergies = False
 
+    if kwargs.get("include_seer", False):
+        players.append(Player(role="预言家", is_alive=True, skills={"查验": -1}))
+        has_clergies = True
+    if kwargs.get("include_witch", False):
+        players.append(
+            Player(role="女巫", is_alive=True, skills={"解药": 1, "毒药": 1})
+        )
+        has_clergies = True
+    if kwargs.get("include_guard", False):
+        players.append(Player(role="守卫", is_alive=True, skills={"保护": -1}))
+        has_clergies = True
+    if kwargs.get("include_hunter", False):
+        players.append(Player(role="猎人", is_alive=True, skills={"开枪": 1}))
+        has_clergies = True
+    if kwargs.get("include_white_werewolf_king", False):
+        players.append(
+            Player(role="白狼王", is_alive=True, skills={"带走击杀": 1})
+        )
+    if kwargs.get("number_of_wolves", 1) > 0:
+        players.extend(
+            [
+                Player(role="狼人", is_alive=True, skills={"攻击": -1})
+                for _ in range(kwargs.get("number_of_wolves", 1))
+            ]
+        )
+    if kwargs.get("number_of_players", 5) > 0:
+        # 用村民补齐到目标人数
+        players.extend(
+            [
+                Player(role="村民", is_alive=True, skills={})
+                for _ in range(
+                    kwargs.get("number_of_players", 5) - len(players)
+                )
+            ]
+        )
 
-def _flow_dfs(node, flow, level, cursor, graph, capacity, super_sink):
-    """Dinic DFS 增广（迭代 + 显式栈）。
-
-    用显式栈替代递归实现，规避 CPython 3.14.0 特化解释器在递归调用上
-    触发的 ``_PyEval_EvalFrameDefault: Executing a cache`` 致命错误。
-    """
-    stack = [(node, flow)]
-    path_edges: list[tuple[int, int]] = []
-    while stack:
-        current, cur_flow = stack[-1]
-        if current == super_sink:
-            pushed = cur_flow
-            for u, v in reversed(path_edges):
-                capacity[u][v] -= pushed
-                capacity[v][u] += pushed
-            return pushed
-
-        advanced = False
-        while cursor[current] < len(graph[current]):
-            nxt = graph[current][cursor[current]]
-            if level[nxt] == level[current] + 1 and capacity[current][nxt] > 0:
-                path_edges.append((current, nxt))
-                next_flow = cur_flow
-                if capacity[current][nxt] < next_flow:
-                    next_flow = capacity[current][nxt]
-                stack.append((nxt, next_flow))
-                advanced = True
-                break
-            cursor[current] += 1
-
-        if not advanced:
-            stack.pop()
-            if path_edges:
-                path_edges.pop()
-            if stack:
-                cursor[stack[-1][0]] += 1
-    return 0
+    return players, has_clergies
 
 
 class SearchSimulator:
@@ -596,34 +610,16 @@ class SearchSimulator:
                         )
                         for resolved_state in resolved_states:
                             resolved_state.night_count += 1
-                            wolf_target_text = (
-                                "空刀"
-                                if wolf_target_index is None
-                                else str(wolf_target_index)
+                            action_label = _build_night_action_label(
+                                wolf_target_index=wolf_target_index,
+                                guard_index=guard_index,
+                                guard_target=guard_target,
+                                witch_index=witch_index,
+                                witch_action=witch_action,
+                                poison_target_index=poison_target_index,
+                                seer_action_text=seer_action_text,
+                                deaths=deaths,
                             )
-                            action_parts: list[str] = [
-                                f"夜晚 狼刀→{wolf_target_text}"
-                            ]
-                            if guard_index is not None:
-                                guard_text = (
-                                    "无" if guard_target is None else str(guard_target)
-                                )
-                                action_parts.append(f"守卫→{guard_text}")
-                            if witch_index is not None:
-                                if (
-                                    witch_action == "毒杀"
-                                    and poison_target_index is not None
-                                ):
-                                    witch_text = f"毒杀→{poison_target_index}"
-                                elif witch_action == "使用解药":
-                                    witch_text = "使用解药"
-                                else:
-                                    witch_text = "无"
-                                action_parts.append(f"女巫={witch_text}")
-                            if seer_action_text:
-                                action_parts.append(seer_action_text)
-                            action_parts.append(f"死亡={sorted(set(deaths))}")
-                            action_label = "; ".join(action_parts)
                             self._assign_state_identity(
                                 resolved_state,
                                 parent_state_id=game_state.state_id,
@@ -667,120 +663,6 @@ class SearchSimulator:
         }
         return [index for index in targets if index not in known_good]
 
-    def _bounded_vote_flow_feasible(
-        self,
-        voter_indices: list[int],
-        target_indices: list[int],
-        allowed_targets_by_voter: dict[int, list[int]],
-        target_lower: dict[int, int],
-        target_upper: dict[int, int],
-    ) -> bool:
-        voter_count = len(voter_indices)
-        target_count = len(target_indices)
-        source = 0
-        first_voter = 1
-        first_target = first_voter + voter_count
-        sink = first_target + target_count
-        super_source = sink + 1
-        super_sink = sink + 2
-        node_count = super_sink + 1
-        target_node_by_index = {
-            target_index: first_target + offset
-            for offset, target_index in enumerate(target_indices)
-        }
-        graph: list[list[int]] = [[] for _ in range(node_count)]
-        capacity: list[list[int]] = [
-            [0 for _ in range(node_count)] for _ in range(node_count)
-        ]
-        balance = [0 for _ in range(node_count)]
-
-        for offset, voter_index in enumerate(voter_indices):
-            voter_node = first_voter + offset
-            _flow_add_bounded_edge(graph, capacity, balance, source, voter_node, 1, 1)
-            for target_index in allowed_targets_by_voter.get(voter_index, []):
-                target_node = target_node_by_index[target_index]
-                _flow_add_bounded_edge(
-                    graph, capacity, balance, voter_node, target_node, 0, 1
-                )
-
-        for target_index in target_indices:
-            _flow_add_bounded_edge(
-                graph,
-                capacity,
-                balance,
-                target_node_by_index[target_index],
-                sink,
-                target_lower[target_index],
-                target_upper[target_index],
-            )
-
-        _flow_add_bounded_edge(
-            graph, capacity, balance, sink, source, 0, len(voter_indices)
-        )
-
-        required_flow = 0
-        for bal_node, node_balance in enumerate(balance):
-            if node_balance > 0:
-                _flow_add_capacity_edge(
-                    graph, capacity, super_source, bal_node, node_balance
-                )
-                required_flow += node_balance
-            elif node_balance < 0:
-                _flow_add_capacity_edge(
-                    graph, capacity, bal_node, super_sink, -node_balance
-                )
-
-        max_flow = 0
-        while True:
-            level = _flow_bfs_level(graph, capacity, node_count, super_source)
-            if level[super_sink] < 0:
-                break
-            cursor = [0] * node_count
-            while True:
-                pushed = _flow_dfs(
-                    super_source, 10**9, level, cursor, graph, capacity, super_sink
-                )
-                if pushed == 0:
-                    break
-                max_flow += pushed
-                if max_flow == required_flow:
-                    return True
-        return max_flow == required_flow
-
-    def _vote_outcome_is_feasible(
-        self,
-        alive_indices: list[int],
-        allowed_targets_by_voter: dict[int, list[int]],
-        top_candidates: tuple[int, ...],
-    ) -> bool:
-        alive_count = len(alive_indices)
-        top_candidate_set = set(top_candidates)
-        non_top_count = alive_count - len(top_candidates)
-        for max_votes in range(1, alive_count + 1):
-            if len(top_candidates) * max_votes > alive_count:
-                continue
-            if alive_count > len(top_candidates) * max_votes + non_top_count * (
-                max_votes - 1
-            ):
-                continue
-            target_lower = {
-                index: max_votes if index in top_candidate_set else 0
-                for index in alive_indices
-            }
-            target_upper = {
-                index: max_votes if index in top_candidate_set else max_votes - 1
-                for index in alive_indices
-            }
-            if self._bounded_vote_flow_feasible(
-                alive_indices,
-                alive_indices,
-                allowed_targets_by_voter,
-                target_lower,
-                target_upper,
-            ):
-                return True
-        return False
-
     def _build_smart_vote_outcomes(
         self, game_state: GameState, alive_indices: list[int]
     ) -> set[tuple[int, ...]]:
@@ -804,7 +686,7 @@ class SearchSimulator:
         return {
             outcome
             for outcome in candidate_outcomes
-            if self._vote_outcome_is_feasible(
+            if vote_outcome_is_feasible(
                 alive_indices,
                 allowed_targets_by_voter,
                 outcome,
@@ -851,9 +733,8 @@ class SearchSimulator:
                 for branched_state in self._resolve_death_chain(
                     day_state, vote_target_index
                 ):
-                    action_label = (
-                        f"白天 投票最高={list(top_candidates)};"
-                        f" 放逐={vote_target_index}"
+                    action_label = _build_day_action_label(
+                        top_candidates, vote_target_index
                     )
                     self._assign_state_identity(
                         branched_state,
@@ -991,44 +872,8 @@ class SearchSimulator:
         """ 记录因阈值裁剪分支数"""
         self.stop_reason = t("stop.sim_done")
         """ 模拟停止的原因"""
-        self.players = []  # 初始化角色列表
+        self.players, self.has_clergies = _build_players_from_kwargs(kwargs)
         """ 玩家列表，包含所有参与游戏的角色对象 """
-        if kwargs.get("include_seer", False):
-            self.players.append(
-                Player(role="预言家", is_alive=True, skills={"查验": -1})
-            )
-            self.has_clergies = True
-        if kwargs.get("include_witch", False):
-            self.players.append(
-                Player(role="女巫", is_alive=True, skills={"解药": 1, "毒药": 1})
-            )
-            self.has_clergies = True
-        if kwargs.get("include_guard", False):
-            self.players.append(Player(role="守卫", is_alive=True, skills={"保护": -1}))
-            self.has_clergies = True
-        if kwargs.get("include_hunter", False):
-            self.players.append(Player(role="猎人", is_alive=True, skills={"开枪": 1}))
-            self.has_clergies = True
-        if kwargs.get("include_white_werewolf_king", False):
-            self.players.append(
-                Player(role="白狼王", is_alive=True, skills={"带走击杀": 1})
-            )
-        if kwargs.get("number_of_wolves", 1) > 0:
-            self.players.extend(
-                [
-                    Player(role="狼人", is_alive=True, skills={"攻击": -1})
-                    for _ in range(kwargs.get("number_of_wolves", 1))
-                ]
-            )
-        if kwargs.get("number_of_players", 5) > 0:
-            self.players.extend(
-                [
-                    Player(role="村民", is_alive=True, skills={})
-                    for _ in range(
-                        kwargs.get("number_of_players", 5) - len(self.players)
-                    )
-                ]
-            )  # 添加普通村民角色
         logger.debug(t("log.roles", [player.role for player in self.players]))
         initial_state = GameState(
             players=[
