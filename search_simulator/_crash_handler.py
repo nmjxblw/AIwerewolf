@@ -1,4 +1,4 @@
-﻿"""全局崩溃 / 致命错误处理器。
+"""全局崩溃 / 致命错误处理器。
 
 把未捕获异常与 C 级致命错误（Py_FatalError / 段错误等）的 trace 落到文件，
 方便事后 debug。进程入口调用一次 ``install_crash_handlers()`` 即可：
@@ -25,6 +25,10 @@ from pathlib import Path
 
 _handle = None
 
+# CPython 3.14.0 / 3.14.1 存在多个崩溃回归（随机 Windows access violation），
+# 已在 3.14.2 修复；见 Python 3.14.2 release notes。
+_BUGGY_PY_VERSIONS = {(3, 14, 0), (3, 14, 1)}
+
 
 def _log_path() -> Path:
     return Path(
@@ -32,9 +36,24 @@ def _log_path() -> Path:
     )
 
 
+def _warn_if_buggy_python() -> None:
+    """在 CPython 3.14.0/3.14.1 上打印升级警告（这两个版本有崩溃回归）。"""
+    version = sys.version_info[:3]
+    if version not in _BUGGY_PY_VERSIONS:
+        return
+    version_text = ".".join(str(part) for part in version)
+    warning = (
+        f"[警告] 当前 Python {version_text} 存在崩溃回归（随机 Windows access "
+        f"violation，如 copy/json/sqlalchemy/流网络处的段错误），建议升级到 "
+        f"Python 3.14.2+ 或改用 3.12/3.13。"
+    )
+    print(warning, file=sys.stderr)
+
+
 def install_crash_handlers() -> Path:
     """安装全局崩溃处理器并返回日志文件路径（幂等）。"""
     global _handle
+    _warn_if_buggy_python()
     if _handle is not None and not _handle.closed:
         return _log_path()
 
