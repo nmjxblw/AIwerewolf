@@ -17,6 +17,8 @@ class ArgumentSpec:
 
 
 DEFAULT_WORKERS = max(1, min(4, (os.cpu_count() or 2) - 1))
+DEFAULT_MEMORY_RESERVE_GIB = 8.0
+DEFAULT_MEMORY_RESERVE_RATIO = 0.15
 
 ARGUMENT_SPECS: tuple[ArgumentSpec, ...] = (
     ArgumentSpec(
@@ -79,6 +81,22 @@ ARGUMENT_SPECS: tuple[ArgumentSpec, ...] = (
     ArgumentSpec(
         ("--parallel_workers",),
         {"type": int, "default": DEFAULT_WORKERS, "help": t("help.parallel_workers")},
+    ),
+    ArgumentSpec(
+        ("--memory_reserve_gib",),
+        {
+            "type": float,
+            "default": DEFAULT_MEMORY_RESERVE_GIB,
+            "help": t("help.memory_reserve_gib"),
+        },
+    ),
+    ArgumentSpec(
+        ("--memory_reserve_ratio",),
+        {
+            "type": float,
+            "default": DEFAULT_MEMORY_RESERVE_RATIO,
+            "help": t("help.memory_reserve_ratio"),
+        },
     ),
     ArgumentSpec(
         ("--lambda_risk",),
@@ -180,6 +198,8 @@ SIMULATOR_ARG_KEYS: tuple[str, ...] = (
     "include_white_werewolf_king",
     "search_mode",
     "parallel_workers",
+    "memory_reserve_gib",
+    "memory_reserve_ratio",
     "lambda_risk",
     "smart_vote",
     "all_positions",
@@ -201,7 +221,6 @@ GUI_MIN_SIZE = (1180, 720)
 GUI_BASIC_ENTRY_KEYS: tuple[str, ...] = (
     "number_of_players",
     "number_of_wolves",
-    "parallel_workers",
     "lambda_risk",
 )
 GUI_ROLE_TOGGLE_KEYS: tuple[str, ...] = (

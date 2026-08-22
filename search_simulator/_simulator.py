@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import threading
 import time
 from dataclasses import dataclass
@@ -95,9 +94,12 @@ class SearchSimulator:
         if self.search_mode not in {"bfs", "dfs"}:
             raise ValueError("search_mode 必须是 bfs 或 dfs")
         self.lambda_risk = max(0.0, min(1.0, float(kwargs.get("lambda_risk", 0.5))))
-        default_workers = max(1, min(4, (os.cpu_count() or 2) - 1))
-        self.parallel_workers = max(
-            1, int(kwargs.get("parallel_workers", default_workers))
+        self.parallel_workers = max(1, int(kwargs.get("parallel_workers", 1)))
+        self.memory_reserve_gib = max(
+            0.0, float(kwargs.get("memory_reserve_gib", 8.0))
+        )
+        self.memory_reserve_ratio = max(
+            0.0, min(1.0, float(kwargs.get("memory_reserve_ratio", 0.15)))
         )
         self.all_positions = bool(kwargs.get("all_positions", True))
         self.results_output_path = Path(

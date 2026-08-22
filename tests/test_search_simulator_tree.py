@@ -6,7 +6,6 @@ import multiprocessing
 import queue
 import re
 import threading
-from dataclasses import fields
 from itertools import product
 from pathlib import Path
 
@@ -24,6 +23,8 @@ from search_simulator._interval import interval_branch_color
 from search_simulator._interval import interval_camp
 from search_simulator._interval import propagate_interval_values
 from search_simulator._interval import propagate_intervals
+from search_simulator._memory_guard import MemorySnapshot
+from search_simulator._memory_guard import memory_pressure_snapshot
 from search_simulator._positions import build_role_roster
 from search_simulator._positions import enumerate_position_layouts
 from search_simulator._positions import players_for_layout
@@ -420,6 +421,61 @@ def test_interval_aggregation_consumes_high_fanout_as_a_stream() -> None:
     assert values == pytest.approx((-0.5, 0.75, -0.1, 0.2))
 
 
+def test_graph_interval_rollup_uses_explicit_loops_without_generator_frames() -> None:
+    source_path = (
+        Path(__file__).parents[1]
+        / "search_simulator"
+        / "_tree_search.py"
+    )
+    syntax = ast.parse(source_path.read_text(encoding="utf-8"))
+    function = next(
+        node
+        for node in syntax.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "recompute_graph_intervals"
+    )
+    assert not any(isinstance(node, ast.GeneratorExp) for node in ast.walk(function))
+
+    child_count = 2_000
+    nodes = [
+        {
+            "node_id": 0,
+            "day_count": 0,
+            "night_count": 0,
+            "is_terminal": False,
+            "result": "未结束",
+            "wide_interval": [-1.0, 1.0],
+            "narrow_interval": [-1.0, 1.0],
+        }
+    ]
+    edges = []
+    outgoing = {0: []}
+    for child_id in range(1, child_count + 1):
+        good_terminal = child_id % 2 == 0
+        nodes.append(
+            {
+                "node_id": child_id,
+                "day_count": 1,
+                "night_count": 0,
+                "is_terminal": True,
+                "result": "好人阵营胜利" if good_terminal else "狼人阵营胜利",
+                "wide_interval": [-1.0, 1.0],
+                "narrow_interval": [-1.0, 1.0],
+            }
+        )
+        outgoing[0].append(len(edges))
+        edges.append({"parent_id": 0, "child_id": child_id})
+    reverse_ids = list(range(child_count, -1, -1))
+    result = recompute_graph_intervals(
+        {"nodes": nodes, "edges": edges},
+        lambda_risk=0.5,
+        outgoing_edge_indices=outgoing,
+        reverse_node_ids=reverse_ids,
+    )
+    assert result.wide.to_list() == pytest.approx([-0.5, 0.5])
+    assert result.narrow.to_list() == pytest.approx([-0.5, 0.5])
+
+
 def test_parser_has_tree_options_and_no_online_policy() -> None:
     parser = build_parser()
     destinations = {action.dest for action in parser._actions}
@@ -431,11 +487,172 @@ def test_parser_has_tree_options_and_no_online_policy() -> None:
         "lambda_risk",
         "smart_vote",
         "include_idiot",
+        "memory_reserve_gib",
+        "memory_reserve_ratio",
     } <= destinations
     assert "policy" not in destinations
     assert "lookahead_depth" not in destinations
     assert "confidence_level" not in destinations
     assert parser.parse_args([]).search_mode == "dfs"
+
+
+def test_memory_guard_uses_higher_capacity_or_ratio_reserve(monkeypatch) -> None:
+    snapshot = MemorySnapshot(
+        total_bytes=64 * 1024**3,
+        available_bytes=7 * 1024**3,
+    )
+    monkeypatch.setattr(
+        "search_simulator._memory_guard.system_memory_snapshot",
+        lambda: snapshot,
+    )
+    pressure = memory_pressure_snapshot(reserve_ratio=0.15, reserve_gib=8.0)
+    assert pressure is not None
+    actual_snapshot, threshold = pressure
+    assert actual_snapshot == snapshot
+    assert threshold == int(64 * 1024**3 * 0.15)
+
+
+def test_position_scheduler_is_fixed_to_one_isolated_worker() -> None:
+    source_path = (
+        Path(__file__).parents[1]
+        / "search_simulator"
+        / "_tree_search.py"
+    )
+    syntax = ast.parse(source_path.read_text(encoding="utf-8"))
+    function = next(
+        node
+        for node in syntax.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "run_position_batch"
+    )
+    pool_calls = [
+        node
+        for node in ast.walk(function)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "ProcessPoolExecutor"
+    ]
+    assert len(pool_calls) == 1
+    max_workers = next(
+        keyword.value
+        for keyword in pool_calls[0].keywords
+        if keyword.arg == "max_workers"
+    )
+    assert isinstance(max_workers, ast.Constant)
+    assert max_workers.value == 1
+
+
+def test_cli_and_worker_boundaries_pass_simulator_parameters_by_name() -> None:
+    project_root = Path(__file__).parents[1] / "search_simulator"
+    boundaries = (
+        (project_root / "__main__.py", "_run_simulation"),
+        (project_root / "_tree_search.py", "_position_task"),
+    )
+    required = {
+        "number_of_players",
+        "number_of_wolves",
+        "search_mode",
+        "lambda_risk",
+        "memory_reserve_gib",
+        "memory_reserve_ratio",
+    }
+    for source_path, function_name in boundaries:
+        syntax = ast.parse(source_path.read_text(encoding="utf-8"))
+        function = next(
+            node
+            for node in syntax.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == function_name
+        )
+        constructor = next(
+            node
+            for node in ast.walk(function)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "SearchSimulator"
+        )
+        keyword_names = {keyword.arg for keyword in constructor.keywords}
+        assert None not in keyword_names
+        assert required <= keyword_names
+
+
+def test_memory_interrupt_resumes_same_run_from_position_checkpoint(tmp_path) -> None:
+    db_path = tmp_path / "resume.sqlite3"
+    common = {
+        "number_of_players": 4,
+        "number_of_wolves": 1,
+        "include_seer": False,
+        "include_witch": False,
+        "include_guard": False,
+        "tactics": "",
+        "search_mode": "dfs",
+        "parallel_workers": 4,
+        "all_positions": False,
+        "signature_cache_db_path": db_path,
+    }
+    interrupted_simulator = SearchSimulator(
+        **common,
+        memory_reserve_gib=10**9,
+        memory_reserve_ratio=1.0,
+    )
+    interrupted = interrupted_simulator.run()
+    interrupted_run_id = interrupted["run_id"]
+    assert interrupted["status"] == "interrupted"
+    assert interrupted["position_count"] == 0
+    assert interrupted["next_position_index"] == 1
+    interrupted_simulator.signature_cache.close()
+
+    resumed_simulator = SearchSimulator(
+        **common,
+        memory_reserve_gib=0.0,
+        memory_reserve_ratio=0.0,
+    )
+    resumed = resumed_simulator.run()
+    assert resumed["status"] == "complete"
+    assert resumed["run_id"] == interrupted_run_id
+    assert resumed["resumed_run"] is True
+    assert resumed["position_count"] == 1
+    assert resumed["total_position_count"] == 1
+    resumed_simulator.signature_cache.close()
+
+
+def test_resume_skips_complete_position_and_discards_partial_rows(tmp_path) -> None:
+    db_path = tmp_path / "complete-checkpoint.sqlite3"
+    simulator = SearchSimulator(
+        number_of_players=4,
+        number_of_wolves=1,
+        include_seer=False,
+        include_witch=False,
+        include_guard=False,
+        tactics="",
+        all_positions=False,
+        signature_cache_db_path=db_path,
+        memory_reserve_gib=0.0,
+        memory_reserve_ratio=0.0,
+    )
+    first = simulator.run()
+    run_id = first["run_id"]
+    simulator.signature_cache.finish_run(run_id, first, status="interrupted")
+    simulator.signature_cache.close()
+
+    resumed_simulator = SearchSimulator(
+        number_of_players=4,
+        number_of_wolves=1,
+        include_seer=False,
+        include_witch=False,
+        include_guard=False,
+        tactics="",
+        all_positions=False,
+        signature_cache_db_path=db_path,
+        memory_reserve_gib=0.0,
+        memory_reserve_ratio=0.0,
+    )
+    resumed = resumed_simulator.run()
+    assert resumed["run_id"] == run_id
+    assert resumed["position_count"] == 1
+    assert resumed["processed_states"] == first["processed_states"]
+    assert resumed["positions"][0]["restored_from_checkpoint"] is True
+    resumed_simulator.signature_cache.close()
 
 
 def test_sqlite_persists_position_aware_graph_and_pages(tmp_path) -> None:
@@ -475,8 +692,38 @@ def test_sqlite_persists_position_aware_graph_and_pages(tmp_path) -> None:
     ui.preview_position = 0
     ui.selected_row = None
     hover_text = "\n".join(ui._node_game_state_details(0))
-    for field in fields(GameStateContract):
-        assert f'"{field.name}"' in hover_text
+    expected_labels = {
+        "players": "玩家详情",
+        "is_game_over": "是否终局",
+        "night_count": "黑夜轮次",
+        "day_count": "白天轮次",
+        "phase": "当前阶段",
+        "last_guard_target_index": "上夜守护目标",
+        "seer_check_results": "预言家查验",
+        "seer_revealed": "预言家已公开",
+        "revealed_good_indices": "公开确认好人",
+        "revealed_wolf_indices": "公开确认狼人",
+        "public_role_claims": "公开身份声明",
+        "idiot_revealed_indices": "已揭示愚者",
+        "wolf_priority_targets": "狼人优先目标",
+        "last_day_votes": "上轮白天票型",
+        "last_day_strategy": "上轮白天战术",
+        "position_signature": "站位签名",
+        "action_label": "派生动作",
+        "players_snapshot": "玩家快照",
+        "state_id": "状态编号",
+        "parent_state_id": "父节点",
+        "depth": "搜索深度",
+    }
+    assert set(GameStateContract.__dataclass_fields__) == set(expected_labels)
+    assert all(label in hover_text for label in expected_labels.values())
+    assert "【节点概览】" in hover_text
+    assert "【玩家详情】" in hover_text
+    assert "号玩家｜角色：" in hover_text
+    assert "｜状态：存活｜技能：" in hover_text
+    assert '"' not in hover_text
+    assert "{" not in hover_text
+    assert "}" not in hover_text
     assert "wide_interval" in graph["nodes"][0]
     assert "narrow_interval" in graph["nodes"][0]
     assert graph["edges"][0]["reasons"]

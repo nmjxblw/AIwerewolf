@@ -20,17 +20,17 @@ logger.setLevel(logging.DEBUG)
 
 
 def _ensure_windows_allocator_stability() -> None:
-    """在易触发 adaptive-cache 损坏的 Windows 新版 CPython 下自重启。"""
+    """Windows 3.12 使用系统分配器，避免大图 worker 的 pymalloc/debug 峰值。"""
 
     if (
         os.name != "nt"
         or sys.version_info < (3, 12)
-        or os.environ.get("PYTHONMALLOC") == "debug"
+        or os.environ.get("PYTHONMALLOC") == "malloc"
         or os.environ.get("SEARCH_SIMULATOR_ALLOCATOR_RESTARTED") == "1"
     ):
         return
     environment = os.environ.copy()
-    environment["PYTHONMALLOC"] = "debug"
+    environment["PYTHONMALLOC"] = "malloc"
     environment["PYTHONFAULTHANDLER"] = "1"
     environment["SEARCH_SIMULATOR_ALLOCATOR_RESTARTED"] = "1"
     completed = subprocess.run(
@@ -44,19 +44,13 @@ def _ensure_windows_allocator_stability() -> None:
 def _import_runtime_modules():
     try:
         from search_simulator._artifacts import emit_simulation_artifacts
-        from search_simulator._config import ARTIFACT_ARG_KEYS
-        from search_simulator._config import SIMULATOR_ARG_KEYS
         from search_simulator._config import build_parser
         from search_simulator._simulator import SearchSimulator
     except ImportError:
         from ._artifacts import emit_simulation_artifacts
-        from ._config import ARTIFACT_ARG_KEYS
-        from ._config import SIMULATOR_ARG_KEYS
         from ._config import build_parser
         from ._simulator import SearchSimulator
     return (
-        ARTIFACT_ARG_KEYS,
-        SIMULATOR_ARG_KEYS,
         SearchSimulator,
         build_parser,
         emit_simulation_artifacts,
@@ -88,22 +82,24 @@ def _load_start_state(args):
 
 
 def _run_simulation(args: argparse.Namespace, phase_callback=None):
+    """使用显式 CLI/GUI 参数构造并运行模拟器。
+
+    参数：
+        args: 参数解析器或 GUI 生成的完整具名参数空间。
+        phase_callback: 可选的产物生成阶段回调，仅用于界面状态提示。
+
+    返回：
+        已保存最终或可恢复中断结果的模拟器实例。
+    """
+
     (
-        artifact_arg_keys,
-        simulator_arg_keys,
         SearchSimulator,
         _build_parser,
         emit_simulation_artifacts,
     ) = _import_runtime_modules()
     _ = _build_parser
 
-    simulator_kwargs = {key: getattr(args, key) for key in simulator_arg_keys if hasattr(args, key)}
     callback = getattr(args, "iteration_callback", None)
-    if callable(callback):
-        simulator_kwargs["iteration_callback"] = callback
-    for runtime_key in ("progress_queue", "result_queue", "resume_event"):
-        if hasattr(args, runtime_key):
-            simulator_kwargs[runtime_key] = getattr(args, runtime_key)
 
     try:
         from search_simulator._i18n import set_language
@@ -111,16 +107,44 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
         from ._i18n import set_language
 
     set_language(getattr(args, "lang", "zh-CN"))
-    simulator = SearchSimulator(**simulator_kwargs)
+    # CLI/GUI 到模拟器的运行参数逐项显式传递。新增参数若未在此列出，
+    # 会在回归中直接暴露，而不会被动态字典悄悄吞掉。
+    simulator = SearchSimulator(
+        number_of_players=args.number_of_players,
+        number_of_wolves=args.number_of_wolves,
+        include_seer=args.include_seer,
+        include_witch=args.include_witch,
+        include_guard=args.include_guard,
+        include_hunter=args.include_hunter,
+        include_idiot=args.include_idiot,
+        include_white_werewolf_king=args.include_white_werewolf_king,
+        search_mode=args.search_mode,
+        parallel_workers=args.parallel_workers,
+        memory_reserve_gib=args.memory_reserve_gib,
+        memory_reserve_ratio=args.memory_reserve_ratio,
+        lambda_risk=args.lambda_risk,
+        smart_vote=args.smart_vote,
+        all_positions=args.all_positions,
+        tactics=args.tactics,
+        results_output_path=args.results_output_path,
+        signature_cache_db_path=args.signature_cache_db_path,
+        signature_lru_capacity=args.signature_lru_capacity,
+        signature_commit_interval=args.signature_commit_interval,
+        iteration_callback=callback if callable(callback) else None,
+        progress_queue=getattr(args, "progress_queue", None),
+        result_queue=getattr(args, "result_queue", None),
+        resume_event=getattr(args, "resume_event", None),
+    )
     result = simulator.run(start_state=_load_start_state(args))
 
-    artifact_kwargs = {key: getattr(args, key) for key in artifact_arg_keys if hasattr(args, key)}
     emit_simulation_artifacts(
         simulator,
         result=result,
         enable_plot=not args.disable_plot,
         phase_callback=phase_callback,
-        **artifact_kwargs,
+        plot_position_index=args.plot_position_index,
+        max_nodes_for_plot=args.max_nodes_for_plot,
+        plot_dpi=args.plot_dpi,
     )
     return simulator
 
@@ -140,7 +164,7 @@ def _install_crash_handlers() -> None:
 def main() -> None:
     _ensure_windows_allocator_stability()
     _install_crash_handlers()
-    _, _, _, build_parser, _ = _import_runtime_modules()
+    _, build_parser, _ = _import_runtime_modules()
     parser = build_parser()
     args: argparse.Namespace = parser.parse_args()
     no_extra_args = len(sys.argv) <= 1

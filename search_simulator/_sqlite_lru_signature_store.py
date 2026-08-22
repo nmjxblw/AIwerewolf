@@ -21,6 +21,7 @@ from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy import Text
+from sqlalchemy import and_
 from sqlalchemy import create_engine
 from sqlalchemy import delete
 from sqlalchemy import func
@@ -370,6 +371,17 @@ class _SQLiteLRUSignatureStore:
                     self.flush()
             return total_inserted
 
+    @staticmethod
+    def _canonical_json(value: dict[str, Any]) -> str:
+        """生成稳定 JSON，确保配置键顺序不影响断点运行匹配。"""
+
+        return json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+
     def start_run(self, config: dict[str, Any]) -> str:
         run_id = uuid.uuid4().hex
         with self._lock:
@@ -379,12 +391,81 @@ class _SQLiteLRUSignatureStore:
                     created_ns=time.time_ns(),
                     finished_ns=None,
                     status="running",
-                    config_json=json.dumps(config, ensure_ascii=False),
+                    config_json=self._canonical_json(config),
                     summary_json=None,
                 )
             )
             self._conn.commit()
         return run_id
+
+    def start_or_resume_run(self, config: dict[str, Any]) -> tuple[str, bool]:
+        """复用最近的同配置未完成运行；否则创建新运行。
+
+        参数：
+            config: 只包含影响搜索结果的规范运行配置。
+
+        返回：
+            ``(run_id, resumed)``；第二项表示是否复用了已有运行。
+        """
+
+        table = self._tables["simulation_runs"]
+        target = self._canonical_json(config)
+        statement = (
+            select(table.c.run_id, table.c.config_json)
+            .where(table.c.status.in_(("running", "interrupted")))
+            .order_by(table.c.created_ns.desc())
+        )
+        with self._lock:
+            # 同时读取 running 与 interrupted：进程崩溃来不及收尾时，
+            # 数据库会保留 running；该状态同样属于可恢复运行。
+            for row in self._conn.execute(statement).mappings():
+                try:
+                    candidate = self._canonical_json(json.loads(row["config_json"]))
+                except (json.JSONDecodeError, TypeError, ValueError):
+                    continue
+                if candidate != target:
+                    continue
+                run_id = str(row["run_id"])
+                self._conn.execute(
+                    update(table)
+                    .where(table.c.run_id == run_id)
+                    .values(
+                        finished_ns=None,
+                        status="running",
+                        config_json=target,
+                    )
+                )
+                self._conn.commit()
+                return run_id, True
+        return self.start_run(config), False
+
+    def checkpoint_run(
+        self,
+        run_id: str,
+        summary: dict[str, Any],
+        *,
+        status: str = "running",
+    ) -> None:
+        """提交站位边界检查点，不把运行标记为已结束。
+
+        参数：
+            run_id: 当前批次的稳定标识。
+            summary: 仅由已完整持久化站位构成的运行摘要。
+            status: 检查点状态，正常迭代时固定为 ``running``。
+        """
+
+        with self._lock:
+            table = self._tables["simulation_runs"]
+            self._conn.execute(
+                update(table)
+                .where(table.c.run_id == run_id)
+                .values(
+                    finished_ns=None,
+                    status=status,
+                    summary_json=self._canonical_json(summary),
+                )
+            )
+            self._conn.commit()
 
     def finish_run(
         self,
@@ -401,7 +482,7 @@ class _SQLiteLRUSignatureStore:
                 .values(
                     finished_ns=time.time_ns(),
                     status=status,
-                    summary_json=json.dumps(summary, ensure_ascii=False),
+                    summary_json=self._canonical_json(summary),
                 )
             )
             self._conn.commit()
@@ -617,6 +698,113 @@ class _SQLiteLRUSignatureStore:
             }
             for row in rows
         ]
+
+    def list_completed_position_results(self, run_id: str) -> list[dict[str, Any]]:
+        """仅返回节点数和边数都与摘要一致的完整站位。
+
+        参数：
+            run_id: 待读取批次标识。
+
+        返回：
+            可安全跳过重算的完整站位摘要，按站位编号升序排列。
+        """
+
+        position_table = self._tables["position_results"]
+        node_table = self._tables["graph_nodes"]
+        edge_table = self._tables["graph_edges"]
+        node_count = (
+            select(func.count())
+            .select_from(node_table)
+            .where(
+                and_(
+                    node_table.c.run_id == position_table.c.run_id,
+                    node_table.c.position_signature
+                    == position_table.c.position_signature,
+                )
+            )
+            .correlate(position_table)
+            .scalar_subquery()
+        )
+        edge_count = (
+            select(func.count())
+            .select_from(edge_table)
+            .where(
+                and_(
+                    edge_table.c.run_id == position_table.c.run_id,
+                    edge_table.c.position_signature
+                    == position_table.c.position_signature,
+                )
+            )
+            .correlate(position_table)
+            .scalar_subquery()
+        )
+        statement = (
+            select(
+                position_table,
+                node_count.label("persisted_node_count"),
+                edge_count.label("persisted_edge_count"),
+            )
+            .where(position_table.c.run_id == run_id)
+            .order_by(position_table.c.position_index)
+        )
+        with self._lock:
+            rows = self._conn.execute(statement).mappings().all()
+        complete_rows = [
+            row
+            for row in rows
+            if int(row["persisted_node_count"]) == int(row["state_count"])
+            and int(row["persisted_edge_count"]) == int(row["edge_count"])
+        ]
+        # position_results 会先于节点/边批次写入，因此单看摘要行无法
+        # 判断站位是否完整；只有两个实际计数都吻合才能作为检查点。
+        return [
+            {
+                "position_index": row["position_index"],
+                "position_signature": row["position_signature"],
+                "roles": json.loads(row["roles_json"]),
+                "state_count": row["state_count"],
+                "edge_count": row["edge_count"],
+                "terminal_count": row["terminal_count"],
+                "processed_states": row["state_count"],
+                "good_paths": int(row["good_paths"]),
+                "wolf_paths": int(row["wolf_paths"]),
+                "wide_interval": [row["wide_lower"], row["wide_upper"]],
+                "narrow_interval": [row["narrow_lower"], row["narrow_upper"]],
+                "camp": row["camp"],
+                "runtime_seconds": row["runtime_seconds"],
+                "restored_from_checkpoint": True,
+            }
+            for row in complete_rows
+        ]
+
+    def discard_incomplete_position_results(self, run_id: str) -> int:
+        """删除半写入站位；完整站位保持不变。
+
+        参数：
+            run_id: 待清理批次标识。
+
+        返回：
+            被清理的不完整站位数量。
+        """
+
+        position_table = self._tables["position_results"]
+        with self._lock:
+            all_signatures = set(
+                self._conn.execute(
+                    select(position_table.c.position_signature).where(
+                        position_table.c.run_id == run_id
+                    )
+                ).scalars()
+            )
+        complete_signatures = {
+            item["position_signature"]
+            for item in self.list_completed_position_results(run_id)
+        }
+        incomplete = all_signatures - complete_signatures
+        # 删除顺序由 abort_position_result 统一维护，搜索层不接触表结构。
+        for position_signature_value in incomplete:
+            self.abort_position_result(run_id, position_signature_value)
+        return len(incomplete)
 
     def get_position_graph(
         self,

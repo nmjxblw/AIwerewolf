@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import multiprocessing
+import sys
 import threading
 import time
 from collections import deque
-from concurrent.futures import FIRST_COMPLETED
 from concurrent.futures import ProcessPoolExecutor
-from concurrent.futures import wait
 from typing import Any
 from typing import Iterable
 
@@ -18,9 +17,10 @@ from ._game_state import game_state_dict_from_compact
 from ._interval import UNRESOLVED
 from ._interval import RewardInterval
 from ._interval import RobustIntervals
+from ._interval import _IntervalValueAccumulator
 from ._interval import interval_camp
-from ._interval import propagate_interval_values
 from ._interval import propagate_intervals
+from ._memory_guard import memory_pressure_snapshot
 from ._positions import PositionLayout
 from ._positions import enumerate_position_layouts
 from ._positions import position_signature
@@ -28,6 +28,11 @@ from ._positions import position_signature
 PREVIEW_NODE_BATCH_LIMIT = 48
 PREVIEW_EDGE_BATCH_LIMIT = 72
 PREVIEW_EMIT_INTERVAL_SECONDS = 0.5
+MEMORY_CHECK_INTERVAL_SECONDS = 0.5
+
+
+class MemoryPressureInterrupt(RuntimeError):
+    """系统内存进入安全保留区，要求以可恢复检查点停止。"""
 
 
 def _publish_search_progress(simulator: Any, event: dict[str, Any]) -> None:
@@ -88,9 +93,11 @@ def recompute_graph_intervals(
     edges = graph.get("edges", [])
     if not nodes:
         return UNRESOLVED
-    sequential_node_ids = all(
-        int(node["node_id"]) == index for index, node in enumerate(nodes)
-    )
+    sequential_node_ids = True
+    for index, node in enumerate(nodes):
+        if int(node["node_id"]) != index:
+            sequential_node_ids = False
+            break
     node_by_id = (
         None
         if sequential_node_ids
@@ -101,28 +108,25 @@ def recompute_graph_intervals(
         if node_by_id is None:
             return nodes[node_id]
         return node_by_id[node_id]
-    children_by_parent: dict[int, set[int]] | None = None
+    children_by_parent: dict[int, dict[int, None]] | None = None
     if outgoing_edge_indices is None:
         children_by_parent = {}
         for edge in edges:
-            children_by_parent.setdefault(int(edge["parent_id"]), set()).add(
-                int(edge["child_id"])
-            )
-    ordered_node_ids: Iterable[int] = (
-        reverse_node_ids
-        if reverse_node_ids is not None
-        else (
-            int(node["node_id"])
-            for node in sorted(
-                nodes,
-                key=lambda item: (
-                    int(item["day_count"]) + int(item["night_count"]),
-                    int(item["node_id"]),
-                ),
-                reverse=True,
-            )
+            parent_id = int(edge["parent_id"])
+            child_id = int(edge["child_id"])
+            children_by_parent.setdefault(parent_id, {}).setdefault(child_id, None)
+    if reverse_node_ids is None:
+        ordered_node_ids: Iterable[int] = [int(node["node_id"]) for node in nodes]
+        ordered_node_ids.sort(
+            key=lambda item: (
+                int(node_for(item)["day_count"])
+                + int(node_for(item)["night_count"]),
+                item,
+            ),
+            reverse=True,
         )
-    )
+    else:
+        ordered_node_ids = reverse_node_ids
     for node_id in ordered_node_ids:
         node = node_for(node_id)
         if node["is_terminal"]:
@@ -133,26 +137,32 @@ def recompute_graph_intervals(
             else:
                 values = (-1.0, 1.0, -1.0, 1.0)
         else:
-            child_ids = (
-                (
-                    int(edges[edge_index]["child_id"])
-                    for edge_index in outgoing_edge_indices.get(node_id, [])
-                )
-                if outgoing_edge_indices is not None
-                else iter(sorted((children_by_parent or {}).get(node_id, set())))
-            )
-            values = propagate_interval_values(
-                (
-                    (
-                        float(node_for(child_id)["wide_interval"][0]),
-                        float(node_for(child_id)["wide_interval"][1]),
-                        float(node_for(child_id)["narrow_interval"][0]),
-                        float(node_for(child_id)["narrow_interval"][1]),
+            accumulator = _IntervalValueAccumulator()
+            if outgoing_edge_indices is not None:
+                for edge_index in outgoing_edge_indices.get(node_id, []):
+                    child_id = int(edges[edge_index]["child_id"])
+                    child = node_for(child_id)
+                    wide_interval = child["wide_interval"]
+                    narrow_interval = child["narrow_interval"]
+                    accumulator.add(
+                        wide_interval[0],
+                        wide_interval[1],
+                        narrow_interval[0],
+                        narrow_interval[1],
                     )
-                    for child_id in child_ids
-                ),
-                lambda_risk=lambda_risk,
-            )
+            else:
+                child_ids = (children_by_parent or {}).get(node_id, {})
+                for child_id in child_ids:
+                    child = node_for(child_id)
+                    wide_interval = child["wide_interval"]
+                    narrow_interval = child["narrow_interval"]
+                    accumulator.add(
+                        wide_interval[0],
+                        wide_interval[1],
+                        narrow_interval[0],
+                        narrow_interval[1],
+                    )
+            values = accumulator.resolve(lambda_risk=lambda_risk)
             if values is None:
                 values = (-1.0, 1.0, -1.0, 1.0)
         node["wide_interval"] = [values[0], values[1]]
@@ -161,7 +171,11 @@ def recompute_graph_intervals(
         child = node_for(int(edge["child_id"]))
         edge["wide_interval"] = list(child["wide_interval"])
         edge["narrow_interval"] = list(child["narrow_interval"])
-    root_id = min(int(node["node_id"]) for node in nodes)
+    root_id = int(nodes[0]["node_id"])
+    for node in nodes[1:]:
+        candidate_id = int(node["node_id"])
+        if candidate_id < root_id:
+            root_id = candidate_id
     return _node_intervals(node_for(root_id))
 
 
@@ -220,6 +234,7 @@ def _search_root(
     processed_states = 0
     terminal_count_live = 0
     last_progress_at = started_at
+    last_memory_check_at = 0.0
     focus_node_id = 0
     pending_preview_nodes: deque[dict[str, Any]] = deque(
         maxlen=PREVIEW_NODE_BATCH_LIMIT * 2
@@ -227,6 +242,27 @@ def _search_root(
     pending_preview_edges: deque[dict[str, Any]] = deque(
         maxlen=PREVIEW_EDGE_BATCH_LIMIT * 2
     )
+
+    def ensure_search_memory_available(*, force: bool = False) -> float:
+        """在节点展开过程中定期检查内存，并返回当前单调时钟。"""
+
+        nonlocal last_memory_check_at
+        now = time.monotonic()
+        if not force and now - last_memory_check_at < MEMORY_CHECK_INTERVAL_SECONDS:
+            return now
+        pressure = memory_pressure_snapshot(
+            reserve_ratio=simulator.memory_reserve_ratio,
+            reserve_gib=simulator.memory_reserve_gib,
+        )
+        last_memory_check_at = now
+        if pressure is None:
+            return now
+        snapshot, threshold = pressure
+        raise MemoryPressureInterrupt(
+            "系统可用物理内存进入安全保留区："
+            f"available={snapshot.available_bytes / 1024**3:.2f} GiB, "
+            f"threshold={threshold / 1024**3:.2f} GiB"
+        )
 
     def node_preview(node: dict[str, Any]) -> dict[str, Any]:
         return {
@@ -261,8 +297,10 @@ def _search_root(
     pending_preview_nodes.append(node_preview(nodes[0]))
 
     def publish_progress(*, kind: str = "node_progress", force: bool = False) -> None:
+        """按 0.5 秒发布预览，并以同一周期执行内存安全检查。"""
+
         nonlocal last_progress_at
-        now = time.monotonic()
+        now = ensure_search_memory_available(force=force)
         if not force and now - last_progress_at < PREVIEW_EMIT_INTERVAL_SECONDS:
             return
         next_node_id = None
@@ -330,6 +368,10 @@ def _search_root(
         transition_count = 0
         for transition in simulator.expand_state(state):
             transition_count += 1
+            if transition_count % 256 == 0:
+                # 单个高扇出节点可能长时间不触发节点级进度发布，因此在
+                # 转移流内部也检查安全线，防止一个局部组合直接耗尽内存。
+                ensure_search_memory_available()
             child = transition.state
             child_key = simulator._state_key(child)
             child_id = node_id_by_key.get(child_key)
@@ -444,11 +486,17 @@ def _search_root(
 
     publish_progress(force=True)
 
-    reverse_topological_ids = sorted(
-        range(len(nodes)),
-        key=lambda item: (int(nodes[item]["round"]), item),
-        reverse=True,
+    # 搜索已经完成，状态去重索引与实时预览缓冲不会再被读取。先释放这些
+    # 大对象，给路径/interval 回传留下稳定的内存余量。
+    del node_id_by_key
+    pending_preview_nodes.clear()
+    pending_preview_edges.clear()
+
+    reverse_topological_ids = [int(node["node_id"]) for node in nodes]
+    reverse_topological_ids.sort(
+        key=lambda item: (int(nodes[item]["round"]), item), reverse=True
     )
+    ensure_search_memory_available(force=True)
     for node_id in reverse_topological_ids:
         node = nodes[node_id]
         if node["is_terminal"]:
@@ -466,16 +514,26 @@ def _search_root(
             node["good_paths"] = good_paths
             node["wolf_paths"] = wolf_paths
 
+        if node_id % 4096 == 0:
+            ensure_search_memory_available()
+
+    ensure_search_memory_available(force=True)
     recompute_graph_intervals(
         {"nodes": nodes, "edges": edges},
         lambda_risk=simulator.lambda_risk,
         outgoing_edge_indices=outgoing_by_node,
         reverse_node_ids=reverse_topological_ids,
     )
+    ensure_search_memory_available(force=True)
 
     root_node = nodes[0]
     root_robust = _node_intervals(root_node)
-    terminal_count = sum(1 for node in nodes if node["is_terminal"])
+    del reverse_topological_ids
+    del outgoing_by_node
+    for node in nodes:
+        node["state_compact"] = node.pop("state_key")
+        node.pop("round", None)
+        node.pop("expanded", None)
     return {
         "position_index": position_index,
         "position_signature": position_signature_value,
@@ -484,7 +542,7 @@ def _search_root(
         "search_mode": simulator.search_mode,
         "state_count": len(nodes),
         "edge_count": len(edges),
-        "terminal_count": terminal_count,
+        "terminal_count": terminal_count_live,
         "processed_states": processed_states,
         "good_paths": int(root_node["good_paths"]),
         "wolf_paths": int(root_node["wolf_paths"]),
@@ -492,24 +550,7 @@ def _search_root(
         "narrow_interval": root_robust.narrow.to_list(),
         "camp": interval_camp(root_robust.wide),
         "runtime_seconds": time.monotonic() - started_at,
-        "nodes": [
-            {
-                "node_id": node["node_id"],
-                "state_signature": node["state_signature"],
-                "phase": node["phase"],
-                "day_count": node["day_count"],
-                "night_count": node["night_count"],
-                "is_terminal": node["is_terminal"],
-                "result": node["result"],
-                "good_paths": node["good_paths"],
-                "wolf_paths": node["wolf_paths"],
-                "wide_interval": node["wide_interval"],
-                "narrow_interval": node["narrow_interval"],
-                "state_compact": node["state_key"],
-                "state_observation": node["state_observation"],
-            }
-            for node in nodes
-        ],
+        "nodes": nodes,
         "edges": edges,
     }
 
@@ -521,10 +562,49 @@ def search_from_state(simulator: Any, state: GameState) -> dict[str, Any]:
 
 
 def _position_task(payload: dict[str, Any]) -> dict[str, Any]:
+    """在隔离进程中计算一个站位。
+
+    参数：
+        payload: 父进程显式构造的模拟器配置、站位、队列和总站位数。
+
+    返回：
+        使用结果队列时返回已流式发送的站位标识；否则返回完整站位 DAG。
+    """
+
+    forbidden_modules = (
+        "pygame",
+        "sqlalchemy",
+        "greenlet",
+    )
+    loaded_forbidden = [
+        module_name
+        for module_name in forbidden_modules
+        if module_name in sys.modules
+    ]
+    if loaded_forbidden:
+        raise RuntimeError(
+            "计算 worker 加载了禁止的原生/持久化模块: "
+            + ", ".join(loaded_forbidden)
+        )
     from ._simulator import SearchSimulator
 
+    config = payload["simulator_config"]
     simulator = SearchSimulator(
-        **payload["simulator_config"],
+        number_of_players=config["number_of_players"],
+        number_of_wolves=config["number_of_wolves"],
+        include_seer=config["include_seer"],
+        include_witch=config["include_witch"],
+        include_guard=config["include_guard"],
+        include_hunter=config["include_hunter"],
+        include_idiot=config["include_idiot"],
+        include_white_werewolf_king=config["include_white_werewolf_king"],
+        smart_vote=config["smart_vote"],
+        tactics=config["tactics"],
+        search_mode=config["search_mode"],
+        lambda_risk=config["lambda_risk"],
+        parallel_workers=config["parallel_workers"],
+        memory_reserve_gib=config["memory_reserve_gib"],
+        memory_reserve_ratio=config["memory_reserve_ratio"],
         all_positions=False,
         persistence_enabled=False,
         iteration_callback=None,
@@ -583,6 +663,8 @@ def _position_task(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _worker_config(simulator: Any) -> dict[str, Any]:
+    """显式导出单站位 worker 所需的全部可序列化参数。"""
+
     return {
         "number_of_players": simulator.number_of_players,
         "number_of_wolves": simulator.number_of_wolves,
@@ -597,11 +679,20 @@ def _worker_config(simulator: Any) -> dict[str, Any]:
         "search_mode": simulator.search_mode,
         "lambda_risk": simulator.lambda_risk,
         "parallel_workers": 1,
+        "memory_reserve_gib": simulator.memory_reserve_gib,
+        "memory_reserve_ratio": simulator.memory_reserve_ratio,
     }
 
 
 def run_position_batch(simulator: Any) -> dict[str, Any]:
-    """枚举站位、多进程搜索，并由父进程顺序持久化完整 DAG。"""
+    """串行完成每个站位，并在站位边界自动持久化与恢复。
+
+    参数：
+        simulator: 已完成显式配置加载的搜索模拟器实例。
+
+    返回：
+        完整运行摘要，或包含下一站位编号的可恢复中断摘要。
+    """
 
     from ._sqlite_lru_signature_store import _SQLiteLRUSignatureStore
 
@@ -621,17 +712,44 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         "search_mode": simulator.search_mode,
         "lambda_risk": simulator.lambda_risk,
         "smart_vote": simulator.smart_vote,
-        "parallel_workers": simulator.parallel_workers,
+        "position_workers": 1,
         "tactics": sorted(simulator.tactics),
     }
-    simulator.run_id = store.start_run(config)
+    simulator.run_id, resumed_run = store.start_or_resume_run(config)
+    discarded_incomplete_positions = store.discard_incomplete_position_results(
+        simulator.run_id
+    )
+    expected_signatures = {layout.signature for layout in layouts}
+    summaries = [
+        item
+        for item in store.list_completed_position_results(simulator.run_id)
+        if item["position_signature"] in expected_signatures
+    ]
+    summaries.sort(key=lambda item: int(item["position_index"]))
+    completed_signatures = {
+        str(item["position_signature"])
+        for item in summaries
+    }
+    simulator.processed_positions = len(summaries)
+    simulator.processed_states = sum(
+        int(item["processed_states"])
+        for item in summaries
+    )
+    pending_layouts = [
+        layout
+        for layout in layouts
+        if layout.signature not in completed_signatures
+    ]
     owned_result_manager = None
     if simulator.result_queue is None:
         owned_result_manager = multiprocessing.Manager()
         simulator.result_queue = owned_result_manager.Queue(maxsize=8)
     worker_config = _worker_config(simulator)
-    payloads = [
-        {
+
+    def payload_for(layout: PositionLayout) -> dict[str, Any]:
+        """只为即将执行的一个站位构造任务，禁止批量预取。"""
+
+        return {
             "simulator_config": worker_config,
             "progress_queue": simulator.progress_queue,
             "result_queue": simulator.result_queue,
@@ -643,14 +761,86 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
                 "signature": layout.signature,
             },
         }
-        for layout in layouts
-    ]
-    summaries: list[dict[str, Any]] = []
+
+    def build_run_summary(
+        *,
+        status: str,
+        interruption_reason: str | None = None,
+    ) -> dict[str, Any]:
+        """从已完成站位构造可持久化的批次检查点摘要。"""
+
+        ordered = sorted(summaries, key=lambda item: int(item["position_index"]))
+        total_good = sum(int(item["good_paths"]) for item in ordered)
+        total_wolf = sum(int(item["wolf_paths"]) for item in ordered)
+        aggregate = (
+            propagate_intervals(
+                (
+                    RobustIntervals(
+                        wide=RewardInterval(*item["wide_interval"]),
+                        narrow=RewardInterval(*item["narrow_interval"]),
+                    )
+                    for item in ordered
+                ),
+                lambda_risk=simulator.lambda_risk,
+            )
+            if ordered
+            else UNRESOLVED
+        )
+        done_signatures = {
+            str(item["position_signature"])
+            for item in ordered
+        }
+        next_position_index = next(
+            (
+                layout.index
+                for layout in layouts
+                if layout.signature not in done_signatures
+            ),
+            None,
+        )
+        summary = {
+            "run_id": simulator.run_id,
+            "status": status,
+            "config": config,
+            "position_count": len(ordered),
+            "total_position_count": len(layouts),
+            "next_position_index": next_position_index,
+            "good_paths": total_good,
+            "wolf_paths": total_wolf,
+            "wide_interval": aggregate.wide.to_list(),
+            "narrow_interval": aggregate.narrow.to_list(),
+            "camp": interval_camp(aggregate.wide),
+            "processed_states": sum(
+                int(item["processed_states"])
+                for item in ordered
+            ),
+            "runtime_seconds": time.monotonic() - started_at,
+            "position_runtime_seconds": sum(
+                float(item["runtime_seconds"])
+                for item in ordered
+            ),
+            "resumed_run": resumed_run,
+            "discarded_incomplete_positions": discarded_incomplete_positions,
+            "positions": ordered,
+        }
+        if interruption_reason is not None:
+            summary["interruption_reason"] = interruption_reason
+        return summary
+
+    persisted_condition = threading.Condition()
+    persisted_signatures = set(completed_signatures)
 
     def record_summary(summary: dict[str, Any]) -> None:
+        """在完整 DAG 落库后提交检查点，再向 UI 宣告站位完成。"""
+
         summaries.append(summary)
         simulator.processed_positions += 1
         simulator.processed_states += int(summary["processed_states"])
+        checkpoint = build_run_summary(status="running")
+        store.checkpoint_run(simulator.run_id, checkpoint)
+        with persisted_condition:
+            persisted_signatures.add(str(summary["position_signature"]))
+            persisted_condition.notify_all()
         if simulator.iteration_callback is not None:
             simulator.iteration_callback(
                 {
@@ -663,6 +853,8 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
             )
 
     def persist(result: dict[str, Any]) -> None:
+        """无跨进程结果队列时的兼容持久化路径。"""
+
         store.save_position_result(simulator.run_id, result)
         record_summary(
             {
@@ -679,6 +871,8 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
     stream_summaries: dict[str, dict[str, Any]] = {}
 
     def consume_result_batches() -> None:
+        """单写线程按摘要、节点、边、完成标记顺序消费有界队列。"""
+
         result_queue = simulator.result_queue
         if result_queue is None:
             return
@@ -717,6 +911,8 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
             except BaseException as exc:
                 writer_errors.append(exc)
                 failed = True
+                with persisted_condition:
+                    persisted_condition.notify_all()
         for position_signature_value in active_streams:
             store.abort_position_result(simulator.run_id, position_signature_value)
 
@@ -729,71 +925,101 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         )
         writer_thread.start()
 
-    try:
-        payload_iterator = iter(payloads)
-        pending = set()
-        max_workers = min(len(payloads), simulator.parallel_workers)
-        with ProcessPoolExecutor(
-            max_workers=max_workers,
-            max_tasks_per_child=1,
-        ) as executor:
-            for _ in range(max_workers):
-                pending.add(executor.submit(_position_task, next(payload_iterator)))
-            while pending:
-                finished, pending = wait(pending, return_when=FIRST_COMPLETED)
-                for future in finished:
-                    result = future.result()
-                    if simulator.result_queue is None:
-                        persist(result)
-                    try:
-                        payload = next(payload_iterator)
-                    except StopIteration:
-                        continue
-                    pending.add(executor.submit(_position_task, payload))
+    if simulator.iteration_callback is not None:
+        for completed_number, summary in enumerate(summaries, start=1):
+            simulator.iteration_callback(
+                {
+                    "kind": "position_result",
+                    "run_id": simulator.run_id,
+                    "completed_positions": completed_number,
+                    "total_positions": len(layouts),
+                    **summary,
+                }
+            )
 
-        if simulator.result_queue is not None:
+    def stop_writer() -> None:
+        """排空并停止 SQLite 单写线程，确保状态更新发生在其后。"""
+
+        if (
+            simulator.result_queue is not None
+            and writer_thread is not None
+            and writer_thread.is_alive()
+        ):
             simulator.result_queue.put({"kind": "shutdown"})
             writer_thread.join()
-            if writer_errors:
-                raise writer_errors[0]
 
-        summaries.sort(key=lambda item: int(item["position_index"]))
-        simulator.position_results = summaries
-        total_good = sum(int(item["good_paths"]) for item in summaries)
-        total_wolf = sum(int(item["wolf_paths"]) for item in summaries)
-        aggregate = propagate_intervals(
-            (
-                RobustIntervals(
-                    wide=RewardInterval(*item["wide_interval"]),
-                    narrow=RewardInterval(*item["narrow_interval"]),
-                )
-                for item in summaries
-            ),
-            lambda_risk=simulator.lambda_risk,
-        ) if summaries else UNRESOLVED
-        summary = {
-            "run_id": simulator.run_id,
-            "config": config,
-            "position_count": len(summaries),
-            "good_paths": total_good,
-            "wolf_paths": total_wolf,
-            "wide_interval": aggregate.wide.to_list(),
-            "narrow_interval": aggregate.narrow.to_list(),
-            "camp": interval_camp(aggregate.wide),
-            "processed_states": simulator.processed_states,
-            "runtime_seconds": time.monotonic() - started_at,
-            "positions": summaries,
-        }
+    def ensure_memory_available() -> None:
+        """站位边界执行内存检查，低于安全线时停止继续派发。"""
+
+        pressure = memory_pressure_snapshot(
+            reserve_ratio=simulator.memory_reserve_ratio,
+            reserve_gib=simulator.memory_reserve_gib,
+        )
+        if pressure is None:
+            return
+        snapshot, threshold = pressure
+        raise MemoryPressureInterrupt(
+            "系统可用物理内存进入安全保留区："
+            f"available={snapshot.available_bytes / 1024**3:.2f} GiB, "
+            f"threshold={threshold / 1024**3:.2f} GiB"
+        )
+
+    try:
+        with ProcessPoolExecutor(
+            max_workers=1,
+            max_tasks_per_child=1,
+        ) as executor:
+            for layout in pending_layouts:
+                # 只有前一站位已经通过 writer 的数量完整性事务并唤醒父进程，
+                # 循环才会走到下一次 submit；因此不存在并发展开的站位。
+                ensure_memory_available()
+                result = executor.submit(_position_task, payload_for(layout)).result()
+                if simulator.result_queue is None:
+                    persist(result)
+                else:
+                    signature = str(result["position_signature"])
+                    with persisted_condition:
+                        while signature not in persisted_signatures:
+                            if writer_errors:
+                                raise writer_errors[0]
+                            persisted_condition.wait(timeout=0.1)
+                ensure_memory_available()
+
+        stop_writer()
+        if writer_errors:
+            raise writer_errors[0]
+        summary = build_run_summary(status="complete")
+        simulator.position_results = list(summary["positions"])
         store.finish_run(simulator.run_id, summary, status="complete")
         return summary
+    except MemoryPressureInterrupt as exc:
+        stop_writer()
+        summary = build_run_summary(
+            status="interrupted",
+            interruption_reason=str(exc),
+        )
+        simulator.position_results = list(summary["positions"])
+        simulator.stop_reason = str(exc)
+        store.finish_run(simulator.run_id, summary, status="interrupted")
+        return summary
+    except KeyboardInterrupt as exc:
+        stop_writer()
+        summary = build_run_summary(
+            status="interrupted",
+            interruption_reason="用户中断运行",
+        )
+        simulator.position_results = list(summary["positions"])
+        store.finish_run(simulator.run_id, summary, status="interrupted")
+        raise exc
     except Exception as exc:
-        if simulator.result_queue is not None and writer_thread is not None:
-            if writer_thread.is_alive():
-                simulator.result_queue.put({"kind": "shutdown"})
-                writer_thread.join()
+        stop_writer()
+        failed_summary = build_run_summary(status="failed")
+        failed_summary.update(
+            {"error_type": type(exc).__name__, "error": str(exc)}
+        )
         store.finish_run(
             simulator.run_id,
-            {"error_type": type(exc).__name__, "error": str(exc)},
+            failed_summary,
             status="failed",
         )
         raise

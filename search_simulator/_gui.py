@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import math
 import multiprocessing
 import os
@@ -61,6 +60,137 @@ LIVE_PREVIEW_NODE_LIMIT = 80
 DAG_VISIBLE_NODE_LIMIT = 240
 UI_DATA_REFRESH_SECONDS = 0.5
 LIVE_NODE_FADE_SECONDS = 0.4
+
+
+def _yes_no(value: Any) -> str:
+    return "是" if bool(value) else "否"
+
+
+def _seat_label(value: Any) -> str:
+    if value is None:
+        return "无"
+    return f"{int(value) + 1}号"
+
+
+def _seat_list(values: Any) -> str:
+    items = list(values or [])
+    if not items:
+        return "无"
+    return "、".join(_seat_label(value) for value in items)
+
+
+def _phase_label(value: Any) -> str:
+    return {
+        "night": "黑夜",
+        "day": "白天",
+        "complete": "已完成",
+    }.get(str(value), str(value) or "未知")
+
+
+def _interval_label(value: Any) -> str:
+    values = list(value or [-1.0, 1.0])
+    if len(values) < 2:
+        return "未计算"
+    return f"[{float(values[0]):.4f}, {float(values[1]):.4f}]"
+
+
+def _format_game_state_hover(
+    node_id: int,
+    node: dict[str, Any],
+    state: dict[str, Any],
+) -> list[str]:
+    """把完整 GameState 转成研究者可读的分区 UI 文本。"""
+
+    if state.get("unavailable"):
+        return [
+            "【节点概览】",
+            f"节点编号：N{node_id}    搜索结果：{node.get('result', '未结束')}",
+            f"Wide 区间：{_interval_label(node.get('wide_interval'))}    "
+            f"Narrow 区间：{_interval_label(node.get('narrow_interval'))}",
+            "【状态详情】",
+            str(state["unavailable"]),
+        ]
+
+    seer_checks = state.get("seer_check_results") or {}
+    check_text = "；".join(
+        f"{_seat_label(index)}＝{'狼人' if bool(value) else '好人'}"
+        for index, value in sorted(seer_checks.items(), key=lambda item: int(item[0]))
+    ) or "无"
+    role_claims = state.get("public_role_claims") or {}
+    claim_text = "；".join(
+        f"{_seat_label(index)}声明{role}"
+        for index, role in sorted(role_claims.items(), key=lambda item: int(item[0]))
+    ) or "无"
+    day_votes = state.get("last_day_votes") or {}
+    vote_text = "；".join(
+        f"{_seat_label(voter)}→{_seat_label(target)}"
+        for voter, target in sorted(day_votes.items(), key=lambda item: int(item[0]))
+    ) or "无"
+    snapshot_values = []
+    for raw_value in state.get("players_snapshot") or []:
+        snapshot_values.append(
+            str(raw_value).replace(":alive", "·存活").replace(":dead", "·死亡")
+        )
+    snapshot_text = "；".join(snapshot_values) or "无"
+    lines = [
+        "【节点概览】",
+        f"节点编号：N{node_id}    搜索结果：{node.get('result', '未结束')}",
+        f"Wide 区间：{_interval_label(node.get('wide_interval'))}    "
+        f"Narrow 区间：{_interval_label(node.get('narrow_interval'))}",
+        "【对局进度】",
+        f"当前阶段：{_phase_label(state.get('phase'))}    "
+        f"白天轮次：{int(state.get('day_count', 0))}    "
+        f"黑夜轮次：{int(state.get('night_count', 0))}",
+        f"是否终局：{_yes_no(state.get('is_game_over'))}    "
+        f"搜索深度：{int(state.get('depth', 0))}",
+        f"父节点：{_seat_or_node(state.get('parent_state_id'))}    "
+        f"派生动作：{state.get('action_label') or '根状态'}",
+        "【身份与公共信息】",
+        f"预言家已公开：{_yes_no(state.get('seer_revealed'))}    "
+        f"上夜守护目标：{_seat_label(state.get('last_guard_target_index'))}",
+        f"预言家查验：{check_text}",
+        f"公开确认好人：{_seat_list(state.get('revealed_good_indices'))}",
+        f"公开确认狼人：{_seat_list(state.get('revealed_wolf_indices'))}",
+        f"公开身份声明：{claim_text}",
+        f"已揭示愚者：{_seat_list(state.get('idiot_revealed_indices'))}",
+        f"狼人优先目标：{_seat_list(state.get('wolf_priority_targets'))}",
+        "【投票与战术】",
+        f"上轮白天票型：{vote_text}",
+        f"上轮白天战术：{state.get('last_day_strategy') or '无'}",
+        "【站位与状态标识】",
+        f"站位签名：{state.get('position_signature') or '无'}",
+        f"状态编号：{int(state.get('state_id', -1))}    玩家快照：{snapshot_text}",
+        "【玩家详情】",
+    ]
+    players = list(state.get("players") or [])
+    for player_index, player in enumerate(players):
+        skills = player.get("skills") or {}
+        skill_text = "；".join(
+            f"{name}：{_skill_count_label(count)}"
+            for name, count in sorted(skills.items(), key=lambda item: str(item[0]))
+        ) or "无"
+        lines.append(
+            f"{player_index + 1}号玩家｜角色：{player.get('role', '未知')}｜"
+            f"状态：{'存活' if bool(player.get('is_alive')) else '死亡'}｜技能：{skill_text}"
+        )
+    if not players:
+        lines.append("无玩家数据")
+    return lines
+
+
+def _seat_or_node(value: Any) -> str:
+    if value is None:
+        return "无（根节点）"
+    return f"N{int(value)}"
+
+
+def _skill_count_label(value: Any) -> str:
+    count = int(value)
+    if count < 0:
+        return f"无限（{count}）"
+    if count == 0:
+        return "已耗尽（0）"
+    return f"剩余{count}次（{count}）"
 
 
 def _faded_color(
@@ -228,8 +358,7 @@ class PygameSimulatorUI:
         entry_specs = (
             ("number_of_players", 18, 102, self.defaults.number_of_players),
             ("number_of_wolves", 170, 102, self.defaults.number_of_wolves),
-            ("parallel_workers", 18, 158, self.defaults.parallel_workers),
-            ("page_size", 18, 214, min(10, int(self.defaults.page_size))),
+            ("page_size", 18, 158, min(10, int(self.defaults.page_size))),
         )
         for key, x, y, value in entry_specs:
             entry = UITextEntryLine(
@@ -347,9 +476,8 @@ class PygameSimulatorUI:
         labels = (
             ("玩家数", 18, 80),
             ("普通狼", 170, 80),
-            ("进程数", 18, 136),
+            ("每页行数", 18, 136),
             ("风险 λ", 170, 136),
-            ("每页行数", 18, 192),
         )
         for label, x, y in labels:
             self._text(label, (x, y), size=12, color=MUTED)
@@ -358,6 +486,12 @@ class PygameSimulatorUI:
             (272, 166),
             size=14,
             color=TEXT,
+        )
+        self._text(
+            "站位串行 · 自动检查点续算",
+            (18, 204),
+            size=12,
+            color=MUTED,
         )
 
         self._text("角色与运行", (18, 260), size=16)
@@ -657,15 +791,7 @@ class PygameSimulatorUI:
                 )
             else:
                 state = {"unavailable": "该旧节点没有可恢复的 GameState 快照"}
-        header = (
-            f"GameState · N{node_id} · result={node.get('result', '未结束')} "
-            f"· wide={node.get('wide_interval', [-1.0, 1.0])} "
-            f"· narrow={node.get('narrow_interval', [-1.0, 1.0])}"
-        )
-        return [
-            header,
-            *json.dumps(state, ensure_ascii=False, indent=2).splitlines(),
-        ]
+        return _format_game_state_hover(node_id, node, state)
 
     def _draw_graph(self) -> None:
         rect = self._graph_rect()
@@ -885,7 +1011,7 @@ class PygameSimulatorUI:
             {
                 "number_of_players": int(self.entries["number_of_players"].get_text()),
                 "number_of_wolves": int(self.entries["number_of_wolves"].get_text()),
-                "parallel_workers": int(self.entries["parallel_workers"].get_text()),
+                "parallel_workers": 1,
                 "lambda_risk": round(float(self.lambda_slider.get_current_value()), 2),
                 "page_size": self._page_size(),
                 "search_mode": "dfs",
@@ -904,8 +1030,6 @@ class PygameSimulatorUI:
             raise ValueError("玩家数必须不小于 3")
         if values["number_of_wolves"] < 1:
             raise ValueError("普通狼人数必须不小于 1")
-        if values["parallel_workers"] < 1:
-            raise ValueError("进程数必须不小于 1")
         if not 0.0 <= values["lambda_risk"] <= 1.0:
             raise ValueError("lambda 必须位于 [0, 1]")
         return argparse.Namespace(**values)
@@ -1435,13 +1559,25 @@ class PygameSimulatorUI:
                     self.live_stats["wolf_paths"] = sum(
                         int(row["wolf_paths"]) for row in self.rows
                     )
-                    self.progress = 100.0
-                    self.progress_bar.set_current_progress(100.0)
-                    self.status = t(
-                        "gui.finished",
-                        positions=result.get("position_count", 1),
-                        states=result.get("processed_states", result.get("state_count", 0)),
-                    )
+                    completed = int(result.get("position_count", 0))
+                    total = int(result.get("total_position_count", completed or 1))
+                    self.progress = completed * 100.0 / max(1, total)
+                    self.progress_bar.set_current_progress(self.progress)
+                    if result.get("status") == "interrupted":
+                        self.status = t(
+                            "gui.interrupted",
+                            done=completed,
+                            total=total,
+                        )
+                    else:
+                        self.status = t(
+                            "gui.finished",
+                            positions=completed,
+                            states=result.get(
+                                "processed_states",
+                                result.get("state_count", 0),
+                            ),
+                        )
                     self.running = False
                     self.paused = False
                     self.resume_event.set()
@@ -1606,7 +1742,7 @@ class PygameSimulatorUI:
                         rect.y + 8 + row * line_height,
                     ),
                     size=12,
-                    color=ACCENT if line_index == 0 else TEXT,
+                    color=ACCENT if str(line).startswith("【") else TEXT,
                 )
             return
         lines = self.hover_tooltip[:7]
@@ -1634,7 +1770,6 @@ class PygameSimulatorUI:
         extra = {
             "number_of_players": "整数且不小于 3；默认测试板子为 7 人",
             "number_of_wolves": "整数且不小于 1；白狼王单独计数",
-            "parallel_workers": "整数且不小于 1；不同站位由独立进程计算",
             "page_size": "范围 [1,10]；只影响 GUI 分页，不影响迭代结果",
         }
         if self.lambda_slider.rect.collidepoint(mouse):

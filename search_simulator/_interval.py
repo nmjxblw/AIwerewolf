@@ -63,6 +63,87 @@ GOOD_TERMINAL = RobustIntervals(RewardInterval(1.0, 1.0), RewardInterval(1.0, 1.
 WOLF_TERMINAL = RobustIntervals(RewardInterval(-1.0, -1.0), RewardInterval(-1.0, -1.0))
 
 
+@dataclass(slots=True)
+class _IntervalValueAccumulator:
+    """以固定大小字段累计直接子节点边界，不创建逐子节点临时对象。"""
+
+    count: int = 0
+    wide_lower_sum: float = 0.0
+    wide_upper_sum: float = 0.0
+    narrow_lower_sum: float = 0.0
+    narrow_upper_sum: float = 0.0
+    wide_lower_min: float = 1.0
+    wide_upper_max: float = -1.0
+    narrow_lower_max: float = -1.0
+    narrow_upper_min: float = 1.0
+
+    def add(
+        self,
+        raw_wide_lower: float,
+        raw_wide_upper: float,
+        raw_narrow_lower: float,
+        raw_narrow_upper: float,
+    ) -> None:
+        wide_lower = _clamp(float(raw_wide_lower))
+        wide_upper = _clamp(float(raw_wide_upper))
+        narrow_lower = _clamp(float(raw_narrow_lower))
+        narrow_upper = _clamp(float(raw_narrow_upper))
+        self.count += 1
+        self.wide_lower_sum += wide_lower
+        self.wide_upper_sum += wide_upper
+        self.narrow_lower_sum += narrow_lower
+        self.narrow_upper_sum += narrow_upper
+        if wide_lower < self.wide_lower_min:
+            self.wide_lower_min = wide_lower
+        if wide_upper > self.wide_upper_max:
+            self.wide_upper_max = wide_upper
+        if narrow_lower > self.narrow_lower_max:
+            self.narrow_lower_max = narrow_lower
+        if narrow_upper < self.narrow_upper_min:
+            self.narrow_upper_min = narrow_upper
+
+    def resolve(
+        self,
+        *,
+        lambda_risk: float,
+    ) -> tuple[float, float, float, float] | None:
+        if self.count == 0:
+            return None
+        risk = _clamp(float(lambda_risk))
+        if risk < 0.0:
+            risk = 0.0
+        mean_weight = 1.0 - risk
+        wide_lower = _clamp(
+            risk * self.wide_lower_min
+            + mean_weight * (self.wide_lower_sum / self.count)
+        )
+        wide_upper = _clamp(
+            risk * self.wide_upper_max
+            + mean_weight * (self.wide_upper_sum / self.count)
+        )
+        narrow_endpoint_a = _clamp(
+            risk * self.narrow_lower_max
+            + mean_weight * (self.narrow_lower_sum / self.count)
+        )
+        narrow_endpoint_b = _clamp(
+            risk * self.narrow_upper_min
+            + mean_weight * (self.narrow_upper_sum / self.count)
+        )
+        if wide_lower > wide_upper:
+            wide_lower, wide_upper = wide_upper, wide_lower
+        if narrow_endpoint_a > narrow_endpoint_b:
+            narrow_endpoint_a, narrow_endpoint_b = (
+                narrow_endpoint_b,
+                narrow_endpoint_a,
+            )
+        return (
+            wide_lower,
+            wide_upper,
+            narrow_endpoint_a,
+            narrow_endpoint_b,
+        )
+
+
 def terminal_intervals(result: str) -> RobustIntervals:
     if "好人" in str(result):
         return GOOD_TERMINAL
@@ -78,18 +159,15 @@ def propagate_intervals(
 ) -> RobustIntervals:
     """只按唯一直接子节点、无权重回传 wide/narrow。"""
 
-    values = propagate_interval_values(
-        (
-            (
-                item.wide.lower,
-                item.wide.upper,
-                item.narrow.lower,
-                item.narrow.upper,
-            )
-            for item in children
-        ),
-        lambda_risk=lambda_risk,
-    )
+    accumulator = _IntervalValueAccumulator()
+    for item in children:
+        accumulator.add(
+            item.wide.lower,
+            item.wide.upper,
+            item.narrow.lower,
+            item.narrow.upper,
+        )
+    values = accumulator.resolve(lambda_risk=lambda_risk)
     if values is None:
         return UNRESOLVED
     wide_lower, wide_upper, narrow_lower, narrow_upper = values
@@ -106,52 +184,15 @@ def propagate_interval_values(
 ) -> tuple[float, float, float, float] | None:
     """以常数额外空间流式聚合子节点的四个 interval 边界。"""
 
-    count = 0
-    wide_lower_sum = 0.0
-    wide_upper_sum = 0.0
-    narrow_lower_sum = 0.0
-    narrow_upper_sum = 0.0
-    wide_lower_min = 1.0
-    wide_upper_max = -1.0
-    narrow_lower_max = -1.0
-    narrow_upper_min = 1.0
-    for raw_wide_lower, raw_wide_upper, raw_narrow_lower, raw_narrow_upper in children:
-        wide_lower = _clamp(float(raw_wide_lower))
-        wide_upper = _clamp(float(raw_wide_upper))
-        narrow_lower = _clamp(float(raw_narrow_lower))
-        narrow_upper = _clamp(float(raw_narrow_upper))
-        count += 1
-        wide_lower_sum += wide_lower
-        wide_upper_sum += wide_upper
-        narrow_lower_sum += narrow_lower
-        narrow_upper_sum += narrow_upper
-        wide_lower_min = min(wide_lower_min, wide_lower)
-        wide_upper_max = max(wide_upper_max, wide_upper)
-        narrow_lower_max = max(narrow_lower_max, narrow_lower)
-        narrow_upper_min = min(narrow_upper_min, narrow_upper)
-    if count == 0:
-        return None
-    risk = _clamp(float(lambda_risk))
-    risk = max(0.0, risk)
-    mean_weight = 1.0 - risk
-    wide_lower = _clamp(
-        risk * wide_lower_min + mean_weight * (wide_lower_sum / count)
-    )
-    wide_upper = _clamp(
-        risk * wide_upper_max + mean_weight * (wide_upper_sum / count)
-    )
-    narrow_endpoint_a = _clamp(
-        risk * narrow_lower_max + mean_weight * (narrow_lower_sum / count)
-    )
-    narrow_endpoint_b = _clamp(
-        risk * narrow_upper_min + mean_weight * (narrow_upper_sum / count)
-    )
-    return (
-        min(wide_lower, wide_upper),
-        max(wide_lower, wide_upper),
-        min(narrow_endpoint_a, narrow_endpoint_b),
-        max(narrow_endpoint_a, narrow_endpoint_b),
-    )
+    accumulator = _IntervalValueAccumulator()
+    for child_values in children:
+        accumulator.add(
+            child_values[0],
+            child_values[1],
+            child_values[2],
+            child_values[3],
+        )
+    return accumulator.resolve(lambda_risk=lambda_risk)
 
 
 def interval_camp(interval: RewardInterval, *, tolerance: float = 0.001) -> str:
