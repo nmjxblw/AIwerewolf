@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 chcp 65001 | Out-Null
 $env:PYTHONUTF8 = "1"
 $env:PYTHONIOENCODING = "utf-8"
+$env:PYTHONFAULTHANDLER = "1"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Resolve-Path (Join-Path $ScriptDir "..")

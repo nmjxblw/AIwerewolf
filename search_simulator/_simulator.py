@@ -1,1084 +1,829 @@
-import gc
+from __future__ import annotations
+
 import json
 import logging
+import os
 import threading
 import time
-from collections import deque
-from concurrent.futures import ThreadPoolExecutor
-from itertools import combinations
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from typing import Callable
-from typing import cast
+from typing import Iterator
 
-from ._flow import bounded_vote_flow_feasible
-from ._flow import vote_outcome_is_feasible
 from ._game_state import GameState
 from ._i18n import t
 from ._player import Player
-from ._sqlite_lru_signature_store import _SQLiteLRUSignatureStore
+from ._positions import PositionLayout
+from ._positions import build_role_roster
+from ._positions import players_for_layout
+from ._positions import position_signature
+from ._strategy import DEFAULT_TACTICS
+from ._strategy import DayTacticProfile
+from ._strategy import enumerate_day_tactic_profiles
+from ._strategy import enumerate_night_tactic_profiles
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
-def _build_night_action_label(
-    *,
-    wolf_target_index,
-    guard_index,
-    guard_target,
-    witch_index,
-    witch_action,
-    poison_target_index,
-    seer_action_text,
-    deaths,
-) -> str:
-    """拼装夜晚行动文本标签（狼刀/守卫/女巫/预言家查验/死亡），显式传参。"""
-    wolf_target_text = (
-        "空刀" if wolf_target_index is None else str(wolf_target_index)
-    )
-    action_parts: list[str] = [f"夜晚 狼刀→{wolf_target_text}"]
-    if guard_index is not None:
-        guard_text = "无" if guard_target is None else str(guard_target)
-        action_parts.append(f"守卫→{guard_text}")
-    if witch_index is not None:
-        if witch_action == "毒杀" and poison_target_index is not None:
-            witch_text = f"毒杀→{poison_target_index}"
-        elif witch_action == "使用解药":
-            witch_text = "使用解药"
-        else:
-            witch_text = "无"
-        action_parts.append(f"女巫={witch_text}")
-    if seer_action_text:
-        action_parts.append(seer_action_text)
-    action_parts.append(f"死亡={sorted(set(deaths))}")
-    return "; ".join(action_parts)
+@dataclass
+class StateTransition:
+    """一条完整保留的决策分支边。"""
 
-
-def _build_day_action_label(top_candidates, vote_target_index) -> str:
-    """拼装白天投票放逐的文本标签，显式传参。"""
-    return f"白天 投票最高={list(top_candidates)}; 放逐={vote_target_index}"
-
-
-def _build_players_from_kwargs(kwargs: dict) -> tuple[list[Player], bool]:
-    """根据配置 kwargs 构建初始玩家列表，返回 (players, has_clergies)。"""
-    players: list[Player] = []
-    has_clergies = False
-
-    if kwargs.get("include_seer", False):
-        players.append(Player(role="预言家", is_alive=True, skills={"查验": -1}))
-        has_clergies = True
-    if kwargs.get("include_witch", False):
-        players.append(
-            Player(role="女巫", is_alive=True, skills={"解药": 1, "毒药": 1})
-        )
-        has_clergies = True
-    if kwargs.get("include_guard", False):
-        players.append(Player(role="守卫", is_alive=True, skills={"保护": -1}))
-        has_clergies = True
-    if kwargs.get("include_hunter", False):
-        players.append(Player(role="猎人", is_alive=True, skills={"开枪": 1}))
-        has_clergies = True
-    if kwargs.get("include_white_werewolf_king", False):
-        players.append(
-            Player(role="白狼王", is_alive=True, skills={"带走击杀": 1})
-        )
-    if kwargs.get("number_of_wolves", 1) > 0:
-        players.extend(
-            [
-                Player(role="狼人", is_alive=True, skills={"攻击": -1})
-                for _ in range(kwargs.get("number_of_wolves", 1))
-            ]
-        )
-    if kwargs.get("number_of_players", 5) > 0:
-        # 用村民补齐到目标人数
-        players.extend(
-            [
-                Player(role="村民", is_alive=True, skills={})
-                for _ in range(
-                    kwargs.get("number_of_players", 5) - len(players)
-                )
-            ]
-        )
-
-    return players, has_clergies
+    action_key: tuple[Any, ...]
+    state: GameState
+    multiplicity: int = 1
 
 
 class SearchSimulator:
-    """全树搜索模拟器，用于探索狼人杀游戏的所有可能局面。"""
+    """站位感知、BFS/DFS 全分支迭代的狼人杀模拟器。"""
 
-    def __init__(self, **kwargs):
-        logger.debug(t("log.init_start"))
-        self.has_clergies = False  # 标记是否包含神职角色
-        """ 标记是否包含神职角色 """
-        self.include_sheriff = False  # 标记是否启用警长归票机制
-        """ 标记是否启用警长归票机制 """
-        self.smart_vote = False
-        """ 是否启用智能投票剪枝与预言家查验缓存 """
-        self.endings: list[tuple[GameState, str]] = []  # 存储游戏结束的状态
-        """ 存储游戏结束的状态，包含状态对象和结果描述 """
-
-        # 以下成员先给出默认值，便于类型提示与阅读；真实配置会在 load_config 中重置。
-        self.visited_states: set[str] = set()
-        """ 存储已访问的状态指纹，用于去重 """
-        self.ending_signatures: set[str] = set()
-        """ 存储已收敛的终局状态指纹，用于去重 """
-        self.signature_cache: _SQLiteLRUSignatureStore | None = None
-        """ 状态签名缓存（内存 LRU + SQLite 持久化） """
-        self.signature_cache_db_path: Path = Path("search_simulator_cache.sqlite3")
-        """ 状态签名 SQLite 路径 """
-        self.signature_lru_capacity: int = 150_000
-        """ 状态签名内存 LRU 容量 """
-        self.signature_commit_interval: int = 2_000
-        """ 状态签名批量写入 SQLite 的提交间隔 """
-        self.state_parent_index: dict[int, int | None] = {}
-        """ 存储每个状态节点的父节点 ID，用于回溯路径 """
-        self.state_action_index: dict[int, str] = {}
-        """ 存储每个状态节点的动作，用于回溯路径 """
-        self.state_players_snapshot: dict[int, list[str]] = {}
-        """ 存储每个状态节点的玩家存活快照（用于可视化标签） """
-        self.state_depth_index: dict[int, int] = {}
-        """ 存储每个状态节点的分支深度（根节点为 0） """
-        self._next_state_id: int = 0
-        """ 用于分配唯一的状态节点 ID """
+    def __init__(self, **kwargs: Any) -> None:
         self._state_index_lock = threading.Lock()
-        """ 并行扩展时用于保护 state_id 与索引写入 """
-
-        self.max_processed_states: int | None = None
-        """ 最多处理的状态节点数（默认不限） """
-        self.max_queue_size: int | None = None
-        """ 搜索队列最大长度，超出后新状态会被裁剪（默认不限） """
-        self.max_runtime_seconds: float | None = None
-        """ 最大运行时长（秒），到达后提前停止（默认不限） """
-        self.search_mode: str = "dfs"
-        """ 搜索模式：dfs 或 bfs """
-        self.max_night_branches_per_state: int | None = None
-        """ 单个状态夜晚阶段最多保留分支数（默认不限） """
-        self.max_day_branches_per_state: int | None = None
-        """ 单个状态白天阶段最多保留分支数（默认不限） """
-        self.gc_interval: int = 2000
-        """ 垃圾回收间隔（默认 2000） """
-        self.parallel_workers: int = 1
-        """ 并行扩展线程数（1 表示关闭并行） """
-        self.pruned_by_limits: int = 0
-        """ 记录因阈值裁剪分支数 """
-        self.stop_reason: str = t("stop.sim_done")
-        """ 模拟停止的原因 """
-
-        self.players: list[Player] = []
-        """ 玩家列表，包含所有参与游戏的角色对象 """
-        self.queue: deque[GameState] = deque()
-        """ 待展开状态队列（dfs 当栈使用，bfs 当队列使用） """
-        self.wins: dict[str, int] = {}
-        """ 终局结果计数器 """
-        self.processed_states: int = 0
-        """ 已处理的状态节点总数 """
-        self.start_time: float = 0.0
-        """ 模拟开始时间戳（monotonic） """
-        self.iteration_callback: Callable[[dict[str, Any]], None] | None = None
-        """ 每处理一个节点后触发的回调（用于 GUI 实时展示） """
-
+        self._next_state_id = 0
+        self.state_parent_index: dict[int, int | None] = {}
+        self.state_action_index: dict[int, str] = {}
+        self.state_players_snapshot: dict[int, list[str]] = {}
+        self.state_depth_index: dict[int, int] = {}
+        self._vote_outcome_cache: dict[tuple[Any, ...], dict[int, int]] = {}
+        self.position_results: list[dict[str, Any]] = []
+        self.processed_states = 0
+        self.processed_positions = 0
+        self.start_time = 0.0
+        self.stop_reason = t("stop.sim_done")
+        self.run_id = ""
+        self.last_result: dict[str, Any] | None = None
+        self.signature_cache = None
         self.load_config(**kwargs)
 
-    def __del__(self) -> None:
-        cache: _SQLiteLRUSignatureStore | None = getattr(self, "signature_cache", None)
-        if cache is not None:
-            try:
-                cache.close()
-            except Exception:
-                pass
+    def load_config(self, **kwargs: Any) -> None:
+        """加载树遍历、站位、多进程和持久化配置。"""
+
+        self.number_of_players = int(kwargs.get("number_of_players", 7))
+        self.number_of_wolves = int(kwargs.get("number_of_wolves", 2))
+        self.include_seer = bool(kwargs.get("include_seer", True))
+        self.include_witch = bool(kwargs.get("include_witch", True))
+        self.include_guard = bool(kwargs.get("include_guard", True))
+        self.include_hunter = bool(kwargs.get("include_hunter", False))
+        self.include_idiot = bool(kwargs.get("include_idiot", False))
+        self.include_white_werewolf_king = bool(
+            kwargs.get("include_white_werewolf_king", False)
+        )
+        self.roster = build_role_roster(
+            number_of_players=self.number_of_players,
+            number_of_wolves=self.number_of_wolves,
+            include_seer=self.include_seer,
+            include_witch=self.include_witch,
+            include_guard=self.include_guard,
+            include_hunter=self.include_hunter,
+            include_idiot=self.include_idiot,
+            include_white_werewolf_king=self.include_white_werewolf_king,
+        )
+        self.smart_vote = bool(kwargs.get("smart_vote", True))
+        tactics_value = kwargs.get("tactics")
+        if tactics_value is None:
+            self.tactics = DEFAULT_TACTICS if self.smart_vote else frozenset()
+        elif isinstance(tactics_value, str):
+            self.tactics = frozenset(
+                token.strip() for token in tactics_value.split(",") if token.strip()
+            )
+        else:
+            self.tactics = frozenset(str(token) for token in tactics_value)
+        if not self.smart_vote:
+            self.tactics = frozenset()
+        self.search_mode = str(kwargs.get("search_mode", "dfs")).lower()
+        if self.search_mode not in {"bfs", "dfs"}:
+            raise ValueError("search_mode 必须是 bfs 或 dfs")
+        self.lambda_risk = max(0.0, min(1.0, float(kwargs.get("lambda_risk", 0.5))))
+        default_workers = max(1, min(4, (os.cpu_count() or 2) - 1))
+        self.parallel_workers = max(
+            1, int(kwargs.get("parallel_workers", default_workers))
+        )
+        self.all_positions = bool(kwargs.get("all_positions", True))
+        self.results_output_path = Path(
+            kwargs.get("results_output_path", "tree_results.json")
+        )
+        self.signature_cache_db_path = Path(
+            kwargs.get("signature_cache_db_path", "search_simulator_cache.sqlite3")
+        )
+        self.signature_lru_capacity = max(
+            1, int(kwargs.get("signature_lru_capacity", 150_000))
+        )
+        self.signature_commit_interval = max(
+            1, int(kwargs.get("signature_commit_interval", 2_000))
+        )
+        self.persistence_enabled = bool(kwargs.get("persistence_enabled", True))
+        callback = kwargs.get("iteration_callback")
+        self.iteration_callback: Callable[[dict[str, Any]], None] | None = (
+            callback if callable(callback) else None
+        )
+        self.progress_queue = kwargs.get("progress_queue")
+        self.result_queue = kwargs.get("result_queue")
+        self.resume_event = kwargs.get("resume_event")
+
+        self.initial_state = GameState(
+            players=players_for_layout(self.roster),
+            phase="night",
+            position_signature=position_signature(self.roster),
+        )
+        self._assign_state_identity(
+            self.initial_state,
+            parent_state_id=None,
+            action_label=t("action.root"),
+        )
 
     def _assign_state_identity(
         self,
-        game_state: GameState,
+        state: GameState,
         *,
         parent_state_id: int | None,
         action_label: str,
     ) -> None:
-        """为游戏状态分配唯一的 state_id，并记录父节点和动作标签。"""
-
         with self._state_index_lock:
-            game_state.state_id = self._next_state_id
-            game_state.parent_state_id = parent_state_id
-            if parent_state_id is None:
-                game_state.depth = 0
-            else:
-                game_state.depth = self.state_depth_index.get(parent_state_id, -1) + 1
-            self.state_parent_index[game_state.state_id] = parent_state_id
-            self.state_action_index[game_state.state_id] = action_label
-            self.state_depth_index[game_state.state_id] = game_state.depth
-            players = self._normalize_players(game_state)
-            snapshot = [
-                f"{index}:{player.role}{'存活' if player.is_alive else '死亡'}"
-                for index, player in enumerate(players)
+            state.state_id = self._next_state_id
+            state.parent_state_id = parent_state_id
+            state.depth = (
+                0
+                if parent_state_id is None
+                else self.state_depth_index.get(parent_state_id, -1) + 1
+            )
+            state.action_label = action_label
+            state.players_snapshot = [
+                f"{index + 1}:{player.role}:{'alive' if player.is_alive else 'dead'}"
+                for index, player in enumerate(state.players)
             ]
-            game_state.action_label = action_label
-            game_state.players_snapshot = snapshot
-            self.state_players_snapshot[game_state.state_id] = snapshot
+            self.state_parent_index[state.state_id] = parent_state_id
+            self.state_action_index[state.state_id] = action_label
+            self.state_players_snapshot[state.state_id] = list(state.players_snapshot)
+            self.state_depth_index[state.state_id] = state.depth
             self._next_state_id += 1
 
-    def _build_state_path(self, state_id: int) -> list[int]:
-        """构建从根节点到当前节点的 state_id 路径。"""
-        path: list[int] = []
-        current_id: int | None = state_id
-        visited: set[int] = set()
-        while current_id is not None:
-            if current_id in visited:
-                break
-            visited.add(current_id)
-            path.append(current_id)
-            current_id = self.state_parent_index.get(current_id)
-        path.reverse()
-        return path
-
-    def _build_labeled_state_path(
-        self, state_id: int
-    ) -> list[dict[str, int | str | None]]:
-        """构建从根节点到当前节点的全路径，并附带每步动作标签。"""
-        id_path = self._build_state_path(state_id)
-        return [
-            {
-                "state_id": node_id,
-                "parent_state_id": self.state_parent_index.get(node_id),
-                "action_label": self.state_action_index.get(node_id, t("action.unknown")),
-            }
-            for node_id in id_path
-        ]
-
-    def _is_wolf_role(self, role: str) -> bool:
+    @staticmethod
+    def _is_wolf_role(role: str) -> bool:
         return role in {"狼人", "白狼王"}
-
-    def _seer_check_results(self, game_state: GameState) -> dict[int, bool]:
-        """返回预言家查验缓存，必要时初始化。"""
-
-        if game_state.seer_check_results is None:
-            game_state.seer_check_results = {}
-        return game_state.seer_check_results
-
-    def _alive_seer_index(self, game_state: GameState) -> int | None:
-        seer_indices = self._alive_indices(
-            game_state,
-            predicate=lambda player: player.role == "预言家"
-            and player.skills.get("查验", 0) != 0,
-        )
-        return seer_indices[0] if seer_indices else None
 
     def _alive_indices(
         self,
-        game_state: GameState,
+        state: GameState,
         *,
-        exclude_indices: set[int] | None = None,
-        predicate: Callable[[Player], bool] | None = None,
+        exclude: set[int] | None = None,
+        role: str | None = None,
     ) -> list[int]:
-        """返回当前游戏状态中存活玩家的索引列表，可选排除指定索引或按条件过滤。"""
-
-        exclude_indices = exclude_indices or set()
-        players = self._normalize_players(game_state)
-        alive_indices: list[int] = []
-        for index, player in enumerate(players):
-            if index in exclude_indices or not player.is_alive:
-                continue
-            if predicate is not None and not predicate(player):
-                continue
-            alive_indices.append(index)
-        return alive_indices
-
-    def _normalize_players(self, game_state: GameState) -> list[Player]:
-        """兼容异常数据形态，确保 `players` 总是可迭代的玩家列表。"""
-        players = game_state.players
-        if isinstance(players, list):
-            return players
-        if isinstance(players, Player):
-            game_state.players = [players]
-            return game_state.players
-        try:
-            game_state.players = list(players)
-        except TypeError:
-            game_state.players = [players]
-        return game_state.players
-
-    def _consume_skill(self, player: Player, skill_name: str) -> None:
-        """消耗玩家技能使用次数，如果技能不存在或已用完则不做任何操作。"""
-
-        if skill_name not in player.skills:
-            return
-        skill_value = player.skills[skill_name]
-        if skill_value > 0:
-            player.skills[skill_name] = skill_value - 1
-
-    def _state_signature(self, game_state: GameState) -> str:
-        """生成当前游戏状态的唯一签名，用于去重。"""
-        # 用稳定 JSON 串做状态指纹，避免大规模运行时的 tuple/generator 异常。
-        # 注意：CPython 3.14.0 对元组/生成器在热路径上的特化存在段错误风险，
-        # 故此处保持 json.dumps 序列化，不要改回 tuple + repr。
-        players = self._normalize_players(game_state)
-        signature_payload = [
-            game_state.night_count,
-            game_state.day_count,
-            game_state.phase,
-            game_state.last_guard_target_index,
-            sorted(
-                (int(index), bool(is_wolf))
-                for index, is_wolf in (game_state.seer_check_results or {}).items()
-            ),
-            [
-                [
-                    player.role,
-                    player.is_alive,
-                    sorted(player.skills.items()),
-                ]
-                for player in players
-            ],
+        excluded = exclude or set()
+        return [
+            index
+            for index, player in enumerate(state.players)
+            if player.is_alive
+            and index not in excluded
+            and (role is None or player.role == role)
         ]
+
+    @staticmethod
+    def _consume_skill(player: Player, skill_name: str) -> None:
+        remaining = player.skills.get(skill_name)
+        if remaining is not None and remaining > 0:
+            player.skills[skill_name] = remaining - 1
+
+    def _state_signature(self, state: GameState) -> str:
+        """签名显式纳入站位、昼夜、技能与后续战术目标。"""
+
+        return self._state_signature_from_key(
+            state.position_signature,
+            self._state_key(state),
+        )
+
+    @staticmethod
+    def _state_signature_from_key(
+        position_signature_value: str,
+        key: tuple[Any, ...],
+    ) -> str:
+        """不物化 repr/UTF-8 缓冲，对规范键执行稳定的双 64 位流式哈希。"""
+
+        mask = (1 << 64) - 1
+        hash_a = 14695981039346656037
+        hash_b = 7809847782465536322
+
+        def mix(code: int) -> None:
+            nonlocal hash_a, hash_b
+            normalized = int(code) & mask
+            hash_a = ((hash_a ^ normalized) * 1099511628211) & mask
+            hash_b = (
+                (hash_b ^ ((normalized + 0x9E3779B97F4A7C15) & mask))
+                * 14029467366897019727
+            ) & mask
+
+        def visit(value: Any) -> None:
+            if value is None:
+                mix(1)
+            elif isinstance(value, bool):
+                mix(2)
+                mix(int(value))
+            elif isinstance(value, int):
+                mix(3)
+                mix(int(value < 0))
+                magnitude = abs(value)
+                if magnitude == 0:
+                    mix(0)
+                while magnitude:
+                    mix(magnitude & 0xFF)
+                    magnitude >>= 8
+                mix(0x1FF)
+            elif isinstance(value, str):
+                mix(4)
+                mix(len(value))
+                for character in value:
+                    mix(ord(character))
+            elif isinstance(value, tuple):
+                mix(5)
+                mix(len(value))
+                for item in value:
+                    visit(item)
+            else:
+                raise TypeError(f"状态签名包含不支持的类型: {type(value).__name__}")
+
+        visit((position_signature_value, key))
+        return f"{hash_a:016x}{hash_b:016x}"
+
+    @staticmethod
+    def _state_key(state: GameState) -> tuple[Any, ...]:
+        """用于状态合并的紧凑、无损键；站位在单次搜索中保持不变。"""
+
+        return (
+            state.phase,
+            state.night_count,
+            state.day_count,
+            (
+                -1
+                if state.last_guard_target_index is None
+                else state.last_guard_target_index
+            ),
+            tuple(sorted((state.seer_check_results or {}).items())),
+            state.seer_revealed,
+            tuple(state.revealed_good_indices),
+            tuple(state.revealed_wolf_indices),
+            tuple(sorted(state.public_role_claims.items())),
+            tuple(state.idiot_revealed_indices),
+            tuple(state.wolf_priority_targets),
+            tuple(
+                (
+                    player.is_alive,
+                    tuple(sorted(player.skills.items())),
+                )
+                for player in state.players
+            ),
+        )
+
+    @staticmethod
+    def _state_from_key(
+        key: tuple[Any, ...],
+        *,
+        roles: tuple[str, ...],
+        position_signature_value: str,
+    ) -> GameState:
+        """从紧凑键恢复可继续展开的 GameState。"""
+
+        (
+            phase,
+            night_count,
+            day_count,
+            guard_target,
+            seer_checks,
+            seer_revealed,
+            revealed_good,
+            revealed_wolf,
+            public_role_claims,
+            idiot_revealed,
+            wolf_priority,
+            player_states,
+        ) = key
+        return GameState(
+            players=[
+                Player(
+                    role=role,
+                    is_alive=bool(player_state[0]),
+                    skills=dict(player_state[1]),
+                )
+                for role, player_state in zip(roles, player_states, strict=True)
+            ],
+            phase=str(phase),
+            night_count=int(night_count),
+            day_count=int(day_count),
+            last_guard_target_index=(
+                None if int(guard_target) < 0 else int(guard_target)
+            ),
+            seer_check_results=(
+                {int(index): bool(value) for index, value in seer_checks}
+                if seer_checks
+                else None
+            ),
+            seer_revealed=bool(seer_revealed),
+            revealed_good_indices=tuple(int(index) for index in revealed_good),
+            revealed_wolf_indices=tuple(int(index) for index in revealed_wolf),
+            public_role_claims={
+                int(index): str(role) for index, role in public_role_claims
+            },
+            idiot_revealed_indices=tuple(int(index) for index in idiot_revealed),
+            wolf_priority_targets=tuple(int(index) for index in wolf_priority),
+            position_signature=position_signature_value,
+        )
+
+    @staticmethod
+    def _kill_player(state: GameState, player_index: int) -> None:
+        if 0 <= player_index < len(state.players):
+            state.players[player_index].is_alive = False
+
+    def _resolve_one_death(self, state: GameState, dead_index: int) -> list[GameState]:
+        if not (0 <= dead_index < len(state.players)):
+            return [state]
+        player = state.players[dead_index]
+        if not player.is_alive:
+            return [state]
+        self._kill_player(state, dead_index)
+        branches = [state]
+        if player.role == "猎人" and player.skills.get("开枪", 0) > 0:
+            next_branches: list[GameState] = []
+            for branch in branches:
+                targets = self._alive_indices(branch, exclude={dead_index})
+                if not targets:
+                    next_branches.append(branch)
+                for target in targets:
+                    child = branch.clone()
+                    self._consume_skill(child.players[dead_index], "开枪")
+                    next_branches.extend(self._resolve_one_death(child, target))
+            branches = next_branches
+        if player.role == "白狼王" and player.skills.get("带走击杀", 0) > 0:
+            next_branches = []
+            for branch in branches:
+                targets = [
+                    index
+                    for index in self._alive_indices(branch, exclude={dead_index})
+                    if not self._is_wolf_role(branch.players[index].role)
+                ]
+                if not targets:
+                    next_branches.append(branch)
+                for target in targets:
+                    child = branch.clone()
+                    self._consume_skill(child.players[dead_index], "带走击杀")
+                    next_branches.extend(self._resolve_one_death(child, target))
+            branches = next_branches
+        return branches
+
+    def _expand_death_chain(
+        self, state: GameState, death_indices: list[int]
+    ) -> list[GameState]:
+        branches = [state]
+        for dead_index in dict.fromkeys(death_indices):
+            next_branches: list[GameState] = []
+            for branch in branches:
+                next_branches.extend(self._resolve_one_death(branch, dead_index))
+            branches = next_branches
+        return branches
+
+    def _smart_wolf_targets(
+        self,
+        state: GameState,
+        ordinary_targets: list[int],
+    ) -> list[int]:
+        """只使用狼队知识和公开信息，保留同级全部目标。"""
+
+        if not self.smart_vote:
+            return ordinary_targets
+        forced = [
+            index for index in state.wolf_priority_targets if index in ordinary_targets
+        ]
+        if forced:
+            return forced
+
+        public_claims = state.public_role_claims
+        revealed_idiots = set(state.idiot_revealed_indices)
+        has_living_witch_or_guard = any(
+            player.is_alive and player.role in {"女巫", "守卫"}
+            for player in state.players
+        )
+        priorities: list[tuple[int, list[int]]] = []
+        if not has_living_witch_or_guard:
+            priorities.append(
+                (0, [index for index in ordinary_targets if index in revealed_idiots])
+            )
+        for rank, role in enumerate(("女巫", "守卫", "预言家"), start=1):
+            priorities.append(
+                (
+                    rank,
+                    [
+                        index
+                        for index in ordinary_targets
+                        if public_claims.get(index) == role
+                    ],
+                )
+            )
+        priorities.append(
+            (4, [index for index in ordinary_targets if index in revealed_idiots])
+        )
+        priorities.append(
+            (
+                5,
+                [
+                    index
+                    for index in ordinary_targets
+                    if index in state.revealed_good_indices
+                ],
+            )
+        )
+        for _rank, candidates in priorities:
+            if candidates:
+                return list(dict.fromkeys(candidates))
+        return ordinary_targets
+
+    def _expand_night(self, state: GameState) -> Iterator[StateTransition]:
+        alive = self._alive_indices(state)
+        ordinary_targets = [
+            index
+            for index in alive
+            if not self._is_wolf_role(state.players[index].role)
+        ]
+        normal_targets = self._smart_wolf_targets(state, ordinary_targets)
+
+        guard_indices = self._alive_indices(state, role="守卫")
+        guard_index = guard_indices[0] if guard_indices else None
+        guard_options: list[int | None] = [None]
+        if guard_index is not None:
+            guard_options.extend(
+                index for index in alive if index != state.last_guard_target_index
+            )
+        witch_indices = self._alive_indices(state, role="女巫")
+        witch_index = witch_indices[0] if witch_indices else None
+        seer_indices = self._alive_indices(state, role="预言家")
+        seer_index = seer_indices[0] if seer_indices else None
+        known = state.seer_check_results or {}
+        seer_options: list[int | None] = [None]
+        if seer_index is not None:
+            unchecked = [
+                index for index in alive if index != seer_index and index not in known
+            ]
+            if unchecked:
+                seer_options = unchecked
+
+        profiles = enumerate_night_tactic_profiles(
+            state,
+            tactics=self.tactics,
+            smart_vote=self.smart_vote,
+        )
+        for profile in profiles:
+            if profile.mode == "normal":
+                wolf_targets: list[int | None] = list(normal_targets)
+            elif profile.mode == "self_kill":
+                wolf_targets = [profile.wolf_target]
+            else:
+                wolf_targets = [None]
+            for wolf_target in wolf_targets:
+                for guard_target in guard_options:
+                    base = state.clone()
+                    base.last_guard_target_index = guard_target
+                    if guard_index is not None:
+                        self._consume_skill(base.players[guard_index], "保护")
+                    witch_options: list[tuple[str, int | None]] = [("none", None)]
+                    if witch_index is not None:
+                        witch = base.players[witch_index]
+                        can_self_save = (
+                            wolf_target == witch_index and state.night_count == 0
+                        )
+                        if (
+                            wolf_target is not None
+                            and witch.skills.get("解药", 0) > 0
+                            and (wolf_target != witch_index or can_self_save)
+                        ):
+                            witch_options.append(("save", None))
+                        if witch.skills.get("毒药", 0) > 0:
+                            witch_options.extend(
+                                ("poison", target)
+                                for target in alive
+                                if target != witch_index
+                            )
+                    for witch_action, poison_target in witch_options:
+                        for seer_target in seer_options:
+                            child = base.clone()
+                            witch_saved = witch_action == "save"
+                            if witch_index is not None and witch_saved:
+                                self._consume_skill(child.players[witch_index], "解药")
+                            if witch_index is not None and witch_action == "poison":
+                                self._consume_skill(child.players[witch_index], "毒药")
+                            if seer_target is not None:
+                                checks = dict(child.seer_check_results or {})
+                                checks[seer_target] = self._is_wolf_role(
+                                    child.players[seer_target].role
+                                )
+                                child.seer_check_results = checks
+                                if seer_index is not None:
+                                    self._consume_skill(child.players[seer_index], "查验")
+                            guard_saved = (
+                                wolf_target is not None and guard_target == wolf_target
+                            )
+                            deaths: list[int] = []
+                            if wolf_target is not None and not (guard_saved or witch_saved):
+                                deaths.append(wolf_target)
+                            if poison_target is not None:
+                                deaths.append(poison_target)
+                            for resolved in self._expand_death_chain(child, deaths):
+                                resolved.phase = "day"
+                                resolved.night_count += 1
+                                resolved.wolf_priority_targets = ()
+                                action_key = (
+                                    "night",
+                                    profile.mode,
+                                    profile.tactic_names,
+                                    wolf_target,
+                                    guard_target,
+                                    witch_action,
+                                    poison_target,
+                                    seer_target,
+                                    tuple(deaths),
+                                )
+                                yield StateTransition(action_key, resolved)
+
+    def _apply_profile_information(
+        self, state: GameState, profile: DayTacticProfile
+    ) -> None:
+        claims = dict(state.public_role_claims)
+        for decoy_index in profile.decoy_indices:
+            claims[decoy_index] = "预言家"
+        if profile.seer_action == "reveal":
+            seers = self._alive_indices(state, role="预言家")
+            if seers:
+                claims[seers[0]] = "预言家"
+                good = set(state.revealed_good_indices)
+                wolves = set(state.revealed_wolf_indices)
+                for index, is_wolf in (state.seer_check_results or {}).items():
+                    (wolves if is_wolf else good).add(index)
+                state.seer_revealed = True
+                state.revealed_good_indices = tuple(sorted(good))
+                state.revealed_wolf_indices = tuple(sorted(wolves))
+        state.public_role_claims = claims
+        state.wolf_priority_targets = (
+            (profile.next_night_target,)
+            if profile.next_night_target is not None
+            else ()
+        )
+
+    def _allowed_vote_targets(
+        self,
+        state: GameState,
+        voter: int,
+        profile: DayTacticProfile,
+        alive: list[int],
+    ) -> list[int]:
+        targets = [index for index in alive if index != voter]
+        if not self.smart_vote:
+            return targets
+        revealed_idiots = set(state.idiot_revealed_indices)
+        targets = [index for index in targets if index not in revealed_idiots]
+        if not targets:
+            return []
+        if self._is_wolf_role(state.players[voter].role):
+            non_wolf_targets = [
+                index
+                for index in targets
+                if not self._is_wolf_role(state.players[index].role)
+            ]
+            if (
+                profile.wolf_vote_mode == "bloc"
+                and profile.wolf_vote_target in non_wolf_targets
+            ):
+                return [int(profile.wolf_vote_target)]
+            return non_wolf_targets or targets
+        confirmed_wolves = set(state.revealed_wolf_indices)
+        confirmed_good = set(state.revealed_good_indices)
+        if state.players[voter].role == "预言家":
+            for index, is_wolf in (state.seer_check_results or {}).items():
+                (confirmed_wolves if is_wolf else confirmed_good).add(index)
+        known_wolves = [index for index in targets if index in confirmed_wolves]
+        if known_wolves:
+            return known_wolves
+        filtered = [index for index in targets if index not in confirmed_good]
+        return filtered or targets
+
+    @staticmethod
+    def _vote_outcome_multiplicities(
+        voters: list[int],
+        eligible_targets: list[int],
+        allowed_targets: dict[int, list[int]],
+    ) -> dict[int, int]:
+        """精确统计所有票型对应的可放逐目标；平票中的每个目标都是一条分支。"""
+
+        target_offset = {
+            target: offset for offset, target in enumerate(eligible_targets)
+        }
+        vote_distributions: dict[tuple[int, ...], int] = {
+            (0,) * len(eligible_targets): 1
+        }
+        for voter in voters:
+            next_distributions: dict[tuple[int, ...], int] = {}
+            for distribution, ways in vote_distributions.items():
+                for target in allowed_targets.get(voter, []):
+                    counts = list(distribution)
+                    counts[target_offset[target]] += 1
+                    key = tuple(counts)
+                    next_distributions[key] = next_distributions.get(key, 0) + ways
+            vote_distributions = next_distributions
+        outcome_counts = dict.fromkeys(eligible_targets, 0)
+        for distribution, ways in vote_distributions.items():
+            highest = max(distribution, default=0)
+            for offset, votes in enumerate(distribution):
+                if votes == highest:
+                    outcome_counts[eligible_targets[offset]] += ways
+        return {target: count for target, count in outcome_counts.items() if count > 0}
+
+    def _expand_day(self, state: GameState) -> Iterator[StateTransition]:
+        for profile in enumerate_day_tactic_profiles(
+            state,
+            tactics=self.tactics,
+            smart_vote=self.smart_vote,
+        ):
+            prepared = state.clone()
+            self._apply_profile_information(prepared, profile)
+            alive = self._alive_indices(prepared)
+            voters = [
+                index
+                for index in alive
+                if index not in set(prepared.idiot_revealed_indices)
+            ]
+            allowed_targets = {
+                voter: self._allowed_vote_targets(prepared, voter, profile, alive)
+                for voter in voters
+            }
+            vote_shape = (
+                tuple(alive),
+                tuple((voter, tuple(allowed_targets[voter])) for voter in voters),
+            )
+            outcome_multiplicities = self._vote_outcome_cache.get(vote_shape)
+            if outcome_multiplicities is None:
+                outcome_multiplicities = self._vote_outcome_multiplicities(
+                    voters,
+                    alive,
+                    allowed_targets,
+                )
+                self._vote_outcome_cache[vote_shape] = outcome_multiplicities
+            for expelled, multiplicity in outcome_multiplicities.items():
+                candidate = prepared.clone()
+                expelled_player = candidate.players[expelled]
+                idiot_reveal = (
+                    expelled_player.role == "愚者"
+                    and expelled not in candidate.idiot_revealed_indices
+                    and expelled_player.skills.get("身份揭示", 0) > 0
+                )
+                if idiot_reveal:
+                    self._consume_skill(expelled_player, "身份揭示")
+                    candidate.idiot_revealed_indices = tuple(
+                        sorted({*candidate.idiot_revealed_indices, expelled})
+                    )
+                    candidate.revealed_good_indices = tuple(
+                        sorted({*candidate.revealed_good_indices, expelled})
+                    )
+                    candidate.public_role_claims[expelled] = "愚者"
+                    resolved_branches = [candidate]
+                else:
+                    resolved_branches = self._expand_death_chain(candidate, [expelled])
+                for resolved in resolved_branches:
+                    resolved.phase = "night"
+                    resolved.day_count += 1
+                    resolved.last_day_strategy = ""
+                    resolved.last_day_votes = {}
+                    resolved.wolf_priority_targets = tuple(
+                        index
+                        for index in resolved.wolf_priority_targets
+                        if resolved.players[index].is_alive
+                    )
+                    action_key = (
+                        "day",
+                        profile.seer_action,
+                        profile.decoy_indices,
+                        profile.wolf_vote_mode,
+                        profile.wolf_vote_target,
+                        profile.next_night_target,
+                        expelled,
+                        "idiot_reveal" if idiot_reveal else "expelled",
+                    )
+                    yield StateTransition(
+                        action_key,
+                        resolved,
+                        multiplicity=multiplicity,
+                    )
+
+    @staticmethod
+    def _action_key_text(action_key: tuple[Any, ...]) -> str:
         return json.dumps(
-            signature_payload,
+            action_key,
             ensure_ascii=False,
             separators=(",", ":"),
         )
 
-    def _register_signature(self, namespace: str, signature: str) -> bool:
-        """写入签名并返回是否首次出现。"""
-
-        if self.signature_cache is None:
-            target = (
-                self.visited_states
-                if namespace == "visited"
-                else self.ending_signatures
+    @staticmethod
+    def _action_label(action_key: tuple[Any, ...]) -> str:
+        if action_key[0] == "night":
+            (
+                _phase,
+                night_mode,
+                tactic_names,
+                wolf_target,
+                guard_target,
+                witch_action,
+                poison_target,
+                seer_target,
+                deaths,
+            ) = action_key
+            label = t(
+                "action.tree_night",
+                wolf=(int(wolf_target) + 1 if wolf_target is not None else "-"),
+                guard=(int(guard_target) + 1 if guard_target is not None else "-"),
+                witch=witch_action,
+                poison=(int(poison_target) + 1 if poison_target is not None else "-"),
+                seer=(int(seer_target) + 1 if seer_target is not None else "-"),
+                deaths=",".join(str(int(index) + 1) for index in deaths) or "-",
             )
-            if signature in target:
-                return False
-            target.add(signature)
-            return True
-        return self.signature_cache.add(namespace, signature)
+            reason = ",".join(tactic_names) or str(night_mode)
+            return f"{label} [{reason}]"
+        (
+            _phase,
+            seer_action,
+            decoy_indices,
+            wolf_vote_mode,
+            wolf_vote_target,
+            next_night_target,
+            expelled,
+            day_outcome,
+        ) = action_key
+        decoys = ",".join(str(int(index) + 1) for index in decoy_indices) or "-"
+        strategy = (
+            f"seer={seer_action};decoys={decoys};"
+            f"wolf_vote={wolf_vote_mode}:"
+            f"{'-' if wolf_vote_target is None else int(wolf_vote_target) + 1};"
+            f"night={'-' if next_night_target is None else int(next_night_target) + 1}"
+        )
+        label = t(
+            "action.tree_day",
+            strategy=strategy,
+            expelled=int(expelled) + 1,
+        )
+        return f"{label} [{day_outcome}]"
 
-    def _apply_deaths_with_chain(
-        self, game_state: GameState, death_indices: list[int]
-    ) -> list[GameState]:
-        """应用死亡连锁规则，处理指定索引的玩家死亡，并展开可能的后续分支。"""
+    def expand_state(self, state: GameState) -> Iterator[StateTransition]:
+        """展开当前节点全部合法分支；不选择最优分支，也不做数量裁剪。"""
 
-        branches = [game_state]
-        unique_indices = list(dict.fromkeys(death_indices))
-        for dead_index in unique_indices:
-            next_branches: list[GameState] = []
-            for state in branches:
-                if dead_index < 0 or dead_index >= len(state.players):
-                    next_branches.append(state)
-                    continue
-                if not state.players[dead_index].is_alive:
-                    next_branches.append(state)
-                    continue
-                next_branches.extend(self._resolve_death_chain(state, dead_index))
-            branches = next_branches
-        return branches
-
-    def _kill_player(self, game_state: GameState, player_index: int) -> None:
-        """标记指定索引的玩家死亡，如果索引无效则不做任何操作。"""
-
-        if player_index < 0 or player_index >= len(game_state.players):
-            return
-        game_state.players[player_index].is_alive = False
-        if game_state.players[player_index].role == "预言家":
-            game_state.seer_check_results = {}
-
-    def _white_wolf_king_boom_targets(
-        self, game_state: GameState, player_index: int
-    ) -> list[int]:
-        targets = self._alive_indices(game_state, exclude_indices={player_index})
-        if not self.smart_vote:
-            return targets
-        return [
-            target_index
-            for target_index in targets
-            if not self._is_wolf_role(game_state.players[target_index].role)
-        ]
-
-    def _iter_seer_check_branches(
-        self, game_state: GameState
-    ) -> list[tuple[GameState, str]]:
-        """在 smart_vote 下展开预言家夜晚查验分支。"""
-
-        if not self.smart_vote:
-            return [(game_state, "")]
-        seer_index = self._alive_seer_index(game_state)
-        if seer_index is None:
-            return [(game_state, "")]
-
-        known_results = self._seer_check_results(game_state)
-        targets = [
-            index
-            for index in self._alive_indices(game_state, exclude_indices={seer_index})
-            if index not in known_results
-        ]
-        if not targets:
-            return [(game_state, "预言家查验=无")]
-
-        branches: list[tuple[GameState, str]] = []
-        for target_index in targets:
-            checked_state = game_state.clone()
-            checked_results = self._seer_check_results(checked_state)
-            is_wolf = self._is_wolf_role(checked_state.players[target_index].role)
-            checked_results[target_index] = is_wolf
-            self._consume_skill(checked_state.players[seer_index], "查验")
-            alignment_text = "狼人阵营" if is_wolf else "好人阵营"
-            branches.append(
-                (checked_state, f"预言家查验→{target_index}({alignment_text})")
-            )
-        return branches
-
-    def _resolve_death_chain(
-        self, game_state: GameState, player_index: int
-    ) -> list[GameState]:
-        """解析玩家死亡连锁，返回可能的后续分支。"""
-
-        # 死亡连锁：先标记该角色死亡，再按角色类型展开猎人开枪、白狼王爆炸等后续分支。
-        if player_index < 0 or player_index >= len(game_state.players):
-            return [game_state]
-
-        player = game_state.players[player_index]
-        if player.is_alive:
-            self._kill_player(game_state, player_index)
-        branches = [game_state]
-
-        if player.role == "猎人" and player.skills.get("开枪", 0) > 0:
-            # 猎人死亡后可以带走一名其他存活角色，因此这里要对所有可选目标分别展开。
-            next_branches: list[GameState] = []
-            for state in branches:
-                targets = self._alive_indices(state, exclude_indices={player_index})
-                if not targets:
-                    next_branches.append(state)
-                    continue
-                for target_index in targets:
-                    branch = state.clone()
-                    self._consume_skill(branch.players[player_index], "开枪")
-                    self._kill_player(branch, target_index)
-                    next_branches.extend(
-                        self._resolve_death_chain(branch, target_index)
-                    )
-            branches = next_branches
-
-        if player.role == "白狼王" and player.skills.get("带走击杀", 0) > 0:
-            # 白狼王倒地后同样会触发带走一人，这里和猎人一样做分支展开。
-            next_branches = []
-            for state in branches:
-                targets = self._white_wolf_king_boom_targets(state, player_index)
-                if not targets:
-                    next_branches.append(state)
-                    continue
-                for target_index in targets:
-                    branch = state.clone()
-                    self._consume_skill(branch.players[player_index], "带走击杀")
-                    self._kill_player(branch, target_index)
-                    next_branches.extend(
-                        self._resolve_death_chain(branch, target_index)
-                    )
-            branches = next_branches
-
-        return branches
-
-    def _witch_has_antidote(self, game_state: GameState) -> bool:
-        """是否存在存活且解药可用的女巫。"""
-        return bool(
-            self._alive_indices(
-                game_state,
-                predicate=lambda player: player.role == "女巫"
-                and player.skills.get("解药", 0) > 0,
-            )
+        return (
+            self._expand_night(state)
+            if state.phase == "night"
+            else self._expand_day(state)
         )
 
-    def _wolf_targets_for_night(self, game_state: GameState) -> list[int]:
-        """狼人可选刀口目标（含「骗刀」战术扩展）。"""
-        alive = self._alive_indices(game_state)
-        targets = [
-            index
-            for index in alive
-            if not self._is_wolf_role(game_state.players[index].role)
-        ]
-        if "self_kill" in self.tactics and self._witch_has_antidote(game_state):
-            targets = list(alive)
-        return targets
-
-    def _resolve_night(self, game_state: GameState) -> list[GameState]:
-        """解析夜晚阶段，返回可能的后续分支。"""
-
-        # 夜晚阶段：狼人刀人 -> 守卫保护 -> 女巫单药决策 -> 死亡连锁。
-        wolf_targets = self._wolf_targets_for_night(game_state)
-        if "no_kill" in self.tactics and wolf_targets:
-            wolf_targets = list(wolf_targets) + [None]
-        if not wolf_targets:
-            idle_state = game_state.clone()
-            idle_state.night_count += 1
-            self._assign_state_identity(
-                idle_state,
-                parent_state_id=game_state.state_id,
-                action_label="夜晚空闲(无目标)",
-            )
-            return [idle_state]
-
-        night_states: list[GameState] = []
-        local_seen: set[str] = set()
-
-        guard_indices = self._alive_indices(
-            game_state,
-            predicate=lambda player: player.role == "守卫"
-            and player.skills.get("保护", 0) != 0,
+    def _check_game_over(self, state: GameState) -> tuple[bool, str]:
+        alive = [player for player in state.players if player.is_alive]
+        wolves = [player for player in alive if self._is_wolf_role(player.role)]
+        if not wolves:
+            return True, "好人阵营胜利"
+        if len(wolves) >= len(alive) - len(wolves):
+            return True, "狼人阵营胜利（人数过半）"
+        has_clergies = any(
+            player.role in {"预言家", "女巫", "守卫", "猎人", "愚者"}
+            for player in state.players
         )
-        guard_index = guard_indices[0] if guard_indices else None
-
-        witch_indices = self._alive_indices(
-            game_state,
-            predicate=lambda player: player.role == "女巫",
-        )
-        witch_index = witch_indices[0] if witch_indices else None
-
-        for wolf_target_index in wolf_targets:
-            guard_targets: list[int | None] = [None]
-            if guard_index is not None:
-                guard_targets.extend(
-                    self._alive_indices(
-                        game_state,
-                        exclude_indices=(
-                            {game_state.last_guard_target_index}
-                            if game_state.last_guard_target_index is not None
-                            else set()
-                        ),
-                    )
-                )
-
-            for guard_target in guard_targets:
-                base_state = game_state.clone()
-                if guard_index is not None:
-                    self._consume_skill(base_state.players[guard_index], "保护")
-                base_state.last_guard_target_index = guard_target
-
-                guard_saved = (
-                    wolf_target_index is not None and guard_target == wolf_target_index
-                )
-
-                witch_actions: list[tuple[str, int | None]] = [("无", None)]
-                if witch_index is not None and base_state.players[witch_index].is_alive:
-                    witch_player = base_state.players[witch_index]
-                    if wolf_target_index is not None:
-                        can_self_save = (
-                            wolf_target_index == witch_index
-                            and game_state.night_count == 0
-                        )
-                        can_save = witch_player.skills.get("解药", 0) > 0 and (
-                            wolf_target_index != witch_index or can_self_save
-                        )
-                        if can_save:
-                            witch_actions.append(("使用解药", None))
-
-                    if witch_player.skills.get("毒药", 0) > 0:
-                        poison_targets = self._alive_indices(
-                            base_state, exclude_indices={witch_index}
-                        )
-                        for poison_target_index in poison_targets:
-                            witch_actions.append(("毒杀", poison_target_index))
-
-                for witch_action, poison_target_index in witch_actions:
-                    branch_state = base_state.clone()
-                    witch_saved = False
-                    if witch_index is not None and witch_action == "使用解药":
-                        self._consume_skill(branch_state.players[witch_index], "解药")
-                        witch_saved = True
-                    elif (
-                        witch_index is not None
-                        and witch_action == "毒杀"
-                        and poison_target_index is not None
-                    ):
-                        self._consume_skill(branch_state.players[witch_index], "毒药")
-
-                    # 规则：守卫和女巫同时救同一目标时，目标依然死亡。
-                    if guard_saved and witch_saved:
-                        wolf_kill_applies = True
-                    elif guard_saved or witch_saved:
-                        wolf_kill_applies = False
-                    else:
-                        wolf_kill_applies = True
-                    if wolf_target_index is None:
-                        wolf_kill_applies = False  # 空刀：本夜无狼刀死亡
-
-                    deaths: list[int] = []
-                    if wolf_kill_applies and wolf_target_index is not None:
-                        deaths.append(wolf_target_index)
-                    if witch_action == "毒杀" and poison_target_index is not None:
-                        deaths.append(poison_target_index)
-
-                    seer_check_branches = self._iter_seer_check_branches(branch_state)
-                    for checked_state, seer_action_text in seer_check_branches:
-                        resolved_states = self._apply_deaths_with_chain(
-                            checked_state, deaths
-                        )
-                        for resolved_state in resolved_states:
-                            resolved_state.night_count += 1
-                            action_label = _build_night_action_label(
-                                wolf_target_index=wolf_target_index,
-                                guard_index=guard_index,
-                                guard_target=guard_target,
-                                witch_index=witch_index,
-                                witch_action=witch_action,
-                                poison_target_index=poison_target_index,
-                                seer_action_text=seer_action_text,
-                                deaths=deaths,
-                            )
-                            self._assign_state_identity(
-                                resolved_state,
-                                parent_state_id=game_state.state_id,
-                                action_label=action_label,
-                            )
-                            signature = self._state_signature(resolved_state)
-                            if signature in local_seen:
-                                continue
-                            local_seen.add(signature)
-                            night_states.append(resolved_state)
-                            if (
-                                self.max_night_branches_per_state is not None
-                                and len(night_states)
-                                >= self.max_night_branches_per_state
-                            ):
-                                self.pruned_by_limits += 1
-                                return night_states
-
-        return night_states
-
-    def _allowed_vote_targets(
-        self, game_state: GameState, voter_index: int, alive_indices: list[int]
-    ) -> list[int]:
-        targets = [index for index in alive_indices if index != voter_index]
-        if not self.smart_vote or game_state.players[voter_index].role != "预言家":
-            return targets
-
-        known_results = self._seer_check_results(game_state)
-        known_wolves = [
-            index
-            for index in targets
-            if known_results.get(index) is True and game_state.players[index].is_alive
-        ]
-        if known_wolves:
-            return known_wolves
-
-        known_good = {
-            index
-            for index, is_wolf in known_results.items()
-            if not is_wolf and game_state.players[index].is_alive
-        }
-        return [index for index in targets if index not in known_good]
-
-    def _build_smart_vote_outcomes(
-        self, game_state: GameState, alive_indices: list[int]
-    ) -> set[tuple[int, ...]]:
-        allowed_targets_by_voter = {
-            voter_index: self._allowed_vote_targets(
-                game_state, voter_index, alive_indices
-            )
-            for voter_index in alive_indices
-        }
-        if any(not targets for targets in allowed_targets_by_voter.values()):
-            return set()
-
-        candidate_outcomes: set[tuple[int, ...]] = {
-            (player_index,) for player_index in alive_indices
-        }
-        if self.include_sheriff:
-            candidate_outcomes.update(combinations(alive_indices, 2))
-            if len(alive_indices) > 2:
-                candidate_outcomes.add(tuple(alive_indices))
-
-        return {
-            outcome
-            for outcome in candidate_outcomes
-            if vote_outcome_is_feasible(
-                alive_indices,
-                allowed_targets_by_voter,
-                outcome,
-            )
-        }
-
-    def _resolve_day_vote(self, game_state: GameState) -> list[GameState]:
-        """解析白天投票阶段，返回可能的后续分支。"""
-
-        # 白天投票建模：
-        # 1) 单人最高票：该玩家直接出局；
-        # 2) 启用警长时，平票最高票由警长归票，强制放逐 1 人并展开分支。
-        alive_indices = self._alive_indices(game_state)
-        if len(alive_indices) <= 1:
-            return [game_state.clone()]
-
-        if self.smart_vote:
-            vote_outcomes = self._build_smart_vote_outcomes(game_state, alive_indices)
-            if not vote_outcomes:
-                idle_state = game_state.clone()
-                self._assign_state_identity(
-                    idle_state,
-                    parent_state_id=game_state.state_id,
-                    action_label="白天 无有效投票结果",
-                )
-                return [idle_state]
-        else:
-            vote_outcomes: set[tuple[int, ...]] = {
-                (player_index,) for player_index in alive_indices
-            }
-            if self.include_sheriff:
-                # 先覆盖最常见的双人平票，再补充“多人全平票”场景。
-                vote_outcomes.update(combinations(alive_indices, 2))
-                if len(alive_indices) > 2:
-                    vote_outcomes.add(tuple(alive_indices))
-
-        day_states: list[GameState] = []
-        local_seen: set[str] = set()
-
-        for top_candidates in vote_outcomes:
-            # 单人最高票：直接出局；平票：必须在平票者中淘汰一人。
-            for vote_target_index in top_candidates:
-                day_state = game_state.clone()
-                for branched_state in self._resolve_death_chain(
-                    day_state, vote_target_index
-                ):
-                    action_label = _build_day_action_label(
-                        top_candidates, vote_target_index
-                    )
-                    self._assign_state_identity(
-                        branched_state,
-                        parent_state_id=game_state.state_id,
-                        action_label=action_label,
-                    )
-                    signature = self._state_signature(branched_state)
-                    if signature in local_seen:
-                        continue
-                    local_seen.add(signature)
-                    day_states.append(branched_state)
-                    if (
-                        self.max_day_branches_per_state is not None
-                        and len(day_states) >= self.max_day_branches_per_state
-                    ):
-                        self.pruned_by_limits += 1
-                        return day_states
-
-        return day_states
-
-    def _check_game_over(self, game_state: GameState) -> tuple[bool, str]:
-        """检查游戏是否结束"""
-        # 狼人全灭直接好人胜；否则继续检查人数过半、屠边等结束条件。
-        players = self._normalize_players(game_state)
-        alive_players = [player for player in players if player.is_alive]
-        alive_roles = [player.role for player in alive_players]
-        if not any(self._is_wolf_role(role) for role in alive_roles):
-            return True, "好人阵营胜利"  # 村民胜利
-        alive_werewolves = [
-            player for player in alive_players if self._is_wolf_role(player.role)
-        ]
-
-        if len(alive_werewolves) >= len(alive_players) / 2:
-            return True, "狼人阵营胜利（人数过半）"  # 狼人胜利
         alive_clergies = [
             player
-            for player in alive_players
-            if player.role in ["预言家", "女巫", "守卫", "猎人"]
+            for player in alive
+            if player.role in {"预言家", "女巫", "守卫", "猎人", "愚者"}
         ]
-        if self.has_clergies and not alive_clergies:
-            return True, "狼人阵营胜利（神职角色已被消灭）"  # 屠边规则
-        alive_villagers = [player for player in alive_players if player.role == "村民"]
-        if not alive_villagers:
-            return True, "狼人阵营胜利（村民已被消灭）"  # 屠边规则
-        return False, "未结束"  # 游戏继续
+        if has_clergies and not alive_clergies:
+            return True, "狼人阵营胜利（神职角色已被消灭）"
+        if not any(player.role == "村民" for player in alive):
+            return True, "狼人阵营胜利（村民已被消灭）"
+        return False, "未结束"
 
-    def load_config(self, **kwargs):
-        """加载配置,并重置模拟器状态。"""
-        logger.debug(t("log.load_config"))
-        # 这两个集合分别用于：过滤待展开的重复局面，以及去重已经收敛的终局。
-        self.has_clergies = False
-        """ 标记是否包含神职角色"""
-        self.include_sheriff = bool(kwargs.get("include_sheriff", False))
-        """ 标记是否启用警长归票机制"""
-        self.smart_vote = bool(kwargs.get("smart_vote", False))
-        """ 是否启用智能投票剪枝与预言家查验缓存"""
-        self.policy = str(kwargs.get("policy", "exhaustive")).lower()
-        """ 运行模式：exhaustive（穷举）或 online（在线参考决策）"""
-        self.lambda_risk = float(kwargs.get("lambda_risk", 1.0))
-        """ 迭代风险参数 λ ∈ [0,1]"""
-        self.toggle = str(kwargs.get("toggle", "conservative")).lower()
-        """ 乐观/保守开关：optimistic | conservative"""
-        _lookahead = kwargs.get("lookahead_depth")
-        self.lookahead_depth = (
-            None
-            if _lookahead is None
-            or (isinstance(_lookahead, (int, float)) and _lookahead < 0)
-            else int(_lookahead)
-        )
-        """ 前瞻深度（决策点计；None=全深度）"""
-        _tactics = kwargs.get("tactics")
-        self.tactics = (
-            {token.strip() for token in str(_tactics).split(",") if token.strip()}
-            if _tactics
-            else set()
-        )
-        """ 启用的夜间战术集合：self_kill(骗刀) / no_kill(空刀)"""
-        self.online_trace_path = str(
-            kwargs.get("online_trace_path", "online_trace.json")
-        )
-        """ 在线参考轨迹输出路径"""
-        self.compare_with_exact = bool(kwargs.get("compare_with_exact", False))
-        """ 是否与全深度精确值对照"""
-        self.visited_states = set()
-        """ 存储已访问的状态指纹，用于去重"""
-        self.ending_signatures = set()
-        """ 存储已收敛的终局状态指纹，用于去重"""
-        self.signature_cache_db_path = Path(
-            kwargs.get("signature_cache_db_path", "search_simulator_cache.sqlite3")
-        )
-        """ 状态签名 SQLite 路径"""
-        self.signature_lru_capacity = int(kwargs.get("signature_lru_capacity", 150_000))
-        """ 状态签名内存 LRU 容量"""
-        self.signature_commit_interval = int(
-            kwargs.get("signature_commit_interval", 2_000)
-        )
-        """ 状态签名批量写入 SQLite 的提交间隔"""
-        if self.signature_cache is not None:
-            self.signature_cache.close()
-        self.signature_cache = _SQLiteLRUSignatureStore(
-            self.signature_cache_db_path,
-            lru_capacity=self.signature_lru_capacity,
-            commit_interval=self.signature_commit_interval,
-        )
-        self.signature_cache.reset()
-        self.state_parent_index = {}
-        """ 存储每个状态节点的父节点 ID，用于回溯路径"""
-        self.state_action_index = {}
-        """ 存储每个状态节点的动作，用于回溯路径"""
-        self.state_players_snapshot = {}
-        """ 存储每个状态节点的玩家存活快照（用于可视化标签）"""
-        self.state_depth_index = {}
-        """ 存储每个状态节点的分支深度（根节点为 0）"""
-        self._next_state_id = 0
-        """ 用于分配唯一的状态节点 ID"""
-        self.max_processed_states = kwargs.get("max_processed_states")
-        """ 最多处理的状态节点数（默认不限）"""
-        self.max_queue_size = kwargs.get("max_queue_size")
-        """ 搜索队列最大长度，超出后新状态会被裁剪（默认不限）"""
-        self.max_runtime_seconds = kwargs.get("max_runtime_seconds")
-        """ 最大运行时长（秒），到达后提前停止（默认不限）"""
-        self.search_mode = str(kwargs.get("search_mode", "dfs")).lower()
-        """ 搜索模式：dfs 或 bfs"""
-        if self.search_mode not in {"dfs", "bfs"}:
-            self.search_mode = "dfs"
-        self.max_night_branches_per_state = kwargs.get("max_night_branches_per_state")
-        """ 单个状态夜晚阶段最多保留分支数（默认不限）"""
-        self.max_day_branches_per_state = kwargs.get("max_day_branches_per_state")
-        """ 单个状态白天阶段最多保留分支数（默认不限）"""
-        self.gc_interval = int(kwargs.get("gc_interval", 2000))
-        """ 垃圾回收间隔（默认 2000）"""
-        self.parallel_workers = max(1, int(kwargs.get("parallel_workers", 1)))
-        """ 并行扩展线程数（1 表示关闭并行） """
-        self.pruned_by_limits = 0
-        """ 记录因阈值裁剪分支数"""
-        self.stop_reason = t("stop.sim_done")
-        """ 模拟停止的原因"""
-        self.players, self.has_clergies = _build_players_from_kwargs(kwargs)
-        """ 玩家列表，包含所有参与游戏的角色对象 """
-        logger.debug(t("log.roles", [player.role for player in self.players]))
-        initial_state = GameState(
-            players=[
-                Player(role=p.role, is_alive=p.is_alive, skills=dict(p.skills))
-                for p in self.players
-            ],
-            is_game_over=False
-        )
-        self._assign_state_identity(
-            initial_state, parent_state_id=None, action_label=t("action.root")
-        )
-        self.initial_state = initial_state
-        """ 初始根状态（在线模式复用）"""
-        self.queue: deque[GameState] = deque([initial_state])  # 初始化队列
-        self._register_signature("visited", self._state_signature(initial_state))
-        self.wins = {}
-        self.processed_states = 0
-        self.start_time = 0.0
-        callback = kwargs.get("iteration_callback")
-        self.iteration_callback = (
-            cast(Callable[[dict[str, Any]], None], callback)
-            if callable(callback)
-            else None
+    def initial_state_for_layout(self, layout: PositionLayout) -> GameState:
+        return GameState(
+            players=players_for_layout(layout),
+            phase="night",
+            position_signature=layout.signature,
         )
 
-    def _build_iteration_snapshot(self, game_state: GameState) -> dict[str, Any]:
-        """构建当前迭代节点的摘要，供 GUI 实时展示。"""
+    def run(self, start_state: GameState | None = None) -> dict[str, Any]:
+        """运行全站位 BFS/DFS，或从传入 GameState 继续构建分支树。"""
 
-        players = self._normalize_players(game_state)
-        alive_count = sum(1 for player in players if player.is_alive)
-        action_label = self.state_action_index.get(game_state.state_id, t("action.unknown"))
-        action_label = action_label.replace("\n", " ").strip()
-        if len(action_label) > 56:
-            action_label = action_label[:53] + "..."
+        from ._tree_search import run_position_batch
+        from ._tree_search import search_from_state
 
-        elapsed = 0.0
-        if self.start_time > 0.0:
-            elapsed = max(0.0, time.monotonic() - self.start_time)
-
-        return {
-            "state_id": game_state.state_id,
-            "parent_state_id": game_state.parent_state_id,
-            "night_count": game_state.night_count,
-            "day_count": game_state.day_count,
-            "alive_count": alive_count,
-            "total_players": len(players),
-            "is_game_over": bool(game_state.is_game_over),
-            "action_label": action_label,
-            "processed_states": self.processed_states,
-            "queue_length": len(self.queue),
-            "elapsed_seconds": elapsed,
-        }
-
-    def _emit_iteration_snapshot(self, game_state: GameState) -> None:
-        """向外部发送迭代节点摘要，异常时吞掉以保证主流程稳定。"""
-
-        if self.iteration_callback is None:
-            return
-        try:
-            self.iteration_callback(self._build_iteration_snapshot(game_state))
-        except Exception:
-            logger.debug(t("log.callback_failed"), exc_info=True)
-
-    def _should_stop_run(self) -> bool:
-        """检查是否触发停止条件。"""
-
-        if (
-            self.max_runtime_seconds is not None
-            and time.monotonic() - self.start_time >= self.max_runtime_seconds
-        ):
-            self.stop_reason = t("stop.max_runtime")
-            return True
-        if (
-            self.max_processed_states is not None
-            and self.processed_states >= self.max_processed_states
-        ):
-            self.stop_reason = t("stop.max_processed")
-            return True
-        return False
-
-    def _pop_next_state(self) -> GameState:
-        """按搜索模式从容器取出下一个状态。"""
-
-        if self.search_mode == "dfs":
-            return self.queue.pop()
-        return self.queue.popleft()
-
-    def _iter_day_state_groups(
-        self,
-        night_states: list[GameState],
-        executor: ThreadPoolExecutor | None,
-    ):
-        """统一包装白天阶段的串行/并行分支展开。"""
-
-        if executor is not None and len(night_states) > 1:
-            return executor.map(self._resolve_day_vote, night_states)
-        return (self._resolve_day_vote(state) for state in night_states)
-
-    def _handle_day_state(self, day_state: GameState) -> None:
-        """处理单个白天结果状态：终局统计或继续入队。"""
-
-        is_over, result = self._check_game_over(day_state)
-        day_state.is_game_over = is_over
-        if is_over:
-            ending_signature = self._state_signature(day_state)
-            if not self._register_signature("ending", ending_signature):
-                return
-            self.endings.append((day_state, result))
-            self.wins[result] = self.wins.get(result, 0) + 1
-            return
-
-        state_signature = self._state_signature(day_state)
-        if not self._register_signature("visited", state_signature):
-            return
-        if self.max_queue_size is not None and len(self.queue) >= self.max_queue_size:
-            self.pruned_by_limits += 1
-            return
-        self.queue.append(day_state)
-
-    def run(self):
-        """运行模拟器，探索所有可能的游戏局面。"""
-
-        logger.debug(t("log.run_start", self.search_mode))
-        self.wins = {}
         self.start_time = time.monotonic()
-        self.processed_states = 0
-        day_expand_executor: ThreadPoolExecutor | None = None
-        if self.parallel_workers > 1:
-            day_expand_executor = ThreadPoolExecutor(
-                max_workers=self.parallel_workers,
-                thread_name_prefix="sim-day-expand",
-            )
-
-        try:
-            while self.queue:
-                if self._should_stop_run():
-                    break
-
-                current_state = self._pop_next_state()
-                self.processed_states += 1
-                self._emit_iteration_snapshot(current_state)
-                if current_state.is_game_over:
-                    continue
-
-                # 先展开夜晚，再展开白天；每个新局面都先做去重，避免重复分支刷爆队列。
-                night_states = self._resolve_night(current_state)
-                day_state_groups = self._iter_day_state_groups(
-                    night_states,
-                    day_expand_executor,
-                )
-
-                for day_states in day_state_groups:
-                    for day_state in day_states:
-                        self._handle_day_state(day_state)
-
-                if (
-                    self.gc_interval > 0
-                    and self.processed_states % self.gc_interval == 0
-                ):
-                    gc.collect()
-        finally:
-            if day_expand_executor is not None:
-                day_expand_executor.shutdown(wait=True, cancel_futures=False)
-
-        if self.signature_cache is not None:
-            self.signature_cache.flush()
-
-    def transition(self, current_game_state: GameState) -> list[GameState]:
-        """封装 GameState 迭代更新：按 phase 分发到夜/昼结算。"""
-        if current_game_state.phase == "night":
-            next_states = self._resolve_night(current_game_state)
-            for state in next_states:
-                state.phase = "day"
-        else:
-            next_states = self._resolve_day_vote(current_game_state)
-            for state in next_states:
-                state.phase = "night"
-                state.day_count = current_game_state.day_count + 1
-        return next_states
-
-    def run_online(self, start_state: GameState | None = None):
-        """运行在线参考决策：从根/自定义状态沿参考路径决策到真终局。"""
-        from ._online_policy import (
-            evaluate_against_exact,
-            emit_online_artifacts,
-            run_online_reference,
-        )
-
+        logger.info(t("log.run_start", self.search_mode.upper()))
         if start_state is not None:
-            root = start_state.clone()
-            self._assign_state_identity(
-                root, parent_state_id=None, action_label=t("action.root")
-            )
+            self.last_result = search_from_state(self, start_state)
         else:
-            root = self.initial_state
+            self.last_result = run_position_batch(self)
+        return self.last_result
 
-        # 神职屠边判定以实际根状态为准（自定义状态可能与 include_* 不一致）
-        self.has_clergies = any(
-            player.role in {"预言家", "女巫", "守卫", "猎人"}
-            for player in root.players
-        )
+    def continue_from_game_state(
+        self, state: GameState | dict[str, Any]
+    ) -> dict[str, Any]:
+        """未来 API 续算入口：传入完整 GameState 后继续 BFS/DFS。"""
 
-        trace = run_online_reference(self, root, depth=self.lookahead_depth)
-        emit_online_artifacts(self, trace)
-        if self.compare_with_exact:
-            evaluate_against_exact(self, root, trace)
-        return trace
+        from ._tree_search import search_from_state
+
+        restored = GameState.from_dict(state) if isinstance(state, dict) else state
+        self.last_result = search_from_state(self, restored)
+        return self.last_result

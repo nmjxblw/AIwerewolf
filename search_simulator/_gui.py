@@ -1,927 +1,1763 @@
+"""Pygame 研究者视角的 DFS 分页与状态 DAG 可视化界面。"""
+
+# ruff: noqa: I001  # pygame 的提示抑制环境变量必须在导入 pygame 前设置。
+
 from __future__ import annotations
 
 import argparse
 import json
+import math
+import multiprocessing
+import os
 import queue
 import threading
 import time
-from collections import deque
-from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+from typing import Callable
 
-from ._config import GUI_BASIC_ENTRY_KEYS
-from ._config import GUI_GEOMETRY
-from ._config import GUI_LIMIT_ENTRY_LAYOUT
-from ._config import GUI_MIN_SIZE
-from ._config import GUI_ROLE_TOGGLE_KEYS
-from ._i18n import format_config_summary
+os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
+
+import pygame
+import pygame_gui
+from pygame_gui.elements import UIButton
+from pygame_gui.elements import UIHorizontalSlider
+from pygame_gui.elements import UIProgressBar
+from pygame_gui.elements import UITextEntryLine
+
+from ._config import GUI_WINDOW_SIZE
+from ._game_state import game_state_dict_from_compact
 from ._i18n import set_language
 from ._i18n import t
-from ._game_state import GameState
-from ._player import Player
-
-# 下拉框：显示值 -> 机器值（显示值统一经 t() 取文案）
-_SEARCH_MODE_ZH = {t("opt.search_mode.dfs"): "dfs", t("opt.search_mode.bfs"): "bfs"}
-_POLICY_ZH = {t("opt.policy.exhaustive"): "exhaustive", t("opt.policy.online"): "online"}
-_TOGGLE_ZH = {t("opt.toggle.conservative"): "conservative", t("opt.toggle.optimistic"): "optimistic"}
-_PHASE_ZH = {t("opt.phase.night"): "night", t("opt.phase.day"): "day"}
-_SEARCH_MODE_INV = {v: k for k, v in _SEARCH_MODE_ZH.items()}
-_POLICY_INV = {v: k for k, v in _POLICY_ZH.items()}
-_TOGGLE_INV = {v: k for k, v in _TOGGLE_ZH.items()}
-_PHASE_INV = {v: k for k, v in _PHASE_ZH.items()}
+from ._interval import RewardInterval
+from ._interval import interval_branch_color
+from ._interval import interval_camp
+from ._tree_search import recompute_graph_intervals
 
 
-def _parse_optional_int(raw_value: str) -> int | None:
-    text = raw_value.strip()
-    if not text:
-        return None
-    return int(text)
+BACKGROUND = pygame.Color("#0B1220")
+PANEL = pygame.Color("#111C2E")
+PANEL_ALT = pygame.Color("#17243A")
+BORDER = pygame.Color("#2A3B55")
+TEXT = pygame.Color("#E5EDF8")
+MUTED = pygame.Color("#93A4BA")
+ACCENT = pygame.Color("#2F80ED")
+GOOD = pygame.Color("#3B82F6")
+WOLF = pygame.Color("#EF4444")
+BALANCED = pygame.Color("#111111")
+
+ROLE_KEYS = (
+    "include_seer",
+    "include_witch",
+    "include_guard",
+    "include_hunter",
+    "include_idiot",
+    "include_white_werewolf_king",
+    "all_positions",
+)
+DAY_TACTICS = ("seer_hide", "villager_decoy", "wolf_bloc")
+NIGHT_TACTICS = ("wolf_self_kill", "wolf_no_kill")
+LIVE_PREVIEW_NODE_LIMIT = 80
+DAG_VISIBLE_NODE_LIMIT = 240
+UI_DATA_REFRESH_SECONDS = 0.5
+LIVE_NODE_FADE_SECONDS = 0.4
 
 
-def _parse_optional_float(raw_value: str) -> float | None:
-    text = raw_value.strip()
-    if not text:
-        return None
-    return float(text)
+def _faded_color(
+    color: pygame.Color,
+    alpha: float,
+    *,
+    background: pygame.Color = PANEL,
+) -> pygame.Color:
+    ratio = max(0.0, min(1.0, alpha))
+    return pygame.Color(
+        round(background.r + (color.r - background.r) * ratio),
+        round(background.g + (color.g - background.g) * ratio),
+        round(background.b + (color.b - background.b) * ratio),
+    )
 
 
-def _optional_default_text(default_value) -> str:
-    return "" if default_value is None else str(default_value)
+def _system_font_path() -> str | None:
+    for candidate in (
+        Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts" / "msyh.ttc",
+        Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts" / "simhei.ttf",
+        Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts" / "arial.ttf",
+    ):
+        if candidate.exists():
+            return str(candidate)
+    return None
+
+
+def _theme() -> dict[str, Any]:
+    font_path = _system_font_path()
+    font = {
+        "name": "Microsoft YaHei",
+        "size": 14,
+        "script": "Hani",
+        "direction": "ltr",
+    }
+    if font_path is not None:
+        font["regular_path"] = font_path.replace("\\", "/")
+    return {
+        "defaults": {
+            "colours": {
+                "normal_bg": "#17243A",
+                "hovered_bg": "#233755",
+                "disabled_bg": "#111827",
+                "selected_bg": "#2F80ED",
+                "normal_text": "#E5EDF8",
+                "hovered_text": "#FFFFFF",
+                "disabled_text": "#64748B",
+                "selected_text": "#FFFFFF",
+                "normal_border": "#334A68",
+                "hovered_border": "#4B6B91",
+                "disabled_border": "#1F2937",
+                "selected_border": "#60A5FA",
+            },
+            "font": font,
+        }
+    }
+
+
+def _compact_integer(value: int) -> str:
+    text = str(int(value))
+    if len(text) <= 10:
+        return f"{int(value):,}"
+    return f"{text[:4]}.{text[4:7]}e{len(text) - 1}"
+
+
+class PygameSimulatorUI:
+    def __init__(
+        self,
+        parser: argparse.ArgumentParser,
+        run_simulation: Callable[..., Any],
+    ) -> None:
+        set_language("zh-CN")
+        pygame.init()
+        pygame.display.set_caption(t("gui.title"))
+        self.screen = pygame.display.set_mode(GUI_WINDOW_SIZE)
+        self.clock = pygame.time.Clock()
+        self.manager = pygame_gui.UIManager(
+            GUI_WINDOW_SIZE,
+            _theme(),
+            starting_language="zh",
+        )
+        self.parser = parser
+        self.run_simulation = run_simulation
+        self.defaults = parser.parse_args([])
+        self.events: queue.Queue[tuple[str, Any]] = queue.Queue()
+        self.control_manager = multiprocessing.Manager()
+        self.resume_event = self.control_manager.Event()
+        self.resume_event.set()
+        self.worker_progress_queue = self.control_manager.Queue(maxsize=32)
+        self.worker_result_queue = self.control_manager.Queue(maxsize=8)
+        self.running = False
+        self.paused = False
+        self.keep_running = True
+        self.rows: list[dict[str, Any]] = []
+        self.page_index = 0
+        self.selected_row: int | None = None
+        self.graph: dict[str, list[dict[str, Any]]] = {"nodes": [], "edges": []}
+        self.live_graphs: dict[int, dict[str, Any]] = {}
+        self.preview_position = 0
+        self.selected_node: int | None = None
+        self.last_data_refresh_at = 0.0
+        self.simulator: Any | None = None
+        self.graph_zoom = 0.78
+        self.graph_pan = [0.0, 0.0]
+        self.dragging_graph = False
+        self.drag_origin = (0, 0)
+        self.pan_origin = (0.0, 0.0)
+        self.status = t("gui.ready")
+        self.progress = 0.0
+        self.last_interval_lambda = round(float(self.defaults.lambda_risk), 2)
+        self.live_stats = {
+            "terminal_count": 0,
+            "good_paths": 0,
+            "wolf_paths": 0,
+            "expanded_nodes": 0,
+            "discovered_nodes": 0,
+            "frontier_size": 0,
+            "edge_count": 0,
+            "completed_positions": 0,
+            "total_positions": 0,
+        }
+        self.position_progress: dict[int, dict[str, Any]] = {}
+        self.active_position = 0
+        self.day_expanded = True
+        self.night_expanded = True
+
+        self.font_path = _system_font_path()
+        self.fonts = {
+            12: pygame.font.Font(self.font_path, 12),
+            14: pygame.font.Font(self.font_path, 14),
+            16: pygame.font.Font(self.font_path, 16),
+            20: pygame.font.Font(self.font_path, 20),
+        }
+        self.fonts[20].set_bold(True)
+
+        self.values = {
+            "include_seer": bool(self.defaults.include_seer),
+            "include_witch": bool(self.defaults.include_witch),
+            "include_guard": bool(self.defaults.include_guard),
+            "include_hunter": bool(self.defaults.include_hunter),
+            "include_idiot": bool(self.defaults.include_idiot),
+            "include_white_werewolf_king": bool(
+                self.defaults.include_white_werewolf_king
+            ),
+            "all_positions": bool(self.defaults.all_positions),
+            "smart_vote": bool(self.defaults.smart_vote),
+        }
+        default_tactics = set(str(self.defaults.tactics).split(","))
+        self.tactics = {
+            key: key in default_tactics for key in (*DAY_TACTICS, *NIGHT_TACTICS)
+        }
+        self.toggle_rects: dict[str, pygame.Rect] = {}
+        self.tactic_rects: dict[str, pygame.Rect] = {}
+        self.header_rects: dict[str, pygame.Rect] = {}
+        self.table_row_rects: list[tuple[pygame.Rect, int]] = []
+        self.node_screen_positions: dict[int, tuple[float, float]] = {}
+        self.hovered_node: int | None = None
+        self.hovered_edge: dict[str, Any] | None = None
+        self.hover_tooltip: list[str] = []
+
+        self._create_controls()
+
+    def _create_controls(self) -> None:
+        self.entries: dict[str, UITextEntryLine] = {}
+        entry_specs = (
+            ("number_of_players", 18, 102, self.defaults.number_of_players),
+            ("number_of_wolves", 170, 102, self.defaults.number_of_wolves),
+            ("parallel_workers", 18, 158, self.defaults.parallel_workers),
+            ("page_size", 18, 214, min(10, int(self.defaults.page_size))),
+        )
+        for key, x, y, value in entry_specs:
+            entry = UITextEntryLine(
+                pygame.Rect(x, y, 135, 32),
+                manager=self.manager,
+                object_id=f"#{key}",
+            )
+            entry.set_text(str(value))
+            self.entries[key] = entry
+        self.lambda_slider = UIHorizontalSlider(
+            pygame.Rect(170, 158, 96, 32),
+            start_value=float(self.defaults.lambda_risk),
+            value_range=(0.0, 1.0),
+            click_increment=0.01,
+            manager=self.manager,
+            object_id="#lambda_risk",
+        )
+
+        self.start_button = UIButton(
+            pygame.Rect(18, 790, 182, 44),
+            text=t("gui.start") + " · DFS",
+            manager=self.manager,
+        )
+        self.pause_button = UIButton(
+            pygame.Rect(206, 790, 98, 44),
+            text=t("gui.pause"),
+            manager=self.manager,
+        )
+        self.pause_button.disable()
+        self.first_button = UIButton(
+            pygame.Rect(346, 327, 58, 30), text=t("gui.first"), manager=self.manager
+        )
+        self.previous_button = UIButton(
+            pygame.Rect(410, 327, 74, 30), text=t("gui.previous"), manager=self.manager
+        )
+        self.next_button = UIButton(
+            pygame.Rect(490, 327, 74, 30), text=t("gui.next"), manager=self.manager
+        )
+        self.last_button = UIButton(
+            pygame.Rect(570, 327, 58, 30), text=t("gui.last"), manager=self.manager
+        )
+        self.expand_all_button = UIButton(
+            pygame.Rect(1232, 382, 94, 26),
+            text=t("gui.expand_all"),
+            manager=self.manager,
+        )
+        self.collapse_all_button = UIButton(
+            pygame.Rect(1334, 382, 94, 26),
+            text=t("gui.collapse_all"),
+            manager=self.manager,
+        )
+        self.progress_bar = UIProgressBar(
+            pygame.Rect(650, 327, 430, 30), manager=self.manager
+        )
+
+    def _font(self, size: int) -> pygame.font.Font:
+        return self.fonts[min(self.fonts, key=lambda item: abs(item - size))]
+
+    def _text(
+        self,
+        text: str,
+        position: tuple[int, int],
+        *,
+        size: int = 14,
+        color: pygame.Color = TEXT,
+        max_width: int | None = None,
+    ) -> None:
+        value = str(text)
+        font = self._font(size)
+        if max_width is not None:
+            while value and font.size(value + "…")[0] > max_width:
+                value = value[:-1]
+            if value != str(text):
+                value += "…"
+        self.screen.blit(font.render(value, True, color), position)
+
+    def _panel(self, rect: pygame.Rect, title: str) -> None:
+        pygame.draw.rect(self.screen, PANEL, rect, border_radius=8)
+        pygame.draw.rect(self.screen, BORDER, rect, width=1, border_radius=8)
+        self._text(title, (rect.x + 12, rect.y + 9), size=16)
+
+    def _draw_checkbox(
+        self,
+        rect: pygame.Rect,
+        label: str,
+        checked: bool,
+        *,
+        enabled: bool = True,
+        hovered: bool = False,
+    ) -> None:
+        color = TEXT if enabled else pygame.Color("#596779")
+        if hovered and enabled:
+            pygame.draw.rect(
+                self.screen,
+                pygame.Color("#213B61"),
+                rect.inflate(6, 4),
+                border_radius=4,
+            )
+        box = pygame.Rect(rect.x, rect.y + 2, 18, 18)
+        pygame.draw.rect(self.screen, PANEL_ALT, box, border_radius=3)
+        pygame.draw.rect(self.screen, ACCENT if checked else BORDER, box, width=2, border_radius=3)
+        if checked:
+            pygame.draw.line(self.screen, ACCENT, (box.x + 4, box.y + 9), (box.x + 8, box.y + 14), 2)
+            pygame.draw.line(self.screen, ACCENT, (box.x + 8, box.y + 14), (box.x + 15, box.y + 4), 2)
+        self._text(label, (rect.x + 25, rect.y), size=14, color=color, max_width=rect.width - 25)
+
+    def _sync_night_tactics(self) -> None:
+        valid = self.values["include_witch"] or self.values["include_guard"]
+        if not valid:
+            for key in NIGHT_TACTICS:
+                self.tactics[key] = False
+
+    def _draw_config(self) -> None:
+        self._panel(pygame.Rect(12, 12, 310, 766), "研究配置 · 固定 DFS")
+        labels = (
+            ("玩家数", 18, 80),
+            ("普通狼", 170, 80),
+            ("进程数", 18, 136),
+            ("风险 λ", 170, 136),
+            ("每页行数", 18, 192),
+        )
+        for label, x, y in labels:
+            self._text(label, (x, y), size=12, color=MUTED)
+        self._text(
+            f"{float(self.lambda_slider.get_current_value()):.2f}",
+            (272, 166),
+            size=14,
+            color=TEXT,
+        )
+
+        self._text("角色与运行", (18, 260), size=16)
+        toggle_y = 292
+        self.toggle_rects.clear()
+        for offset, key in enumerate((*ROLE_KEYS, "smart_vote")):
+            column = offset % 2
+            row = offset // 2
+            rect = pygame.Rect(20 + column * 145, toggle_y + row * 31, 136, 24)
+            self.toggle_rects[key] = rect
+            self._draw_checkbox(
+                rect,
+                t(f"label.{key}"),
+                self.values[key],
+                hovered=rect.collidepoint(pygame.mouse.get_pos()),
+            )
+
+        if not self.values["smart_vote"]:
+            self._text("智能投票关闭：战术不参与本次运行", (20, 432), size=12, color=MUTED)
+            self.tactic_rects.clear()
+            return
+
+        self.tactic_rects.clear()
+        day_header = pygame.Rect(20, 432, 278, 26)
+        self.header_rects["day"] = day_header
+        if day_header.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(self.screen, pygame.Color("#213B61"), day_header, border_radius=4)
+        self._text(("▼ " if self.day_expanded else "▶ ") + t("tactic.day"), (22, 434), size=14)
+        y = 462
+        if self.day_expanded:
+            for key in DAY_TACTICS:
+                rect = pygame.Rect(32, y, 260, 24)
+                self.tactic_rects[key] = rect
+                self._draw_checkbox(
+                    rect,
+                    t(f"tactic.{key}"),
+                    self.tactics[key],
+                    hovered=rect.collidepoint(pygame.mouse.get_pos()),
+                )
+                y += 27
+        night_header = pygame.Rect(20, y + 3, 278, 26)
+        self.header_rects["night"] = night_header
+        if night_header.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(self.screen, pygame.Color("#213B61"), night_header, border_radius=4)
+        self._text(("▼ " if self.night_expanded else "▶ ") + t("tactic.night"), (22, y + 5), size=14)
+        y += 34
+        if self.night_expanded:
+            valid = self.values["include_witch"] or self.values["include_guard"]
+            for key in NIGHT_TACTICS:
+                rect = pygame.Rect(32, y, 260, 24)
+                self.tactic_rects[key] = rect
+                self._draw_checkbox(
+                    rect,
+                    t(f"tactic.{key}"),
+                    self.tactics[key],
+                    enabled=valid,
+                    hovered=rect.collidepoint(pygame.mouse.get_pos()),
+                )
+                y += 27
+            if not valid:
+                self._text("需启用女巫或守卫", (34, y), size=12, color=MUTED)
+
+    def _page_size(self) -> int:
+        try:
+            return min(10, max(1, int(self.entries["page_size"].get_text())))
+        except ValueError:
+            return 20
+
+    def _visible_rows(self) -> tuple[list[dict[str, Any]], int]:
+        ordered = sorted(self.rows, key=lambda item: int(item["position_index"]))
+        pages = max(1, math.ceil(len(ordered) / self._page_size()))
+        self.page_index = max(0, min(self.page_index, pages - 1))
+        start = self.page_index * self._page_size()
+        return ordered[start : start + self._page_size()], pages
+
+    def _draw_table(self) -> None:
+        rect = pygame.Rect(334, 12, 1114, 352)
+        self._panel(rect, "站位迭代结果")
+        visible, pages = self._visible_rows()
+        columns = (
+            ("#", 346, 45),
+            ("站位", 392, 335),
+            ("状态", 732, 76),
+            ("边", 812, 68),
+            ("终局", 884, 64),
+            ("wide", 952, 142),
+            ("narrow", 1098, 142),
+            ("占优", 1244, 76),
+            ("耗时", 1324, 100),
+        )
+        for label, x, _width in columns:
+            self._text(label, (x, 48), size=12, color=MUTED)
+        self.table_row_rects.clear()
+        max_rows = min(10, max(1, self._page_size()))
+        for offset, item in enumerate(visible[:max_rows]):
+            y = 72 + offset * 24
+            row_rect = pygame.Rect(342, y - 2, 1098, 23)
+            global_index = self.rows.index(item)
+            self.table_row_rects.append((row_rect, global_index))
+            if global_index == self.selected_row:
+                pygame.draw.rect(self.screen, pygame.Color("#213B61"), row_rect, border_radius=3)
+            elif row_rect.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(self.screen, pygame.Color("#1A2D48"), row_rect, border_radius=3)
+            processing = bool(item.get("processing", False))
+            camp = str(item["camp"])
+            camp_color = (
+                ACCENT
+                if processing
+                else GOOD
+                if camp == "good"
+                else WOLF
+                if camp == "wolf"
+                else MUTED
+            )
+            wide = item["wide_interval"]
+            narrow = item["narrow_interval"]
+            values = (
+                (("▶" if processing else "") + str(item["position_index"]), 346, 42),
+                (item.get("position_display", " | ".join(f"{i + 1}:{r}" for i, r in enumerate(item["roles"]))), 392, 330),
+                (f"{int(item['state_count']):,}", 732, 72),
+                (f"{int(item['edge_count']):,}", 812, 64),
+                (f"{int(item['terminal_count']):,}", 884, 60),
+                (t("gui.computing") if processing else f"[{wide[0]:.3f},{wide[1]:.3f}]", 952, 138),
+                ("—" if processing else f"[{narrow[0]:.3f},{narrow[1]:.3f}]", 1098, 138),
+                (t("gui.computing") if processing else t(f"camp.{camp}"), 1244, 72),
+                (f"{float(item['runtime_seconds']):.2f}s", 1324, 96),
+            )
+            for value, x, width in values:
+                self._text(value, (x, y), size=12, color=camp_color if x == 1244 else TEXT, max_width=width)
+        self._text(
+            t("gui.page", page=self.page_index + 1, pages=pages, rows=len(self.rows)),
+            (1090, 343),
+            size=11,
+            color=MUTED,
+        )
+
+    def _graph_rect(self) -> pygame.Rect:
+        return pygame.Rect(334, 374, 1114, 472)
+
+    def _layout_graph(
+        self, graph: dict[str, Any]
+    ) -> dict[int, tuple[float, float]]:
+        groups: dict[int, list[int]] = {}
+        for node in graph.get("nodes", []):
+            round_index = int(node["day_count"]) + int(node["night_count"])
+            groups.setdefault(round_index, []).append(int(node["node_id"]))
+        positions: dict[int, tuple[float, float]] = {}
+        for round_index, node_ids in sorted(groups.items()):
+            spacing = min(145.0, 900.0 / max(1, len(node_ids) - 1))
+            for offset, node_id in enumerate(sorted(node_ids)):
+                positions[node_id] = (
+                    (offset - (len(node_ids) - 1) / 2.0) * spacing,
+                    round_index * 105.0,
+                )
+        return positions
+
+    def _screen_graph_point(
+        self,
+        canvas: tuple[float, float],
+        rect: pygame.Rect,
+    ) -> tuple[float, float]:
+        return (
+            rect.centerx + self.graph_pan[0] + canvas[0] * self.graph_zoom,
+            rect.y + 150 + self.graph_pan[1] + canvas[1] * self.graph_zoom,
+        )
+
+    def _draw_live_stats(self, rect: pygame.Rect) -> None:
+        good_paths = int(self.live_stats["good_paths"])
+        wolf_paths = int(self.live_stats["wolf_paths"])
+        if good_paths > wolf_paths:
+            relation = t("camp.good")
+            relation_color = GOOD
+        elif wolf_paths > good_paths:
+            relation = t("camp.wolf")
+            relation_color = WOLF
+        else:
+            relation = t("camp.balanced")
+            relation_color = MUTED
+        cards = (
+            (t("gui.stat.expanded"), _compact_integer(int(self.live_stats["expanded_nodes"])), ACCENT),
+            (t("gui.stat.discovered"), _compact_integer(int(self.live_stats["discovered_nodes"])), TEXT),
+            (t("gui.stat.frontier"), _compact_integer(int(self.live_stats["frontier_size"])), TEXT),
+            (t("gui.stat.edges"), _compact_integer(int(self.live_stats["edge_count"])), TEXT),
+            (t("gui.stat.terminals"), _compact_integer(int(self.live_stats["terminal_count"])), TEXT),
+            (t("gui.stat.good"), _compact_integer(good_paths), GOOD),
+            (t("gui.stat.wolf"), _compact_integer(wolf_paths), WOLF),
+            (t("gui.stat.relation"), relation, relation_color),
+        )
+        width = (rect.width - 82) // 8
+        for index, (label, value, color) in enumerate(cards):
+            card = pygame.Rect(rect.x + 10 + index * (width + 8), rect.y + 38, width, 48)
+            pygame.draw.rect(self.screen, PANEL_ALT, card, border_radius=5)
+            pygame.draw.rect(self.screen, BORDER, card, width=1, border_radius=5)
+            self._text(label, (card.x + 9, card.y + 5), size=11, color=MUTED)
+            self._text(value, (card.x + 9, card.y + 24), size=14, color=color, max_width=card.width - 18)
+
+    @staticmethod
+    def _distance_to_segment(
+        point: tuple[float, float],
+        start: tuple[float, float],
+        end: tuple[float, float],
+    ) -> float:
+        dx = end[0] - start[0]
+        dy = end[1] - start[1]
+        if dx == 0.0 and dy == 0.0:
+            return math.dist(point, start)
+        ratio = max(
+            0.0,
+            min(
+                1.0,
+                ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy)
+                / (dx * dx + dy * dy),
+            ),
+        )
+        projection = (start[0] + ratio * dx, start[1] + ratio * dy)
+        return math.dist(point, projection)
+
+    def _selected_node_details(self, node_id: int | None = None) -> list[str]:
+        target_node = self.selected_node if node_id is None else node_id
+        if target_node is None:
+            return []
+        graph = self._display_graph()
+        node = self._graph_structure(graph)["node_by_id"].get(target_node)
+        if node is None:
+            return []
+        compact = node.get("state_compact") or []
+        if node.get("live_preview", False):
+            state_label = "已展开" if node.get("expanded", False) else "frontier"
+            details = [
+                f"实时节点 {target_node} · {node['phase']} · {state_label} · interval 在站位完成后计算"
+            ]
+            position_display = str(graph.get("position_display", ""))
+            if position_display:
+                details.append(position_display)
+        else:
+            details = [
+                f"节点 {target_node} · {node['phase']} · wide={node['wide_interval']} · narrow={node['narrow_interval']}"
+            ]
+        if len(compact) >= 12 and self.selected_row is not None:
+            roles = self.rows[self.selected_row]["roles"]
+            checks = {int(pair[0]): bool(pair[1]) for pair in compact[4]}
+            public_good = {int(value) for value in compact[6]}
+            public_wolf = {int(value) for value in compact[7]}
+            claims = {int(pair[0]): str(pair[1]) for pair in compact[8]}
+            idiots = {int(value) for value in compact[9]}
+            player_states = compact[11]
+            chips: list[str] = []
+            for index, role in enumerate(roles):
+                alive = bool(player_states[index][0])
+                icons: list[str] = []
+                if index in checks:
+                    icons.append("验狼" if checks[index] else "验好")
+                if index in claims:
+                    icons.append("宣" + claims[index])
+                if index in public_good:
+                    icons.append("公好")
+                if index in public_wolf:
+                    icons.append("公狼")
+                if index in idiots:
+                    icons.append("身份揭示")
+                chips.append(
+                    f"{index + 1}:{role}{'·死' if not alive else ''}"
+                    + ("[" + "/".join(icons) + "]" if icons else "")
+                )
+            details.append("  ".join(chips))
+        structure = self._graph_structure(graph)
+        incident = [
+            *structure["edges_by_parent"].get(target_node, []),
+            *structure["edges_by_child"].get(target_node, []),
+        ]
+        for edge in incident[:5]:
+            for reason in edge.get("reasons", []):
+                details.append(
+                    f"{edge['parent_id']}→{edge['child_id']}: {reason.get('action_label', reason.get('action_key', ''))}"
+                )
+        return details
+
+    def _node_game_state_details(self, node_id: int) -> list[str]:
+        graph = self._display_graph()
+        node = self._graph_structure(graph)["node_by_id"].get(node_id)
+        if node is None:
+            return []
+        state = node.get("state")
+        if not isinstance(state, dict):
+            compact = node.get("state_compact") or []
+            roles = list(graph.get("roles", []))
+            if not roles and self.selected_row is not None:
+                roles = list(self.rows[self.selected_row].get("roles", []))
+            if len(compact) >= 12 and len(roles) == len(compact[11]):
+                state = game_state_dict_from_compact(
+                    compact,
+                    roles=roles,
+                    position_signature=str(graph.get("position_signature", "")),
+                    is_game_over=bool(node.get("is_terminal", False)),
+                    state_id=node_id,
+                    observation=node.get("state_observation"),
+                )
+            else:
+                state = {"unavailable": "该旧节点没有可恢复的 GameState 快照"}
+        header = (
+            f"GameState · N{node_id} · result={node.get('result', '未结束')} "
+            f"· wide={node.get('wide_interval', [-1.0, 1.0])} "
+            f"· narrow={node.get('narrow_interval', [-1.0, 1.0])}"
+        )
+        return [
+            header,
+            *json.dumps(state, ensure_ascii=False, indent=2).splitlines(),
+        ]
+
+    def _draw_graph(self) -> None:
+        rect = self._graph_rect()
+        raw_graph = self._display_graph()
+        graph = self._visible_graph(raw_graph)
+        live_preview = self.running and self.preview_position in self.live_graphs
+        title = (
+            f"实时局部 DAG · 站位 #{self.preview_position} · 0.5s 刷新 · 观测窗口≤{LIVE_PREVIEW_NODE_LIMIT}"
+            if live_preview
+            else f"选中站位 DAG · 点击展开/收起 · 可见≤{DAG_VISIBLE_NODE_LIMIT} · hover 完整 GameState"
+        )
+        self._panel(rect, title)
+        self._draw_live_stats(rect)
+        position_display = str(graph.get("position_display", ""))
+        if live_preview and position_display:
+            self._text(
+                position_display,
+                (rect.x + 12, rect.y + 92),
+                size=12,
+                color=ACCENT,
+                max_width=rect.width - 24,
+            )
+        clip_before = self.screen.get_clip()
+        self.screen.set_clip(
+            pygame.Rect(rect.x + 8, rect.y + 110, rect.width - 16, rect.height - 118)
+        )
+        canvas_positions = self._layout_graph(graph)
+        self.node_screen_positions = {
+            node_id: self._screen_graph_point(position, rect)
+            for node_id, position in canvas_positions.items()
+        }
+        mouse = pygame.mouse.get_pos()
+        self.hovered_node = None
+        nearest_node_distance = 24.0
+        for node_id, point in self.node_screen_positions.items():
+            distance = math.dist(mouse, point)
+            if distance < nearest_node_distance:
+                self.hovered_node = node_id
+                nearest_node_distance = distance
+        self.hovered_edge = None
+        nearest_edge_distance = 9.0
+        for edge in graph.get("edges", []):
+            parent = self.node_screen_positions.get(int(edge["parent_id"]))
+            child = self.node_screen_positions.get(int(edge["child_id"]))
+            if parent is None or child is None:
+                continue
+            distance = self._distance_to_segment(mouse, parent, child)
+            if distance < nearest_edge_distance:
+                self.hovered_edge = edge
+                nearest_edge_distance = distance
+
+        self.hover_tooltip = []
+        now = time.monotonic()
+        node_alpha = {
+            int(node["node_id"]): max(
+                0.12,
+                min(
+                    1.0,
+                    (now - float(node.get("_visible_since", now - LIVE_NODE_FADE_SECONDS)))
+                    / LIVE_NODE_FADE_SECONDS,
+                ),
+            )
+            for node in graph.get("nodes", [])
+        }
+        for edge_index, edge in enumerate(graph.get("edges", [])):
+            parent = self.node_screen_positions.get(int(edge["parent_id"]))
+            child = self.node_screen_positions.get(int(edge["child_id"]))
+            if parent is None or child is None:
+                continue
+            if edge.get("live_preview", False):
+                color = pygame.Color("#64748B")
+            else:
+                interval = RewardInterval(*edge["wide_interval"])
+                color = pygame.Color(interval_branch_color(interval))
+            alpha = min(
+                node_alpha.get(int(edge["parent_id"]), 1.0),
+                node_alpha.get(int(edge["child_id"]), 1.0),
+            )
+            color = _faded_color(color, alpha)
+            is_hovered = edge is self.hovered_edge and self.hovered_node is None
+            pygame.draw.line(
+                self.screen,
+                color,
+                parent,
+                child,
+                max(1, int(2 * self.graph_zoom)) + (3 if is_hovered else 0),
+            )
+            if self.graph_zoom >= 0.55:
+                label = str(edge.get("action_label", ""))
+                dx = child[0] - parent[0]
+                dy = child[1] - parent[1]
+                length = max(1.0, math.hypot(dx, dy))
+                stagger = ((edge_index % 5) - 2) * 5
+                self._text(
+                    label,
+                    (
+                        int((parent[0] + child[0]) / 2 - dy / length * stagger),
+                        int((parent[1] + child[1]) / 2 + dx / length * stagger),
+                    ),
+                    size=12,
+                    color=color,
+                    max_width=max(100, int(250 * self.graph_zoom)),
+                )
+            if is_hovered:
+                edge_summary = (
+                    f"实时分支 {edge['parent_id']}→{edge['child_id']} · interval 待站位完成"
+                    if edge.get("live_preview", False)
+                    else f"分支 {edge['parent_id']}→{edge['child_id']} · wide={edge['wide_interval']}"
+                )
+                self.hover_tooltip = [
+                    edge_summary,
+                    *[
+                        str(reason.get("action_label", reason.get("action_key", "")))
+                        for reason in edge.get("reasons", [])
+                    ],
+                ]
+        node_lookup = {int(node["node_id"]): node for node in graph.get("nodes", [])}
+        nodes_with_children = set(
+            self._graph_structure(raw_graph)["children"]
+        )
+        expanded_nodes = raw_graph.setdefault("_expanded_node_ids", set())
+        node_width = max(30, int(42 * self.graph_zoom))
+        node_height = max(18, int(24 * self.graph_zoom))
+        for node_id, point in self.node_screen_positions.items():
+            node = node_lookup[node_id]
+            alpha = node_alpha.get(node_id, 1.0)
+            if node["is_terminal"]:
+                color = GOOD if "好人" in str(node["result"]) else WOLF
+            else:
+                color = pygame.Color("#CBD5E1")
+            color = _faded_color(color, alpha)
+            node_rect = pygame.Rect(
+                int(point[0] - node_width / 2),
+                int(point[1] - node_height / 2),
+                node_width,
+                node_height,
+            )
+            pygame.draw.rect(
+                self.screen,
+                _faded_color(pygame.Color("#0D1727"), alpha),
+                node_rect,
+                border_radius=5,
+            )
+            pygame.draw.rect(
+                self.screen,
+                _faded_color(
+                    ACCENT if node_id == self.selected_node else BORDER,
+                    alpha,
+                ),
+                node_rect.inflate(6 if node_id == self.hovered_node else 0, 6 if node_id == self.hovered_node else 0),
+                width=3 if node_id == self.hovered_node else 2,
+                border_radius=6,
+            )
+            phase_color = _faded_color(
+                pygame.Color("#FBBF24")
+                if node["phase"] == "day"
+                else pygame.Color("#8B5CF6"),
+                alpha,
+            )
+            pygame.draw.circle(
+                self.screen,
+                phase_color,
+                (node_rect.x + 7, node_rect.centery),
+                max(3, int(4 * self.graph_zoom)),
+            )
+            self._text(
+                f"N{node_id}",
+                (node_rect.x + 14, node_rect.y + max(1, (node_rect.height - 14) // 2)),
+                size=12,
+                color=color,
+                max_width=node_rect.width - 17,
+            )
+            if node_id in nodes_with_children:
+                marker_center = (node_rect.right + 6, node_rect.centery)
+                marker_color = _faded_color(ACCENT, alpha)
+                pygame.draw.circle(self.screen, PANEL_ALT, marker_center, 6)
+                pygame.draw.circle(self.screen, marker_color, marker_center, 6, width=1)
+                pygame.draw.line(
+                    self.screen,
+                    marker_color,
+                    (marker_center[0] - 3, marker_center[1]),
+                    (marker_center[0] + 3, marker_center[1]),
+                    1,
+                )
+                if node_id not in expanded_nodes:
+                    pygame.draw.line(
+                        self.screen,
+                        marker_color,
+                        (marker_center[0], marker_center[1] - 3),
+                        (marker_center[0], marker_center[1] + 3),
+                        1,
+                    )
+            if node_id == self.hovered_node:
+                self.hover_tooltip = self._node_game_state_details(node_id)
+        self.screen.set_clip(clip_before)
+
+        details = self._selected_node_details(self.hovered_node)
+        if not details:
+            details = self._selected_node_details()
+        if details:
+            detail_rect = pygame.Rect(rect.x + 8, rect.bottom - 92, rect.width - 16, 84)
+            pygame.draw.rect(self.screen, pygame.Color("#0D1727"), detail_rect, border_radius=5)
+            for offset, line in enumerate(details[:4]):
+                self._text(line, (detail_rect.x + 8, detail_rect.y + 7 + offset * 18), size=12, max_width=detail_rect.width - 16)
+        elif not graph.get("nodes"):
+            self._text(
+                "正在等待站位和节点预览…"
+                if self.running
+                else "运行完成后点击站位行查看持久化 DAG",
+                (rect.x + 24, rect.y + 112),
+                color=MUTED,
+            )
+
+    def _build_args(self) -> argparse.Namespace:
+        values = vars(self.parser.parse_args([])).copy()
+        values.update(
+            {
+                "number_of_players": int(self.entries["number_of_players"].get_text()),
+                "number_of_wolves": int(self.entries["number_of_wolves"].get_text()),
+                "parallel_workers": int(self.entries["parallel_workers"].get_text()),
+                "lambda_risk": round(float(self.lambda_slider.get_current_value()), 2),
+                "page_size": self._page_size(),
+                "search_mode": "dfs",
+                "lang": "zh-CN",
+                "smart_vote": self.values["smart_vote"],
+                "disable_plot": True,
+                "tactics": ",".join(
+                    key
+                    for key, selected in self.tactics.items()
+                    if selected and self.values["smart_vote"]
+                ),
+            }
+        )
+        values.update({key: self.values[key] for key in ROLE_KEYS})
+        if values["number_of_players"] < 3:
+            raise ValueError("玩家数必须不小于 3")
+        if values["number_of_wolves"] < 1:
+            raise ValueError("普通狼人数必须不小于 1")
+        if values["parallel_workers"] < 1:
+            raise ValueError("进程数必须不小于 1")
+        if not 0.0 <= values["lambda_risk"] <= 1.0:
+            raise ValueError("lambda 必须位于 [0, 1]")
+        return argparse.Namespace(**values)
+
+    def _worker(self, args: argparse.Namespace) -> None:
+        try:
+            args.iteration_callback = lambda event: self.events.put(("iteration", event))
+            simulator = self.run_simulation(
+                args,
+                phase_callback=lambda phase: self.events.put(("phase", phase)),
+            )
+            self.events.put(("done", simulator))
+        except BaseException as exc:
+            self.events.put(("error", exc))
+
+    def _start(self) -> None:
+        if self.running:
+            return
+        try:
+            args = self._build_args()
+        except (TypeError, ValueError) as exc:
+            self.status = t("gui.invalid", error=exc)
+            return
+        self.rows.clear()
+        self.graph = {"nodes": [], "edges": []}
+        self.live_graphs.clear()
+        self.preview_position = 0
+        self.selected_row = None
+        self.page_index = 0
+        self.progress = 0.0
+        self.position_progress.clear()
+        self.active_position = 0
+        self.live_stats.update(
+            terminal_count=0,
+            good_paths=0,
+            wolf_paths=0,
+            expanded_nodes=0,
+            discovered_nodes=0,
+            frontier_size=0,
+            edge_count=0,
+            completed_positions=0,
+            total_positions=0,
+        )
+        while True:
+            try:
+                self.worker_progress_queue.get_nowait()
+            except queue.Empty:
+                break
+        while True:
+            try:
+                self.worker_result_queue.get_nowait()
+            except queue.Empty:
+                break
+        self.last_data_refresh_at = 0.0
+        self.resume_event.set()
+        args.resume_event = self.resume_event
+        args.progress_queue = self.worker_progress_queue
+        args.result_queue = self.worker_result_queue
+        self.progress_bar.set_current_progress(0.0)
+        self.running = True
+        self.paused = False
+        self.start_button.disable()
+        self.start_button.set_text(t("gui.running_short") + " · DFS")
+        self.pause_button.set_text(t("gui.pause"))
+        self.pause_button.enable()
+        self.status = t("gui.starting")
+        threading.Thread(target=self._worker, args=(args,), daemon=True).start()
+
+    def _load_selected_graph(self) -> None:
+        if self.selected_row is None or self.simulator is None:
+            return
+        row = self.rows[self.selected_row]
+        cache = self.simulator.signature_cache
+        if cache is None:
+            return
+        self.graph = cache.get_position_graph(
+            self.simulator.run_id,
+            row["position_signature"],
+        )
+        self.graph["roles"] = list(row["roles"])
+        self.graph["position_signature"] = str(row["position_signature"])
+        self.graph["position_display"] = " | ".join(
+            f"{index + 1}:{role}" for index, role in enumerate(row["roles"])
+        )
+        self.graph["_expanded_node_ids"] = set()
+        self._recompute_loaded_graph()
+        self.selected_node = 0 if self.graph.get("nodes") else None
+        self.graph_pan = [0.0, 0.0]
+        self.graph_zoom = 0.78
+
+    def _recompute_loaded_graph(self) -> None:
+        if not self.graph.get("nodes"):
+            return
+        current_lambda = round(float(self.lambda_slider.get_current_value()), 2)
+        robust = recompute_graph_intervals(
+            self.graph,
+            lambda_risk=current_lambda,
+        )
+        self.last_interval_lambda = current_lambda
+        if self.selected_row is not None:
+            row = self.rows[self.selected_row]
+            row["wide_interval"] = robust.wide.to_list()
+            row["narrow_interval"] = robust.narrow.to_list()
+            row["camp"] = interval_camp(robust.wide)
+            row["interval_lambda"] = current_lambda
+        if not self.running:
+            self.status = f"λ={current_lambda:.2f}：已动态回传选中 DAG（未重新搜索）"
+
+    def _display_graph(self) -> dict[str, Any]:
+        if self.running and self.preview_position in self.live_graphs:
+            return self.live_graphs[self.preview_position]
+        return self.graph
+
+    @staticmethod
+    def _graph_structure(graph: dict[str, Any]) -> dict[str, Any]:
+        nodes = graph.get("nodes", [])
+        edges = graph.get("edges", [])
+        revision = (
+            len(nodes),
+            len(edges),
+            int(graph.get("_view_revision", 0)),
+        )
+        cached = graph.get("_view_structure")
+        if isinstance(cached, dict) and cached.get("revision") == revision:
+            return cached
+        node_by_id = {int(node["node_id"]): node for node in nodes}
+        incoming = dict.fromkeys(node_by_id, 0)
+        children: dict[int, set[int]] = {}
+        edges_by_parent: dict[int, list[dict[str, Any]]] = {}
+        edges_by_child: dict[int, list[dict[str, Any]]] = {}
+        for edge in edges:
+            parent_id = int(edge["parent_id"])
+            child_id = int(edge["child_id"])
+            if parent_id not in node_by_id or child_id not in node_by_id:
+                continue
+            children.setdefault(parent_id, set()).add(child_id)
+            edges_by_parent.setdefault(parent_id, []).append(edge)
+            edges_by_child.setdefault(child_id, []).append(edge)
+            incoming[child_id] += 1
+        entry_nodes = sorted(
+            node_id for node_id, incoming_count in incoming.items() if incoming_count == 0
+        )
+        if not entry_nodes and node_by_id:
+            entry_nodes = [min(node_by_id)]
+        cached = {
+            "revision": revision,
+            "node_by_id": node_by_id,
+            "children": children,
+            "edges_by_parent": edges_by_parent,
+            "edges_by_child": edges_by_child,
+            "entry_nodes": entry_nodes,
+        }
+        graph["_view_structure"] = cached
+        return cached
+
+    @classmethod
+    def _visible_graph(cls, graph: dict[str, Any]) -> dict[str, Any]:
+        structure = cls._graph_structure(graph)
+        node_by_id = structure["node_by_id"]
+        if not node_by_id:
+            return {**graph, "nodes": [], "edges": []}
+        expanded = graph.setdefault("_expanded_node_ids", set())
+        visible_ids = set(structure["entry_nodes"][:DAG_VISIBLE_NODE_LIMIT])
+        pending = list(visible_ids)
+        while pending and len(visible_ids) < DAG_VISIBLE_NODE_LIMIT:
+            parent_id = pending.pop()
+            if parent_id not in expanded:
+                continue
+            for child_id in sorted(structure["children"].get(parent_id, set())):
+                if child_id not in visible_ids:
+                    visible_ids.add(child_id)
+                    pending.append(child_id)
+                    if len(visible_ids) >= DAG_VISIBLE_NODE_LIMIT:
+                        break
+        visible_edges = []
+        for parent_id in visible_ids:
+            visible_edges.extend(
+                edge
+                for edge in structure["edges_by_parent"].get(parent_id, [])
+                if int(edge["child_id"]) in visible_ids
+            )
+        return {
+            **graph,
+            "nodes": [
+                node_by_id[node_id] for node_id in sorted(visible_ids)
+            ],
+            "edges": visible_edges,
+        }
+
+    @staticmethod
+    def _mark_newly_visible_nodes(
+        graph: dict[str, Any],
+        previous_ids: set[int],
+    ) -> None:
+        now = time.monotonic()
+        visible_ids = {
+            int(node["node_id"])
+            for node in PygameSimulatorUI._visible_graph(graph).get("nodes", [])
+        }
+        for node in graph.get("nodes", []):
+            if int(node["node_id"]) in visible_ids - previous_ids:
+                node["_visible_since"] = now
+
+    def _toggle_node_children(self, node_id: int) -> None:
+        graph = self._display_graph()
+        previous_ids = {
+            int(node["node_id"])
+            for node in self._visible_graph(graph).get("nodes", [])
+        }
+        expanded = graph.setdefault("_expanded_node_ids", set())
+        if node_id in expanded:
+            expanded.remove(node_id)
+        else:
+            expanded.add(node_id)
+        self._mark_newly_visible_nodes(graph, previous_ids)
+        self.selected_node = node_id
+
+    def _set_all_nodes_expanded(self, *, expanded: bool) -> None:
+        graph = self._display_graph()
+        previous_ids = {
+            int(node["node_id"])
+            for node in self._visible_graph(graph).get("nodes", [])
+        }
+        expanded_nodes = graph.setdefault("_expanded_node_ids", set())
+        if expanded:
+            structure = self._graph_structure(graph)
+            reachable = set(structure["entry_nodes"][:DAG_VISIBLE_NODE_LIMIT])
+            pending = list(reachable)
+            while pending and len(reachable) < DAG_VISIBLE_NODE_LIMIT:
+                parent_id = pending.pop(0)
+                expanded_nodes.add(parent_id)
+                for child_id in sorted(
+                    structure["children"].get(parent_id, set())
+                ):
+                    if child_id not in reachable:
+                        reachable.add(child_id)
+                        pending.append(child_id)
+                        if len(reachable) >= DAG_VISIBLE_NODE_LIMIT:
+                            break
+        else:
+            expanded_nodes.clear()
+        self._mark_newly_visible_nodes(graph, previous_ids)
+        visible_nodes = self._visible_graph(graph).get("nodes", [])
+        self.selected_node = (
+            int(visible_nodes[0]["node_id"]) if visible_nodes else None
+        )
+
+    def _upsert_progress_row(self, payload: dict[str, Any]) -> None:
+        position_index = int(payload["position_index"])
+        current_row = next(
+            (
+                row
+                for row in self.rows
+                if int(row["position_index"]) == position_index
+            ),
+            None,
+        )
+        if current_row is not None and not current_row.get("processing", False):
+            return
+        row = current_row or {
+            "position_index": position_index,
+            "position_signature": str(payload.get("position_signature", "")),
+            "roles": list(payload.get("roles", [])),
+            "position_display": str(payload.get("position_display", "")),
+            "good_paths": 0,
+            "wolf_paths": 0,
+            "wide_interval": [-1.0, 1.0],
+            "narrow_interval": [-1.0, 1.0],
+            "camp": "balanced",
+            "processing": True,
+        }
+        row.update(
+            state_count=int(payload.get("discovered_states", 0)),
+            edge_count=int(payload.get("edge_count", 0)),
+            terminal_count=int(payload.get("terminal_count", 0)),
+            processed_states=int(payload.get("processed_states", 0)),
+            runtime_seconds=float(payload.get("runtime_seconds", 0.0)),
+            processing=True,
+        )
+        if current_row is None:
+            self.rows.append(row)
+
+    def _upsert_result_row(self, result: dict[str, Any]) -> None:
+        position_index = int(result["position_index"])
+        completed = {**result, "processing": False}
+        for row_index, row in enumerate(self.rows):
+            if int(row["position_index"]) == position_index:
+                self.rows[row_index] = completed
+                return
+        self.rows.append(completed)
+
+    def _merge_live_preview(self, payload: dict[str, Any]) -> None:
+        position_index = int(payload["position_index"])
+        graph = self.live_graphs.setdefault(
+            position_index,
+            {
+                "nodes": [],
+                "edges": [],
+                "roles": list(payload.get("roles", [])),
+                "position_display": str(payload.get("position_display", "")),
+                "focus_node_id": 0,
+                "_expanded_node_ids": set(),
+            },
+        )
+        previous_visible_ids = {
+            int(node["node_id"])
+            for node in self._visible_graph(graph).get("nodes", [])
+        }
+        graph["roles"] = list(payload.get("roles", graph.get("roles", [])))
+        graph["position_display"] = str(
+            payload.get("position_display", graph.get("position_display", ""))
+        )
+        graph["focus_node_id"] = int(
+            payload.get("focus_node_id", graph.get("focus_node_id", 0))
+        )
+
+        incoming_nodes = [dict(node) for node in payload.get("preview_nodes", [])]
+        incoming_edges = [dict(edge) for edge in payload.get("preview_edges", [])]
+        node_by_id = {int(node["node_id"]): node for node in graph["nodes"]}
+        for node in incoming_nodes:
+            node_id = int(node["node_id"])
+            existing = node_by_id.get(node_id)
+            if existing is not None and "_visible_since" in existing:
+                node["_visible_since"] = existing["_visible_since"]
+            node_by_id[node_id] = node
+
+        edge_by_key = {
+            (int(edge["parent_id"]), int(edge["child_id"])): edge
+            for edge in graph["edges"]
+        }
+        for edge in incoming_edges:
+            edge_by_key[(int(edge["parent_id"]), int(edge["child_id"]))] = edge
+
+        keep_ids: set[int] = set()
+
+        def keep_node(node_id: int) -> None:
+            if node_id in node_by_id and len(keep_ids) < LIVE_PREVIEW_NODE_LIMIT:
+                keep_ids.add(node_id)
+
+        if node_by_id:
+            keep_node(min(node_by_id))
+        keep_node(int(graph["focus_node_id"]))
+        priority_edges = [*reversed(incoming_edges), *reversed(graph["edges"])]
+        for edge in priority_edges:
+            endpoints = {int(edge["parent_id"]), int(edge["child_id"])}
+            missing = endpoints - keep_ids
+            if len(keep_ids) + len(missing) <= LIVE_PREVIEW_NODE_LIMIT:
+                for node_id in endpoints:
+                    keep_node(node_id)
+        for node in reversed(incoming_nodes):
+            keep_node(int(node["node_id"]))
+        for node_id in sorted(node_by_id, reverse=True):
+            keep_node(node_id)
+
+        graph["nodes"] = [node_by_id[node_id] for node_id in sorted(keep_ids)]
+        graph["edges"] = [
+            edge
+            for (parent_id, child_id), edge in edge_by_key.items()
+            if parent_id in keep_ids and child_id in keep_ids
+        ]
+        graph["_view_revision"] = int(graph.get("_view_revision", 0)) + 1
+        graph.pop("_view_structure", None)
+        graph.setdefault("_expanded_node_ids", set()).intersection_update(keep_ids)
+        self._mark_newly_visible_nodes(graph, previous_visible_ids)
+        focus_node_id = int(graph["focus_node_id"])
+        if focus_node_id in keep_ids:
+            self.selected_node = focus_node_id
+
+    def _choose_preview_position(self) -> None:
+        active_positions = sorted(
+            position_index
+            for position_index, snapshot in self.position_progress.items()
+            if not snapshot.get("completed", False)
+            and position_index in self.live_graphs
+        )
+        if self.preview_position not in active_positions and active_positions:
+            self.preview_position = active_positions[0]
+            graph = self.live_graphs[self.preview_position]
+            self.selected_node = int(graph.get("focus_node_id", 0))
+
+    def _sync_live_node_totals(self) -> None:
+        snapshots = tuple(self.position_progress.values())
+        self.live_stats["expanded_nodes"] = sum(
+            int(item.get("processed_states", 0)) for item in snapshots
+        )
+        self.live_stats["discovered_nodes"] = sum(
+            int(item.get("discovered_states", 0)) for item in snapshots
+        )
+        self.live_stats["frontier_size"] = sum(
+            int(item.get("frontier_size", 0)) for item in snapshots
+        )
+        self.live_stats["edge_count"] = sum(
+            int(item.get("edge_count", 0)) for item in snapshots
+        )
+        self.live_stats["terminal_count"] = sum(
+            int(item.get("terminal_count", 0)) for item in snapshots
+        )
+
+    def _apply_iteration_event(self, payload: dict[str, Any]) -> None:
+        event_kind = str(payload.get("kind", ""))
+        position_index = int(payload.get("position_index", 0))
+        if event_kind in {"position_started", "node_progress"}:
+            current = self.position_progress.get(position_index, {})
+            if current.get("completed"):
+                return
+            if int(payload.get("processed_states", 0)) < int(
+                current.get("processed_states", 0)
+            ):
+                return
+            self.position_progress[position_index] = {
+                **payload,
+                "completed": False,
+            }
+            self._upsert_progress_row(payload)
+            self._merge_live_preview(payload)
+            self._choose_preview_position()
+            self.active_position = position_index
+            self.live_stats["total_positions"] = int(
+                payload.get("total_positions", self.live_stats["total_positions"])
+            )
+            self._sync_live_node_totals()
+            if self.paused:
+                self.status = t(
+                    "gui.paused",
+                    expanded=_compact_integer(
+                        int(self.live_stats["expanded_nodes"])
+                    ),
+                )
+            else:
+                self.status = t(
+                    "gui.node_progress",
+                    position=position_index,
+                    expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
+                    discovered=_compact_integer(
+                        int(self.live_stats["discovered_nodes"])
+                    ),
+                )
+            return
+        if event_kind != "position_result":
+            return
+
+        self._upsert_result_row(payload)
+        done = int(payload["completed_positions"])
+        total = int(payload["total_positions"])
+        self.position_progress[position_index] = {
+            "processed_states": int(payload["processed_states"]),
+            "discovered_states": int(payload["state_count"]),
+            "frontier_size": 0,
+            "edge_count": int(payload["edge_count"]),
+            "terminal_count": int(payload["terminal_count"]),
+            "completed": True,
+        }
+        self._choose_preview_position()
+        self._sync_live_node_totals()
+        self.progress = done * 100.0 / max(1, total)
+        self.progress_bar.set_current_progress(self.progress)
+        if not self.paused:
+            self.status = t("gui.running", done=done, total=total)
+        self.live_stats["good_paths"] = sum(
+            int(row["good_paths"]) for row in self.rows
+        )
+        self.live_stats["wolf_paths"] = sum(
+            int(row["wolf_paths"]) for row in self.rows
+        )
+        self.live_stats["completed_positions"] = done
+        self.live_stats["total_positions"] = total
+
+    def _toggle_pause(self) -> None:
+        if not self.running:
+            return
+        if self.paused:
+            self.resume_event.set()
+            self.paused = False
+            self.pause_button.set_text(t("gui.pause"))
+            self.start_button.set_text(t("gui.running_short") + " · DFS")
+            self.status = t(
+                "gui.node_progress",
+                position=self.active_position or "?",
+                expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
+                discovered=_compact_integer(int(self.live_stats["discovered_nodes"])),
+            )
+            return
+        self.resume_event.clear()
+        self.paused = True
+        self.pause_button.set_text(t("gui.resume"))
+        self.start_button.set_text(t("gui.paused_short") + " · DFS")
+        self.status = t(
+            "gui.paused",
+            expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
+        )
+
+    def _drain_events(self) -> None:
+        now = time.monotonic()
+        if now - self.last_data_refresh_at >= UI_DATA_REFRESH_SECONDS:
+            for _ in range(512):
+                try:
+                    self._apply_iteration_event(
+                        self.worker_progress_queue.get_nowait()
+                    )
+                except queue.Empty:
+                    break
+            self.last_data_refresh_at = now
+        try:
+            while True:
+                kind, payload = self.events.get_nowait()
+                if kind == "iteration":
+                    self._apply_iteration_event(payload)
+                elif kind == "done":
+                    self.simulator = payload
+                    result = self.simulator.last_result or {}
+                    for result_row in result.get("positions", []):
+                        self._upsert_result_row(result_row)
+                    for row in self.rows:
+                        index = int(row["position_index"])
+                        self.position_progress[index] = {
+                            "processed_states": int(row["processed_states"]),
+                            "discovered_states": int(row["state_count"]),
+                            "frontier_size": 0,
+                            "edge_count": int(row["edge_count"]),
+                            "terminal_count": int(row["terminal_count"]),
+                            "completed": True,
+                        }
+                    self._sync_live_node_totals()
+                    self.live_stats["good_paths"] = sum(
+                        int(row["good_paths"]) for row in self.rows
+                    )
+                    self.live_stats["wolf_paths"] = sum(
+                        int(row["wolf_paths"]) for row in self.rows
+                    )
+                    self.progress = 100.0
+                    self.progress_bar.set_current_progress(100.0)
+                    self.status = t(
+                        "gui.finished",
+                        positions=result.get("position_count", 1),
+                        states=result.get("processed_states", result.get("state_count", 0)),
+                    )
+                    self.running = False
+                    self.paused = False
+                    self.resume_event.set()
+                    self.start_button.enable()
+                    self.start_button.set_text(t("gui.start") + " · DFS")
+                    self.pause_button.set_text(t("gui.pause"))
+                    self.pause_button.disable()
+                elif kind == "error":
+                    self.running = False
+                    self.paused = False
+                    self.resume_event.set()
+                    self.start_button.enable()
+                    self.start_button.set_text(t("gui.start") + " · DFS")
+                    self.pause_button.set_text(t("gui.pause"))
+                    self.pause_button.disable()
+                    self.status = t("gui.failed", error=payload)
+        except queue.Empty:
+            pass
+
+    def _handle_custom_click(self, position: tuple[int, int]) -> None:
+        for key, rect in self.toggle_rects.items():
+            if rect.collidepoint(position):
+                self.values[key] = not self.values[key]
+                if key in {"include_witch", "include_guard"}:
+                    self._sync_night_tactics()
+                return
+        if self.values["smart_vote"]:
+            if self.header_rects.get("day", pygame.Rect(0, 0, 0, 0)).collidepoint(position):
+                self.day_expanded = not self.day_expanded
+                return
+            if self.header_rects.get("night", pygame.Rect(0, 0, 0, 0)).collidepoint(position):
+                self.night_expanded = not self.night_expanded
+                return
+            for key, rect in self.tactic_rects.items():
+                if rect.collidepoint(position):
+                    if key in NIGHT_TACTICS and not (
+                        self.values["include_witch"] or self.values["include_guard"]
+                    ):
+                        return
+                    self.tactics[key] = not self.tactics[key]
+                    return
+        for rect, row_index in self.table_row_rects:
+            if rect.collidepoint(position):
+                self.selected_row = row_index
+                self._load_selected_graph()
+                return
+        graph_rect = self._graph_rect()
+        if graph_rect.collidepoint(position):
+            nearest = self._node_at(position)
+            if nearest is not None:
+                self._toggle_node_children(nearest)
+
+    def _node_at(self, position: tuple[int, int]) -> int | None:
+        nearest = None
+        nearest_distance = 18.0
+        for node_id, point in self.node_screen_positions.items():
+            distance = math.dist(position, point)
+            if distance < nearest_distance:
+                nearest = node_id
+                nearest_distance = distance
+        return nearest
+
+    def _handle_event(self, event: pygame.event.Event) -> None:
+        if event.type == pygame.QUIT:
+            self.resume_event.set()
+            self.keep_running = False
+        elif event.type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == self.start_button:
+                self._start()
+            elif event.ui_element == self.pause_button:
+                self._toggle_pause()
+            elif event.ui_element == self.first_button:
+                self.page_index = 0
+            elif event.ui_element == self.previous_button:
+                self.page_index = max(0, self.page_index - 1)
+            elif event.ui_element == self.next_button:
+                self.page_index += 1
+            elif event.ui_element == self.last_button:
+                self.page_index = max(0, math.ceil(len(self.rows) / self._page_size()) - 1)
+            elif event.ui_element == self.expand_all_button:
+                self._set_all_nodes_expanded(expanded=True)
+            elif event.ui_element == self.collapse_all_button:
+                self._set_all_nodes_expanded(expanded=False)
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            graph_node = (
+                self._node_at(event.pos)
+                if self._graph_rect().collidepoint(event.pos)
+                else None
+            )
+            self._handle_custom_click(event.pos)
+            graph_control_clicked = (
+                self.expand_all_button.rect.collidepoint(event.pos)
+                or self.collapse_all_button.rect.collidepoint(event.pos)
+            )
+            if (
+                self._graph_rect().collidepoint(event.pos)
+                and graph_node is None
+                and not graph_control_clicked
+            ):
+                self.dragging_graph = True
+                self.drag_origin = event.pos
+                self.pan_origin = tuple(self.graph_pan)
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.dragging_graph = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging_graph:
+            self.graph_pan[0] = self.pan_origin[0] + event.pos[0] - self.drag_origin[0]
+            self.graph_pan[1] = self.pan_origin[1] + event.pos[1] - self.drag_origin[1]
+        elif event.type == pygame.MOUSEWHEEL:
+            if self._graph_rect().collidepoint(pygame.mouse.get_pos()):
+                self.graph_zoom = max(0.25, min(2.4, self.graph_zoom * (1.12 ** event.y)))
+        self.manager.process_events(event)
+
+    def _draw_hover_tooltip(self) -> None:
+        if not self.hover_tooltip:
+            return
+        if len(self.hover_tooltip) > 12:
+            font = self._font(12)
+            line_height = 14
+            max_rows = max(1, (self.screen.get_height() - 54) // line_height)
+            column_count = min(
+                3,
+                max(1, math.ceil(len(self.hover_tooltip) / max_rows)),
+            )
+            for _ in range(3):
+                column_width = (self.screen.get_width() - 32) // column_count
+                wrapped: list[str] = []
+                for source_line in self.hover_tooltip:
+                    line = str(source_line)
+                    indent = line[: len(line) - len(line.lstrip())]
+                    current = ""
+                    for character in line:
+                        if current and font.size(current + character)[0] > column_width - 22:
+                            wrapped.append(current)
+                            current = indent + character
+                        else:
+                            current += character
+                    wrapped.append(current)
+                required_columns = min(
+                    3,
+                    max(1, math.ceil(len(wrapped) / max_rows)),
+                )
+                if required_columns == column_count:
+                    break
+                column_count = required_columns
+            visible_rows = math.ceil(len(wrapped) / column_count)
+            rect = pygame.Rect(
+                12,
+                12,
+                self.screen.get_width() - 24,
+                min(self.screen.get_height() - 24, 26 + visible_rows * line_height),
+            )
+            pygame.draw.rect(self.screen, pygame.Color("#07101E"), rect, border_radius=7)
+            pygame.draw.rect(self.screen, ACCENT, rect, width=2, border_radius=7)
+            rows_per_column = math.ceil(len(wrapped) / column_count)
+            for line_index, line in enumerate(wrapped):
+                column = line_index // rows_per_column
+                row = line_index % rows_per_column
+                self._text(
+                    line,
+                    (
+                        rect.x + 10 + column * column_width,
+                        rect.y + 8 + row * line_height,
+                    ),
+                    size=12,
+                    color=ACCENT if line_index == 0 else TEXT,
+                )
+            return
+        lines = self.hover_tooltip[:7]
+        width = min(
+            650,
+            max(260, max(self._font(12).size(str(line))[0] for line in lines) + 24),
+        )
+        height = 16 + len(lines) * 19
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        x = min(self.screen.get_width() - width - 8, mouse_x + 18)
+        y = min(self.screen.get_height() - height - 8, mouse_y + 18)
+        rect = pygame.Rect(max(8, x), max(8, y), width, height)
+        pygame.draw.rect(self.screen, pygame.Color("#07101E"), rect, border_radius=6)
+        pygame.draw.rect(self.screen, ACCENT, rect, width=1, border_radius=6)
+        for offset, line in enumerate(lines):
+            self._text(
+                str(line),
+                (rect.x + 10, rect.y + 8 + offset * 19),
+                size=12,
+                max_width=rect.width - 20,
+            )
+
+    def _update_input_hover_tooltip(self) -> None:
+        mouse = pygame.mouse.get_pos()
+        extra = {
+            "number_of_players": "整数且不小于 3；默认测试板子为 7 人",
+            "number_of_wolves": "整数且不小于 1；白狼王单独计数",
+            "parallel_workers": "整数且不小于 1；不同站位由独立进程计算",
+            "page_size": "范围 [1,10]；只影响 GUI 分页，不影响迭代结果",
+        }
+        if self.lambda_slider.rect.collidepoint(mouse):
+            self.hover_tooltip = [
+                t("label.lambda_risk"),
+                "范围 [0,1]、步进 0.01、默认 0.5；拖动时右侧实时显示数值",
+                "只放缩 wide/narrow 观测区间，不参与搜索或分支选择",
+            ]
+            return
+        if self.pause_button.rect.collidepoint(mouse):
+            self.hover_tooltip = [
+                t("gui.resume" if self.paused else "gui.pause"),
+                "暂停会保留当前 frontier、DAG 和节点计数；恢复后从原位置继续",
+                "worker 会在展开下一节点前响应，正在生成的单个节点会先完成",
+            ]
+            return
+        if self.expand_all_button.rect.collidepoint(mouse):
+            self.hover_tooltip = [
+                t("gui.expand_all"),
+                "展开当前站位观测窗口内的全部节点；不读取完整 SQLite DAG",
+            ]
+            return
+        if self.collapse_all_button.rect.collidepoint(mouse):
+            self.hover_tooltip = [
+                t("gui.collapse_all"),
+                "收起当前站位的全部子树，只保留局部入口节点",
+            ]
+            return
+        for key, entry in self.entries.items():
+            if entry.rect.collidepoint(mouse):
+                self.hover_tooltip = [
+                    t(f"label.{key}"),
+                    extra[key],
+                    t(f"help.{key}"),
+                ]
+                return
+
+    def _update_option_hover_tooltip(self) -> None:
+        mouse = pygame.mouse.get_pos()
+        option_help = {
+            "include_seer": t("help.include_seer"),
+            "include_witch": t("help.include_witch"),
+            "include_guard": t("help.include_guard"),
+            "include_hunter": t("help.include_hunter"),
+            "include_idiot": "启用后替换一名村民；愚者放逐免死、公开身份并永久失去投票权",
+            "include_white_werewolf_king": t("help.include_white_werewolf_king"),
+            "all_positions": t("help.all_positions"),
+            "smart_vote": "默认开启；战术优先于阵营筛选，关闭时战术不显示且提交空集合",
+        }
+        for key, rect in self.toggle_rects.items():
+            if rect.collidepoint(mouse):
+                self.hover_tooltip = [t(f"label.{key}"), option_help[key]]
+                return
+        tactic_help = {
+            "seer_hide": "在预言家公开身份的基线之外，增加预言家保持隐藏的白天分支",
+            "villager_decoy": "枚举存活村民声明预言家的组合，并分别形成次夜指定刀口",
+            "wolf_bloc": "所有存活狼人集中投给同一合法非狼目标；同级目标全部展开",
+            "wolf_self_kill": "需女巫或守卫存在且存活狼不少于 2；枚举每名存活狼作为自刀目标",
+            "wolf_no_kill": "需女巫或守卫存在；增加无狼刀目标的平安夜分支，其他夜间行动仍结算",
+        }
+        for key, rect in self.tactic_rects.items():
+            if rect.collidepoint(mouse):
+                lines = [t(f"tactic.{key}"), tactic_help[key]]
+                if key in NIGHT_TACTICS and not (
+                    self.values["include_witch"] or self.values["include_guard"]
+                ):
+                    lines.append("当前禁用：需要先勾选女巫或守卫")
+                self.hover_tooltip = lines
+                return
+        for group, rect in self.header_rects.items():
+            if rect.collidepoint(mouse):
+                self.hover_tooltip = [
+                    t("tactic.day" if group == "day" else "tactic.night"),
+                    "点击展开或折叠；勾选战术会在正常基线之外增加对应分支",
+                ]
+                return
+
+    def draw(self) -> None:
+        current_lambda = round(float(self.lambda_slider.get_current_value()), 2)
+        if (
+            self.graph.get("nodes")
+            and current_lambda != self.last_interval_lambda
+        ):
+            self._recompute_loaded_graph()
+        self.screen.fill(BACKGROUND)
+        self._draw_config()
+        self._draw_table()
+        self._draw_graph()
+        self._update_option_hover_tooltip()
+        self._update_input_hover_tooltip()
+        self._text(self.status, (18, 752), size=12, color=MUTED, max_width=285)
+        self._text(
+            f"缓存/图数据：{_compact_integer(sum(int(row.get('state_count', 0)) for row in self.rows))} 状态",
+            (1090, 325),
+            size=11,
+            color=MUTED,
+            max_width=330,
+        )
+        self.manager.draw_ui(self.screen)
+        self._draw_hover_tooltip()
+        pygame.display.flip()
+
+    def run(self, *, max_frames: int | None = None) -> None:
+        frames = 0
+        while self.keep_running:
+            delta = self.clock.tick(60) / 1000.0
+            for event in pygame.event.get():
+                self._handle_event(event)
+            self._drain_events()
+            self.manager.update(delta)
+            self.draw()
+            frames += 1
+            if max_frames is not None and frames >= max_frames:
+                break
+        pygame.quit()
 
 
 def launch_gui(
     parser: argparse.ArgumentParser,
-    run_simulation: Callable[[argparse.Namespace], object],
+    run_simulation: Callable[..., Any],
+    *,
+    max_frames: int | None = None,
 ) -> None:
-    try:
-        import tkinter as tk
-        from tkinter import messagebox
-        from tkinter import ttk
-    except ImportError as exc:
-        raise RuntimeError(t("gui.tkinter_missing")) from exc
+    """启动默认中文、固定 DFS 的 Pygame 可视化界面。"""
 
-    root = tk.Tk()
-    root.title(t("gui.title"))
-    root.geometry(GUI_GEOMETRY)
-    root.minsize(*GUI_MIN_SIZE)
-
-    container = ttk.Frame(root, padding=8)
-    container.pack(fill=tk.BOTH, expand=True)
-
-    content_frame = ttk.Frame(container)
-    content_frame.pack(fill=tk.BOTH, expand=True)
-    content_frame.columnconfigure(0, weight=1)
-    content_frame.columnconfigure(1, weight=1)
-    content_frame.columnconfigure(2, weight=1)
-    content_frame.rowconfigure(0, weight=1)
-
-    # 三栏弹性布局：左=基础/角色，中=性能/在线/战术，右=自定义状态/控制/状态
-    left_inner = ttk.Frame(content_frame)
-    left_inner.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
-    mid_col = ttk.Frame(content_frame)
-    mid_col.grid(row=0, column=1, sticky="nsew", padx=(6, 6))
-    right_panel = ttk.Frame(content_frame)
-    right_panel.grid(row=0, column=2, sticky="nsew", padx=(6, 0))
-    right_panel.rowconfigure(1, weight=1)
-
-    fields_frame = ttk.LabelFrame(
-        left_inner, text=t("gui.panel.fields"), padding=10
-    )
-    fields_frame.pack(fill=tk.X)
-
-    bools_frame = ttk.LabelFrame(
-        left_inner, text=t("gui.panel.bools"), padding=10
-    )
-    bools_frame.pack(fill=tk.X, pady=(10, 0))
-
-    limits_frame = ttk.LabelFrame(
-        mid_col, text=t("gui.panel.limits"), padding=6
-    )
-    limits_frame.pack(fill=tk.X, pady=(8, 0))
-
-    controls_frame = ttk.Frame(right_panel)
-    controls_frame.pack(fill=tk.X, pady=(10, 0))
-
-    status_frame = ttk.LabelFrame(
-        right_panel, text=t("gui.panel.status"), padding=10
-    )
-    status_frame.pack(fill=tk.BOTH, expand=True, pady=(10, 0))
-
-    defaults = {
-        action.dest: parser.get_default(action.dest) for action in parser._actions
-    }
-
-    # i18n：按 --lang 设置当前语言（语言切换已隐藏，默认中文）
-    set_language(defaults.get("lang", "zh-CN"))
-
-    class ToolTip:
-        def __init__(self, widget, text: str) -> None:
-            self.widget = widget
-            self.text = text
-            self.window = None
-            self.after_id = None
-            widget.bind("<Enter>", self.schedule, add="+")
-            widget.bind("<Leave>", self.hide, add="+")
-            widget.bind("<ButtonPress>", self.hide, add="+")
-
-        def schedule(self, _event=None) -> None:
-            self.cancel()
-            self.after_id = self.widget.after(450, self.show)
-
-        def cancel(self) -> None:
-            if self.after_id is None:
-                return
-            try:
-                self.widget.after_cancel(self.after_id)
-            except Exception:
-                pass
-            self.after_id = None
-
-        def show(self) -> None:
-            self.cancel()
-            if self.window is not None:
-                return
-            x = self.widget.winfo_pointerx() + 14
-            y = self.widget.winfo_pointery() + 12
-            self.window = tk.Toplevel(self.widget)
-            self.window.wm_overrideredirect(True)
-            self.window.wm_geometry(f"+{x}+{y}")
-            label = tk.Label(
-                self.window,
-                text=self.text,
-                justify=tk.LEFT,
-                wraplength=360,
-                background="#FFFFE0",
-                relief=tk.SOLID,
-                borderwidth=1,
-                padx=7,
-                pady=5,
-            )
-            label.pack()
-
-        def hide(self, _event=None) -> None:
-            self.cancel()
-            if self.window is None:
-                return
-            self.window.destroy()
-            self.window = None
-
-    def attach_tooltip(widget, key: str) -> None:
-        text = t("tip." + key)
-        if text != "tip." + key:
-            ToolTip(widget, text)
-
-    def add_labeled_entry(
-        frame: ttk.LabelFrame,
-        row: int,
-        col_block: int,
-        key: str,
-        default_value: str,
-    ):
-        label_col = col_block * 2
-        entry_col = label_col + 1
-        left_pad = 0 if col_block == 0 else 18
-        label_widget = ttk.Label(frame, text=t("label." + key))
-        label_widget.grid(
-            row=row,
-            column=label_col,
-            sticky="w",
-            padx=(left_pad, 8),
-            pady=4,
-        )
-        var = tk.StringVar(value=default_value)
-        entry = ttk.Entry(frame, textvariable=var, width=16)
-        entry.grid(row=row, column=entry_col, sticky="w", pady=4)
-        attach_tooltip(label_widget, key)
-        attach_tooltip(entry, key)
-        return var
-
-    entry_vars: dict[str, tk.StringVar] = {}
-    for row, key in enumerate(GUI_BASIC_ENTRY_KEYS):
-        entry_vars[key] = add_labeled_entry(
-            fields_frame,
-            row,
-            0,
-            key,
-            str(defaults[key]),
-        )
-
-    search_mode_label = ttk.Label(fields_frame, text=t("label.search_mode"))
-    search_mode_label.grid(
-        row=len(GUI_BASIC_ENTRY_KEYS), column=0, sticky="w", padx=(0, 8), pady=4
-    )
-    search_mode_var = tk.StringVar(value=_SEARCH_MODE_INV[defaults["search_mode"]])
-    search_mode_box = ttk.Combobox(
-        fields_frame,
-        textvariable=search_mode_var,
-        values=list(_SEARCH_MODE_ZH),
-        state="readonly",
-        width=19,
-    )
-    search_mode_box.grid(row=len(GUI_BASIC_ENTRY_KEYS), column=1, sticky="w", pady=4)
-    attach_tooltip(search_mode_label, "search_mode")
-    attach_tooltip(search_mode_box, "search_mode")
-
-    bool_vars: dict[str, tk.BooleanVar] = {}
-    for key in GUI_ROLE_TOGGLE_KEYS:
-        bool_vars[key] = tk.BooleanVar(value=defaults[key])
-
-    for index, key in enumerate(GUI_ROLE_TOGGLE_KEYS):
-        checkbutton = ttk.Checkbutton(
-            bools_frame,
-            text=t("label." + key),
-            variable=bool_vars[key],
-        )
-        checkbutton.grid(
-            row=index // 3,
-            column=index % 3,
-            sticky="w",
-            padx=(0, 16),
-            pady=4,
-        )
-        attach_tooltip(checkbutton, key)
-
-    for key, row, col_block in GUI_LIMIT_ENTRY_LAYOUT:
-        entry_vars[key] = add_labeled_entry(
-            limits_frame,
-            row,
-            col_block,
-            key,
-            _optional_default_text(defaults[key]),
-        )
-
-    disable_plot_var = tk.BooleanVar(value=defaults["disable_plot"])
-    disable_plot_checkbutton = ttk.Checkbutton(
-        limits_frame,
-        text=t("label.disable_plot"),
-        variable=disable_plot_var,
-    )
-    disable_plot_checkbutton.grid(
-        row=7, column=2, columnspan=2, sticky="w", pady=(8, 4), padx=(18, 0)
-    )
-    attach_tooltip(disable_plot_checkbutton, "disable_plot")
-
-    # ---- 在线决策参数面板 ----
-    online_frame = ttk.LabelFrame(mid_col, text=t("label.policy"), padding=6)
-    online_frame.pack(fill=tk.X, pady=(8, 0))
-
-    policy_var = tk.StringVar(value=_POLICY_INV[defaults.get("policy", "exhaustive")])
-    ttk.Label(online_frame, text=t("label.policy")).grid(
-        row=0, column=0, sticky="w", padx=(0, 8), pady=4
-    )
-    policy_box = ttk.Combobox(
-        online_frame,
-        textvariable=policy_var,
-        values=list(_POLICY_ZH),
-        state="readonly",
-        width=19,
-    )
-    policy_box.grid(row=0, column=1, sticky="w", pady=4)
-    attach_tooltip(policy_box, "policy")
-
-    toggle_var = tk.StringVar(value=_TOGGLE_INV[defaults.get("toggle", "conservative")])
-    ttk.Label(online_frame, text=t("label.toggle")).grid(
-        row=1, column=0, sticky="w", padx=(0, 8), pady=4
-    )
-    toggle_box = ttk.Combobox(
-        online_frame,
-        textvariable=toggle_var,
-        values=list(_TOGGLE_ZH),
-        state="readonly",
-        width=19,
-    )
-    toggle_box.grid(row=1, column=1, sticky="w", pady=4)
-    attach_tooltip(toggle_box, "toggle")
-
-    lookahead_var = tk.StringVar(value=_optional_default_text(defaults.get("lookahead_depth")))
-    ttk.Label(online_frame, text=t("label.lookahead_depth")).grid(
-        row=2, column=0, sticky="w", padx=(0, 8), pady=4
-    )
-    lookahead_entry = ttk.Entry(online_frame, textvariable=lookahead_var, width=16)
-    lookahead_entry.grid(row=2, column=1, sticky="w", pady=4)
-    attach_tooltip(lookahead_entry, "lookahead_depth")
-
-    lambda_var = tk.DoubleVar(value=float(defaults.get("lambda_risk", 1.0)))
-    ttk.Label(online_frame, text=t("label.lambda_risk")).grid(
-        row=3, column=0, sticky="w", padx=(0, 8), pady=4
-    )
-    lambda_slider = ttk.Scale(
-        online_frame, from_=0.0, to=1.0, variable=lambda_var, length=180
-    )
-    lambda_slider.grid(row=3, column=1, sticky="w", pady=4)
-    attach_tooltip(lambda_slider, "lambda_risk")
-
-    lambda_value_label = ttk.Label(online_frame, text=f"{lambda_var.get():.2f}")
-    lambda_value_label.grid(row=3, column=2, sticky="w", padx=(8, 0), pady=4)
-
-    def _update_lambda_label(*_args) -> None:
-        lambda_value_label.config(text=f"{lambda_var.get():.2f}")
-
-    lambda_var.trace_add("write", _update_lambda_label)
-
-    # ---- 智能投票 + 夜间战术（父级勾选 + 缩进子勾选，避免 Treeview 的 +- 与勾选冲突） ----
-    vote_tactics_frame = ttk.LabelFrame(mid_col, text=t("gui.vote_tactics"), padding=6)
-    vote_tactics_frame.pack(fill=tk.X, pady=(8, 0))
-    vote_enabled = tk.BooleanVar(value=defaults.get("smart_vote", False))
-    tactics_labels = {"self_kill": t("tactic.self_kill"), "no_kill": t("tactic.no_kill")}
-    tactic_vars: dict[str, tk.BooleanVar] = {
-        "self_kill": tk.BooleanVar(value=False),
-        "no_kill": tk.BooleanVar(value=False),
-    }
-
-    tactics_sub = ttk.Frame(vote_tactics_frame)
-
-    def _refresh_vote_tactics() -> None:
-        if vote_enabled.get():
-            tactics_sub.pack(fill=tk.X, pady=(4, 0))
-        else:
-            # 智能投票未启用：隐藏子项勾选框，且所有战术失效
-            for var in tactic_vars.values():
-                var.set(False)
-            tactics_sub.pack_forget()
-
-    vote_check = ttk.Checkbutton(
-        vote_tactics_frame,
-        text=t("label.smart_vote"),
-        variable=vote_enabled,
-        command=_refresh_vote_tactics,
-    )
-    vote_check.pack(anchor="w")
-    attach_tooltip(vote_check, "smart_vote")
-
-    for iid, label in tactics_labels.items():
-        cb = ttk.Checkbutton(tactics_sub, text=label, variable=tactic_vars[iid])
-        cb.pack(anchor="w", padx=(30, 0), pady=(3, 0))
-        attach_tooltip(cb, "tactics")
-
-    _refresh_vote_tactics()
-
-    # ---- 可视化自定义起始状态编辑器 ----
-    custom_frame = ttk.LabelFrame(right_panel, text=t("gui.custom_state"), padding=6)
-    custom_frame.pack(fill=tk.X, pady=(0, 8), before=controls_frame)
-    use_custom_var = tk.BooleanVar(value=False)
-    ttk.Checkbutton(
-        custom_frame, text=t("gui.use_custom_state"), variable=use_custom_var
-    ).pack(anchor="w")
-
-    players_rows: list[dict] = [
-        {"role": "村民", "is_alive": True, "skills": {}},
-        {"role": "狼人", "is_alive": True, "skills": {"攻击": -1}},
-    ]
-
-    players_tree = ttk.Treeview(
-        custom_frame, columns=("role", "alive", "skills"), show="headings", height=4
-    )
-    players_tree.heading("role", text=t("gui.col.role"))
-    players_tree.heading("alive", text=t("gui.col.alive"))
-    players_tree.heading("skills", text=t("gui.col.skills"))
-    players_tree.column("role", width=90)
-    players_tree.column("alive", width=50)
-    players_tree.column("skills", width=150)
-    players_tree.pack(fill=tk.X)
-
-    def _refresh_players_tree() -> None:
-        players_tree.delete(*players_tree.get_children())
-        for i, p in enumerate(players_rows):
-            skills_text = ", ".join(f"{k}:{v}" for k, v in p["skills"].items()) or "-"
-            players_tree.insert(
-                "",
-                "end",
-                iid=str(i),
-                values=(p["role"], t("gui.alive") if p["is_alive"] else t("gui.dead"), skills_text),
-            )
-
-    _refresh_players_tree()
-
-    def _add_player() -> None:
-        players_rows.append({"role": "村民", "is_alive": True, "skills": {}})
-        _refresh_players_tree()
-
-    def _remove_player() -> None:
-        selection = players_tree.selection()
-        if not selection:
-            return
-        index = int(selection[0])
-        if 0 <= index < len(players_rows):
-            players_rows.pop(index)
-        _refresh_players_tree()
-
-    def _edit_player() -> None:
-        selection = players_tree.selection()
-        if not selection:
-            return
-        index = int(selection[0])
-        player = players_rows[index]
-
-        dialog = tk.Toplevel(root)
-        dialog.title(t("gui.edit_player"))
-        role_var = tk.StringVar(value=player["role"])
-        alive_var = tk.BooleanVar(value=player["is_alive"])
-        skills_var = tk.StringVar(
-            value=", ".join(f"{k}:{v}" for k, v in player["skills"].items())
-        )
-        ttk.Label(dialog, text=t("gui.col.role")).grid(row=0, column=0, sticky="w", padx=8, pady=4)
-        ttk.Combobox(
-            dialog,
-            textvariable=role_var,
-            values=["村民", "狼人", "白狼王", "预言家", "女巫", "守卫", "猎人"],
-            state="readonly",
-        ).grid(row=0, column=1, padx=8, pady=4)
-        ttk.Checkbutton(dialog, text=t("gui.alive"), variable=alive_var).grid(
-            row=1, column=0, columnspan=2, sticky="w", padx=8, pady=4
-        )
-        ttk.Label(dialog, text=t("gui.skills_hint")).grid(
-            row=2, column=0, sticky="w", padx=8, pady=4
-        )
-        ttk.Entry(dialog, textvariable=skills_var, width=30).grid(
-            row=2, column=1, padx=8, pady=4
-        )
-
-        def _save() -> None:
-            skills: dict[str, int] = {}
-            for token in skills_var.get().split(","):
-                token = token.strip()
-                if not token:
-                    continue
-                if ":" in token:
-                    name, _, count = token.partition(":")
-                    skills[name.strip()] = int(count.strip())
-            player["role"] = role_var.get()
-            player["is_alive"] = alive_var.get()
-            player["skills"] = skills
-            _refresh_players_tree()
-            dialog.destroy()
-
-        ttk.Button(dialog, text=t("gui.save"), command=_save).grid(
-            row=3, column=0, columnspan=2, pady=8
-        )
-
-    button_bar = ttk.Frame(custom_frame)
-    button_bar.pack(fill=tk.X, pady=(6, 0))
-    ttk.Button(button_bar, text=t("gui.add_player"), command=_add_player).pack(side=tk.LEFT)
-    ttk.Button(button_bar, text=t("gui.remove_selected"), command=_remove_player).pack(
-        side=tk.LEFT, padx=(6, 0)
-    )
-    ttk.Button(button_bar, text=t("gui.edit_selected"), command=_edit_player).pack(
-        side=tk.LEFT, padx=(6, 0)
-    )
-
-    fields_sub = ttk.Frame(custom_frame)
-    fields_sub.pack(fill=tk.X, pady=(6, 0))
-
-    phase_var = tk.StringVar(value=_PHASE_INV["night"])
-    night_var = tk.StringVar(value="0")
-    day_var = tk.StringVar(value="0")
-    guard_var = tk.StringVar(value="")
-    seer_var = tk.StringVar(value="")
-    ttk.Label(fields_sub, text=t("gui.phase_field")).grid(row=0, column=0, sticky="w", pady=4)
-    ttk.Combobox(
-        fields_sub,
-        textvariable=phase_var,
-        values=list(_PHASE_ZH),
-        state="readonly",
-        width=8,
-    ).grid(row=0, column=1, sticky="w", pady=4)
-    ttk.Label(fields_sub, text=t("gui.night_day")).grid(
-        row=1, column=0, sticky="w", pady=4
-    )
-    ttk.Entry(fields_sub, textvariable=night_var, width=6).grid(
-        row=1, column=1, sticky="w", pady=4
-    )
-    ttk.Entry(fields_sub, textvariable=day_var, width=6).grid(
-        row=1, column=2, sticky="w", pady=4
-    )
-    ttk.Label(fields_sub, text=t("gui.guard_last_target")).grid(
-        row=2, column=0, sticky="w", pady=4
-    )
-    ttk.Entry(fields_sub, textvariable=guard_var, width=10).grid(
-        row=2, column=1, sticky="w", pady=4
-    )
-    ttk.Label(fields_sub, text=t("gui.seer_checks")).grid(
-        row=3, column=0, sticky="w", pady=4
-    )
-    ttk.Entry(fields_sub, textvariable=seer_var, width=24).grid(
-        row=3, column=1, columnspan=2, sticky="w", pady=4
-    )
-
-    def _build_custom_state() -> GameState | None:
-        if not use_custom_var.get():
-            return None
-        seer_results: dict[int, bool] = {}
-        for token in seer_var.get().split(","):
-            token = token.strip()
-            if not token:
-                continue
-            if ":" in token:
-                index, _, is_wolf = token.partition(":")
-                seer_results[int(index.strip())] = is_wolf.strip() in {"1", "true", "狼", "是"}
-        return GameState(
-            players=[
-                Player(role=p["role"], is_alive=p["is_alive"], skills=dict(p["skills"]))
-                for p in players_rows
-            ],
-            phase=_PHASE_ZH[phase_var.get()],
-            night_count=int(night_var.get()),
-            day_count=int(day_var.get()),
-            last_guard_target_index=(
-                int(guard_var.get()) if guard_var.get().strip() else None
-            ),
-            seer_check_results=seer_results or None,
-        )
-
-    status_var = tk.StringVar(value=t("gui.waiting_status"))
-    status_label = ttk.Label(status_frame, textvariable=status_var)
-    status_label.pack(anchor="w")
-
-    _PHASE_DISPLAY = {
-        "idle": t("gui.phase.idle"),
-        "search": t("gui.phase.search"),
-        "report": t("gui.phase.report"),
-        "plot": t("gui.phase.plot"),
-        "text_tree": t("gui.phase.text_tree"),
-        "done": t("gui.phase.done"),
-    }
-    phase_var = tk.StringVar(value=_PHASE_DISPLAY["idle"])
-    phase_label = ttk.Label(status_frame, textvariable=phase_var, foreground="#888888")
-    phase_label.pack(anchor="w", pady=(2, 0))
-
-    main_queue: "queue.Queue" = queue.Queue()
-
-    def _set_phase(phase: str) -> None:
-        phase_var.set(_PHASE_DISPLAY.get(phase, phase))
-
-    def _report_phase(phase: str) -> None:
-        main_queue.put(("phase", phase))
-
-    def _poll_main_queue() -> None:
-        try:
-            while True:
-                msg = main_queue.get_nowait()
-                if msg[0] == "phase":
-                    _set_phase(msg[1])
-                elif msg[0] == "finish":
-                    on_finish(msg[1], msg[2])
-        except queue.Empty:
-            pass
-        root.after(100, _poll_main_queue)
-
-    _poll_main_queue()
-
-    run_started_at: float | None = None
-    timer_job_id: str | None = None
-
-    nodes_frame = ttk.LabelFrame(
-        status_frame, text=t("gui.panel.nodes"), padding=8
-    )
-    nodes_frame.pack(fill=tk.BOTH, expand=True, pady=(8, 0))
-
-    tree_row = ttk.Frame(nodes_frame)
-    tree_row.pack(fill=tk.BOTH, expand=True)
-    nodes_canvas = tk.Canvas(tree_row, highlightthickness=0, height=160)
-    nodes_scroll = ttk.Scrollbar(
-        tree_row, orient="vertical", command=nodes_canvas.yview
-    )
-    nodes_inner = ttk.Frame(nodes_canvas)
-    nodes_inner_id = nodes_canvas.create_window(
-        (0, 0), window=nodes_inner, anchor="nw"
-    )
-    nodes_canvas.configure(yscrollcommand=nodes_scroll.set)
-    nodes_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-    nodes_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-
-    def _on_tree_mousewheel(event) -> None:
-        nodes_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-
-    def _on_inner_configure(_event=None) -> None:
-        nodes_canvas.configure(scrollregion=nodes_canvas.bbox("all"))
-
-    def _on_canvas_configure(event) -> None:
-        nodes_canvas.itemconfigure(nodes_inner_id, width=event.width)
-
-    nodes_inner.bind("<Configure>", _on_inner_configure)
-    nodes_canvas.bind("<Configure>", _on_canvas_configure)
-
-    def _bind_wheel(widget) -> None:
-        widget.bind("<MouseWheel>", _on_tree_mousewheel, add="+")
-        widget.bind(
-            "<Button-4>", lambda _e: nodes_canvas.yview_scroll(-1, "units"), add="+"
-        )
-        widget.bind(
-            "<Button-5>", lambda _e: nodes_canvas.yview_scroll(1, "units"), add="+"
-        )
-
-    _bind_wheel(nodes_canvas)
-    _bind_wheel(nodes_inner)
-
-    nodes_hint_label = ttk.Label(nodes_frame, text=t("gui.nodes_hint"))
-    nodes_hint_label.pack(anchor="w", pady=(6, 0))
-
-    all_nodes: dict[int, dict] = {}
-    nodes_lock = threading.Lock()
-    rendered_node_count = 0
-    nodes_open: dict[int, bool] = {}
-    _MAX_RENDERED_NODES = 1200
-
-    summary_text = tk.Text(status_frame, height=6, wrap="word")
-    summary_text.pack(fill=tk.BOTH, expand=True, pady=(8, 0))
-    summary_text.insert("1.0", t("gui.initial_summary"))
-    summary_text.config(state="disabled")
-
-    run_button = ttk.Button(controls_frame, text=t("gui.run_button"))
-    run_button.pack(side=tk.LEFT, fill=tk.X)
-    ttk.Label(
-        controls_frame,
-        text=t("gui.limits_hint", limit_label=t("label.max_processed_states")),
-    ).pack(side=tk.LEFT, padx=(12, 0))
-
-    def append_summary(line: str) -> None:
-        summary_text.config(state="normal")
-        summary_text.insert(tk.END, line + "\n")
-        summary_text.see(tk.END)
-        summary_text.config(state="disabled")
-
-    def _format_node_line(node: dict) -> str:
-        status = (
-            t("node.finished")
-            if node.get("is_game_over")
-            else t("node.ongoing")
-        )
-        return t(
-            "node.line",
-            state_id=node.get("state_id", t("node.unknown_value")),
-            status=status,
-            parent_id=node.get("parent_state_id", t("node.unknown_value")),
-            alive_count=node.get("alive_count", t("node.unknown_value")),
-            total_players=node.get("total_players", t("node.unknown_value")),
-            queue_length=node.get("queue_length", t("node.unknown_value")),
-            processed_states=node.get("processed_states", t("node.unknown_value")),
-            action_label=str(node.get("action_label", t("node.unknown_action"))),
-        )
-
-    def _toggle_node(sid: int, depth: int) -> None:
-        # 展开状态的默认值须与 _render_row 一致（根节点默认展开）
-        nodes_open[sid] = not nodes_open.get(sid, depth == 0)
-        _refresh_nodes_tree()
-
-    def _render_row(
-        parent: ttk.Frame,
-        sid: int,
-        depth: int,
-        children_map: dict,
-        nodes: dict,
-    ) -> None:
-        is_open = nodes_open.get(sid, depth == 0)
-        has_children = bool(children_map.get(sid))
-        row = ttk.Frame(parent)
-        row.pack(fill=tk.X)
-
-        indent = ttk.Label(row, text="", width=depth * 3)
-        indent.pack(side=tk.LEFT)
-        _bind_wheel(indent)
-
-        if has_children:
-            toggle = tk.Label(
-                row,
-                text="▾" if is_open else "▸",
-                width=2,
-                cursor="hand2",
-                anchor="center",
-            )
-            toggle.pack(side=tk.LEFT)
-            _bind_wheel(toggle)
-            toggle.bind("<Button-1>", lambda _e, s=sid, d=depth: _toggle_node(s, d))
-        else:
-            leaf = tk.Label(row, text="·", width=2, anchor="center")
-            leaf.pack(side=tk.LEFT)
-            _bind_wheel(leaf)
-
-        text = tk.Label(row, text=_format_node_line(nodes[sid]), anchor="w")
-        text.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        _bind_wheel(text)
-
-    def _refresh_nodes_tree() -> None:
-        try:
-            yview = nodes_canvas.yview()
-        except Exception:
-            yview = (0.0, 1.0)
-
-        for child in nodes_inner.winfo_children():
-            child.destroy()
-
-        with nodes_lock:
-            nodes = dict(all_nodes)
-        children_map: dict[int | None, list[int]] = {}
-        for sid, snap in nodes.items():
-            pid = snap.get("parent_state_id")
-            children_map.setdefault(pid, []).append(sid)
-        for pid in children_map:
-            children_map[pid].sort()
-
-        roots = [
-            sid
-            for sid in nodes
-            if nodes[sid].get("parent_state_id") is None
-            or nodes[sid].get("parent_state_id") not in nodes
-        ]
-        roots.sort()
-
-        visible: list[tuple[int, int]] = []
-        truncated = [False]
-
-        def _walk(sid: int, depth: int) -> None:
-            if len(visible) >= _MAX_RENDERED_NODES:
-                truncated[0] = True
-                return
-            visible.append((sid, depth))
-            kids = children_map.get(sid, [])
-            if kids and nodes_open.get(sid, depth == 0):
-                for child_sid in kids:
-                    _walk(child_sid, depth + 1)
-
-        for root_sid in roots:
-            _walk(root_sid, 0)
-
-        for sid, depth in visible:
-            _render_row(nodes_inner, sid, depth, children_map, nodes)
-
-        if truncated[0]:
-            ttk.Label(
-                nodes_inner,
-                text=t("gui.too_many_nodes", _MAX_RENDERED_NODES),
-            ).pack(anchor="w", pady=(4, 0))
-
-        nodes_inner.update_idletasks()
-        nodes_canvas.configure(scrollregion=nodes_canvas.bbox("all"))
-        try:
-            nodes_canvas.yview_moveto(yview[0])
-        except Exception:
-            pass
-
-    def _iteration_callback(node_snapshot: dict) -> None:
-        sid = node_snapshot.get("state_id")
-        if sid is None:
-            return
-        with nodes_lock:
-            all_nodes[int(sid)] = node_snapshot
-
-    def _periodic_tree_refresh() -> None:
-        nonlocal rendered_node_count
-        with nodes_lock:
-            count = len(all_nodes)
-        if count != rendered_node_count:
-            _refresh_nodes_tree()
-            rendered_node_count = count
-        root.after(2000, _periodic_tree_refresh)
-
-    _periodic_tree_refresh()
-
-    def _update_elapsed_status() -> None:
-        nonlocal timer_job_id
-        if run_started_at is None:
-            return
-        elapsed_seconds = max(0.0, time.perf_counter() - run_started_at)
-        status_var.set(
-            t("gui.running_status", elapsed_seconds=elapsed_seconds)
-        )
-        timer_job_id = root.after(100, _update_elapsed_status)
-
-    def _start_elapsed_timer() -> None:
-        nonlocal run_started_at, timer_job_id
-        run_started_at = time.perf_counter()
-        if timer_job_id is not None:
-            root.after_cancel(timer_job_id)
-            timer_job_id = None
-        _update_elapsed_status()
-
-    def _stop_elapsed_timer() -> None:
-        nonlocal run_started_at, timer_job_id
-        if timer_job_id is not None:
-            try:
-                root.after_cancel(timer_job_id)
-            except Exception:
-                pass
-            timer_job_id = None
-        run_started_at = None
-
-    def collect_args() -> argparse.Namespace:
-        custom_state = _build_custom_state()
-        return argparse.Namespace(
-            number_of_players=int(entry_vars["number_of_players"].get().strip()),
-            number_of_wolves=int(entry_vars["number_of_wolves"].get().strip()),
-            include_seer=bool(bool_vars["include_seer"].get()),
-            include_witch=bool(bool_vars["include_witch"].get()),
-            include_guard=bool(bool_vars["include_guard"].get()),
-            include_hunter=bool(bool_vars["include_hunter"].get()),
-            include_white_werewolf_king=bool(
-                bool_vars["include_white_werewolf_king"].get()
-            ),
-            include_sheriff=bool(bool_vars["include_sheriff"].get()),
-            smart_vote=bool(vote_enabled.get()),
-            export_text_tree=bool(bool_vars["export_text_tree"].get()),
-            search_mode=_SEARCH_MODE_ZH[search_mode_var.get().strip()],
-            max_processed_states=_parse_optional_int(
-                entry_vars["max_processed_states"].get()
-            ),
-            max_queue_size=_parse_optional_int(entry_vars["max_queue_size"].get()),
-            max_runtime_seconds=_parse_optional_float(
-                entry_vars["max_runtime_seconds"].get()
-            ),
-            max_night_branches_per_state=_parse_optional_int(
-                entry_vars["max_night_branches_per_state"].get()
-            ),
-            max_day_branches_per_state=_parse_optional_int(
-                entry_vars["max_day_branches_per_state"].get()
-            ),
-            gc_interval=int(entry_vars["gc_interval"].get().strip()),
-            parallel_workers=max(1, int(entry_vars["parallel_workers"].get().strip())),
-            disable_plot=bool(disable_plot_var.get()),
-            max_nodes_for_plot=int(entry_vars["max_nodes_for_plot"].get().strip()),
-            plot_dpi=int(entry_vars["plot_dpi"].get().strip()),
-            text_tree_output_path=entry_vars["text_tree_output_path"].get().strip(),
-            max_text_tree_nodes=int(entry_vars["max_text_tree_nodes"].get().strip()),
-            policy=_POLICY_ZH[policy_var.get().strip()],
-            lambda_risk=float(lambda_var.get()),
-            toggle=_TOGGLE_ZH[toggle_var.get().strip()],
-            lookahead_depth=_parse_optional_int(lookahead_var.get()),
-            tactics=",".join(
-                sorted(iid for iid, var in tactic_vars.items() if var.get())
-            )
-            or None,
-            lang="zh-CN",
-            start_state_json=(
-                json.dumps(custom_state.to_dict(), ensure_ascii=False)
-                if custom_state is not None
-                else None
-            ),
-            iteration_callback=_iteration_callback,
-            gui=True,
-        )
-
-    def on_finish(simulator, error: Exception | None) -> None:
-        _stop_elapsed_timer()
-        _set_phase("done")
-        _refresh_nodes_tree()  # 迭代完成后刷新一次，渲染完整迭代树
-        run_button.config(state="normal")
-        run_button.config(text=t("gui.run_button"))
-        if error is not None:
-            status_var.set(t("gui.failure_status"))
-            append_summary(t("gui.error_summary_template", error=error))
-            messagebox.showerror(t("gui.run_error_title"), str(error))
-            return
-
-        status_var.set(t("gui.finished_status"))
-        finish_summary = {
-            "processed_states": simulator.processed_states,
-            "ending_count": len(simulator.endings),
-            "stop_reason": simulator.stop_reason,
-            "wins": simulator.wins,
-        }
-        for template in (
-            t("gui.finish_processed"),
-            t("gui.finish_endings"),
-            t("gui.finish_stop_reason"),
-            t("gui.finish_wins"),
-        ):
-            append_summary(template.format(**finish_summary))
-        messagebox.showinfo(
-            t("gui.finish_title"),
-            t("gui.finish_message", **finish_summary),
-        )
-
-    def start_run() -> None:
-        try:
-            args = collect_args()
-        except Exception as exc:
-            messagebox.showerror(
-                t("gui.param_error_title"),
-                t("gui.param_error_template", error=exc),
-            )
-            return
-
-        nonlocal rendered_node_count
-        with nodes_lock:
-            all_nodes.clear()
-        rendered_node_count = 0
-        _refresh_nodes_tree()
-        _set_phase("search")
-
-        run_button.config(state="disabled")
-        run_button.config(text=t("gui.running_button"))
-        _start_elapsed_timer()
-        append_summary(t("gui.start_summary"))
-        append_summary(t("gui.config_summary_title"))
-        for line in format_config_summary(args):
-            append_summary(f"- {line}")
-
-        def worker() -> None:
-            simulator = None
-            run_error: Exception | None = None
-            try:
-                simulator = run_simulation(args, phase_callback=_report_phase)
-            except Exception as exc:
-                run_error = exc
-            main_queue.put(("finish", simulator, run_error))
-
-        threading.Thread(target=worker, daemon=True).start()
-
-    run_button.config(command=start_run)
-    root.mainloop()
+    PygameSimulatorUI(parser, run_simulation).run(max_frames=max_frames)

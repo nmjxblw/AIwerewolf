@@ -85,6 +85,7 @@ online_trace.json
 online_eval.json
 search_tree.txt
 search_tree.png
+search_simulator/tmp/
 
 # ---- Heavy local data / experiment outputs ----
 data/

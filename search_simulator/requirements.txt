@@ -1,0 +1,3 @@
+pygame-ce==2.5.8
+pygame_gui==0.6.14
+SQLAlchemy>=2.0,<3.0
