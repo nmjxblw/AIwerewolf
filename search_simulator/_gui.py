@@ -70,6 +70,13 @@ LIVE_PREVIEW_NODE_LIMIT = 80
 DAG_VISIBLE_NODE_LIMIT = 240
 UI_DATA_REFRESH_SECONDS = 0.5
 LIVE_NODE_FADE_SECONDS = 0.4
+# DAG 网格的列/行间距固定，避免深度或同层节点数量变化时发生重叠。
+# 坐标单位是未缩放的画布像素；用户缩放时只改变可视投影，不改变深度编号。
+GRAPH_GRID_COLUMN_SPACING = 124.0
+GRAPH_GRID_ROW_SPACING = 34.0
+GRAPH_GRID_DASH_LENGTH = 7
+GRAPH_GRID_GAP_LENGTH = 5
+GRAPH_AXIS_BOTTOM_MARGIN = 24
 
 
 def _yes_no(value: Any) -> str:
@@ -719,28 +726,192 @@ class PygameSimulatorUI:
     def _graph_rect(self) -> pygame.Rect:
         return pygame.Rect(334, 374, 1114, 472)
 
+    @staticmethod
+    def _graph_depth(node: dict[str, Any]) -> int:
+        """读取节点的迭代深度；兼容旧图时再退化到昼夜轮次之和。
+
+        新的实时节点和持久化节点优先使用显式 ``depth``。历史图可能只
+        保存 ``state_observation``，其第四个字段同样是搜索深度；最后才
+        使用 ``day_count + night_count``，保证旧缓存仍能显示而不会把
+        可视化坐标写回游戏状态。
+        """
+
+        raw_depth = node.get("depth")
+        if raw_depth is None:
+            state = node.get("state")
+            if isinstance(state, dict):
+                raw_depth = state.get("depth")
+        if raw_depth is None:
+            observation = node.get("state_observation")
+            if isinstance(observation, (list, tuple)) and len(observation) > 3:
+                raw_depth = observation[3]
+        if raw_depth is None:
+            raw_depth = int(node.get("day_count", 0)) + int(
+                node.get("night_count", 0)
+            )
+        try:
+            return max(0, int(raw_depth))
+        except (TypeError, ValueError):
+            return 0
+
     def _layout_graph(
         self, graph: dict[str, Any]
     ) -> dict[int, tuple[float, float]]:
-        """按搜索深度从左到右、同层节点从上到下生成 DAG 画布坐标。
+        """按固定网格生成 DAG 画布坐标。
 
-        ``day_count + night_count`` 是节点距根节点的层级。层级固定映射到
-        X 轴，避免把搜索深度误画成纵向时间线；同一层的节点按稳定的
-        ``node_id`` 排序后映射到 Y 轴，保证相同输入下渲染顺序确定。
+        X 轴严格使用迭代深度，深度每增加一级就前进一个固定网格列；
+        同一深度的节点按稳定 ``node_id`` 排序后占用连续网格行。这样
+        节点数量变化不会改变列宽或相邻节点间距，超出视口的部分仍由
+        原有平移/缩放交互查看。坐标仅供 UI 布局使用，不写入搜索状态。
         """
         groups: dict[int, list[int]] = {}
         for node in graph.get("nodes", []):
-            round_index = int(node["day_count"]) + int(node["night_count"])
-            groups.setdefault(round_index, []).append(int(node["node_id"]))
+            depth = self._graph_depth(node)
+            groups.setdefault(depth, []).append(int(node["node_id"]))
         positions: dict[int, tuple[float, float]] = {}
-        for round_index, node_ids in sorted(groups.items()):
-            spacing = min(145.0, 900.0 / max(1, len(node_ids) - 1))
-            for offset, node_id in enumerate(sorted(node_ids)):
+        for depth, node_ids in sorted(groups.items()):
+            ordered_ids = sorted(node_ids)
+            row_center = (len(ordered_ids) - 1) / 2.0
+            for row_index, node_id in enumerate(ordered_ids):
                 positions[node_id] = (
-                    round_index * 105.0,
-                    (offset - (len(node_ids) - 1) / 2.0) * spacing,
+                    depth * GRAPH_GRID_COLUMN_SPACING,
+                    (row_index - row_center) * GRAPH_GRID_ROW_SPACING,
                 )
         return positions
+
+    @staticmethod
+    def _draw_dashed_line(
+        surface: pygame.Surface,
+        start: tuple[float, float],
+        end: tuple[float, float],
+        color: pygame.Color,
+        *,
+        dash_length: int = GRAPH_GRID_DASH_LENGTH,
+        gap_length: int = GRAPH_GRID_GAP_LENGTH,
+        width: int = 1,
+    ) -> None:
+        """绘制不会改变节点拓扑的虚线网格线。"""
+
+        dx = end[0] - start[0]
+        dy = end[1] - start[1]
+        length = math.hypot(dx, dy)
+        if length <= 0.0:
+            return
+        ux = dx / length
+        uy = dy / length
+        cursor = 0.0
+        while cursor < length:
+            dash_end = min(length, cursor + dash_length)
+            pygame.draw.line(
+                surface,
+                color,
+                (start[0] + ux * cursor, start[1] + uy * cursor),
+                (start[0] + ux * dash_end, start[1] + uy * dash_end),
+                width,
+            )
+            cursor += dash_length + gap_length
+
+    def _graph_view_rect(self, rect: pygame.Rect) -> pygame.Rect:
+        """返回节点绘制区，底部为坐标轴和选中节点详情预留空间。"""
+
+        return pygame.Rect(
+            rect.x + 8,
+            rect.y + 110,
+            rect.width - 16,
+            rect.height - 228,
+        )
+
+    def _draw_graph_grid(
+        self,
+        rect: pygame.Rect,
+        graph: dict[str, Any],
+    ) -> None:
+        """绘制迭代深度坐标轴、深度虚线和固定网格行。"""
+
+        view = self._graph_view_rect(rect)
+        axis_y = view.bottom - GRAPH_AXIS_BOTTOM_MARGIN
+        grid_color = pygame.Color("#263852")
+        depth_color = pygame.Color("#3A5578")
+        axis_color = pygame.Color("#8BA6C7")
+
+        # 横向网格线只覆盖当前视口附近的行，避免大 DAG 造成额外绘制开销。
+        visible_row_min = math.floor(
+            (view.top - (view.centery + self.graph_pan[1]))
+            / (GRAPH_GRID_ROW_SPACING * self.graph_zoom)
+        ) - 1
+        visible_row_max = math.ceil(
+            (axis_y - (view.centery + self.graph_pan[1]))
+            / (GRAPH_GRID_ROW_SPACING * self.graph_zoom)
+        ) + 1
+        for row_index in range(visible_row_min, visible_row_max + 1):
+            row_y = self._screen_graph_point(
+                (0.0, row_index * GRAPH_GRID_ROW_SPACING), rect
+            )[1]
+            if view.top <= row_y <= axis_y:
+                self._draw_dashed_line(
+                    self.screen,
+                    (view.left, row_y),
+                    (view.right, row_y),
+                    grid_color,
+                    dash_length=4,
+                    gap_length=8,
+                )
+
+        depths = sorted(
+            {
+                self._graph_depth(node)
+                for node in graph.get("nodes", [])
+            }
+        )
+        for depth in depths:
+            x = self._screen_graph_point(
+                (depth * GRAPH_GRID_COLUMN_SPACING, 0.0), rect
+            )[0]
+            if view.left - 12 <= x <= view.right + 12:
+                self._draw_dashed_line(
+                    self.screen,
+                    (x, view.top),
+                    (x, axis_y),
+                    depth_color,
+                )
+                pygame.draw.line(
+                    self.screen,
+                    depth_color,
+                    (x, axis_y - 4),
+                    (x, axis_y + 4),
+                    1,
+                )
+                self._text(
+                    f"D{depth}",
+                    (x - 14, axis_y + 5),
+                    size=11,
+                    color=axis_color,
+                    max_width=34,
+                )
+
+        pygame.draw.line(
+            self.screen,
+            axis_color,
+            (view.left, axis_y),
+            (view.right - 8, axis_y),
+            1,
+        )
+        pygame.draw.polygon(
+            self.screen,
+            axis_color,
+            [
+                (view.right - 8, axis_y),
+                (view.right - 15, axis_y - 4),
+                (view.right - 15, axis_y + 4),
+            ],
+        )
+        self._text(
+            "迭代深度 X →",
+            (view.left + 8, axis_y - 18),
+            size=11,
+            color=axis_color,
+            max_width=110,
+        )
 
     def _screen_graph_point(
         self,
@@ -750,12 +921,14 @@ class PygameSimulatorUI:
         """将画布坐标投影到屏幕，并让 DAG 根层从左侧内边距起步。
 
         横向基准使用画布左边界而不是中心点，保证预览初始状态即可看到
-        根节点和后续深度的左到右展开；平移与缩放仍通过 ``graph_pan`` 和
-        ``graph_zoom`` 保持原有交互语义。
+        根节点和后续深度的左到右展开；纵向基准使用网格视口中心，保证
+        同深度节点从上到下排列时不会与坐标轴争用顶部空间。平移与缩放
+        仍通过 ``graph_pan`` 和 ``graph_zoom`` 保持原有交互语义。
         """
+        view = self._graph_view_rect(rect)
         return (
             rect.x + 42 + self.graph_pan[0] + canvas[0] * self.graph_zoom,
-            rect.y + 150 + self.graph_pan[1] + canvas[1] * self.graph_zoom,
+            view.centery + self.graph_pan[1] + canvas[1] * self.graph_zoom,
         )
 
     def _draw_live_stats(self, rect: pygame.Rect) -> None:
@@ -919,14 +1092,14 @@ class PygameSimulatorUI:
                 max_width=rect.width - 24,
             )
         clip_before = self.screen.get_clip()
-        self.screen.set_clip(
-            pygame.Rect(rect.x + 8, rect.y + 110, rect.width - 16, rect.height - 118)
-        )
+        view_rect = self._graph_view_rect(rect)
+        self.screen.set_clip(view_rect)
         canvas_positions = self._layout_graph(graph)
         self.node_screen_positions = {
             node_id: self._screen_graph_point(position, rect)
             for node_id, position in canvas_positions.items()
         }
+        self._draw_graph_grid(rect, graph)
         mouse = pygame.mouse.get_pos()
         self.hovered_node = None
         nearest_node_distance = 24.0

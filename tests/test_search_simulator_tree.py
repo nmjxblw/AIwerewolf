@@ -26,6 +26,8 @@ from search_simulator._crash_handler import prepare_crash_log_path
 from search_simulator._crash_handler import previous_unreported_crash_log
 from search_simulator._crash_handler import record_caught_failure
 from search_simulator._game_state import GameState as GameStateContract
+from search_simulator._gui import GRAPH_GRID_COLUMN_SPACING
+from search_simulator._gui import GRAPH_GRID_ROW_SPACING
 from search_simulator._gui import UI_DATA_REFRESH_SECONDS
 from search_simulator._gui import PygameSimulatorUI
 from search_simulator._gui import _terminal_popup_content
@@ -502,8 +504,31 @@ def test_locate_root_resets_local_pan_without_changing_expansion() -> None:
 
     assert ui.selected_node == 0
     assert ui.graph_pan[0] == 0.0
-    assert ui.graph_pan[1] == pytest.approx(56.55)
+    assert ui.graph_pan[1] == pytest.approx(
+        GRAPH_GRID_ROW_SPACING / 2 * ui.graph_zoom
+    )
     assert graph["_expanded_node_ids"] == {0}
+
+
+def test_dag_layout_uses_fixed_depth_columns_and_grid_rows() -> None:
+    ui = PygameSimulatorUI.__new__(PygameSimulatorUI)
+    graph = {
+        "nodes": [
+            {"node_id": 0, "depth": 0, "day_count": 0, "night_count": 0},
+            {"node_id": 4, "depth": 1, "day_count": 0, "night_count": 0},
+            {"node_id": 2, "depth": 1, "day_count": 0, "night_count": 0},
+            # 显式 depth 缺失时，旧持久化节点仍按昼夜轮次兼容布局。
+            {"node_id": 8, "day_count": 1, "night_count": 1},
+        ]
+    }
+
+    positions = ui._layout_graph(graph)
+
+    assert positions[0] == pytest.approx((0.0, 0.0))
+    assert positions[2][0] == pytest.approx(GRAPH_GRID_COLUMN_SPACING)
+    assert positions[4][0] == pytest.approx(GRAPH_GRID_COLUMN_SPACING)
+    assert positions[2][1] < positions[4][1]
+    assert positions[8][0] == pytest.approx(2 * GRAPH_GRID_COLUMN_SPACING)
 
 
 def test_reward_interval_and_plot_color_follow_sign_then_absolute_bound_rule() -> None:
