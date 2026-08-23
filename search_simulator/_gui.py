@@ -955,7 +955,7 @@ class PygameSimulatorUI:
             )
             for node in graph.get("nodes", [])
         }
-        for edge_index, edge in enumerate(graph.get("edges", [])):
+        for edge in graph.get("edges", []):
             parent = self.node_screen_positions.get(int(edge["parent_id"]))
             child = self.node_screen_positions.get(int(edge["child_id"]))
             if parent is None or child is None:
@@ -978,22 +978,6 @@ class PygameSimulatorUI:
                 child,
                 max(1, int(2 * self.graph_zoom)) + (3 if is_hovered else 0),
             )
-            if self.graph_zoom >= 0.55:
-                label = str(edge.get("action_label", ""))
-                dx = child[0] - parent[0]
-                dy = child[1] - parent[1]
-                length = max(1.0, math.hypot(dx, dy))
-                stagger = ((edge_index % 5) - 2) * 5
-                self._text(
-                    label,
-                    (
-                        int((parent[0] + child[0]) / 2 - dy / length * stagger),
-                        int((parent[1] + child[1]) / 2 + dx / length * stagger),
-                    ),
-                    size=12,
-                    color=color,
-                    max_width=max(100, int(250 * self.graph_zoom)),
-                )
             if is_hovered:
                 edge_summary = (
                     f"实时分支 {edge['parent_id']}→{edge['child_id']} · interval 待站位完成"
@@ -1002,8 +986,9 @@ class PygameSimulatorUI:
                 )
                 self.hover_tooltip = [
                     edge_summary,
+                    "节点扩展原因：",
                     *[
-                        str(reason.get("action_label", reason.get("action_key", "")))
+                        str(reason.get("action_label") or reason.get("action_key") or "未命名原因")
                         for reason in edge.get("reasons", [])
                     ],
                 ]
@@ -2182,7 +2167,8 @@ class PygameSimulatorUI:
     def _draw_hover_tooltip(self) -> None:
         if not self.hover_tooltip:
             return
-        if len(self.hover_tooltip) > 12:
+        # 边 hover 的原因文本必须走换行/多列渲染，不能落入短提示的截断路径。
+        if len(self.hover_tooltip) > 7 or self.hovered_edge is not None:
             font = self._font(12)
             line_height = 14
             max_rows = max(1, (self.screen.get_height() - 54) // line_height)
@@ -2234,7 +2220,7 @@ class PygameSimulatorUI:
                     color=ACCENT if str(line).startswith("【") else TEXT,
                 )
             return
-        lines = self.hover_tooltip[:7]
+        lines = self.hover_tooltip
         width = min(
             650,
             max(260, max(self._font(12).size(str(line))[0] for line in lines) + 24),

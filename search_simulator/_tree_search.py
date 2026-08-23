@@ -761,13 +761,9 @@ def _search_root(
                     edge_index=edge_index,
                     nodes=nodes,
                 )
-                preview_edge["action_label"] = str(
-                    preview_edge["action_label"]
-                )[:160]
-                preview_edge["reasons"] = [
-                    {"action_label": str(reason["action_label"])[:160]}
-                    for reason in preview_edge["reasons"][:4]
-                ]
+                # 实时预览仍受边批次上限约束，但不能截断或丢弃派生原因；
+                # 边 hover 必须与持久化 DAG 使用同一完整原因集合。
+                preview_edge["action_label"] = str(preview_edge["action_label"])
                 preview_edge["live_preview"] = True
                 preview_edges.append(preview_edge)
             _publish_search_progress(
