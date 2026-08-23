@@ -478,6 +478,34 @@ def test_visible_dag_expands_one_parent_at_a_time_and_preserves_shared_paths() -
     assert [node["node_id"] for node in ui._visible_graph(graph)["nodes"]] == [0]
 
 
+def test_locate_root_resets_local_pan_without_changing_expansion() -> None:
+    graph = {
+        "nodes": [
+            {"node_id": 0, "day_count": 0, "night_count": 0},
+            {"node_id": 1, "day_count": 1, "night_count": 0},
+            {"node_id": 2, "day_count": 0, "night_count": 0},
+        ],
+        "edges": [{"parent_id": 0, "child_id": 1}],
+        "_expanded_node_ids": {0},
+    }
+    ui = PygameSimulatorUI.__new__(PygameSimulatorUI)
+    ui.running = False
+    ui.graph = graph
+    ui.live_graphs = {}
+    ui.preview_position = 0
+    ui.graph_zoom = 0.78
+    ui.graph_pan = [420.0, -180.0]
+    ui.selected_node = 1
+    ui.status = ""
+
+    ui._locate_root()
+
+    assert ui.selected_node == 0
+    assert ui.graph_pan[0] == 0.0
+    assert ui.graph_pan[1] == pytest.approx(56.55)
+    assert graph["_expanded_node_ids"] == {0}
+
+
 def test_reward_interval_and_plot_color_follow_sign_then_absolute_bound_rule() -> None:
     assert interval_camp(RewardInterval(0.2, 0.2)) == "good"
     assert interval_branch_color(RewardInterval(0.2, 0.2)) == "#2563EB"

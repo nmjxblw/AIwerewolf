@@ -478,6 +478,11 @@ class PygameSimulatorUI:
             text=t("gui.collapse_all"),
             manager=self.manager,
         )
+        self.locate_root_button = UIButton(
+            pygame.Rect(1122, 382, 100, 26),
+            text=t("gui.locate_root"),
+            manager=self.manager,
+        )
         self.progress_bar = UIProgressBar(
             pygame.Rect(650, 327, 430, 30), manager=self.manager
         )
@@ -1585,6 +1590,28 @@ class PygameSimulatorUI:
             int(visible_nodes[0]["node_id"]) if visible_nodes else None
         )
 
+    def _locate_root(self) -> None:
+        """把当前 DAG 的根节点移回缩略图左侧可视区域。
+
+        该操作只调整本地画布的平移和选中状态，不改变节点展开集合、
+        搜索 frontier 或 SQLite 图数据。若图存在多个入口，使用稳定的
+        最小入口节点作为根定位目标。
+        """
+
+        graph = self._display_graph()
+        entry_nodes = self._graph_structure(graph)["entry_nodes"]
+        if not entry_nodes:
+            self.status = "当前站位没有可定位的根节点"
+            self.selected_node = None
+            return
+        root_id = int(entry_nodes[0])
+        visible_graph = self._visible_graph(graph)
+        canvas_position = self._layout_graph(visible_graph).get(root_id, (0.0, 0.0))
+        self.graph_pan[0] = -canvas_position[0] * self.graph_zoom
+        self.graph_pan[1] = -canvas_position[1] * self.graph_zoom
+        self.selected_node = root_id
+        self.status = t("gui.root_located", node=root_id)
+
     def _upsert_progress_row(self, payload: dict[str, Any]) -> None:
         position_index = int(payload["position_index"])
         current_row = next(
@@ -2135,6 +2162,8 @@ class PygameSimulatorUI:
                 self._set_all_nodes_expanded(expanded=True)
             elif event.ui_element == self.collapse_all_button:
                 self._set_all_nodes_expanded(expanded=False)
+            elif event.ui_element == self.locate_root_button:
+                self._locate_root()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             graph_node = (
                 self._node_at(event.pos)
@@ -2145,6 +2174,7 @@ class PygameSimulatorUI:
             graph_control_clicked = (
                 self.expand_all_button.rect.collidepoint(event.pos)
                 or self.collapse_all_button.rect.collidepoint(event.pos)
+                or self.locate_root_button.rect.collidepoint(event.pos)
             )
             if (
                 self._graph_rect().collidepoint(event.pos)
@@ -2271,6 +2301,13 @@ class PygameSimulatorUI:
             self.hover_tooltip = [
                 t("gui.collapse_all"),
                 "收起当前站位的全部子树，只保留局部入口节点",
+            ]
+            return
+        if self.locate_root_button.rect.collidepoint(mouse):
+            self.hover_tooltip = [
+                t("gui.locate_root"),
+                "将当前站位的根节点定位到 DAG 缩略图左侧，并选中该节点",
+                "只调整本地画布位置，不改变搜索、展开状态或持久化图",
             ]
             return
         for key, entry in self.entries.items():
