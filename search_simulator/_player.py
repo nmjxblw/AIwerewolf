@@ -3,8 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(slots=True)
 class Player:
+    """搜索热路径中的紧凑玩家状态。"""
+
     role: str
     """ 玩家角色 """
     is_alive: bool

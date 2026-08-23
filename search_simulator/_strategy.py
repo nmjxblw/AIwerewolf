@@ -20,7 +20,7 @@ NIGHT_TACTICS = frozenset({TACTIC_WOLF_SELF_KILL, TACTIC_WOLF_NO_KILL})
 DEFAULT_TACTICS = DAY_TACTICS | NIGHT_TACTICS
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DayTacticProfile:
     """白天基线或一个显式战术组合。"""
 
@@ -33,7 +33,10 @@ class DayTacticProfile:
 
     @property
     def key(self) -> str:
-        decoys = ",".join(str(index) for index in self.decoy_indices) or "-"
+        decoy_labels: list[str] = []
+        for index in self.decoy_indices:
+            decoy_labels.append(str(index))
+        decoys = ",".join(decoy_labels) or "-"
         wolf_target = "-" if self.wolf_vote_target is None else str(self.wolf_vote_target)
         night_target = "-" if self.next_night_target is None else str(self.next_night_target)
         names = ",".join(self.tactic_names) or "baseline"
@@ -43,7 +46,7 @@ class DayTacticProfile:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class NightTacticProfile:
     """狼人夜间基线、指定自刀或空刀分支。"""
 
@@ -112,7 +115,8 @@ def enumerate_day_tactic_profiles(
 
     wolf_vote_options: list[tuple[str, int | None]] = [("normal", None)]
     if alive_wolves and TACTIC_WOLF_BLOC in effective:
-        wolf_vote_options.extend(("bloc", target) for target in non_wolves)
+        for target in non_wolves:
+            wolf_vote_options.append(("bloc", target))
 
     profiles: list[DayTacticProfile] = []
     for seer_action in seer_options:
@@ -156,9 +160,11 @@ def enumerate_night_tactic_profiles(
     profiles = [NightTacticProfile(mode="normal")]
     if not smart_vote:
         return profiles
-    has_protection_role = any(
-        player.role in {"女巫", "守卫"} for player in state.players
-    )
+    has_protection_role = False
+    for player in state.players:
+        if player.role in {"女巫", "守卫"}:
+            has_protection_role = True
+            break
     if not has_protection_role:
         return profiles
     alive_wolves = [
@@ -167,14 +173,14 @@ def enumerate_night_tactic_profiles(
         if player.is_alive and _is_wolf(player.role)
     ]
     if TACTIC_WOLF_SELF_KILL in tactics and len(alive_wolves) >= 2:
-        profiles.extend(
-            NightTacticProfile(
+        for index in alive_wolves:
+            profiles.append(
+                NightTacticProfile(
                 mode="self_kill",
                 wolf_target=index,
                 tactic_names=(TACTIC_WOLF_SELF_KILL,),
             )
-            for index in alive_wolves
-        )
+            )
     if TACTIC_WOLF_NO_KILL in tactics:
         profiles.append(
             NightTacticProfile(

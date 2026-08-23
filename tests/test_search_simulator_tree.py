@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 import ast
+import ctypes
 import json
+import logging
 import multiprocessing
+import os
 import queue
 import re
+import subprocess
+import sys
+import textwrap
 import threading
+from concurrent.futures.process import BrokenProcessPool
 from itertools import product
 from pathlib import Path
 
@@ -14,20 +21,28 @@ import pytest
 from search_simulator import GameState
 from search_simulator import SearchSimulator
 from search_simulator._config import build_parser
+from search_simulator._crash_handler import mark_crash_log_reported
+from search_simulator._crash_handler import prepare_crash_log_path
+from search_simulator._crash_handler import previous_unreported_crash_log
+from search_simulator._crash_handler import record_caught_failure
 from search_simulator._game_state import GameState as GameStateContract
 from search_simulator._gui import UI_DATA_REFRESH_SECONDS
 from search_simulator._gui import PygameSimulatorUI
+from search_simulator._gui import _terminal_popup_content
 from search_simulator._interval import RewardInterval
 from search_simulator._interval import RobustIntervals
 from search_simulator._interval import interval_branch_color
 from search_simulator._interval import interval_camp
 from search_simulator._interval import propagate_interval_values
 from search_simulator._interval import propagate_intervals
+from search_simulator._memory_guard import _GLOBAL_MEMORY_STATUS_EX
 from search_simulator._memory_guard import MemorySnapshot
+from search_simulator._memory_guard import _WindowsMemoryStatusEx
 from search_simulator._memory_guard import memory_pressure_snapshot
 from search_simulator._positions import build_role_roster
 from search_simulator._positions import enumerate_position_layouts
 from search_simulator._positions import players_for_layout
+from search_simulator._reporting import report_tree_summary
 from search_simulator._reporting import save_tree_results
 from search_simulator._sqlite_lru_signature_store import _SQLiteLRUSignatureStore
 from search_simulator._strategy import enumerate_day_tactic_profiles
@@ -35,6 +50,8 @@ from search_simulator._strategy import enumerate_night_tactic_profiles
 from search_simulator._tree_search import PREVIEW_EDGE_BATCH_LIMIT
 from search_simulator._tree_search import PREVIEW_EMIT_INTERVAL_SECONDS
 from search_simulator._tree_search import PREVIEW_NODE_BATCH_LIMIT
+from search_simulator._tree_search import _isolated_compute_worker_spawn
+from search_simulator._tree_search import _remove_search_checkpoint
 from search_simulator._tree_search import recompute_graph_intervals
 
 
@@ -112,6 +129,100 @@ def test_state_signature_streams_compact_key_deterministically() -> None:
     changed = state.clone()
     changed.day_count += 1
     assert simulator._state_signature(changed) != signature
+
+
+def test_state_signature_survives_one_million_hot_calls() -> None:
+    """回归 Windows CPython 3.12 递归闭包热路径的对象错位与访问冲突。"""
+
+    code = textwrap.dedent(
+        """
+        from search_simulator._simulator import SearchSimulator
+
+        simulator = SearchSimulator(
+            number_of_players=3,
+            number_of_wolves=1,
+            include_seer=False,
+            include_witch=False,
+            include_guard=False,
+            tactics="",
+            persistence_enabled=False,
+        )
+        state = simulator.initial_state
+        key = simulator._state_key(state)
+        expected = simulator._state_signature_from_key(state.position_signature, key)
+        actual = expected
+        for _iteration in range(1_000_000):
+            actual = simulator._state_signature_from_key(state.position_signature, key)
+        assert actual == expected
+        print("SIGNATURE_STRESS_OK")
+        """
+    )
+    environment = os.environ.copy()
+    environment["PYTHONMALLOC"] = "malloc"
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=Path(__file__).parents[1],
+        env=environment,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=60,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "SIGNATURE_STRESS_OK" in completed.stdout
+
+
+def test_all_generated_transitions_preserve_player_contract() -> None:
+    """昼夜战术转移不得把视图对象或字典迭代器写入玩家列表。"""
+
+    code = textwrap.dedent(
+        """
+        from search_simulator._positions import enumerate_position_layouts
+        from search_simulator._simulator import SearchSimulator
+
+        simulator = SearchSimulator(
+            number_of_players=7,
+            number_of_wolves=2,
+            include_seer=True,
+            include_witch=True,
+            include_guard=True,
+            smart_vote=True,
+            persistence_enabled=False,
+        )
+        layout = enumerate_position_layouts(simulator.roster)[0]
+        first_day_state = None
+        night_count = 0
+        for transition in simulator.expand_state(
+            simulator.initial_state_for_layout(layout)
+        ):
+            simulator._state_key(transition.state)
+            night_count += 1
+            if first_day_state is None:
+                first_day_state = transition.state
+        assert first_day_state is not None
+        day_count = 0
+        for transition in simulator.expand_state(first_day_state):
+            simulator._state_key(transition.state)
+            day_count += 1
+        assert night_count > 0 and day_count > 0
+        print("TRANSITION_CONTRACT_OK")
+        """
+    )
+    environment = os.environ.copy()
+    environment["PYTHONMALLOC"] = "malloc"
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=Path(__file__).parents[1],
+        env=environment,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=60,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "TRANSITION_CONTRACT_OK" in completed.stdout
 
 
 def test_day_tactics_enumerate_requested_combinations(
@@ -301,16 +412,27 @@ def test_node_progress_pause_and_resume_preserve_search_frontier() -> None:
     remaining_events = []
     while not progress_events.empty():
         remaining_events.append(progress_events.get_nowait())
+    search_events = [
+        event
+        for event in [started, *remaining_events]
+        if event["kind"] in {"position_started", "node_progress"}
+    ]
+    final_search_progress = search_events[-1]
     final_progress = remaining_events[-1]
     result = result_holder["result"]
-    assert final_progress["kind"] == "node_progress"
-    assert final_progress["processed_states"] == result["processed_states"]
-    assert final_progress["discovered_states"] == result["state_count"]
-    assert final_progress["edge_count"] == result["edge_count"]
-    assert final_progress["frontier_size"] == 0
-    assert final_progress["preview_nodes"]
-    assert final_progress["preview_edges"]
-    for event in [started, *remaining_events]:
+    assert final_search_progress["kind"] == "node_progress"
+    assert final_search_progress["processed_states"] == result["processed_states"]
+    assert final_search_progress["discovered_states"] == result["state_count"]
+    assert final_search_progress["edge_count"] == result["edge_count"]
+    assert final_search_progress["frontier_size"] == 0
+    assert final_search_progress["preview_nodes"]
+    assert final_search_progress["preview_edges"]
+    assert any(event["kind"] == "path_progress" for event in remaining_events)
+    assert any(event["kind"] == "interval_progress" for event in remaining_events)
+    assert final_progress["kind"] == "interval_progress"
+    assert final_progress["postprocess_stage"] == "edge_intervals"
+    assert final_progress["postprocess_completed"] == final_progress["postprocess_total"]
+    for event in search_events:
         assert len(event["preview_nodes"]) <= PREVIEW_NODE_BATCH_LIMIT
         assert len(event["preview_edges"]) <= PREVIEW_EDGE_BATCH_LIMIT
 
@@ -395,6 +517,128 @@ def test_lambda_recomputes_fixed_graph_without_using_edge_multiplicity() -> None
     assert mean_observation.wide.to_list() == pytest.approx([0.0, 0.0])
     risk_observation = recompute_graph_intervals(graph, lambda_risk=1.0)
     assert risk_observation.wide.to_list() == pytest.approx([-1.0, 1.0])
+
+
+def test_interval_recompute_reports_prepare_node_and_edge_progress() -> None:
+    graph = {
+        "nodes": [
+            {"node_id": 0, "day_count": 0, "night_count": 0, "is_terminal": False, "result": "未结束", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+            {"node_id": 1, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "好人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+            {"node_id": 2, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "狼人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+        ],
+        "edges": [
+            {"parent_id": 0, "child_id": 1},
+            {"parent_id": 0, "child_id": 2},
+        ],
+    }
+    progress: list[tuple[str, int, int]] = []
+    recompute_graph_intervals(
+        graph,
+        lambda_risk=0.5,
+        progress_callback=lambda stage, completed, total: progress.append(
+            (stage, completed, total)
+        ),
+    )
+    assert {stage for stage, _completed, _total in progress} == {
+        "prepare_edges",
+        "node_intervals",
+        "edge_intervals",
+    }
+    for stage in {item[0] for item in progress}:
+        stage_events = [item for item in progress if item[0] == stage]
+        assert stage_events[0][1] == 0
+        assert stage_events[-1][1] == stage_events[-1][2]
+
+
+def test_dynamic_lambda_interval_recompute_runs_in_background() -> None:
+    class Slider:
+        @staticmethod
+        def get_current_value() -> float:
+            return 0.75
+
+    ui = PygameSimulatorUI.__new__(PygameSimulatorUI)
+    ui.graph = {
+        "nodes": [
+            {"node_id": 0, "day_count": 0, "night_count": 0, "is_terminal": False, "result": "未结束", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+            {"node_id": 1, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "好人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+        ],
+        "edges": [{"parent_id": 0, "child_id": 1}],
+    }
+    ui.rows = [{"position_index": 1}]
+    ui.selected_row = 0
+    ui.lambda_slider = Slider()
+    ui.events = queue.Queue()
+    ui.interval_recompute_running = False
+    ui.interval_recompute_requested_lambda = None
+
+    ui._recompute_loaded_graph()
+    assert ui.interval_recompute_running is True
+    event_kinds: list[str] = []
+    while "local_interval_done" not in event_kinds:
+        kind, _payload = ui.events.get(timeout=2.0)
+        event_kinds.append(kind)
+    assert "local_interval_progress" in event_kinds
+    assert event_kinds[-1] == "local_interval_done"
+
+
+def test_ui_displays_path_and_interval_postprocess_status() -> None:
+    ui = PygameSimulatorUI.__new__(PygameSimulatorUI)
+    ui.rows = []
+    ui.position_progress = {}
+    ui.live_graphs = {}
+    ui.preview_position = 0
+    ui.selected_node = None
+    ui.active_position = 0
+    ui.paused = False
+    ui.status = ""
+    ui.live_stats = {
+        "terminal_count": 0,
+        "good_paths": 0,
+        "wolf_paths": 0,
+        "expanded_nodes": 0,
+        "discovered_nodes": 0,
+        "frontier_size": 0,
+        "edge_count": 0,
+        "completed_positions": 0,
+        "total_positions": 1,
+    }
+    common = {
+        "position_index": 1,
+        "position_signature": "position-1",
+        "roles": ["狼人", "村民", "村民"],
+        "position_display": "1:狼人 | 2:村民 | 3:村民",
+        "total_positions": 1,
+        "processed_states": 20,
+        "discovered_states": 20,
+        "frontier_size": 0,
+        "edge_count": 25,
+        "terminal_count": 10,
+        "runtime_seconds": 1.0,
+    }
+    ui._apply_iteration_event(
+        {
+            **common,
+            "kind": "path_progress",
+            "postprocess_stage": "path_counts",
+            "postprocess_completed": 10,
+            "postprocess_total": 20,
+        }
+    )
+    assert "10/20" in ui.status
+    assert ui.rows[0]["processing_phase"] == "path_progress"
+
+    ui._apply_iteration_event(
+        {
+            **common,
+            "kind": "interval_progress",
+            "postprocess_stage": "node_intervals",
+            "postprocess_completed": 30,
+            "postprocess_total": 45,
+        }
+    )
+    assert "30/45" in ui.status
+    assert ui.rows[0]["processing_phase"] == "interval_progress"
+    assert ui.rows[0]["postprocess_stage"] == "node_intervals"
 
 
 def test_interval_aggregation_consumes_high_fanout_as_a_stream() -> None:
@@ -512,6 +756,301 @@ def test_memory_guard_uses_higher_capacity_or_ratio_reserve(monkeypatch) -> None
     assert threshold == int(64 * 1024**3 * 0.15)
 
 
+@pytest.mark.skipif(os.name != "nt", reason="仅验证 Windows Win32 ABI")
+def test_windows_memory_guard_uses_one_static_type_and_explicit_abi() -> None:
+    """回归动态 ctypes 类型和隐式 ABI 长时间调用后的访问冲突。"""
+
+    assert _GLOBAL_MEMORY_STATUS_EX is not None
+    assert _GLOBAL_MEMORY_STATUS_EX.restype is ctypes.c_int
+    assert _GLOBAL_MEMORY_STATUS_EX.argtypes == (
+        ctypes.POINTER(_WindowsMemoryStatusEx),
+    )
+    assert ctypes.sizeof(_WindowsMemoryStatusEx) == 64
+
+    # 多次调用必须复用模块级结构体类型和函数代理；旧实现没有这两个
+    # 静态边界，因此本回归会在进入原生高频路径前直接失败。
+    from search_simulator._memory_guard import system_memory_snapshot
+
+    for _iteration in range(10_000):
+        snapshot = system_memory_snapshot()
+        assert snapshot is not None
+        assert snapshot.total_bytes >= snapshot.available_bytes >= 0
+
+
+def test_search_does_not_materialize_preview_without_consumer(monkeypatch) -> None:
+    """CLI 无进度消费者时不得为每个节点重建完整 GameState。"""
+
+    import search_simulator._tree_search as tree_search
+
+    simulator = SearchSimulator(
+        number_of_players=3,
+        number_of_wolves=1,
+        include_seer=False,
+        include_witch=False,
+        include_guard=False,
+        smart_vote=True,
+        tactics="",
+        all_positions=False,
+        persistence_enabled=False,
+        progress_queue=None,
+        iteration_callback=None,
+    )
+    monkeypatch.setattr(
+        tree_search,
+        "game_state_dict_from_compact",
+        lambda *args, **kwargs: pytest.fail("不应构造无人消费的节点预览"),
+    )
+    result = tree_search._search_root(
+        simulator,
+        simulator.initial_state,
+        position_index=1,
+        total_positions=1,
+    )
+    assert len(result["nodes"]) > 0
+
+
+@pytest.mark.skipif(os.name != "nt", reason="仅验证 Windows spawn 隔离参数")
+def test_windows_compute_worker_spawn_adds_no_site_and_restores() -> None:
+    """计算 worker 必须带 -S，退出局部上下文后不得污染其他子进程。"""
+
+    import multiprocessing.util as multiprocessing_util
+
+    original = multiprocessing_util._args_from_interpreter_flags
+    with _isolated_compute_worker_spawn():
+        assert "-S" in multiprocessing_util._args_from_interpreter_flags()
+    assert multiprocessing_util._args_from_interpreter_flags is original
+
+
+def test_search_resumes_inside_position_from_atomic_checkpoint(tmp_path) -> None:
+    """单站位超过 worker 预算后必须从原 frontier 继续而非从头搜索。"""
+
+    import search_simulator._tree_search as tree_search
+
+    simulator = SearchSimulator(
+        number_of_players=3,
+        number_of_wolves=1,
+        include_seer=False,
+        include_witch=False,
+        include_guard=False,
+        smart_vote=True,
+        tactics="",
+        all_positions=False,
+        persistence_enabled=False,
+    )
+    checkpoint_path = tmp_path / "position.pickle"
+    chunk_processed_values: list[int] = []
+    while True:
+        result = tree_search._search_root(
+            simulator,
+            simulator.initial_state,
+            position_index=1,
+            total_positions=1,
+            materialize_graph=True,
+            checkpoint_path=str(checkpoint_path),
+            node_budget=1,
+        )
+        if not result.get("chunk_incomplete"):
+            break
+        chunk_processed_values.append(int(result["processed_states"]))
+    assert chunk_processed_values == sorted(set(chunk_processed_values))
+    assert len(chunk_processed_values) >= 1
+    assert len(result["nodes"]) == 3
+    _remove_search_checkpoint(checkpoint_path)
+    assert not checkpoint_path.exists()
+
+
+def test_failed_memory_run_can_resume_same_run_id(tmp_path) -> None:
+    """上次启动失败后仍应复用已存在的站位内检查点批次。"""
+
+    store = _SQLiteLRUSignatureStore(
+        tmp_path / "resume.sqlite3",
+        lru_capacity=128,
+        commit_interval=16,
+    )
+    config = {"roster": ["狼人", "村民", "村民"], "search_mode": "dfs"}
+    run_id = store.start_run(config)
+    store.finish_run(
+        run_id,
+        {
+            "next_position_index": 1,
+            "positions": [],
+            "in_position_checkpoint": {"checkpoint_path": "position.pickle"},
+        },
+        status="failed",
+    )
+    resumed_run_id, resumed = store.start_or_resume_run(config)
+    assert resumed is True
+    assert resumed_run_id == run_id
+    store.close()
+
+
+def test_staged_zero_node_position_is_never_a_completed_checkpoint(tmp_path) -> None:
+    """站位内分块暂存行不得被 0=0 的计数偶然判定为完整解。"""
+
+    store = _SQLiteLRUSignatureStore(
+        tmp_path / "staging.sqlite3",
+        lru_capacity=128,
+        commit_interval=16,
+    )
+    config = {"roster": ["狼人", "村民", "村民"], "search_mode": "dfs"}
+    run_id = store.start_run(config)
+    store.begin_position_staging(
+        run_id,
+        {
+            "position_index": 1,
+            "position_signature": "position-1",
+            "roles": ["狼人", "村民", "村民"],
+        },
+    )
+    assert store.list_completed_position_results(run_id) == []
+    store.close()
+
+
+def test_complete_run_rejects_missing_position_graphs(tmp_path) -> None:
+    """solution 终态必须覆盖全部站位且每个站位至少存在根节点。"""
+
+    store = _SQLiteLRUSignatureStore(
+        tmp_path / "invalid-solution.sqlite3",
+        lru_capacity=128,
+        commit_interval=16,
+    )
+    run_id = store.start_run({"roster": ["狼人", "村民", "村民"]})
+    with pytest.raises(ValueError, match="拒绝登记不完整 solution"):
+        store.finish_run(
+            run_id,
+            {
+                "position_count": 1,
+                "total_position_count": 1,
+                "next_position_index": None,
+                "positions": [{"state_count": 0}],
+            },
+            status="complete",
+        )
+    store.close()
+
+
+def test_crash_log_uses_one_timestamp_without_pid(monkeypatch, tmp_path) -> None:
+    monkeypatch.delenv("SEARCH_SIMULATOR_CRASH_LOG", raising=False)
+    monkeypatch.delenv("SEARCH_SIMULATOR_CRASH_SESSION", raising=False)
+    monkeypatch.setattr(
+        "search_simulator._crash_handler.crash_log_directory",
+        lambda: tmp_path,
+    )
+    first = prepare_crash_log_path()
+    second = prepare_crash_log_path()
+    assert first == second
+    assert first.parent == tmp_path
+    assert re.fullmatch(r"crash_\d{8}_\d{6}_\d{6}\.log", first.name)
+
+
+def test_previous_native_crash_is_reported_only_once(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv(
+        "SEARCH_SIMULATOR_CRASH_LOG",
+        str(tmp_path / "crash_20260823_080000_000000.log"),
+    )
+    monkeypatch.setenv("SEARCH_SIMULATOR_CRASH_SESSION", "20260823_080000_000000")
+    monkeypatch.setattr(
+        "search_simulator._crash_handler.crash_log_directory",
+        lambda: tmp_path,
+    )
+    previous = tmp_path / "crash_20260823_075900_000000.log"
+    previous.write_text("Windows fatal exception: access violation", encoding="utf-8")
+    assert previous_unreported_crash_log() == previous.resolve()
+    mark_crash_log_reported(previous)
+    assert previous_unreported_crash_log() is None
+
+
+def test_caught_python_failure_populates_timestamp_crash_log(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    crash_path = tmp_path / "crash_20260823_080000_000000.log"
+    monkeypatch.setenv("SEARCH_SIMULATOR_CRASH_LOG", str(crash_path))
+    monkeypatch.setenv("SEARCH_SIMULATOR_CRASH_SESSION", "20260823_080000_000000")
+    try:
+        raise AttributeError("captured worker failure")
+    except AttributeError as exc:
+        record_caught_failure(
+            exc,
+            category="python_exception",
+            context={
+                "run_id": "run-caught",
+                "checkpoints": "0/1",
+                "next_position": 1,
+            },
+        )
+        first_size = crash_path.stat().st_size
+        record_caught_failure(
+            exc,
+            category="gui_worker",
+            context={"run_id": "run-caught"},
+        )
+
+    content = crash_path.read_text(encoding="utf-8")
+    assert crash_path.stat().st_size == first_size
+    assert "pid=" in content
+    assert "run_id=run-caught" in content
+    assert "AttributeError: captured worker failure" in content
+    assert "Traceback" in content
+
+
+def test_terminal_popup_distinguishes_complete_interrupted_and_failed(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setenv("SEARCH_SIMULATOR_LOG", str(tmp_path / "runtime.log"))
+    monkeypatch.setenv(
+        "SEARCH_SIMULATOR_CRASH_LOG",
+        str(tmp_path / "crash_20260823_080000_000000.log"),
+    )
+    monkeypatch.setenv("SEARCH_SIMULATOR_CRASH_SESSION", "20260823_080000_000000")
+    base = {
+        "run_id": "run-123",
+        "position_count": 3,
+        "total_position_count": 5,
+        "next_position_index": 4,
+    }
+    complete_title, complete_body = _terminal_popup_content(
+        "complete",
+        {**base, "position_count": 5, "next_position_index": None},
+    )
+    interrupted_title, interrupted_body = _terminal_popup_content(
+        "interrupted",
+        base,
+    )
+    failed_title, failed_body = _terminal_popup_content(
+        "failed",
+        base,
+        error={"error_type": "BrokenProcessPool", "error": "worker exited"},
+    )
+    assert complete_title == "迭代完成"
+    assert "全部目标站位均已完成" in complete_body
+    assert "并非完成" in interrupted_body
+    assert "#4" in interrupted_body
+    assert "未完成" in failed_title
+    assert "BrokenProcessPool" in failed_body
+    assert "runtime.log" in failed_body
+    assert "crash_20260823_080000_000000.log" in failed_body
+
+
+def test_interrupted_summary_is_never_logged_as_complete(caplog) -> None:
+    result = {
+        "status": "interrupted",
+        "position_count": 2,
+        "total_position_count": 5,
+        "next_position_index": 3,
+        "processed_states": 20,
+        "good_paths": 2,
+        "wolf_paths": 4,
+        "wide_interval": [-0.5, 0.2],
+        "narrow_interval": [-0.2, 0.1],
+    }
+    with caplog.at_level(logging.INFO):
+        text = report_tree_summary(result)
+    assert "未完成（可恢复中断）" in text
+    assert "树搜索完成：" not in caplog.text
+
+
 def test_position_scheduler_is_fixed_to_one_isolated_worker() -> None:
     source_path = (
         Path(__file__).parents[1]
@@ -540,6 +1079,62 @@ def test_position_scheduler_is_fixed_to_one_isolated_worker() -> None:
     )
     assert isinstance(max_workers, ast.Constant)
     assert max_workers.value == 1
+
+
+def test_broken_worker_pool_logs_critical_failed_terminal(
+    monkeypatch,
+    tmp_path,
+    caplog,
+) -> None:
+    crash_path = tmp_path / "crash_20260823_080100_000000.log"
+    monkeypatch.setenv("SEARCH_SIMULATOR_CRASH_LOG", str(crash_path))
+    monkeypatch.setenv("SEARCH_SIMULATOR_CRASH_SESSION", "20260823_080100_000000")
+
+    class BrokenFuture:
+        def result(self):
+            raise BrokenProcessPool("simulated native worker crash")
+
+    class BrokenExecutor:
+        def __init__(self, **_kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, _exc_type, _exc, _traceback):
+            return False
+
+        def submit(self, _function, _payload):
+            return BrokenFuture()
+
+    monkeypatch.setattr(
+        "search_simulator._tree_search.ProcessPoolExecutor",
+        BrokenExecutor,
+    )
+    simulator = SearchSimulator(
+        number_of_players=4,
+        number_of_wolves=1,
+        include_seer=False,
+        include_witch=False,
+        include_guard=False,
+        tactics="",
+        all_positions=False,
+        signature_cache_db_path=tmp_path / "worker-crash.sqlite3",
+        memory_reserve_gib=0.0,
+        memory_reserve_ratio=0.0,
+    )
+    with caplog.at_level(logging.INFO), pytest.raises(BrokenProcessPool) as raised:
+        simulator.run()
+    assert "status=failed" in caplog.text
+    assert "category=worker_crash" in caplog.text
+    assert "simulated native worker crash" in caplog.text
+    assert raised.value.run_id == simulator.run_id
+    assert raised.value.next_position_index == 1
+    crash_content = crash_path.read_text(encoding="utf-8")
+    assert "category=worker_crash" in crash_content
+    assert f"run_id={simulator.run_id}" in crash_content
+    assert "BrokenProcessPool: simulated native worker crash" in crash_content
+    simulator.signature_cache.close()
 
 
 def test_cli_and_worker_boundaries_pass_simulator_parameters_by_name() -> None:

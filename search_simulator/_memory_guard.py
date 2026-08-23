@@ -9,7 +9,51 @@ from dataclasses import dataclass
 GIB = 1024**3
 
 
-@dataclass(frozen=True)
+class _WindowsMemoryStatusEx(ctypes.Structure):
+    """与 Win32 ``MEMORYSTATUSEX`` ABI 严格对应的静态结构体。
+
+    该类型必须在模块加载时只创建一次。历史实现把结构体类定义放在
+    ``_windows_memory_snapshot`` 热路径内，并通过未声明函数签名的
+    ``ctypes.windll`` 代理反复跨越 ABI；Windows CPython 3.12 长时间调用后
+    会出现访问冲突。静态类型与显式签名共同保证指针布局不随调用变化。
+    """
+
+    _fields_ = (
+        ("length", ctypes.c_ulong),
+        ("memory_load", ctypes.c_ulong),
+        ("total_physical", ctypes.c_ulonglong),
+        ("available_physical", ctypes.c_ulonglong),
+        ("total_page_file", ctypes.c_ulonglong),
+        ("available_page_file", ctypes.c_ulonglong),
+        ("total_virtual", ctypes.c_ulonglong),
+        ("available_virtual", ctypes.c_ulonglong),
+        ("available_extended_virtual", ctypes.c_ulonglong),
+    )
+
+
+def _bind_windows_memory_status() -> object | None:
+    """一次性绑定 ``GlobalMemoryStatusEx`` 并声明完整调用约定。
+
+    非 Windows 平台不加载 ``kernel32``，从而保持模块可导入。返回对象在
+    Windows 上是带 ``argtypes``/``restype`` 的 ``ctypes`` 函数代理。
+    """
+
+    if os.name != "nt":
+        return None
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        function = kernel32.GlobalMemoryStatusEx
+    except (AttributeError, OSError):
+        return None
+    function.argtypes = (ctypes.POINTER(_WindowsMemoryStatusEx),)
+    function.restype = ctypes.c_int
+    return function
+
+
+_GLOBAL_MEMORY_STATUS_EX = _bind_windows_memory_status()
+
+
+@dataclass(frozen=True, slots=True)
 class MemorySnapshot:
     total_bytes: int
     available_bytes: int
@@ -24,26 +68,16 @@ class MemorySnapshot:
 
 
 def _windows_memory_snapshot() -> MemorySnapshot | None:
-    """通过 Windows 内核 API 读取物理内存，不引入第三方原生依赖。"""
+    """通过已声明 ABI 的 Windows 内核 API 读取物理内存。"""
 
-    class MemoryStatusEx(ctypes.Structure):
-        _fields_ = (
-            ("length", ctypes.c_ulong),
-            ("memory_load", ctypes.c_ulong),
-            ("total_physical", ctypes.c_ulonglong),
-            ("available_physical", ctypes.c_ulonglong),
-            ("total_page_file", ctypes.c_ulonglong),
-            ("available_page_file", ctypes.c_ulonglong),
-            ("total_virtual", ctypes.c_ulonglong),
-            ("available_virtual", ctypes.c_ulonglong),
-            ("available_extended_virtual", ctypes.c_ulonglong),
-        )
-
-    status = MemoryStatusEx()
+    function = _GLOBAL_MEMORY_STATUS_EX
+    if function is None:
+        return None
+    status = _WindowsMemoryStatusEx()
     status.length = ctypes.sizeof(status)
     try:
-        succeeded = ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status))
-    except (AttributeError, OSError):
+        succeeded = function(ctypes.byref(status))
+    except (AttributeError, OSError, ctypes.ArgumentError):
         return None
     if not succeeded:
         return None

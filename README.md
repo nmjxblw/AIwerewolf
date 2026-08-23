@@ -144,7 +144,7 @@ npm run dev                           # 前端 http://localhost:3001
 
 | 层 | 技术 |
 |---|---|
-| 后端服务 | Python 3.12+ / FastAPI / WebSocket |
+| 后端服务 | Python 3.12 / FastAPI / WebSocket |
 | 游戏引擎 | dataclass + Enum 纯逻辑规则引擎 |
 | Agent | `CognitiveAgent` / AgentLoop / Memory / SocialModel / StrategyRetriever |
 | LLM 接入 | `backend.llm.create_client()` |

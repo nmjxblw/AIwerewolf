@@ -4,41 +4,10 @@ import argparse
 import json
 import logging
 import os
-import subprocess
 import sys
 
 """基于 BFS/DFS 的狼人杀全树搜索模拟入口（支持 GUI 参数配置）。"""
-logging.basicConfig(
-    level=logging.INFO,
-    format=r"[%(asctime)s.%(msecs)03d][%(pathname)s:%(lineno)d][%(levelname)s]"
-    + os.linesep
-    + r"%(message)s"
-    + os.linesep,
-)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-
-def _ensure_windows_allocator_stability() -> None:
-    """Windows 3.12 使用系统分配器，避免大图 worker 的 pymalloc/debug 峰值。"""
-
-    if (
-        os.name != "nt"
-        or sys.version_info < (3, 12)
-        or os.environ.get("PYTHONMALLOC") == "malloc"
-        or os.environ.get("SEARCH_SIMULATOR_ALLOCATOR_RESTARTED") == "1"
-    ):
-        return
-    environment = os.environ.copy()
-    environment["PYTHONMALLOC"] = "malloc"
-    environment["PYTHONFAULTHANDLER"] = "1"
-    environment["SEARCH_SIMULATOR_ALLOCATOR_RESTARTED"] = "1"
-    completed = subprocess.run(
-        [sys.executable, "-m", "search_simulator", *sys.argv[1:]],
-        env=environment,
-        check=False,
-    )
-    raise SystemExit(completed.returncode)
 
 
 def _import_runtime_modules():
@@ -130,6 +99,7 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
         signature_cache_db_path=args.signature_cache_db_path,
         signature_lru_capacity=args.signature_lru_capacity,
         signature_commit_interval=args.signature_commit_interval,
+        force_recompute=getattr(args, "force_recompute", False),
         iteration_callback=callback if callable(callback) else None,
         progress_queue=getattr(args, "progress_queue", None),
         result_queue=getattr(args, "result_queue", None),
@@ -137,33 +107,84 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
     )
     result = simulator.run(start_state=_load_start_state(args))
 
-    emit_simulation_artifacts(
-        simulator,
-        result=result,
-        enable_plot=not args.disable_plot,
-        phase_callback=phase_callback,
-        plot_position_index=args.plot_position_index,
-        max_nodes_for_plot=args.max_nodes_for_plot,
-        plot_dpi=args.plot_dpi,
-    )
+    try:
+        emit_simulation_artifacts(
+            simulator,
+            result=result,
+            enable_plot=not args.disable_plot,
+            phase_callback=phase_callback,
+            plot_position_index=args.plot_position_index,
+            max_nodes_for_plot=args.max_nodes_for_plot,
+            plot_dpi=args.plot_dpi,
+        )
+    except Exception as exc:
+        # 搜索终态已经形成时，后处理失败不能反向伪装成“搜索未执行”。
+        # 把迭代上下文附到异常上供 GUI 弹窗区分。
+        for attribute, value in (
+            ("run_id", result.get("run_id", simulator.run_id)),
+            ("iteration_status", result.get("status", "complete")),
+            ("completed_positions", result.get("position_count", 0)),
+            ("total_positions", result.get("total_position_count", 0)),
+            ("next_position_index", result.get("next_position_index")),
+        ):
+            try:
+                setattr(exc, attribute, value)
+            except (AttributeError, TypeError):
+                pass
+        logger.exception(
+            "ARTIFACT_PIPELINE_FAILED iteration_status=%s run_id=%s",
+            result.get("status", "complete"),
+            result.get("run_id", simulator.run_id),
+        )
+        try:
+            from ._crash_handler import record_caught_failure
+        except ImportError:
+            from search_simulator._crash_handler import record_caught_failure
+        record_caught_failure(
+            exc,
+            category="artifact_pipeline",
+            context={
+                "run_id": result.get("run_id", simulator.run_id),
+                "iteration_status": result.get("status", "complete"),
+                "checkpoints": (
+                    f"{result.get('position_count', 0)}/"
+                    f"{result.get('total_position_count', 0)}"
+                ),
+                "next_position": result.get("next_position_index") or "none",
+                "error_type": type(exc).__name__,
+            },
+        )
+        raise
     return simulator
 
 
-def _install_crash_handlers() -> None:
-    """安装全局崩溃处理器；安装失败不应阻断主流程。"""
+def _install_crash_handlers():
+    """安装全局崩溃处理器并返回 crash 日志路径。"""
     try:
         from ._crash_handler import install_crash_handlers
     except ImportError:
         from search_simulator._crash_handler import install_crash_handlers
     try:
-        install_crash_handlers()
+        return install_crash_handlers()
     except Exception:
-        pass
+        logger.exception("CRASH_HANDLER_INSTALL_FAILED")
+        return None
 
 
 def main() -> None:
-    _ensure_windows_allocator_stability()
-    _install_crash_handlers()
+    try:
+        from ._runtime_logging import configure_runtime_logging
+    except ImportError:
+        from search_simulator._runtime_logging import configure_runtime_logging
+
+    runtime_path = configure_runtime_logging()
+    crash_path = _install_crash_handlers()
+    logger.info(
+        "LOGGING_READY pid=%s runtime_log=%s crash_log=%s",
+        os.getpid(),
+        runtime_path,
+        crash_path or "unavailable",
+    )
     _, build_parser, _ = _import_runtime_modules()
     parser = build_parser()
     args: argparse.Namespace = parser.parse_args()

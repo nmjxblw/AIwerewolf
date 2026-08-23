@@ -5,12 +5,15 @@
 from __future__ import annotations
 
 import argparse
+import html
+import logging
 import math
 import multiprocessing
 import os
 import queue
 import threading
 import time
+import traceback
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -23,15 +26,22 @@ from pygame_gui.elements import UIButton
 from pygame_gui.elements import UIHorizontalSlider
 from pygame_gui.elements import UIProgressBar
 from pygame_gui.elements import UITextEntryLine
+from pygame_gui.windows import UIMessageWindow
 
 from ._config import GUI_WINDOW_SIZE
+from ._crash_handler import crash_log_path
+from ._crash_handler import mark_crash_log_reported
+from ._crash_handler import previous_unreported_crash_log
 from ._game_state import game_state_dict_from_compact
 from ._i18n import set_language
 from ._i18n import t
 from ._interval import RewardInterval
 from ._interval import interval_branch_color
 from ._interval import interval_camp
+from ._runtime_logging import runtime_log_path
 from ._tree_search import recompute_graph_intervals
+
+logger = logging.getLogger(__name__)
 
 
 BACKGROUND = pygame.Color("#0B1220")
@@ -256,6 +266,57 @@ def _compact_integer(value: int) -> str:
     return f"{text[:4]}.{text[4:7]}e{len(text) - 1}"
 
 
+def _terminal_popup_content(
+    status: str,
+    result: dict[str, Any],
+    *,
+    error: dict[str, Any] | None = None,
+) -> tuple[str, str]:
+    """构造三种互斥运行终态的中文弹窗标题与 HTML 正文。
+
+    参数：
+        status: ``complete``、``interrupted`` 或 ``failed``。
+        result: 运行标识、检查点计数和下一站位等终态上下文。
+        error: 失败时的异常类型、消息和 traceback 摘要。
+
+    返回：
+        弹窗标题与已转义的 HTML 正文。
+    """
+
+    run_id = str(result.get("run_id") or "未知")
+    completed = int(result.get("position_count", 0))
+    total = int(result.get("total_position_count", completed or 1))
+    next_position = result.get("next_position_index")
+    next_text = "无" if next_position is None else f"#{int(next_position)}"
+    runtime_path = str(runtime_log_path())
+    crash_path = str(crash_log_path())
+    if status == "complete":
+        title = "迭代完成"
+        headline = "全部目标站位均已完成并持久化。"
+    elif status == "interrupted":
+        title = "迭代已中断（可恢复）"
+        headline = "本次并非完成；已有检查点已保存，再次开始将自动续算。"
+    else:
+        error = error or {}
+        error_type = str(error.get("error_type") or "UnknownError")
+        error_message = str(error.get("error") or "未提供异常消息")
+        if error.get("iteration_status") == "complete":
+            title = "迭代已完成，但输出失败"
+            headline = f"搜索已完成；结果文件或绘图失败：{error_type}: {error_message}"
+        else:
+            title = "迭代崩溃/失败（未完成）"
+            headline = f"运行异常停止：{error_type}: {error_message}"
+    lines = (
+        headline,
+        f"运行 ID：{run_id}",
+        f"完整检查点：{completed}/{total}",
+        f"下一恢复站位：{next_text}",
+        f"运行日志：{runtime_path}",
+        f"崩溃日志：{crash_path}",
+    )
+    return title, "<br>".join(html.escape(line) for line in lines)
+
+
 class PygameSimulatorUI:
     def __init__(
         self,
@@ -282,6 +343,8 @@ class PygameSimulatorUI:
         self.worker_progress_queue = self.control_manager.Queue(maxsize=32)
         self.worker_result_queue = self.control_manager.Queue(maxsize=8)
         self.running = False
+        # solution 命中后首次点击只载入结果；下一次点击才强制创建新批次。
+        self.force_recompute_next_run = False
         self.paused = False
         self.keep_running = True
         self.rows: list[dict[str, Any]] = []
@@ -293,6 +356,8 @@ class PygameSimulatorUI:
         self.selected_node: int | None = None
         self.last_data_refresh_at = 0.0
         self.simulator: Any | None = None
+        self.terminal_popup: UIMessageWindow | None = None
+        self.pending_previous_crash_log: Path | None = None
         self.graph_zoom = 0.78
         self.graph_pan = [0.0, 0.0]
         self.dragging_graph = False
@@ -301,6 +366,8 @@ class PygameSimulatorUI:
         self.status = t("gui.ready")
         self.progress = 0.0
         self.last_interval_lambda = round(float(self.defaults.lambda_risk), 2)
+        self.interval_recompute_running = False
+        self.interval_recompute_requested_lambda: float | None = None
         self.live_stats = {
             "terminal_count": 0,
             "good_paths": 0,
@@ -352,6 +419,7 @@ class PygameSimulatorUI:
         self.hover_tooltip: list[str] = []
 
         self._create_controls()
+        self._show_previous_crash_popup()
 
     def _create_controls(self) -> None:
         self.entries: dict[str, UITextEntryLine] = {}
@@ -596,10 +664,25 @@ class PygameSimulatorUI:
             elif row_rect.collidepoint(pygame.mouse.get_pos()):
                 pygame.draw.rect(self.screen, pygame.Color("#1A2D48"), row_rect, border_radius=3)
             processing = bool(item.get("processing", False))
+            interval_recomputing = bool(item.get("interval_recomputing", False))
+            busy = processing or interval_recomputing
+            processing_phase = str(item.get("processing_phase", "node_progress"))
+            postprocess_total = int(item.get("postprocess_total", 0))
+            postprocess_completed = int(item.get("postprocess_completed", 0))
+            postprocess_percent = int(
+                100.0 * postprocess_completed / max(1, postprocess_total)
+            )
+            interval_cell = (
+                t("gui.interval_short", percent=postprocess_percent)
+                if busy and processing_phase == "interval_progress"
+                else t("postprocess.path_counts")
+                if busy and processing_phase == "path_progress"
+                else t("gui.computing")
+            )
             camp = str(item["camp"])
             camp_color = (
                 ACCENT
-                if processing
+                if busy
                 else GOOD
                 if camp == "good"
                 else WOLF
@@ -609,14 +692,14 @@ class PygameSimulatorUI:
             wide = item["wide_interval"]
             narrow = item["narrow_interval"]
             values = (
-                (("▶" if processing else "") + str(item["position_index"]), 346, 42),
+                (("▶" if busy else "") + str(item["position_index"]), 346, 42),
                 (item.get("position_display", " | ".join(f"{i + 1}:{r}" for i, r in enumerate(item["roles"]))), 392, 330),
                 (f"{int(item['state_count']):,}", 732, 72),
                 (f"{int(item['edge_count']):,}", 812, 64),
                 (f"{int(item['terminal_count']):,}", 884, 60),
-                (t("gui.computing") if processing else f"[{wide[0]:.3f},{wide[1]:.3f}]", 952, 138),
-                ("—" if processing else f"[{narrow[0]:.3f},{narrow[1]:.3f}]", 1098, 138),
-                (t("gui.computing") if processing else t(f"camp.{camp}"), 1244, 72),
+                (interval_cell if busy else f"[{wide[0]:.3f},{wide[1]:.3f}]", 952, 138),
+                ("—" if busy else f"[{narrow[0]:.3f},{narrow[1]:.3f}]", 1098, 138),
+                (t("gui.computing") if busy else t(f"camp.{camp}"), 1244, 72),
                 (f"{float(item['runtime_seconds']):.2f}s", 1324, 96),
             )
             for value, x, width in values:
@@ -634,6 +717,12 @@ class PygameSimulatorUI:
     def _layout_graph(
         self, graph: dict[str, Any]
     ) -> dict[int, tuple[float, float]]:
+        """按搜索深度从左到右、同层节点从上到下生成 DAG 画布坐标。
+
+        ``day_count + night_count`` 是节点距根节点的层级。层级固定映射到
+        X 轴，避免把搜索深度误画成纵向时间线；同一层的节点按稳定的
+        ``node_id`` 排序后映射到 Y 轴，保证相同输入下渲染顺序确定。
+        """
         groups: dict[int, list[int]] = {}
         for node in graph.get("nodes", []):
             round_index = int(node["day_count"]) + int(node["night_count"])
@@ -643,8 +732,8 @@ class PygameSimulatorUI:
             spacing = min(145.0, 900.0 / max(1, len(node_ids) - 1))
             for offset, node_id in enumerate(sorted(node_ids)):
                 positions[node_id] = (
-                    (offset - (len(node_ids) - 1) / 2.0) * spacing,
                     round_index * 105.0,
+                    (offset - (len(node_ids) - 1) / 2.0) * spacing,
                 )
         return positions
 
@@ -780,7 +869,11 @@ class PygameSimulatorUI:
             roles = list(graph.get("roles", []))
             if not roles and self.selected_row is not None:
                 roles = list(self.rows[self.selected_row].get("roles", []))
-            if len(compact) >= 12 and len(roles) == len(compact[11]):
+            try:
+                # v1 的玩家数组位于 compact[11]，v2/v3 为扁平编码；统一
+                # 交给契约解码器校验，GUI 不再猜测内部字段偏移。
+                if not compact or not roles:
+                    raise ValueError("缺少站位角色或紧凑状态")
                 state = game_state_dict_from_compact(
                     compact,
                     roles=roles,
@@ -789,7 +882,7 @@ class PygameSimulatorUI:
                     state_id=node_id,
                     observation=node.get("state_observation"),
                 )
-            else:
+            except (TypeError, ValueError):
                 state = {"unavailable": "该旧节点没有可恢复的 GameState 快照"}
         return _format_game_state_hover(node_id, node, state)
 
@@ -1035,6 +1128,8 @@ class PygameSimulatorUI:
         return argparse.Namespace(**values)
 
     def _worker(self, args: argparse.Namespace) -> None:
+        """执行后台模拟，并把异常上下文显式传回 Pygame 主线程。"""
+
         try:
             args.iteration_callback = lambda event: self.events.put(("iteration", event))
             simulator = self.run_simulation(
@@ -1043,11 +1138,144 @@ class PygameSimulatorUI:
             )
             self.events.put(("done", simulator))
         except BaseException as exc:
-            self.events.put(("error", exc))
+            error_payload = {
+                "status": "failed",
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "traceback": traceback.format_exc(),
+                "iteration_status": getattr(exc, "iteration_status", "failed"),
+                "run_id": getattr(exc, "run_id", ""),
+                "position_count": int(
+                    getattr(exc, "completed_positions", 0)
+                ),
+                "total_position_count": int(getattr(exc, "total_positions", 0)),
+                "next_position_index": getattr(exc, "next_position_index", None),
+            }
+            logger.error(
+                "GUI_WORKER_TERMINAL status=failed run_id=%s checkpoints=%s/%s "
+                "next_position=%s error_type=%s error=%s",
+                error_payload["run_id"] or "unknown",
+                error_payload["position_count"],
+                error_payload["total_position_count"],
+                error_payload["next_position_index"] or "none",
+                error_payload["error_type"],
+                error_payload["error"],
+                exc_info=(type(exc), exc, exc.__traceback__),
+            )
+            try:
+                from ._crash_handler import record_caught_failure
+
+                record_caught_failure(
+                    exc,
+                    category="gui_worker",
+                    context={
+                        "run_id": error_payload["run_id"] or "unknown",
+                        "checkpoints": (
+                            f"{error_payload['position_count']}/"
+                            f"{error_payload['total_position_count']}"
+                        ),
+                        "next_position": (
+                            error_payload["next_position_index"] or "none"
+                        ),
+                        "error_type": error_payload["error_type"],
+                    },
+                )
+            except BaseException:
+                logger.critical(
+                    "GUI_CRASH_LOG_FALLBACK_FAILED error_type=%s",
+                    error_payload["error_type"],
+                    exc_info=True,
+                )
+            self.events.put(("error", error_payload))
+
+    def _show_terminal_popup(
+        self,
+        status: str,
+        result: dict[str, Any],
+        *,
+        error: dict[str, Any] | None = None,
+    ) -> None:
+        """在 Pygame 主线程显示完成、中断或失败模态弹窗。"""
+
+        if self.terminal_popup is not None and self.terminal_popup.alive():
+            self._acknowledge_previous_crash_popup()
+            self.terminal_popup.kill()
+        title, message = _terminal_popup_content(status, result, error=error)
+        width, height = 620, 330
+        screen_width, screen_height = self.screen.get_size()
+        self.terminal_popup = UIMessageWindow(
+            pygame.Rect(
+                max(20, (screen_width - width) // 2),
+                max(20, (screen_height - height) // 2),
+                width,
+                height,
+            ),
+            html_message=message,
+            manager=self.manager,
+            window_title=title,
+            object_id=f"#terminal_{status}",
+            always_on_top=True,
+        )
+
+    def _show_previous_crash_popup(self) -> None:
+        """启动时补发上一次原生崩溃无法当场绘制的提示。"""
+
+        previous = previous_unreported_crash_log()
+        if previous is None:
+            return
+        self.pending_previous_crash_log = previous
+        message = "<br>".join(
+            html.escape(line)
+            for line in (
+                "检测到上次运行发生原生崩溃；上次迭代不能视为完成。",
+                "已完成站位仍可由 SQLite 检查点恢复。",
+                f"崩溃日志：{previous}",
+                f"本次运行日志：{runtime_log_path()}",
+            )
+        )
+        width, height = 650, 300
+        screen_width, screen_height = self.screen.get_size()
+        self.terminal_popup = UIMessageWindow(
+            pygame.Rect(
+                max(20, (screen_width - width) // 2),
+                max(20, (screen_height - height) // 2),
+                width,
+                height,
+            ),
+            html_message=message,
+            manager=self.manager,
+            window_title="检测到上次运行崩溃",
+            object_id="#terminal_previous_crash",
+            always_on_top=True,
+        )
+        logger.warning("PREVIOUS_NATIVE_CRASH log=%s", previous)
+
+    def _acknowledge_previous_crash_popup(self) -> None:
+        """用户关闭历史崩溃提示后写入一次性通知标记。"""
+
+        if self.pending_previous_crash_log is None:
+            return
+        try:
+            mark_crash_log_reported(self.pending_previous_crash_log)
+        except OSError:
+            logger.exception(
+                "CRASH_NOTIFICATION_MARK_FAILED log=%s",
+                self.pending_previous_crash_log,
+            )
+        self.pending_previous_crash_log = None
 
     def _start(self) -> None:
         if self.running:
             return
+        if self.simulator is not None:
+            # 上一次结果的只读连接在新请求前释放，避免新批次与旧连接
+            # 同时持有 SQLite 文件句柄；内存中的 UI 图仍可继续被清理。
+            cache = getattr(self.simulator, "signature_cache", None)
+            if cache is not None:
+                try:
+                    cache.close()
+                except Exception:
+                    logger.exception("GUI_SOLUTION_CACHE_CLOSE_FAILED")
         try:
             args = self._build_args()
         except (TypeError, ValueError) as exc:
@@ -1088,6 +1316,11 @@ class PygameSimulatorUI:
         args.resume_event = self.resume_event
         args.progress_queue = self.worker_progress_queue
         args.result_queue = self.worker_result_queue
+        args.force_recompute = self.force_recompute_next_run
+        if args.force_recompute:
+            # 本次请求已经明确是重算；无论随后完成或中断，下一次点击
+            # 都重新回到 solution 优先查询，避免重复隐式重算。
+            self.force_recompute_next_run = False
         self.progress_bar.set_current_progress(0.0)
         self.running = True
         self.paused = False
@@ -1115,28 +1348,112 @@ class PygameSimulatorUI:
             f"{index + 1}:{role}" for index, role in enumerate(row["roles"])
         )
         self.graph["_expanded_node_ids"] = set()
-        self._recompute_loaded_graph()
+        persisted_lambda = float(
+            row.get(
+                "interval_lambda",
+                getattr(self.simulator, "lambda_risk", self.last_interval_lambda),
+            )
+        )
+        self.last_interval_lambda = round(persisted_lambda, 2)
+        current_lambda = round(float(self.lambda_slider.get_current_value()), 2)
+        if current_lambda != self.last_interval_lambda:
+            self._recompute_loaded_graph()
         self.selected_node = 0 if self.graph.get("nodes") else None
         self.graph_pan = [0.0, 0.0]
         self.graph_zoom = 0.78
 
     def _recompute_loaded_graph(self) -> None:
+        """请求在后台重算选中 DAG，避免阻塞 Pygame 绘制循环。"""
+
         if not self.graph.get("nodes"):
             return
         current_lambda = round(float(self.lambda_slider.get_current_value()), 2)
-        robust = recompute_graph_intervals(
-            self.graph,
-            lambda_risk=current_lambda,
+        self.interval_recompute_requested_lambda = current_lambda
+        if self.interval_recompute_running:
+            return
+
+        graph = self.graph
+        graph_identity = id(graph)
+        selected_position = (
+            int(self.rows[self.selected_row]["position_index"])
+            if self.selected_row is not None
+            else 0
         )
-        self.last_interval_lambda = current_lambda
-        if self.selected_row is not None:
-            row = self.rows[self.selected_row]
-            row["wide_interval"] = robust.wide.to_list()
-            row["narrow_interval"] = robust.narrow.to_list()
-            row["camp"] = interval_camp(robust.wide)
-            row["interval_lambda"] = current_lambda
-        if not self.running:
-            self.status = f"λ={current_lambda:.2f}：已动态回传选中 DAG（未重新搜索）"
+        self.interval_recompute_requested_lambda = None
+        self.interval_recompute_running = True
+
+        def worker() -> None:
+            last_emitted_at = 0.0
+
+            def publish(stage: str, completed: int, total: int) -> None:
+                nonlocal last_emitted_at
+                now = time.monotonic()
+                if (
+                    completed not in {0, total}
+                    and now - last_emitted_at < UI_DATA_REFRESH_SECONDS
+                ):
+                    return
+                self.events.put(
+                    (
+                        "local_interval_progress",
+                        {
+                            "graph_identity": graph_identity,
+                            "position_index": selected_position,
+                            "lambda_risk": current_lambda,
+                            "postprocess_stage": stage,
+                            "postprocess_completed": completed,
+                            "postprocess_total": total,
+                        },
+                    )
+                )
+                last_emitted_at = now
+
+            try:
+                robust = recompute_graph_intervals(
+                    graph,
+                    lambda_risk=current_lambda,
+                    progress_callback=publish,
+                )
+                self.events.put(
+                    (
+                        "local_interval_done",
+                        {
+                            "graph_identity": graph_identity,
+                            "position_index": selected_position,
+                            "lambda_risk": current_lambda,
+                            "wide_interval": robust.wide.to_list(),
+                            "narrow_interval": robust.narrow.to_list(),
+                            "camp": interval_camp(robust.wide),
+                        },
+                    )
+                )
+            except BaseException as exc:
+                logger.error(
+                    "LOCAL_INTERVAL_RECOMPUTE_FAILED position=%s lambda=%.2f "
+                    "error_type=%s error=%s",
+                    selected_position,
+                    current_lambda,
+                    type(exc).__name__,
+                    exc,
+                    exc_info=(type(exc), exc, exc.__traceback__),
+                )
+                self.events.put(
+                    (
+                        "local_interval_error",
+                        {
+                            "graph_identity": graph_identity,
+                            "position_index": selected_position,
+                            "error_type": type(exc).__name__,
+                            "error": str(exc),
+                        },
+                    )
+                )
+
+        threading.Thread(
+            target=worker,
+            name="interval-recompute",
+            daemon=True,
+        ).start()
 
     def _display_graph(self) -> dict[str, Any]:
         if self.running and self.preview_position in self.live_graphs:
@@ -1307,6 +1624,27 @@ class PygameSimulatorUI:
             terminal_count=int(payload.get("terminal_count", 0)),
             processed_states=int(payload.get("processed_states", 0)),
             runtime_seconds=float(payload.get("runtime_seconds", 0.0)),
+            processing_phase=str(
+                payload.get("kind", row.get("processing_phase", "node_progress"))
+            ),
+            postprocess_stage=str(
+                payload.get(
+                    "postprocess_stage",
+                    row.get("postprocess_stage", ""),
+                )
+            ),
+            postprocess_completed=int(
+                payload.get(
+                    "postprocess_completed",
+                    row.get("postprocess_completed", 0),
+                )
+            ),
+            postprocess_total=int(
+                payload.get(
+                    "postprocess_total",
+                    row.get("postprocess_total", 0),
+                )
+            ),
             processing=True,
         )
         if current_row is None:
@@ -1431,7 +1769,12 @@ class PygameSimulatorUI:
     def _apply_iteration_event(self, payload: dict[str, Any]) -> None:
         event_kind = str(payload.get("kind", ""))
         position_index = int(payload.get("position_index", 0))
-        if event_kind in {"position_started", "node_progress"}:
+        if event_kind in {
+            "position_started",
+            "node_progress",
+            "path_progress",
+            "interval_progress",
+        }:
             current = self.position_progress.get(position_index, {})
             if current.get("completed"):
                 return
@@ -1440,11 +1783,13 @@ class PygameSimulatorUI:
             ):
                 return
             self.position_progress[position_index] = {
+                **current,
                 **payload,
                 "completed": False,
             }
             self._upsert_progress_row(payload)
-            self._merge_live_preview(payload)
+            if event_kind in {"position_started", "node_progress"}:
+                self._merge_live_preview(payload)
             self._choose_preview_position()
             self.active_position = position_index
             self.live_stats["total_positions"] = int(
@@ -1456,6 +1801,30 @@ class PygameSimulatorUI:
                     "gui.paused",
                     expanded=_compact_integer(
                         int(self.live_stats["expanded_nodes"])
+                    ),
+                )
+            elif event_kind == "path_progress":
+                self.status = t(
+                    "gui.path_progress",
+                    position=position_index,
+                    completed=_compact_integer(
+                        int(payload.get("postprocess_completed", 0))
+                    ),
+                    total=_compact_integer(
+                        int(payload.get("postprocess_total", 0))
+                    ),
+                )
+            elif event_kind == "interval_progress":
+                stage = str(payload.get("postprocess_stage", "node_intervals"))
+                self.status = t(
+                    "gui.interval_progress",
+                    position=position_index,
+                    stage=t(f"postprocess.{stage}"),
+                    completed=_compact_integer(
+                        int(payload.get("postprocess_completed", 0))
+                    ),
+                    total=_compact_integer(
+                        int(payload.get("postprocess_total", 0))
                     ),
                 )
             else:
@@ -1505,12 +1874,37 @@ class PygameSimulatorUI:
             self.paused = False
             self.pause_button.set_text(t("gui.pause"))
             self.start_button.set_text(t("gui.running_short") + " · DFS")
-            self.status = t(
-                "gui.node_progress",
-                position=self.active_position or "?",
-                expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
-                discovered=_compact_integer(int(self.live_stats["discovered_nodes"])),
-            )
+            active = self.position_progress.get(self.active_position, {})
+            active_kind = str(active.get("kind", "node_progress"))
+            if active_kind == "path_progress":
+                self.status = t(
+                    "gui.path_progress",
+                    position=self.active_position or "?",
+                    completed=_compact_integer(
+                        int(active.get("postprocess_completed", 0))
+                    ),
+                    total=_compact_integer(int(active.get("postprocess_total", 0))),
+                )
+            elif active_kind == "interval_progress":
+                stage = str(active.get("postprocess_stage", "node_intervals"))
+                self.status = t(
+                    "gui.interval_progress",
+                    position=self.active_position or "?",
+                    stage=t(f"postprocess.{stage}"),
+                    completed=_compact_integer(
+                        int(active.get("postprocess_completed", 0))
+                    ),
+                    total=_compact_integer(int(active.get("postprocess_total", 0))),
+                )
+            else:
+                self.status = t(
+                    "gui.node_progress",
+                    position=self.active_position or "?",
+                    expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
+                    discovered=_compact_integer(
+                        int(self.live_stats["discovered_nodes"])
+                    ),
+                )
             return
         self.resume_event.clear()
         self.paused = True
@@ -1537,6 +1931,75 @@ class PygameSimulatorUI:
                 kind, payload = self.events.get_nowait()
                 if kind == "iteration":
                     self._apply_iteration_event(payload)
+                elif kind == "local_interval_progress":
+                    if int(payload["graph_identity"]) != id(self.graph):
+                        continue
+                    stage = str(payload.get("postprocess_stage", "node_intervals"))
+                    completed = int(payload.get("postprocess_completed", 0))
+                    total = int(payload.get("postprocess_total", 0))
+                    position_index = int(payload.get("position_index", 0))
+                    for row in self.rows:
+                        if int(row["position_index"]) == position_index:
+                            row["interval_recomputing"] = True
+                            row["processing_phase"] = "interval_progress"
+                            row["postprocess_stage"] = stage
+                            row["postprocess_completed"] = completed
+                            row["postprocess_total"] = total
+                            break
+                    self.status = t(
+                        "gui.interval_progress",
+                        position=position_index,
+                        stage=t(f"postprocess.{stage}"),
+                        completed=_compact_integer(completed),
+                        total=_compact_integer(total),
+                    )
+                elif kind == "local_interval_done":
+                    graph_matches = int(payload["graph_identity"]) == id(self.graph)
+                    completed_lambda = round(float(payload["lambda_risk"]), 2)
+                    position_index = int(payload.get("position_index", 0))
+                    if graph_matches:
+                        self.last_interval_lambda = completed_lambda
+                        for row in self.rows:
+                            if int(row["position_index"]) != position_index:
+                                continue
+                            row["wide_interval"] = list(payload["wide_interval"])
+                            row["narrow_interval"] = list(payload["narrow_interval"])
+                            row["camp"] = str(payload["camp"])
+                            row["interval_lambda"] = completed_lambda
+                            row["interval_recomputing"] = False
+                            break
+                        self.status = (
+                            f"λ={completed_lambda:.2f}：已动态回传选中 DAG"
+                            "（未重新搜索）"
+                        )
+                    requested_lambda = self.interval_recompute_requested_lambda
+                    self.interval_recompute_requested_lambda = None
+                    self.interval_recompute_running = False
+                    if self.graph.get("nodes") and (
+                        not graph_matches
+                        or (
+                            requested_lambda is not None
+                            and round(float(requested_lambda), 2) != completed_lambda
+                        )
+                    ):
+                        self._recompute_loaded_graph()
+                elif kind == "local_interval_error":
+                    graph_matches = int(payload["graph_identity"]) == id(self.graph)
+                    if graph_matches:
+                        position_index = int(payload.get("position_index", 0))
+                        for row in self.rows:
+                            if int(row["position_index"]) == position_index:
+                                row["interval_recomputing"] = False
+                        self.last_interval_lambda = round(
+                            float(self.lambda_slider.get_current_value()),
+                            2,
+                        )
+                        self.status = (
+                            "动态 interval 回传失败："
+                            f"{payload['error_type']}: {payload['error']}"
+                        )
+                    self.interval_recompute_requested_lambda = None
+                    self.interval_recompute_running = False
                 elif kind == "done":
                     self.simulator = payload
                     result = self.simulator.last_result or {}
@@ -1563,12 +2026,22 @@ class PygameSimulatorUI:
                     total = int(result.get("total_position_count", completed or 1))
                     self.progress = completed * 100.0 / max(1, total)
                     self.progress_bar.set_current_progress(self.progress)
-                    if result.get("status") == "interrupted":
+                    if result.get("loaded_solution"):
+                        self.status = t(
+                            "gui.solution_loaded",
+                            positions=completed,
+                            states=result.get("processed_states", 0),
+                        )
+                        self.force_recompute_next_run = True
+                        self.start_button.enable()
+                        self.start_button.set_text(t("gui.recompute") + " · DFS")
+                    elif result.get("status") == "interrupted":
                         self.status = t(
                             "gui.interrupted",
                             done=completed,
                             total=total,
                         )
+                        self._show_terminal_popup("interrupted", result)
                     else:
                         self.status = t(
                             "gui.finished",
@@ -1578,11 +2051,13 @@ class PygameSimulatorUI:
                                 result.get("state_count", 0),
                             ),
                         )
+                        self._show_terminal_popup("complete", result)
                     self.running = False
                     self.paused = False
                     self.resume_event.set()
                     self.start_button.enable()
-                    self.start_button.set_text(t("gui.start") + " · DFS")
+                    if not result.get("loaded_solution"):
+                        self.start_button.set_text(t("gui.start") + " · DFS")
                     self.pause_button.set_text(t("gui.pause"))
                     self.pause_button.disable()
                 elif kind == "error":
@@ -1593,7 +2068,11 @@ class PygameSimulatorUI:
                     self.start_button.set_text(t("gui.start") + " · DFS")
                     self.pause_button.set_text(t("gui.pause"))
                     self.pause_button.disable()
-                    self.status = t("gui.failed", error=payload)
+                    self.status = t(
+                        "gui.failed",
+                        error=f"{payload['error_type']}: {payload['error']}",
+                    )
+                    self._show_terminal_popup("failed", payload, error=payload)
         except queue.Empty:
             pass
 
@@ -1644,6 +2123,10 @@ class PygameSimulatorUI:
         if event.type == pygame.QUIT:
             self.resume_event.set()
             self.keep_running = False
+        elif event.type == pygame_gui.UI_WINDOW_CLOSE:
+            if event.ui_element == self.terminal_popup:
+                self._acknowledge_previous_crash_popup()
+                self.terminal_popup = None
         elif event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == self.start_button:
                 self._start()
@@ -1850,7 +2333,9 @@ class PygameSimulatorUI:
     def draw(self) -> None:
         current_lambda = round(float(self.lambda_slider.get_current_value()), 2)
         if (
-            self.graph.get("nodes")
+            not self.running
+            and not self.paused
+            and self.graph.get("nodes")
             and current_lambda != self.last_interval_lambda
         ):
             self._recompute_loaded_graph()

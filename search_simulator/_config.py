@@ -147,6 +147,13 @@ ARGUMENT_SPECS: tuple[ArgumentSpec, ...] = (
         {"type": int, "default": 2_000, "help": t("help.signature_commit_interval")},
     ),
     ArgumentSpec(
+        ("--force_recompute",),
+        {
+            "action": "store_true",
+            "help": t("help.force_recompute"),
+        },
+    ),
+    ArgumentSpec(
         ("--start_state_json",),
         {"type": str, "default": None, "help": t("help.start_state_json")},
     ),
@@ -208,6 +215,7 @@ SIMULATOR_ARG_KEYS: tuple[str, ...] = (
     "signature_cache_db_path",
     "signature_lru_capacity",
     "signature_commit_interval",
+    "force_recompute",
 )
 
 ARTIFACT_ARG_KEYS: tuple[str, ...] = (

@@ -43,20 +43,33 @@ def save_tree_results(
 
 
 def report_tree_summary(result: dict[str, Any]) -> str:
+    """按互斥终态记录摘要，禁止把中断误报为完成。"""
+
+    status = str(result.get("status", "complete"))
     positions = int(result.get("position_count", 1))
+    total_positions = int(result.get("total_position_count", positions))
     states = int(result.get("processed_states", result.get("state_count", 0)))
     good = int(result.get("good_paths", 0))
     wolf = int(result.get("wolf_paths", 0))
     wide = result.get("wide_interval", [-1.0, 1.0])
     narrow = result.get("narrow_interval", [-1.0, 1.0])
-    text = t(
-        "log.summary",
-        positions=positions,
-        states=states,
-        good=good,
-        wolf=wolf,
-        wide=f"[{float(wide[0]):.6f}, {float(wide[1]):.6f}]",
-        narrow=f"[{float(narrow[0]):.6f}, {float(narrow[1]):.6f}]",
-    )
-    logger.info(text)
+    values = {
+        "positions": positions,
+        "total": total_positions,
+        "next": result.get("next_position_index") or "none",
+        "states": states,
+        "good": good,
+        "wolf": wolf,
+        "wide": f"[{float(wide[0]):.6f}, {float(wide[1]):.6f}]",
+        "narrow": f"[{float(narrow[0]):.6f}, {float(narrow[1]):.6f}]",
+    }
+    if status == "interrupted":
+        text = t("log.summary_interrupted", **values)
+        logger.warning(text)
+    elif status == "failed":
+        text = t("log.summary_failed", **values)
+        logger.error(text)
+    else:
+        text = t("log.summary", **values)
+        logger.info(text)
     return text

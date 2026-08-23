@@ -4,13 +4,22 @@
 
 本文记录计划和实际工程变更：文件、数据结构、接口、依赖、迁移、兼容性与验证结果。
 
-算法假设、数学公式、状态语义和设计不变量只写入 `ALGORITHM_DESIGN.md`。战术落地难点补充在 `strategy_implemetation.md`。
+算法假设、数学公式、状态语义和设计不变量只写入 `ALGORITHM_DESIGN.md`。战术落地难点补充在 `strategy_implemetation.md`。当前工程改动的增量记录以 `CODE_CHANGES.md` 为准；本文件保留既有实现映射和历史验证上下文。
+
+## 2026-08-23：分层持久化与已有解优先加载
+
+- SQLite 增加 `lru`、`memory`、`solution` 三张职责表；旧 `state_signatures` 与 `simulation_runs` 通过 Core 批量迁移到新索引层，既有图表不复制、不删除；
+- `lru` 负责状态签名热缓存，`memory` 负责运行/断点摘要，`solution` 只登记完整性校验通过的站位结果索引；搜索层通过持久化 API 查询，不接触 cursor 或明文 SQL；
+- 每次运行先查询规范 solution 配置。命中时返回 `loaded_solution` 摘要，不启动 worker；GUI 将下一次点击标记为显式 `force_recompute`，CLI 使用同名开关重新创建 run；
+- solution 配置键排除只影响 interval 观测的 `lambda_risk`，并向 GUI 传递来源 lambda 以决定是否需要动态回传；
+- 新增 `list_memory_runs`、`list_solution_runs` 查询 API，保留旧图按站位分页读取；
+- 最新验证：模块测试 37 项通过，持久化/入口/GUI/i18n/树搜索 ruff 检查通过，compileall 通过；4 人 1 狼 DFS CLI 验证首次计算、第二次 `SOLUTION_LOADED` 和显式 `--force_recompute` 重算，Pygame 无显示启动通过。
 
 ## 2026-08-23：Pygame 与智能零和博弈重构
 
 ### 状态
 
-站位串行检查点、自动恢复、内存保护和显式参数传递已经完成，并通过模块、CLI 与 Pygame 启动回归。
+站位串行检查点、自动恢复、内存保护、显式参数传递、终态日志和 GUI 弹窗已经完成，并通过模块、CLI 与 Pygame 启动回归。
 
 ### 2026-08-23：单站位串行检查点与内存保护
 
@@ -25,6 +34,31 @@
 - 跨进程 worker 构造不再把配置映射整体隐式展开；角色配置、搜索模式、战术、lambda、内存保留线和队列句柄均由稳定具名字段逐项读取并显式传入模拟器。参数语义与返回值使用中文文档注释说明。
 - 实际验证：26 项模块测试通过；5 人无神职全部站位 DFS/BFS 都得到 95 个状态、600 条好人路径和 3600 条狼人路径；CLI 人工提高内存安全线后以 0 个站位进入 `interrupted`，降低安全线重启时复用同一 `run_id` 并完成站位；请求 4 worker 的串行 DFS 连续运行 10 次均退出 0，总耗时约 50.35 秒；Pygame 五帧无显示启动退出 0。
 - 默认七人五战术完整迭代在本轮优化前曾同时展开 4 个站位，四个 worker 合计私有内存约 92 GB，且首个站位尚未完成。该旧运行已按用户要求终止，数据库和日志保留；优化完成后未擅自重新启动默认完整迭代。
+
+### 2026-08-23：运行终态日志与 GUI 弹窗
+
+- 根 logger 新增 UTF-8 文件 handler，默认写入模块运行日志；控制台格式继续保留。日志路径支持环境变量覆盖，并在启动时输出；
+- 批处理协调器对 `complete`、内存保护 `interrupted`、用户 `KeyboardInterrupt`、普通异常和进程池崩溃分别输出 INFO、WARNING、ERROR/CRITICAL 日志。所有终态日志统一包含 `run_id`、检查点数量、总站位和下一站位；
+- 启动入口固定创建模块根目录 `crash_log/`，使用一个带微秒的本地运行时间戳生成本次 crash 文件路径并写入环境，文件名不包含 PID；计算 worker 继承同一路径后安装 faulthandler，使 Windows access violation 即使无法抛出 Python 异常，也能写入本次会话专属日志。日志正文和 faulthandler header 保留实际 PID/线程信息，父进程收到损坏进程池异常后再写一条带恢复信息的 CRITICAL 运行日志；
+- Pygame 使用模态消息窗口显示完成、中断、失败三种终态。异常从后台线程传回时携带格式化 traceback 和日志路径，主界面状态与弹窗文案保持一致；
+- 针对附件中 GUI/SQLAlchemy 所在进程被 access violation 直接终止的情况，启动时扫描 `crash_log/` 中最近的非空历史文件；若其尚未写入已通知标记，Pygame 初始化后补发“上次运行原生崩溃”弹窗。该机制不声称能在已经死亡的进程内绘制 UI；
+- 新增测试覆盖时间戳 crash 路径、历史原生崩溃一次性提示、互斥终态摘要、异常 traceback、worker 进程池崩溃分类和三类 GUI 弹窗内容；
+- 实际验证：31 项模块测试通过；CLI 先触发内存保护 `interrupted`、再使用同一 `run_id` 恢复为 `complete`，运行日志分别包含两种明确终态且中断摘要不再使用“树搜索完成”；每次启动生成一个不含 PID 的时间戳 crash 文件，正文和运行日志保留父/worker PID；强制 Python 启动异常退出码为 1，runtime 日志包含 CRITICAL 与 traceback，crash 日志包含异常和 PID；三类弹窗文案测试通过，Pygame 完成弹窗五帧无显示 smoke 退出 0。
+
+### 2026-08-23：捕获异常落盘与状态签名稳定性修复
+
+- 附件中的 `AttributeError: 'dict_items' object has no attribute 'is_alive'` 是父进程从 worker 接收的可捕获 Python 异常，因此原实现只写 runtime logger，未触发 worker 的 `sys.excepthook`，本次时间戳 crash 文件保持为零字节；修复后，任何 `failed` 收尾都会通过统一 API 把 PID、线程、`run_id`、检查点、下一站位和完整异常链追加到同一个 crash 文件，GUI 对搜索外的已捕获异常也使用同一兜底 API，并用异常标记避免重复写入。
+- 对默认状态签名热路径进行独立复现后，CPython 3.12.10 在递归闭包、`nonlocal` 双 64 位混合函数连续调用约十万次时可出现 `int` 变为 `cell`、`Player` 变为 `dict_items` 等对象错位，随后以 Windows `0xC0000005` 退出；因此该现象不是合法 GameState 写入了错误玩家类型。
+- 状态签名改为显式栈驱动的非递归规范编码，再由标准 128 位摘要生成十六进制签名；参与签名的 GameState 字段集合不变，不引入 reward、interval、父节点或 UI 字段。新增百万次确定性签名压力测试，以及全部转移玩家类型契约回归。
+- 验证结果：状态签名独立进程连续计算 1,000,000 次退出 0；默认五类战术的七人首夜与首个白天状态全部转移通过 Player 契约检查；34 项模块测试通过；CLI 使用五人一狼、预言家、女巫、默认智能投票与五类战术完成单站位 DFS，得到 14,037 个状态、25,429 条边并以 `status=complete` 退出。模拟 `BrokenProcessPool` 时，同一时间戳 crash 文件包含 PID、`run_id`、恢复位置和完整异常文本。
+
+### 2026-08-23：interval 后处理可视化
+
+- 单站位搜索在 frontier 清空后继续发布路径计数、节点 interval 逆拓扑回传和边 interval 同步三类阶段事件；事件携带当前站位、阶段、已处理量、总量和运行时，首尾强制发送，中间按 0.5 秒节流；
+- GUI 在状态栏和站位行显示后处理阶段及处理计数，不把后处理比例混同于全站位搜索进度。暂停事件在分块边界继续生效；
+- 用户拖动 λ 后，选中 DAG 的动态 interval 重算移出 Pygame 绘制调用栈，后台任务通过 UI 事件报告进度；连续拖动只保留最新 λ 请求，避免并发修改同一图；
+- 暂不引入 NumPy。当前节点是字典记录、邻接关系为变长边索引，NumPy 化需要额外复制节点端点和邻接数组，增加百万级 DAG 的峰值内存；现有算法已是单遍常数额外空间，先以进度可观测性和分块响应解决“卡死”观感。
+- 验证结果：37 项模块测试通过，覆盖路径阶段、邻接准备、节点 interval、边 interval、动态 λ 后台任务和 GUI 状态行；Pygame dummy 驱动连续渲染 3 帧并显示“节点区间回传 30/45”；四人单站位 DFS CLI 以 10 个状态、12 条边正常完成。pytest、CLI、ruff 和字节码验证产生的临时目录、数据库、结果文件及缓存均在各次验证后删除。
 
 ### 2026-08-23：Windows 区间回传稳定性与 Hover 文本修正
 
@@ -81,7 +115,7 @@
 - API 序列化和克隆覆盖所有新增字段；
 - 状态签名纳入所有影响未来转移的字段；
 - interval、父节点编号和纯 UI 数据不进入状态签名。
-- 状态签名直接读取已构造的紧凑状态键，以带类型与长度分隔的双 64 位流式哈希生成 128 位十六进制值；禁止为签名再次构造状态键、完整 `repr`、UTF-8 缓冲或调用本地加密扩展。该签名只改变编码实现，不改变参与签名的字段集合；
+- 状态签名直接读取已构造的紧凑状态键，以显式栈写入带类型与长度分隔的小型规范缓冲，再使用标准库 BLAKE2b 生成 128 位十六进制值；禁止递归闭包、`nonlocal` 热循环、完整 `repr` 或再次构造状态键。该签名只改变编码实现，不改变参与签名的字段集合；
 
 ### 战术模型
 
@@ -146,6 +180,7 @@
 ### SQLite 持久化与 schema
 
 - 所有建表、索引、查询、写入、upsert、更新、删除和计数统一使用 SQLAlchemy Core 的元数据与表达式 API；模块源码和测试中禁止出现明文 SQL/DDL/PRAGMA；
+- 当前 schema 额外包含 `lru`、`memory`、`solution` 三张职责表：`lru` 承载磁盘热签名，`memory` 承载运行/断点摘要，`solution` 只登记完整站位结果并引用既有图数据；具体增量和加载流程见 `CODE_CHANGES.md`；
 - SQLite 连接、事务提交、复合主键冲突处理和 LRU 磁盘清理均通过封装 API 执行，不向搜索层或 GUI 暴露 cursor 或 SQL 字符串；
 - 启动时使用 Inspector API 校验已有表的必需列；不兼容的旧缓存明确报告需要重建，不用字符串拼接执行隐式迁移；
 
@@ -160,6 +195,7 @@
 - 每个站位先发送小型摘要，再将节点和边分别按最多 64 条发送，最后发送完成标记；SQLite 写线程收到批次即通过持久化 API 提交，不再等待或复制整棵 DAG；64 条上限同时约束 IPC 消息、SQLAlchemy 参数装配和 SQLite 单次 executemany 的瞬时内存；
 - 任务调度最多为每个 worker 保留一个 in-flight 站位，避免进程池待执行栈与站位数同步增长；GUI 即使单 worker 也走该结果队列；
 - worker 每完成一个站位即退出并由进程池补充，释放 Python/原生分配器可能保留的大图内存；worker 崩溃或数据库写入失败时，未完成站位的部分节点、边和摘要由持久化 API 清理。
+- 运行请求先查询 `solution`；命中时返回摘要并按需载入 DAG，GUI 下一次点击才传递 `force_recompute` 创建新批次；该流程不复制完整图，也不把中断记录当作解。
 
 ### Pygame GUI
 
@@ -218,7 +254,7 @@
 
 - Python：共享解释器为 `3.12.10`；
 - 站位：默认七人板子枚举 1260 个唯一站位，启用愚者后枚举 2520 个；
-- 测试：`python -m pytest tests/test_search_simulator_tree.py -q`，26 项通过；包含 0.5 秒节流、逐层展开/收起、淡入标记、中文分区 GameState Hover、强背压队列、稳定流式状态签名、单站位 worker 约束、显式具名参数边界、内存阈值、同运行恢复、完整检查点跳过、禁止 interval 回传生成器帧/子节点序列物化和明文 SQL 防回归检查；
+- 测试：`python -m pytest tests/test_search_simulator_tree.py -q`，31 项通过；包含 0.5 秒节流、逐层展开/收起、淡入标记、中文分区 GameState Hover、强背压队列、稳定流式状态签名、单站位 worker 约束、显式具名参数边界、内存阈值、同运行恢复、完整检查点跳过、时间戳 crash 路径、历史崩溃提示、互斥终态弹窗与摘要、worker 崩溃 CRITICAL 日志、禁止 interval 回传生成器帧/子节点序列物化和明文 SQL 防回归检查；
 - 静态：`python -m ruff check search_simulator tests/test_search_simulator_tree.py` 通过；
 - 编译：`python -m compileall -q search_simulator` 通过；
 - CLI：默认 DFS 与显式 `--search_mode bfs` 均完成 3 人小局，输出图等价且生成 wide/narrow；
@@ -238,7 +274,7 @@
 - 最终实现连续启动 10 次上述 DFS CLI：10/10 退出 0，共调度 50 个站位任务、950 个状态，累计约 33.57 秒，无 worker 异常和父进程异常；
 - 6 人、2 狼、预言家、女巫、守卫、村民，关闭战术但保留完整角色行动：单站位 DFS 退出 0，完成 20281 个状态，好人路径 12061221472、狼人路径 22545359930，耗时约 10.58 秒；
 - 同一 6 人板子五类战术分别单独启用时均退出 0；完整五战术组合会生成百万级以上 DAG，不适合作为短时回归。最终实现对该组合执行超过 10 分钟持续 CLI 满载，worker 私有内存稳定约 1.53 GB、持续占用 CPU，期间无新增 Windows WER 或崩溃日志；样本由测试方按压力边界发送中断，不能记录为完整搜索完成；
-- 压力过程曾依次复现 worker 搜索、整图 Future 回传、500 行 SQLAlchemy 参数批次、`repr().encode()` 状态签名和 interval 生成器帧的访问冲突。最终防线为：所有 CLI/GUI 搜索进程隔离、worker 禁止导入 Pygame/SQLAlchemy/greenlet、有界结果队列、64 行持久化批次、系统 `malloc`、搜索后释放去重索引、就地节点持久化转换、显式 interval 累加循环、惰性 StateTransition，以及不物化 UTF-8 大缓冲的流式 128 位状态签名。
+- 压力过程曾依次复现 worker 搜索、整图 Future 回传、500 行 SQLAlchemy 参数批次、`repr().encode()` 状态签名和 interval 生成器帧的访问冲突。最终防线为：所有 CLI/GUI 搜索进程隔离、worker 禁止导入 Pygame/SQLAlchemy/greenlet、有界结果队列、64 行持久化批次、系统 `malloc`、搜索后释放去重索引、就地节点持久化转换、显式 interval 累加循环、惰性 StateTransition，以及非递归、无闭包的规范 128 位状态签名。
 
 ## 2026-08-22：完整 BFS/DFS 分支 DAG 重构
 

@@ -58,6 +58,26 @@ def _build_schema() -> tuple[MetaData, dict[str, Table]]:
         state_signatures.c.last_seen_ns,
     )
 
+    # lru 是磁盘热缓存层。旧版 state_signatures 保留用于兼容迁移，
+    # 新写入统一进入职责明确的 lru 表。
+    lru = Table(
+        "lru",
+        metadata,
+        Column("namespace", Text, nullable=False),
+        Column("position_signature", Text, nullable=False),
+        Column("signature", Text, nullable=False),
+        Column("last_seen_ns", BigInteger, nullable=False),
+        Column("hit_count", Integer, nullable=False),
+        PrimaryKeyConstraint("namespace", "position_signature", "signature"),
+        sqlite_with_rowid=False,
+    )
+    Index(
+        "idx_lru_position",
+        lru.c.position_signature,
+        lru.c.namespace,
+        lru.c.last_seen_ns,
+    )
+
     simulation_runs = Table(
         "simulation_runs",
         metadata,
@@ -67,6 +87,48 @@ def _build_schema() -> tuple[MetaData, dict[str, Table]]:
         Column("status", Text, nullable=False),
         Column("config_json", Text, nullable=False),
         Column("summary_json", Text),
+    )
+    memory = Table(
+        "memory",
+        metadata,
+        Column("run_id", String(32), primary_key=True),
+        Column("config_key", Text, nullable=False),
+        Column("created_ns", BigInteger, nullable=False),
+        Column("updated_ns", BigInteger, nullable=False),
+        Column("status", Text, nullable=False),
+        Column("next_position_index", Integer),
+        Column("config_json", Text, nullable=False),
+        Column("summary_json", Text),
+        ForeignKeyConstraint(
+            ["run_id"],
+            ["simulation_runs.run_id"],
+            ondelete="CASCADE",
+        ),
+    )
+    Index("idx_memory_config_status", memory.c.config_key, memory.c.status)
+    solution = Table(
+        "solution",
+        metadata,
+        Column("run_id", String(32), nullable=False),
+        Column("config_key", Text, nullable=False),
+        Column("position_index", Integer, nullable=False),
+        Column("position_signature", Text, nullable=False),
+        Column("state_count", Integer, nullable=False),
+        Column("edge_count", Integer, nullable=False),
+        Column("result_json", Text, nullable=False),
+        Column("created_ns", BigInteger, nullable=False),
+        PrimaryKeyConstraint("run_id", "position_signature"),
+        ForeignKeyConstraint(
+            ["run_id"],
+            ["simulation_runs.run_id"],
+            ondelete="CASCADE",
+        ),
+    )
+    Index(
+        "idx_solution_config_position",
+        solution.c.config_key,
+        solution.c.created_ns,
+        solution.c.position_index,
     )
     position_results = Table(
         "position_results",
@@ -174,7 +236,10 @@ def _build_schema() -> tuple[MetaData, dict[str, Table]]:
         table.name: table
         for table in (
             state_signatures,
+            lru,
             simulation_runs,
+            memory,
+            solution,
             position_results,
             graph_nodes,
             graph_edges,
@@ -217,6 +282,8 @@ class _SQLiteLRUSignatureStore:
         self._metadata.create_all(self._engine)
         self._validate_schema(self._engine)
         self._conn: Connection = self._engine.connect()
+        self._migrate_legacy_signatures()
+        self._migrate_legacy_runs()
 
     def _validate_schema(self, engine: Engine) -> None:
         schema = inspect(engine)
@@ -233,6 +300,83 @@ class _SQLiteLRUSignatureStore:
                     f"SQLite 缓存表 {table_name} 与当前 schema 不兼容，"
                     f"缺少列：{names}。请移走旧缓存后重新运行。"
                 )
+
+    def _migrate_legacy_signatures(self) -> None:
+        """将旧版 state_signatures 一次性迁移到 lru 表。
+
+        迁移只复制状态签名和命中元数据，不触碰图数据及运行结果；
+        使用 Core select/insert 批量执行，避免把旧缓存读入长期内存。
+        """
+
+        legacy = self._tables["state_signatures"]
+        target = self._tables["lru"]
+        with self._lock:
+            target_count = int(
+                self._conn.execute(select(func.count()).select_from(target)).scalar_one()
+            )
+            if target_count:
+                return
+            rows = self._conn.execute(select(legacy)).mappings()
+            while True:
+                batch = [dict(row) for row in islice(rows, PERSISTENCE_BATCH_SIZE)]
+                if not batch:
+                    break
+                insertion = sqlite_insert(target).on_conflict_do_nothing(
+                    index_elements=[
+                        target.c.namespace,
+                        target.c.position_signature,
+                        target.c.signature,
+                    ]
+                )
+                self._conn.execute(insertion, batch)
+            self._conn.commit()
+
+    def _migrate_legacy_runs(self) -> None:
+        """为旧版 simulation_runs 补建 memory 运行记忆索引。"""
+
+        run_table = self._tables["simulation_runs"]
+        memory_table = self._tables["memory"]
+        with self._lock:
+            existing = set(
+                self._conn.execute(select(memory_table.c.run_id)).scalars()
+            )
+            rows = self._conn.execute(select(run_table)).mappings()
+            pending: list[dict[str, Any]] = []
+            for row in rows:
+                run_id = str(row["run_id"])
+                if run_id in existing:
+                    continue
+                try:
+                    config = json.loads(row["config_json"])
+                    config_key = self._solution_config_key(config)
+                except (json.JSONDecodeError, TypeError, ValueError, AttributeError):
+                    config_key = "{}"
+                summary_json = row["summary_json"]
+                next_position = None
+                if summary_json:
+                    try:
+                        summary = json.loads(summary_json)
+                        next_position = summary.get("next_position_index")
+                    except (json.JSONDecodeError, TypeError, ValueError):
+                        pass
+                pending.append(
+                    {
+                        "run_id": run_id,
+                        "config_key": config_key,
+                        "created_ns": int(row["created_ns"]),
+                        "updated_ns": int(row["finished_ns"] or row["created_ns"]),
+                        "status": str(row["status"]),
+                        "next_position_index": next_position,
+                        "config_json": str(row["config_json"]),
+                        "summary_json": summary_json,
+                    }
+                )
+                if len(pending) >= PERSISTENCE_BATCH_SIZE:
+                    self._conn.execute(memory_table.insert(), pending)
+                    pending.clear()
+            if pending:
+                self._conn.execute(memory_table.insert(), pending)
+            self._conn.commit()
 
     def schema_columns(self, table_name: str) -> set[str]:
         """使用 Inspector API 返回表列，不暴露连接或 SQL。"""
@@ -257,7 +401,7 @@ class _SQLiteLRUSignatureStore:
                 self._lru.move_to_end(key)
                 self._stats["lru_hits"] += 1
                 return True
-            table = self._tables["state_signatures"]
+            table = self._tables["lru"]
             statement = (
                 select(literal(True))
                 .select_from(table)
@@ -281,7 +425,7 @@ class _SQLiteLRUSignatureStore:
                 self._lru.move_to_end(key)
                 self._stats["lru_hits"] += 1
                 return False
-            table = self._tables["state_signatures"]
+            table = self._tables["lru"]
             insertion = sqlite_insert(table).values(
                 namespace=namespace,
                 position_signature=position_signature,
@@ -318,7 +462,7 @@ class _SQLiteLRUSignatureStore:
         signature_iterator = (str(item) for item in signatures)
         total_inserted = 0
         with self._lock:
-            table = self._tables["state_signatures"]
+            table = self._tables["lru"]
             while True:
                 batch = list(islice(signature_iterator, PERSISTENCE_BATCH_SIZE))
                 if not batch:
@@ -382,50 +526,106 @@ class _SQLiteLRUSignatureStore:
             separators=(",", ":"),
         )
 
+    @classmethod
+    def _solution_config_key(cls, config: dict[str, Any]) -> str:
+        """生成解复用键；lambda 只影响观测，不影响未来转移。"""
+
+        identity = {
+            key: value
+            for key, value in config.items()
+            if key not in {"lambda_risk", "force_recompute"}
+        }
+        return cls._canonical_json(identity)
+
+    def _config_for_run(self, run_id: str) -> tuple[str, str]:
+        """返回运行的规范配置 JSON 和解复用键。"""
+
+        table = self._tables["simulation_runs"]
+        row = self._conn.execute(
+            select(table.c.config_json).where(table.c.run_id == run_id)
+        ).first()
+        if row is None:
+            raise KeyError(f"未知运行批次：{run_id}")
+        config_json = str(row[0])
+        try:
+            config = json.loads(config_json)
+        except (json.JSONDecodeError, TypeError, ValueError) as exc:
+            raise RuntimeError(f"运行配置损坏：{run_id}") from exc
+        if not isinstance(config, dict):
+            raise RuntimeError(f"运行配置不是对象：{run_id}")
+        return config_json, self._solution_config_key(config)
+
     def start_run(self, config: dict[str, Any]) -> str:
         run_id = uuid.uuid4().hex
+        now = time.time_ns()
+        config_json = self._canonical_json(config)
+        config_key = self._solution_config_key(config)
         with self._lock:
             self._conn.execute(
                 self._tables["simulation_runs"].insert().values(
                     run_id=run_id,
-                    created_ns=time.time_ns(),
+                    created_ns=now,
                     finished_ns=None,
                     status="running",
-                    config_json=self._canonical_json(config),
+                    config_json=config_json,
+                    summary_json=None,
+                )
+            )
+            self._conn.execute(
+                self._tables["memory"].insert().values(
+                    run_id=run_id,
+                    config_key=config_key,
+                    created_ns=now,
+                    updated_ns=now,
+                    status="running",
+                    next_position_index=None,
+                    config_json=config_json,
                     summary_json=None,
                 )
             )
             self._conn.commit()
         return run_id
 
-    def start_or_resume_run(self, config: dict[str, Any]) -> tuple[str, bool]:
+    def start_or_resume_run(
+        self,
+        config: dict[str, Any],
+        *,
+        force_new: bool = False,
+    ) -> tuple[str, bool]:
         """复用最近的同配置未完成运行；否则创建新运行。
 
         参数：
             config: 只包含影响搜索结果的规范运行配置。
+            force_new: 为 True 时忽略未完成批次，创建新的运行记录。
 
         返回：
             ``(run_id, resumed)``；第二项表示是否复用了已有运行。
         """
 
+        if force_new:
+            return self.start_run(config), False
         table = self._tables["simulation_runs"]
+        memory_table = self._tables["memory"]
         target = self._canonical_json(config)
+        target_key = self._solution_config_key(config)
         statement = (
             select(table.c.run_id, table.c.config_json)
-            .where(table.c.status.in_(("running", "interrupted")))
+            .where(table.c.status.in_(("running", "interrupted", "failed")))
             .order_by(table.c.created_ns.desc())
         )
         with self._lock:
-            # 同时读取 running 与 interrupted：进程崩溃来不及收尾时，
-            # 数据库会保留 running；该状态同样属于可恢复运行。
+            # failed 也允许在用户再次点击后恢复：站位内快照可能已经完整落盘，
+            # 失败终态只描述上一次启动，不代表检查点不可继续。
             for row in self._conn.execute(statement).mappings():
                 try:
-                    candidate = self._canonical_json(json.loads(row["config_json"]))
+                    candidate_payload = json.loads(row["config_json"])
+                    candidate = self._canonical_json(candidate_payload)
                 except (json.JSONDecodeError, TypeError, ValueError):
                     continue
-                if candidate != target:
+                if candidate != target and self._solution_config_key(candidate_payload) != target_key:
                     continue
                 run_id = str(row["run_id"])
+                now = time.time_ns()
                 self._conn.execute(
                     update(table)
                     .where(table.c.run_id == run_id)
@@ -433,6 +633,17 @@ class _SQLiteLRUSignatureStore:
                         finished_ns=None,
                         status="running",
                         config_json=target,
+                    )
+                )
+                self._conn.execute(
+                    update(memory_table)
+                    .where(memory_table.c.run_id == run_id)
+                    .values(
+                        updated_ns=now,
+                        status="running",
+                        config_key=target_key,
+                        config_json=target,
+                        next_position_index=None,
                     )
                 )
                 self._conn.commit()
@@ -456,12 +667,30 @@ class _SQLiteLRUSignatureStore:
 
         with self._lock:
             table = self._tables["simulation_runs"]
+            memory_table = self._tables["memory"]
+            now = time.time_ns()
             self._conn.execute(
                 update(table)
                 .where(table.c.run_id == run_id)
                 .values(
                     finished_ns=None,
                     status=status,
+                    summary_json=self._canonical_json(summary),
+                )
+            )
+            next_position = summary.get("next_position_index")
+            config_json, config_key = self._config_for_run(run_id)
+            self._conn.execute(
+                update(memory_table)
+                .where(memory_table.c.run_id == run_id)
+                .values(
+                    updated_ns=now,
+                    status=status,
+                    config_key=config_key,
+                    config_json=config_json,
+                    next_position_index=(
+                        int(next_position) if next_position is not None else None
+                    ),
                     summary_json=self._canonical_json(summary),
                 )
             )
@@ -474,18 +703,268 @@ class _SQLiteLRUSignatureStore:
         *,
         status: str,
     ) -> None:
+        """写入唯一运行终态，并拒绝把不完整 DAG 登记为 solution。"""
+
+        if status == "complete":
+            positions = list(summary.get("positions", []))
+            position_count = int(summary.get("position_count", len(positions)))
+            total_position_count = int(summary.get("total_position_count", 0))
+            invalid_position = any(
+                int(item.get("state_count", 0)) <= 0
+                for item in positions
+            )
+            if (
+                total_position_count <= 0
+                or position_count != total_position_count
+                or len(positions) != total_position_count
+                or invalid_position
+            ):
+                raise ValueError(
+                    "拒绝登记不完整 solution："
+                    f"positions={position_count}/{total_position_count}, "
+                    f"summaries={len(positions)}, invalid={invalid_position}"
+                )
         with self._lock:
             table = self._tables["simulation_runs"]
+            memory_table = self._tables["memory"]
+            now = time.time_ns()
             self._conn.execute(
                 update(table)
                 .where(table.c.run_id == run_id)
                 .values(
-                    finished_ns=time.time_ns(),
+                    finished_ns=now,
                     status=status,
                     summary_json=self._canonical_json(summary),
                 )
             )
+            config_json, config_key = self._config_for_run(run_id)
+            self._conn.execute(
+                update(memory_table)
+                .where(memory_table.c.run_id == run_id)
+                .values(
+                    updated_ns=now,
+                    status=status,
+                    config_key=config_key,
+                    config_json=config_json,
+                    next_position_index=(
+                        int(summary["next_position_index"])
+                        if summary.get("next_position_index") is not None
+                        else None
+                    ),
+                    summary_json=self._canonical_json(summary),
+                )
+            )
+            if status == "complete":
+                self._record_solution_rows(
+                    run_id=run_id,
+                    config_key=config_key,
+                    summaries=summary.get("positions", []),
+                    created_ns=now,
+                )
             self._conn.commit()
+
+    def _record_solution_rows(
+        self,
+        *,
+        run_id: str,
+        config_key: str,
+        summaries: Iterable[dict[str, Any]],
+        created_ns: int,
+    ) -> None:
+        """登记完整站位解索引，不复制节点和边数据。"""
+
+        table = self._tables["solution"]
+        rows = []
+        for item in summaries:
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "config_key": config_key,
+                    "position_index": int(item["position_index"]),
+                    "position_signature": str(item["position_signature"]),
+                    "state_count": int(item["state_count"]),
+                    "edge_count": int(item["edge_count"]),
+                    "result_json": self._canonical_json(item),
+                    "created_ns": created_ns,
+                }
+            )
+        if not rows:
+            return
+        insertion = sqlite_insert(table)
+        self._conn.execute(
+            insertion.on_conflict_do_update(
+                index_elements=[table.c.run_id, table.c.position_signature],
+                set_={
+                    "config_key": insertion.excluded.config_key,
+                    "position_index": insertion.excluded.position_index,
+                    "state_count": insertion.excluded.state_count,
+                    "edge_count": insertion.excluded.edge_count,
+                    "result_json": insertion.excluded.result_json,
+                    "created_ns": insertion.excluded.created_ns,
+                },
+            ),
+            rows,
+        )
+
+    def load_solution(
+        self,
+        config: dict[str, Any],
+        *,
+        expected_position_signatures: set[str],
+    ) -> dict[str, Any] | None:
+        """查询并校验可复用完整解，命中时只返回摘要索引。"""
+
+        table = self._tables["solution"]
+        run_table = self._tables["simulation_runs"]
+        config_key = self._solution_config_key(config)
+        statement = (
+            select(table.c.run_id, table.c.position_signature, table.c.created_ns)
+            .select_from(table.join(run_table, table.c.run_id == run_table.c.run_id))
+            .where(table.c.config_key == config_key)
+            .where(run_table.c.status == "complete")
+            .order_by(table.c.created_ns.desc(), table.c.position_index)
+        )
+        with self._lock:
+            rows = self._conn.execute(statement).mappings().all()
+        candidate_ids: list[str] = []
+        for row in rows:
+            run_id = str(row["run_id"])
+            if run_id not in candidate_ids:
+                candidate_ids.append(run_id)
+        expected = {str(item) for item in expected_position_signatures}
+        for run_id in candidate_ids:
+            summaries = self.list_completed_position_results(run_id)
+            by_signature = {
+                str(item["position_signature"]): item for item in summaries
+            }
+            if expected and not expected.issubset(by_signature):
+                continue
+            selected = [by_signature[item] for item in expected if item in by_signature]
+            selected.sort(key=lambda item: int(item["position_index"]))
+            if len(selected) != len(expected):
+                continue
+            source_config_json, _ = self._config_for_run(run_id)
+            try:
+                source_config = json.loads(source_config_json)
+            except (json.JSONDecodeError, TypeError, ValueError):
+                source_config = {}
+            source_lambda = source_config.get("lambda_risk")
+            for item in selected:
+                item["restored_from_solution"] = True
+                if source_lambda is not None:
+                    # UI 据此判断是否需要按当前滑块动态回传 interval。
+                    item["interval_lambda"] = float(source_lambda)
+                item.pop("restored_from_checkpoint", None)
+            return {
+                "run_id": run_id,
+                "config_key": config_key,
+                "source_lambda": (
+                    float(source_lambda) if source_lambda is not None else None
+                ),
+                "positions": selected,
+            }
+        return None
+
+    def list_memory_runs(
+        self,
+        *,
+        config: dict[str, Any] | None = None,
+        statuses: tuple[str, ...] = ("running", "interrupted", "failed"),
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        """查询断点记忆摘要，供恢复面板和 CLI 检查使用。"""
+
+        table = self._tables["memory"]
+        conditions = [table.c.status.in_(tuple(statuses))]
+        if config is not None:
+            conditions.append(table.c.config_key == self._solution_config_key(config))
+        statement = (
+            select(table)
+            .where(and_(*conditions))
+            .order_by(table.c.updated_ns.desc())
+            .limit(max(1, int(limit)))
+        )
+        with self._lock:
+            rows = self._conn.execute(statement).mappings().all()
+        return [
+            {
+                "run_id": str(row["run_id"]),
+                "config_key": str(row["config_key"]),
+                "created_ns": int(row["created_ns"]),
+                "updated_ns": int(row["updated_ns"]),
+                "status": str(row["status"]),
+                "next_position_index": row["next_position_index"],
+                "config": json.loads(row["config_json"]),
+                "summary": (
+                    json.loads(row["summary_json"])
+                    if row["summary_json"]
+                    else None
+                ),
+            }
+            for row in rows
+        ]
+
+    def get_memory_run(self, run_id: str) -> dict[str, Any] | None:
+        """按稳定运行 ID 查询单条断点记忆，不依赖分页上限。"""
+
+        table = self._tables["memory"]
+        statement = select(table).where(table.c.run_id == str(run_id))
+        with self._lock:
+            row = self._conn.execute(statement).mappings().one_or_none()
+        if row is None:
+            return None
+        return {
+            "run_id": str(row["run_id"]),
+            "config_key": str(row["config_key"]),
+            "created_ns": int(row["created_ns"]),
+            "updated_ns": int(row["updated_ns"]),
+            "status": str(row["status"]),
+            "next_position_index": row["next_position_index"],
+            "config": json.loads(row["config_json"]),
+            "summary": (
+                json.loads(row["summary_json"])
+                if row["summary_json"]
+                else None
+            ),
+        }
+
+    def list_solution_runs(
+        self,
+        *,
+        config: dict[str, Any] | None = None,
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        """查询 solution 索引中的历史完整运行，不读取完整 DAG。"""
+
+        table = self._tables["solution"]
+        run_table = self._tables["simulation_runs"]
+        conditions = [run_table.c.status == "complete"]
+        if config is not None:
+            conditions.append(table.c.config_key == self._solution_config_key(config))
+        statement = (
+            select(
+                table.c.run_id,
+                table.c.config_key,
+                func.max(table.c.created_ns).label("created_ns"),
+                func.count().label("position_count"),
+            )
+            .select_from(table.join(run_table, table.c.run_id == run_table.c.run_id))
+            .where(and_(*conditions))
+            .group_by(table.c.run_id, table.c.config_key)
+            .order_by(func.max(table.c.created_ns).desc())
+            .limit(max(1, int(limit)))
+        )
+        with self._lock:
+            rows = self._conn.execute(statement).mappings().all()
+        return [
+            {
+                "run_id": str(row["run_id"]),
+                "config_key": str(row["config_key"]),
+                "created_ns": int(row["created_ns"]),
+                "position_count": int(row["position_count"]),
+            }
+            for row in rows
+        ]
 
     @staticmethod
     def _node_row(
@@ -596,6 +1075,102 @@ class _SQLiteLRUSignatureStore:
             )
             self._conn.execute(delete(edge_table).where(*edge_constraints))
             self._conn.execute(delete(node_table).where(*node_constraints))
+            self._conn.commit()
+
+    def begin_position_staging(
+        self,
+        run_id: str,
+        result: dict[str, Any],
+    ) -> None:
+        """创建站位暂存行并清空旧残片，允许搜索过程中流式写边。"""
+
+        provisional = {
+            **result,
+            # -1 明确表示“暂存中”；0 个持久化节点不能与它相等并被误判完成。
+            "state_count": -1,
+            "edge_count": -1,
+            "terminal_count": 0,
+            "good_paths": 0,
+            "wolf_paths": 0,
+            "wide_interval": [-1.0, 1.0],
+            "narrow_interval": [-1.0, 1.0],
+            "camp": "未决",
+            "runtime_seconds": 0.0,
+        }
+        self.begin_position_result(run_id, provisional)
+
+    def update_position_result_summary(
+        self,
+        run_id: str,
+        result: dict[str, Any],
+    ) -> None:
+        """更新暂存站位摘要，但保留已经流式写入的节点和边。"""
+
+        wide = result["wide_interval"]
+        narrow = result["narrow_interval"]
+        position_signature = str(result["position_signature"])
+        table = self._tables["position_results"]
+        values = {
+            "position_index": int(result["position_index"]),
+            "roles_json": json.dumps(result["roles"], ensure_ascii=False),
+            "state_count": int(result["state_count"]),
+            "edge_count": int(result["edge_count"]),
+            "terminal_count": int(result["terminal_count"]),
+            "good_paths": str(result["good_paths"]),
+            "wolf_paths": str(result["wolf_paths"]),
+            "wide_lower": float(wide[0]),
+            "wide_upper": float(wide[1]),
+            "narrow_lower": float(narrow[0]),
+            "narrow_upper": float(narrow[1]),
+            "camp": str(result["camp"]),
+            "runtime_seconds": float(result["runtime_seconds"]),
+        }
+        with self._lock:
+            self._conn.execute(
+                update(table)
+                .where(
+                    table.c.run_id == run_id,
+                    table.c.position_signature == position_signature,
+                )
+                .values(**values)
+            )
+            self._conn.commit()
+
+    def sync_position_edge_intervals(
+        self,
+        run_id: str,
+        position_signature: str,
+    ) -> None:
+        """用子节点最终 interval 一次性同步暂存边，避免逐边 Python 更新。"""
+
+        edge_table = self._tables["graph_edges"]
+        child = self._tables["graph_nodes"].alias("child_interval")
+
+        def child_value(column: Any) -> Any:
+            return (
+                select(column)
+                .where(
+                    child.c.run_id == edge_table.c.run_id,
+                    child.c.position_signature == edge_table.c.position_signature,
+                    child.c.node_id == edge_table.c.child_id,
+                )
+                .scalar_subquery()
+            )
+
+        with self._lock:
+            self._conn.execute(
+                update(edge_table)
+                .where(
+                    edge_table.c.run_id == run_id,
+                    edge_table.c.position_signature == position_signature,
+                )
+                .values(
+                    wide_lower=child_value(child.c.wide_lower),
+                    wide_upper=child_value(child.c.wide_upper),
+                    narrow_lower=child_value(child.c.narrow_lower),
+                    narrow_upper=child_value(child.c.narrow_upper),
+                )
+            )
             self._conn.commit()
 
     def append_position_nodes(
@@ -752,7 +1327,8 @@ class _SQLiteLRUSignatureStore:
         complete_rows = [
             row
             for row in rows
-            if int(row["persisted_node_count"]) == int(row["state_count"])
+            if int(row["state_count"]) > 0
+            and int(row["persisted_node_count"]) == int(row["state_count"])
             and int(row["persisted_edge_count"]) == int(row["edge_count"])
         ]
         # position_results 会先于节点/边批次写入，因此单看摘要行无法
@@ -777,7 +1353,12 @@ class _SQLiteLRUSignatureStore:
             for row in complete_rows
         ]
 
-    def discard_incomplete_position_results(self, run_id: str) -> int:
+    def discard_incomplete_position_results(
+        self,
+        run_id: str,
+        *,
+        preserve_signatures: set[str] | None = None,
+    ) -> int:
         """删除半写入站位；完整站位保持不变。
 
         参数：
@@ -801,6 +1382,8 @@ class _SQLiteLRUSignatureStore:
             for item in self.list_completed_position_results(run_id)
         }
         incomplete = all_signatures - complete_signatures
+        if preserve_signatures:
+            incomplete -= {str(item) for item in preserve_signatures}
         # 删除顺序由 abort_position_result 统一维护，搜索层不接触表结构。
         for position_signature_value in incomplete:
             self.abort_position_result(run_id, position_signature_value)
@@ -884,7 +1467,7 @@ class _SQLiteLRUSignatureStore:
         with self._lock:
             if self._pending_writes <= 0:
                 return
-            table = self._tables["state_signatures"]
+            table = self._tables["lru"]
             count = int(
                 self._conn.execute(select(func.count()).select_from(table)).scalar_one()
             )

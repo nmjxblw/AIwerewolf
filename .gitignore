@@ -86,6 +86,7 @@ online_eval.json
 search_tree.txt
 search_tree.png
 search_simulator/tmp/
+.search_simulator_checkpoints/
 
 # ---- Heavy local data / experiment outputs ----
 data/
