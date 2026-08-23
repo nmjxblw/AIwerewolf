@@ -48,7 +48,7 @@
 
 2026-08-23 实际验证：
 
-- `pytest tests/test_search_simulator_tree.py -q`：44 项通过；包含站位内恢复、暂存空图拒绝、完整 solution 防线、Core/Inspector schema、结果队列背压和无明文 SQL 回归。
+- 使用项目共享 Python 3.12 `.venv` 执行 `pytest tests/test_search_simulator_tree.py -q`：45 项通过；包含站位内恢复、暂存空图拒绝、完整 solution 防线、Core/Inspector schema、结果队列背压和无明文 SQL 回归。
 - 修改模块的 `py_compile` 通过。
 - 3 人 1 狼最小局 DFS CLI 完成 1/1 站位；同一 SQLite 第二次运行输出 `SOLUTION_LOADED` 且没有创建 worker。
 - 3 人 1 狼显式 BFS CLI 完成 1/1 站位，结果与 DFS 的终局 interval 一致。
@@ -64,6 +64,16 @@
 - 使用项目 `.venv` 对 `_layout_graph` 做静态坐标回归：深度 0/1/2 分别得到 X=0/105/210，同层两个节点得到 Y=-72.5/72.5；`py_compile _gui.py` 通过。
 - DAG 预览横向基准改为画布左内边距（不再以画布中心为根层基准），因此根节点左对齐、后续深度向右展开，同时保留平移和缩放；新增中文注释说明该坐标不变量。
 - DAG 边的派生原因标签改为仅在悬停折线时显示，常态只保留分支线；悬停提示增加完整原因标题与全部原因行，取消实时预览对原因数量和文本长度的截断。
-- 本次验证：44 项模块测试通过，`ruff`、`py_compile` 和 Pygame dummy 3 帧 GUI 启动通过；边 hover 文本统一走换行/多列路径，不再受短提示的前 7 行限制。
+- 本次验证：45 项模块测试通过，`ruff`、`py_compile` 和 Pygame dummy 3 帧 GUI 启动通过；边 hover 文本统一走换行/多列路径，不再受短提示的前 7 行限制。
 - DAG 控件区新增“定位根节点”按钮；点击只重置本地画布平移并选中稳定的最小入口节点，不改变展开集合、frontier 或持久化图。按钮、说明文字和状态提示均纳入中英文 i18n。
 - 根节点定位回归测试加入后，模块测试为 45 项通过；ruff、py_compile、Pygame dummy 3 帧启动和 `git diff --check` 均通过。
+
+## 2026-08-23 文档整理与 GUI 视觉验收
+
+- `ALGORITHM_DESIGN.md` 重新收敛为纯算法文档：保留零和建模、信息隔离、状态等价、战术分支、终局效用和 wide/narrow 公式；移除工程文件、SQLite、Pygame、进程和测试清单，避免与代码文档混写。
+- `strategy_implemetation.md` 补充同级目标不得用票数向量裁决、隔离 worker/有界队列、运行终态/crash 证据、实时观测窗口和清理纪律；边原因明确为“折线 hover 显示、常态隐藏”。
+- `CODE_DESIGN.md` 增加历史文档声明：当前工程事实、测试数量和最新验证以本文件为准，旧日期记录不覆盖增量记录。
+- 使用默认 7 人板子、智能投票和战术勾选，取消“所有站位”后启动固定 DFS 单站位视觉检测；运行期间实时显示展开/发现/frontier/边/终局计数，随后主动暂停，现场未将未完成站位误报为 complete。
+- 视觉上确认 DAG 深度从左到右、同层节点从上到下；“定位根节点”能把根节点放到缩略图左侧并选中；“全部展开/全部收起”只改变当前观测窗口；节点 hover 使用中文分区文本显示完整 GameState。
+- 视觉检测发现实时 DAG 边密集时单条边 hover 不易稳定命中；代码路径已保留完整原因多行渲染，但该 hit-test 仍列为下一轮 GUI 回归的显式检查项，不能仅凭节点详情栏替代边 hover 通过证据。
+- 本轮只产生文档改动；临时 GUI 进程已关闭，未新增或提交测试数据库、JSON、截图和日志。
