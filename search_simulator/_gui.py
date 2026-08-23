@@ -742,8 +742,14 @@ class PygameSimulatorUI:
         canvas: tuple[float, float],
         rect: pygame.Rect,
     ) -> tuple[float, float]:
+        """将画布坐标投影到屏幕，并让 DAG 根层从左侧内边距起步。
+
+        横向基准使用画布左边界而不是中心点，保证预览初始状态即可看到
+        根节点和后续深度的左到右展开；平移与缩放仍通过 ``graph_pan`` 和
+        ``graph_zoom`` 保持原有交互语义。
+        """
         return (
-            rect.centerx + self.graph_pan[0] + canvas[0] * self.graph_zoom,
+            rect.x + 42 + self.graph_pan[0] + canvas[0] * self.graph_zoom,
             rect.y + 150 + self.graph_pan[1] + canvas[1] * self.graph_zoom,
         )
 
