@@ -1,6 +1,6 @@
 # Search Simulator 代码更新记录
 
-本文档只记录 `search_simulator/` 的工程实现事实；算法模型、状态转移语义和数学公式见 `ALGORITHM_DESIGN.md`。
+本文档只记录 `search_simulator/` 的工程实现事实；当前算法模型、状态转移语义和数学公式见 `ALGORITHM_DESIGN_V2.md`，V1 只作历史归档。
 
 ## 持久化分层
 
