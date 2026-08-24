@@ -329,3 +329,7 @@ data/werewolf.db.bak
 
 # Agent skill caches
 .agents/
+
+# Temporary files created by GitHub Codespaces
+[Tt]emp/
+[Tt]mp/
