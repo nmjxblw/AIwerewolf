@@ -1,0 +1,2833 @@
+{
+  "id": "7e26f057-db9e-497e-9c99-eb3efd36f689",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-7415d5acfdac",
+      "seat": 1,
+      "name": "陈衡",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "陈衡",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家：只按胜率与期望收益做判断，不受情绪、人情或表演影响。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确，像写分析报告"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P2-9aea6ed4ef68",
+      "seat": 2,
+      "name": "周慎",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "周慎",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家：只按胜率与期望收益做判断，不受情绪、人情或表演影响。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确，像写分析报告"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-4f2875411186",
+      "seat": 3,
+      "name": "林笃",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "林笃",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家：只按胜率与期望收益做判断，不受情绪、人情或表演影响。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确，像写分析报告"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-619b75c849eb",
+      "seat": 4,
+      "name": "沈度",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "沈度",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家：只按胜率与期望收益做判断，不受情绪、人情或表演影响。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确，像写分析报告"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P5-92965635034d",
+      "seat": 5,
+      "name": "韩朴",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "韩朴",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家：只按胜率与期望收益做判断，不受情绪、人情或表演影响。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确，像写分析报告"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P6-916ccf3159e2",
+      "seat": 6,
+      "name": "苏正",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "苏正",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家：只按胜率与期望收益做判断，不受情绪、人情或表演影响。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确，像写分析报告"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P7-9de64cb09ada",
+      "seat": 7,
+      "name": "魏一",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "魏一",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家：只按胜率与期望收益做判断，不受情绪、人情或表演影响。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确，像写分析报告"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    }
+  ],
+  "events": [
+    {
+      "id": "1d088cc6-e926-447c-9466-5138f3c74c90",
+      "ts": 1787510718.2713475,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "7e26f057-db9e-497e-9c99-eb3efd36f689",
+        "players": [
+          {
+            "id": "P1-7415d5acfdac",
+            "seat": 1,
+            "name": "陈衡",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-9aea6ed4ef68",
+            "seat": 2,
+            "name": "周慎",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-4f2875411186",
+            "seat": 3,
+            "name": "林笃",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-619b75c849eb",
+            "seat": 4,
+            "name": "沈度",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-92965635034d",
+            "seat": 5,
+            "name": "韩朴",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-916ccf3159e2",
+            "seat": 6,
+            "name": "苏正",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-9de64cb09ada",
+            "seat": 7,
+            "name": "魏一",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "a19b2705-fb5f-462b-8f0b-0c7fdd6d8e68",
+      "ts": 1787510718.2713842,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-7415d5acfdac"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 陈衡, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "1438d605-e0a7-48b3-8a41-984290882b8a",
+      "ts": 1787510718.2714067,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-9aea6ed4ef68"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 周慎, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "ef80ac22-42da-4005-90ce-ae41aab6f51a",
+      "ts": 1787510718.271424,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-4f2875411186"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 林笃, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "5b77fccd-1a77-445d-810f-65380bff5473",
+      "ts": 1787510718.2714448,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 沈度, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "18dc0e52-d062-44d1-9cfa-45d85cf6bc2c",
+      "ts": 1787510718.2714634,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 韩朴, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "3919be20-9b15-4559-989c-4b18558df92f",
+      "ts": 1787510718.2714782,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-916ccf3159e2"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 苏正, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "dd68dab5-b65e-4145-b507-0a5725eea469",
+      "ts": 1787510718.2714932,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-9de64cb09ada"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 魏一, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "76ff5e5e-3385-4e2a-bf86-7741b4f27b5a",
+      "ts": 1787510718.2715147,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "dd78cd68-a4b3-48f7-a494-c34873991da4",
+      "ts": 1787510718.2715194,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "a6ac6463-7882-4780-b585-24dc418be1af",
+      "ts": 1787510718.3518353,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "46464b50-b818-46c8-a9e0-9bdccb5a5234",
+      "ts": 1787510718.3518472,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P4-619b75c849eb",
+          "P5-92965635034d"
+        ],
+        "wolf_names": [
+          "沈度",
+          "韩朴"
+        ]
+      }
+    },
+    {
+      "id": "1dc3e57e-bace-427f-a7af-0838465f49d0",
+      "ts": 1787510719.713255,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "message": "沈度（私聊）：建议今晚刀1号陈衡，他发言太稳，留着容易带节奏。",
+        "speech": "建议今晚刀1号陈衡，他发言太稳，留着容易带节奏。"
+      }
+    },
+    {
+      "id": "a57a3875-9922-45b5-bdf1-5ae5912ff4e8",
+      "ts": 1787510720.5708299,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "message": "韩朴（私聊）：同意刀1号陈衡，先断好人节奏。",
+        "speech": "同意刀1号陈衡，先断好人节奏。"
+      }
+    },
+    {
+      "id": "0ec44902-be40-4efb-a0ec-2894232a6959",
+      "ts": 1787510720.570855,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_discussion_turn",
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "message": "沈度 is choosing a proposed kill target for the wolf team.",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "a105fd93-7c8b-4982-aafb-32d57a6fada6",
+      "ts": 1787510721.557731,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "action_type": "attack",
+        "target": {
+          "id": "P1-7415d5acfdac",
+          "seat": 1,
+          "name": "陈衡",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队友建议刀1号陈衡，他发言稳健，留到后期容易带动好人节奏，优先处理高威胁目标。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_attack_vote",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "current_votes": {
+          "P4-619b75c849eb": "P1-7415d5acfdac"
+        }
+      }
+    },
+    {
+      "id": "de52bd24-131f-4691-9b5d-d2e2b8fadfa7",
+      "ts": 1787510721.5577447,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_discussion_turn",
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "message": "韩朴 is choosing a proposed kill target for the wolf team.",
+        "previous_votes": [
+          {
+            "wolf_id": "P4-619b75c849eb",
+            "wolf_name": "沈度",
+            "target_id": "P1-7415d5acfdac",
+            "target_name": "陈衡"
+          }
+        ]
+      }
+    },
+    {
+      "id": "85661a26-db34-4b5d-85e7-7170be208536",
+      "ts": 1787510722.943038,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "action_type": "attack",
+        "target": {
+          "id": "P1-7415d5acfdac",
+          "seat": 1,
+          "name": "陈衡",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友沈度协调一致，刀1号陈衡。作为开局的优先击杀目标，先削减好人阵营的活跃玩家，打乱好人的节奏和信息收集。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_attack_vote",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "current_votes": {
+          "P4-619b75c849eb": "P1-7415d5acfdac",
+          "P5-92965635034d": "P1-7415d5acfdac"
+        }
+      }
+    },
+    {
+      "id": "3ca8d587-2f26-42ad-9199-f9022d60d26e",
+      "ts": 1787510722.9430623,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_attack_tally",
+        "message": "Wolf team final attack target is 陈衡.",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "votes": {
+          "P4-619b75c849eb": "P1-7415d5acfdac",
+          "P5-92965635034d": "P1-7415d5acfdac"
+        }
+      }
+    },
+    {
+      "id": "00879f8a-4f15-4b63-9510-81c42e505b76",
+      "ts": 1787510722.9430742,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "0f4cd41e-53f1-4247-8541-6a5373e246b7",
+      "ts": 1787510722.9430916,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "ad7eb1a9-b82f-49d9-8e66-c4e96c598211",
+      "ts": 1787510723.9633574,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-7415d5acfdac"
+      ],
+      "payload": {
+        "actor_id": "P1-7415d5acfdac",
+        "actor_name": "陈衡",
+        "action_type": "divine",
+        "target": {
+          "id": "P5-92965635034d",
+          "seat": 5,
+          "name": "韩朴",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜查验选择中位玩家5号韩朴，位置居中便于建立初步信息框架，为后续推理打好基础。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P5-92965635034d"
+      }
+    },
+    {
+      "id": "83162909-3bdd-4ec5-bec5-9a8544bd6697",
+      "ts": 1787510723.9633641,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-7415d5acfdac"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P5-92965635034d",
+        "target_name": "韩朴",
+        "is_wolf": true,
+        "message": "Seer check: 韩朴 is wolf."
+      }
+    },
+    {
+      "id": "934811cf-edda-4097-bfc3-d51fd5632950",
+      "ts": 1787510723.963375,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "cc320a02-ad57-4c38-a573-b30c99cc84e3",
+      "ts": 1787510724.0436144,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "26b3898a-a8c0-4321-8f1c-3abc93bfb75d",
+      "ts": 1787510724.7793412,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P7-9de64cb09ada"
+      ],
+      "payload": {
+        "actor_id": "P7-9de64cb09ada",
+        "actor_name": "魏一",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P1-7415d5acfdac",
+          "seat": 1,
+          "name": "陈衡",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜无信息，救人是唯一合理选择。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-7415d5acfdac"
+      }
+    },
+    {
+      "id": "acee5942-2468-4f73-b77e-7de2138445c9",
+      "ts": 1787510724.7793546,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "d1660086-dda9-4988-be9d-05143546eccc",
+      "ts": 1787510724.859804,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "d0190046-647c-4f9a-ae78-de72379fd558",
+      "ts": 1787510725.968648,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-9aea6ed4ef68"
+      ],
+      "payload": {
+        "actor_id": "P2-9aea6ed4ef68",
+        "actor_name": "周慎",
+        "action_type": "guard",
+        "target": {
+          "id": "P5-92965635034d",
+          "seat": 5,
+          "name": "韩朴",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "第一晚无历史限制，随机选择中间位置守护，避免暴露守卫生存压力。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P5-92965635034d"
+      }
+    },
+    {
+      "id": "41d58a56-08bd-481e-af11-003985c92ec0",
+      "ts": 1787510725.9686627,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "f00f2a61-6471-4fd6-a5b1-5de22c7fdecc",
+      "ts": 1787510726.049182,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "84dfba4f-9d0f-4b21-9364-8d4e2164ffdd",
+      "ts": 1787510726.0492027,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "No one died last night."
+      }
+    },
+    {
+      "id": "4cc1fcc0-c258-4680-9818-8f8a8cb9a91a",
+      "ts": 1787510726.0492723,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "f4126a70-7e81-4477-8b64-cc6eda6a308e",
+      "ts": 1787510726.0492878,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "bd7f45fa-a372-44e9-9bc1-cb9e19afaae8",
+      "ts": 1787510726.371136,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "a45cf756-df2a-4603-a160-4b663c67a3b2",
+      "ts": 1787510733.8368816,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-7415d5acfdac",
+        "actor_name": "陈衡",
+        "speech": "我是1号陈衡，预言家。首夜查验了5号韩朴，结果是狼人。",
+        "reasoning": "首轮首置发言，按指令如实公布预言家身份和首夜查验结果（5号韩朴为狼人）。发言结构化，明确投票倾向为出5号，并提示观察后续反应获取更多信息。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "6e063358-03d8-4219-8126-47981cb5c019",
+      "ts": 1787510733.8368917,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-7415d5acfdac",
+        "actor_name": "陈衡",
+        "speech": "我不多绕弯子，直接说逻辑。首夜我选择查验5号，是因为这个位置在首置发言里信息密度最低、最容易被狼藏。结果开门见狼，没有任何模糊空间。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "7826061a-0082-422d-bbb8-1047bebc828a",
+      "ts": 1787510733.8368979,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-7415d5acfdac",
+        "actor_name": "陈衡",
+        "speech": "今天我的投票倾向非常明确：出5号韩朴。理由很简单——查验结果是硬信息，我跳出来就是要用这一条信息把节奏带起来。如果5号是好人，他应该能给出合理的解释和反驳；但如果他拿不出站得住的逻辑，那这一票就是对的。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "9cf74458-8b71-48df-aa16-c6879ffca31d",
+      "ts": 1787510733.836903,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-7415d5acfdac",
+        "actor_name": "陈衡",
+        "speech": "另外提醒所有人：今天别急着分票，也别被带偏节奏。我们这轮的核心任务就是处理5号。等5号的发言结束，我们再看场上有没有人出来保他、或者试图转移话题——那都是额外的信息增量。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "ca15f715-817a-4ee6-bfc9-1b894a0fd3c0",
+      "ts": 1787510733.8369315,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-9aea6ed4ef68",
+        "actor_name": "周慎",
+        "speech": "第一天，没什么信息。大家都聊一聊吧，发言和投票我会记着。现在没有查验、没有死讯，唯一能看的就是发言的合理性。先听一轮，不做过多判断。",
+        "reasoning": "作为守卫，首日隐藏身份，不暴露任何守卫信息。发言简短，引导大家发言，为后续观察投票与发言一致性打基础。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "af84f09d-a7bd-492e-a012-f25f536a2d9a",
+      "ts": 1787510733.8369555,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-4f2875411186",
+        "actor_name": "林笃",
+        "speech": "我是3号，村民。第一天没有太多信息，我简单说说思路。场上7个人，没有警长，白天先听一轮发言。我建议各位不要急着上票，神职如果有信息可以适当引导，但别把身份暴露得太早。我的倾向是先听发言再判断，谁逻辑跳跃、前后矛盾，我会重点标记。先不投，等第二轮发言再定。",
+        "reasoning": "第一天首轮发言，作为村民没有额外信息，表达分析框架和观察倾向，不急于下结论，符合INTP多假设谨慎风格。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "aa2096d4-0c9c-43d2-ae1b-ba3267753419",
+      "ts": 1787510733.836998,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "speech": "第一天，大家先别急着站队，信息量太少。我建议白天多听发言，别一上来就乱投。有几个点想跟大家说：第一，预言家如果验到人，可以考虑跳出来带节奏，但也不要太早暴露位置；第二，女巫的银水信息很关键，如果昨晚有刀口，女巫可以适当透露一下；",
+        "reasoning": "作为首发言的狼人，第一天信息极少，不宜过度激进。采取稳健策略，引导大家多听多分析，同时暗示预言家和女巫的信息价值，为后续观察好人阵营的发言和反应做铺垫。不急于表态投票，保持低调观察姿态。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "12185427-b0ae-4eb1-92d4-627c75d4edf1",
+      "ts": 1787510733.8370056,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "speech": "第三，大家发言的时候注意逻辑一致性，第一天最容易暴露的是前后矛盾的人。我先表个态，今天不急着投人，听完全场再说。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "6c610edc-f2fa-4e9f-ad5e-ed5bed6361c7",
+      "ts": 1787510733.837041,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "speech": "我是5号韩朴，首日发言。现在信息很少，大家都在盲区里，我不急着下结论。先说说我的思路：今天没有查验信息，也没有刀口信息，纯粹看发言找逻辑漏洞意义不大。我更关注谁能给出清晰的思路框架，谁在带节奏、谁在搅浑水。建议今天先听一轮所有人的发言，重点观察发言前后一致性和立场稳定性。",
+        "reasoning": "首日发言，作为狼人避免过早暴露立场和节奏。采用稳健的闭眼视角发言，不主动带节奏、不攻击具体对象，保持中立观察姿态，等待后续信息再行动。发言符合INTJ风格——系统化、克制、强调逻辑框架。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "4d072e48-6fbd-4a77-a2df-cb9cb0ff3f18",
+      "ts": 1787510733.8370469,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "speech": "我暂时没有明确的投票倾向，等听完再判断。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "841fc76d-1b66-493a-aa97-e06c7242b912",
+      "ts": 1787510733.8370788,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-916ccf3159e2",
+        "actor_name": "苏正",
+        "speech": "我是6号苏正，村民。第一天没有太多信息，我简单说下想法。",
+        "reasoning": "第一天首位发言，没有额外信息，作为村民先表明身份立场，引导大家提供信息量，表达观望态度，不做过早判断。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "4df762cd-7e94-41fd-87ec-05362774a22e",
+      "ts": 1787510733.8370848,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-916ccf3159e2",
+        "actor_name": "苏正",
+        "speech": "这局7个人，节奏会比较快。我希望大家发言的时候尽量给足信息量，不要划水。预言家如果有查验，可以适当引导方向，但注意别暴露太多。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "c7392ea8-4a59-4915-89bb-10a226fad605",
+      "ts": 1787510733.8370898,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-916ccf3159e2",
+        "actor_name": "苏正",
+        "speech": "第一天我倾向先听大家的发言，重点关注逻辑是否自洽、有没有明显的跳跃。目前没有明确的怀疑对象，先听一轮再说。我暂时没有投票倾向。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "341a0285-d967-4eeb-b3c8-ee1197216772",
+      "ts": 1787510733.837112,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-9de64cb09ada",
+        "actor_name": "魏一",
+        "speech": "我简单说两句。首夜平安夜，没有信息，大家先别急着下结论。第一天是信息最少的一天，我的建议是听各自发言，重点关注谁在带节奏、谁在强行分析。现在定票太早，等一圈发言下来再判断。我没有特别的倾向，先观察。",
+        "reasoning": "首夜平安夜且是第一个发言，信息量极少。作为女巫，遵循保守策略：白天少发言、不暴露身份。发言简短，引导大家按流程发言，不做无根据的猜测，暂不表态投票。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "5c9ae4aa-2bbc-44ec-aa26-bb3a47209052",
+      "ts": 1787510733.997695,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "fb933e76-4d17-4249-b347-d5f1d2c8e60a",
+      "ts": 1787510737.1855264,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-7415d5acfdac",
+        "voter_name": "陈衡",
+        "target_id": "P5-92965635034d",
+        "target_name": "韩朴",
+        "reasoning": "我是预言家，首夜查验5号韩朴，结果为狼人。查验事实明确，投票放逐韩朴。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "d20f20ad-b206-42f9-b464-195ba9fda1e7",
+      "ts": 1787510737.1855354,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-9aea6ed4ef68",
+        "voter_name": "周慎",
+        "target_id": "P7-9de64cb09ada",
+        "target_name": "魏一",
+        "reasoning": "首日信息极少，无查验、无刀口。魏一发言较为划水，只说\"听发言再判断\"但未给任何具体观察点或逻辑锚定。在没有更明确线索的背景下，划水者值得多一分注意。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "c46396da-c681-4473-926f-93fdef406d1d",
+      "ts": 1787510737.1855414,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-4f2875411186",
+        "voter_name": "林笃",
+        "target_id": "P7-9de64cb09ada",
+        "target_name": "魏一",
+        "reasoning": "第一天信息量极少，所有发言都比较保守，没有明显逻辑漏洞或带节奏迹象。7号发言最简短且内容最空洞，仅重复\"先观察\"没有提供任何实质分析框架，在信息匮乏的首日可优先观察此类划水发言者。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "b9bed144-b1f4-47cf-bb31-8ce36eff0b6a",
+      "ts": 1787510737.185547,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-619b75c849eb",
+        "voter_name": "沈度",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "reasoning": "首日信息量极少，没有明确线索。1号陈衡发言偏稳，但首日不宜过度分析。我选择投1号，基于他发言中带节奏的倾向较明显，且作为首日试探性投票目标合理。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "3b855c4b-bdae-45cc-8248-db221ba22753",
+      "ts": 1787510737.185552,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-92965635034d",
+        "voter_name": "韩朴",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "reasoning": "首日信息极少，没有明确线索。我倾向投一个发言偏划水、信息量不足的玩家，1号陈衡首日发言未见，观察价值有限，先投他试探场上反应。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "b25bbb17-dbdf-4bdc-89bd-834e1f2d9cfa",
+      "ts": 1787510737.185557,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-916ccf3159e2",
+        "voter_name": "苏正",
+        "target_id": "P7-9de64cb09ada",
+        "target_name": "魏一",
+        "reasoning": "第一天信息极少，所有人都在表态观望。7号魏一的发言虽然表面中立，但强调\"谁在带节奏、谁在强行分析\"，带有预设性的引导倾向。在无任何查验信息的情况下，我倾向投给发言中带有轻微引导性的7号，但坦白说这更多是基于直觉的判断，信息不足以支撑更确定的结论。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "326b90e9-5176-45a1-807b-fde4d4882937",
+      "ts": 1787510737.1855624,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-9de64cb09ada",
+        "voter_name": "魏一",
+        "target_id": "P6-916ccf3159e2",
+        "target_name": "苏正",
+        "reasoning": "首日信息极少，但6号苏正自称村民却又在指挥预言家如何行动、建议大家如何发言，带节奏的意图较明显。相比之下4号和5号的发言更克制。在信息不足的情况下，倾向于将暴露更多引导性发言的6号作为优先怀疑对象。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "247f211d-ff3a-4a51-b72d-fdc2df99f504",
+      "ts": 1787510737.266031,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "da5c8fae-520a-4368-afe4-153ef3f41f48",
+      "ts": 1787510737.2660918,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "魏一 was voted out."
+      }
+    },
+    {
+      "id": "a3cbc811-f24b-492a-8b36-f909f2ca7c51",
+      "ts": 1787510737.266113,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P7-9de64cb09ada",
+        "player_name": "魏一",
+        "reason": "vote"
+      }
+    },
+    {
+      "id": "31a28132-fa27-4498-b689-d86390386267",
+      "ts": 1787510737.2662468,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "a06a38f4-7bc4-4879-a4e9-5f152f58c198",
+      "ts": 1787510737.2663066,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "e39a29d1-199a-4994-9f0a-be8fb9185ab7",
+      "ts": 1787510737.2663126,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "a93dc9d3-a488-450d-9191-301355ba6287",
+      "ts": 1787510737.3464777,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "df50502b-6cee-49d1-b52f-10b22bab1bbb",
+      "ts": 1787510737.3464904,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P4-619b75c849eb",
+          "P5-92965635034d"
+        ],
+        "wolf_names": [
+          "沈度",
+          "韩朴"
+        ]
+      }
+    },
+    {
+      "id": "44812a2a-983a-41b1-b114-1eebea218c3c",
+      "ts": 1787510738.5257676,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "message": "沈度（私聊）：刀1号陈衡，先断好人节奏，避免他后续带票。",
+        "speech": "刀1号陈衡，先断好人节奏，避免他后续带票。"
+      }
+    },
+    {
+      "id": "1ae007a2-2091-4dd4-8d1f-a3a8fd994829",
+      "ts": 1787510739.632767,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "message": "韩朴（私聊）：刀1号陈衡，确认行动。",
+        "speech": "刀1号陈衡，确认行动。"
+      }
+    },
+    {
+      "id": "8df08012-6787-4433-b9bc-3824d01bccda",
+      "ts": 1787510739.6327837,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_discussion_turn",
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "message": "沈度 is choosing a proposed kill target for the wolf team.",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "4ec29dd3-7903-435f-97f3-e048da684464",
+      "ts": 1787510740.9244456,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "action_type": "attack",
+        "target": {
+          "id": "P1-7415d5acfdac",
+          "seat": 1,
+          "name": "陈衡",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "陈衡发言稳、容易带节奏，且我第一天已投他，继续刀他断好人核心，同时狼队内部已达成共识。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_attack_vote",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "current_votes": {
+          "P4-619b75c849eb": "P1-7415d5acfdac"
+        }
+      }
+    },
+    {
+      "id": "ae3c81e0-d806-4a8c-8e27-060f630325ec",
+      "ts": 1787510740.924466,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_discussion_turn",
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "message": "韩朴 is choosing a proposed kill target for the wolf team.",
+        "previous_votes": [
+          {
+            "wolf_id": "P4-619b75c849eb",
+            "wolf_name": "沈度",
+            "target_id": "P1-7415d5acfdac",
+            "target_name": "陈衡"
+          }
+        ]
+      }
+    },
+    {
+      "id": "6f3b8c1f-5967-4253-b5f0-3e2fbb50b66c",
+      "ts": 1787510742.3877048,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "action_type": "attack",
+        "target": {
+          "id": "P1-7415d5acfdac",
+          "seat": 1,
+          "name": "陈衡",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "延续狼队既定策略，刀1号陈衡。首日已锁定该目标，且陈衡在首日发言中表现活跃，可能是好人阵营的关键角色，优先剪除。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_attack_vote",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "current_votes": {
+          "P4-619b75c849eb": "P1-7415d5acfdac",
+          "P5-92965635034d": "P1-7415d5acfdac"
+        }
+      }
+    },
+    {
+      "id": "4adfd8ad-99c0-4f74-8343-39adc3924fe1",
+      "ts": 1787510742.3877258,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-619b75c849eb",
+        "P5-92965635034d"
+      ],
+      "payload": {
+        "kind": "wolf_attack_tally",
+        "message": "Wolf team final attack target is 陈衡.",
+        "target_id": "P1-7415d5acfdac",
+        "target_name": "陈衡",
+        "votes": {
+          "P4-619b75c849eb": "P1-7415d5acfdac",
+          "P5-92965635034d": "P1-7415d5acfdac"
+        }
+      }
+    },
+    {
+      "id": "64a68d0f-b985-45b0-b911-56eaf26f5afa",
+      "ts": 1787510742.3877475,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "6d4d925a-1c1c-49c2-91fe-f11f4504ad18",
+      "ts": 1787510743.5805752,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-7415d5acfdac"
+      ],
+      "payload": {
+        "actor_id": "P1-7415d5acfdac",
+        "actor_name": "陈衡",
+        "action_type": "divine",
+        "target": {
+          "id": "P2-9aea6ed4ef68",
+          "seat": 2,
+          "name": "周慎",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜已查验5号韩朴为狼人，需继续扩大查验面。选择查验2号周慎，以获取更多信息，验证白天发言中其他玩家的逻辑一致性。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-9aea6ed4ef68"
+      }
+    },
+    {
+      "id": "4bb78a57-c210-46bf-bea8-ceba80697254",
+      "ts": 1787510743.5805814,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-7415d5acfdac"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P2-9aea6ed4ef68",
+        "target_name": "周慎",
+        "is_wolf": false,
+        "message": "Seer check: 周慎 is not wolf."
+      }
+    },
+    {
+      "id": "a5e16add-ec95-4cf6-a355-654bc73d0ff5",
+      "ts": 1787510743.7417722,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "400bb549-84b7-49ab-a5f9-fa77cf86c955",
+      "ts": 1787510745.1123168,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-9aea6ed4ef68"
+      ],
+      "payload": {
+        "actor_id": "P2-9aea6ed4ef68",
+        "actor_name": "周慎",
+        "action_type": "guard",
+        "target": {
+          "id": "P4-619b75c849eb",
+          "seat": 4,
+          "name": "沈度",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "上一晚守护了5号，不能连守。选择守护4号，基于当前存活玩家中无明显信息指向，优先保护中间位置玩家以防狼人刀法。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-619b75c849eb"
+      }
+    },
+    {
+      "id": "b0f47924-8b6e-4fae-aa5d-95313536e239",
+      "ts": 1787510745.1925442,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "9cf8a57a-7df1-4749-901e-a29db8e72e18",
+      "ts": 1787510745.1925747,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P1-7415d5acfdac",
+        "player_name": "陈衡",
+        "reason": "wolf"
+      }
+    },
+    {
+      "id": "f53dde6d-b68b-4012-bbed-49acfc531825",
+      "ts": 1787510745.1925852,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night deaths: 陈衡."
+      }
+    },
+    {
+      "id": "57b93636-ce20-40a3-9286-4d8be14b1949",
+      "ts": 1787510745.1926405,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "5a461f94-b18a-449f-ad77-68fc36372ee8",
+      "ts": 1787510745.1926537,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "1ba67551-830f-421c-91e8-de2e5b106d79",
+      "ts": 1787510745.5145051,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "d56b878d-1987-4565-afaa-8232fa9825b8",
+      "ts": 1787510752.918546,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-9aea6ed4ef68",
+        "actor_name": "周慎",
+        "speech": "第二天了。昨晚死的是1号陈衡，狼刀。加上昨天白天被放逐的7号魏一，现在剩我们五个。",
+        "reasoning": "作为守卫，隐藏身份，基于票型和事实发言。先复盘第一天票线，引导大家交代投票动机，暂不表态投票倾向。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "7446dafa-f821-4ce3-9c45-9b65c0f0b7d8",
+      "ts": 1787510752.918553,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-9aea6ed4ef68",
+        "actor_name": "周慎",
+        "speech": "我先把票线理一下。第一天我投了魏一，理由是当时他的发言最站不住脚。现在7号已经被放逐了，1号夜里被刀。1号是我相邻的座位，说实话我对他印象不深，昨晚他话也不多。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "7123404a-d3cf-46b9-bc98-a937f5703525",
+      "ts": 1787510752.9185572,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-9aea6ed4ef68",
+        "actor_name": "周慎",
+        "speech": "现在关键问题是：狼还剩几个？7个玩家，如果按标准两狼来看，现在应该还剩一狼。如果三狼局，那就还剩两狼。这个信息我们必须从发言里挖。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "a885a51f-bad5-42d1-8f23-0ca3fa52eae1",
+      "ts": 1787510752.918561,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-9aea6ed4ef68",
+        "actor_name": "周慎",
+        "speech": "我今天想听3、4、5、6四个人都把自己的立场说清楚。尤其是昨天投票的动机——谁投了魏一、谁没投、谁犹豫过，这些票型背后都藏着信息。我先不急着定票，听完再说。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "f398b54a-7f45-44e5-9ffc-88122dd7475e",
+      "ts": 1787510752.9185932,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-4f2875411186",
+        "actor_name": "林笃",
+        "speech": "2号，现在还剩5个人，死了1号陈衡和7号魏一。魏一是被白天票出去的，1号陈衡是晚上被刀的。现在场上狼还剩2个，好人3个。这个阶段信息很关键，我想先听听各位的分析，特别是昨晚有没有什么可推断的信息。我先表个态：我昨天投了魏一，基于当时的发言判断。",
+        "reasoning": "作为村民，先梳理当前局势：剩5人，2狼3好。我需要引导大家发言，收集信息后再判断。不急着表态投票，先听发言。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "030ec98f-8e12-4e22-979d-c20e992bdc56",
+      "ts": 1787510752.9185975,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-4f2875411186",
+        "actor_name": "林笃",
+        "speech": "现在我需要重新审视剩下的4、5、6号，以及2号的发言。大家逐个说说自己的思路吧。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "e8f972bb-f131-4e96-8da5-c7f066835ea5",
+      "ts": 1787510752.9186258,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "speech": "第二天了，简单盘一下。昨天投票出了7号魏一，晚上又倒了一个1号陈衡。现在剩5个人，狼大概还有两个。我昨天投陈衡是有原因的，他第一天发言太稳，节奏感很强，像是有身份在带。现在他倒了，反而说明他可能是张神牌，我们刀对了。",
+        "reasoning": "作为狼人，先引导讨论节奏，不急于踩人，保持中立观察姿态。提到陈衡已倒，暗示好人方少了一个战力，同时不暴露自己的狼身份。留出空间听其他人发言再决策。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "980b883c-addf-404b-883e-138ef0d9050b",
+      "ts": 1787510752.91863,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "speech": "现在场上剩2、3、5、6和我。我这边信息量有限，但有几个观察点：第一，昨天投票的时候，谁的票型比较暧昧，谁在跟风谁在犹豫，这些细节值得回看。第二，今天发言顺序下来，谁在急着找狼、谁在打太极，也能看出一些东西。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "7398e09c-4f71-406f-acad-3840e577113c",
+      "ts": 1787510752.9186335,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-619b75c849eb",
+        "actor_name": "沈度",
+        "speech": "我暂时没有明确目标，先听大家怎么讲。但我提醒一点，现在人少了，狼人藏得深，发言越\"完美\"越可疑。大家别急着表态，把逻辑讲清楚再投票。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "bfb0107a-de1c-4c62-a7fc-7f1a7f0b983a",
+      "ts": 1787510752.9186618,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "speech": "第二天，场上还有5个人，昨天走了两个。现在信息量还是不够，但局面已经收窄了。",
+        "reasoning": "作为狼人，首日发言打稳，不暴露攻击性。现在存活5人，狼方有我和4号两个。我需要引导讨论方向，让好人之间互相猜疑，同时不暴露自己和4号的关联。发言保持中立理性，把焦点引向其他玩家，等待后续信息再定向。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "469b4a40-40a1-4212-a61d-6c529005b82f",
+      "ts": 1787510752.9186666,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "speech": "我说下我的判断逻辑。首日我们投了7号，晚上刀了1号。现在存活的是2、3、4、5、6号。狼人大概率还有两个在场，好人也还有三个。这个局面下，每一票都很关键。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "cceeaa45-4439-4b61-be22-0622e7f5a081",
+      "ts": 1787510752.91867,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "speech": "我昨天投了陈衡，但今天我需要重新评估。现在没有查验信息，我只能从发言和投票的连贯性来判断。首日投票时大家的站队情况是关键线索——谁在带节奏，谁在跟票，谁在犹豫。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "6aebe88e-6ec4-4a16-8ba1-0eb322c06bd5",
+      "ts": 1787510752.918673,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-92965635034d",
+        "actor_name": "韩朴",
+        "speech": "我暂时不急着归票，想先听听2号、3号、6号怎么说。特别是首日发言模糊、投票飘忽的人，今天应该给出更明确的立场。如果我们今天不找出一个狼，晚上再少一个人，好人就很难打了。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "9c31db53-b581-4b1d-876d-0f6d4fee49f0",
+      "ts": 1787510752.9186985,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-916ccf3159e2",
+        "actor_name": "苏正",
+        "speech": "我是6号苏正，村民。昨天我投了7号魏一，今天他出局了。目前存活五人，狼人应该还有一到两个。",
+        "reasoning": "作为村民，我基于公开信息分析。第一天投了魏一，魏一出局，晚上1号被刀。目前存活5人，需要谨慎。我提出复盘第一天的投票逻辑，鼓励大家给信息，暂不锁定明确目标。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "27cc9afa-c2a0-4137-bfbf-c1c02bb9b6f5",
+      "ts": 1787510752.918702,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-916ccf3159e2",
+        "actor_name": "苏正",
+        "speech": "我梳理一下：第一天魏一被放逐，晚上1号陈衡被刀。这个刀法值得注意——1号身份未知，但狼人选择刀他，可能1号有神职身份，也可能只是随机。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "c522cf45-0f6d-4d1d-88a5-06efe3fc59bc",
+      "ts": 1787510752.9187052,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-916ccf3159e2",
+        "actor_name": "苏正",
+        "speech": "现在5人局，我们还有至少一次容错空间。今天必须谨慎，不能再随意放逐。我希望大家把第一天的发言和投票逻辑再复盘一遍，特别是当时投魏一和没投魏一的人，各自说说理由，看看有没有矛盾的地方。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "f4ceee41-4d05-4ca4-bcfa-d76907c545fa",
+      "ts": 1787510752.9187086,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-916ccf3159e2",
+        "actor_name": "苏正",
+        "speech": "我暂时没有明确的目标，想先听听2号、3号、4号、5号各自的看法再判断。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "e1c076f3-4184-474a-823a-59874e6cb3a3",
+      "ts": 1787510753.079909,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "e585b951-be30-4d98-a539-7e12dbfa6294",
+      "ts": 1787510756.5248287,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-9aea6ed4ef68",
+        "voter_name": "周慎",
+        "target_id": "P6-916ccf3159e2",
+        "target_name": "苏正",
+        "reasoning": "我昨天投了魏一，今天6号苏正开口就说\"我昨天投了魏一\"，似乎在抢着为自己摘清关系。7号魏一已知是狼人方被放逐者，狼人可能反手投同伴做局。6号既无实质分析也无明确立场，发言缺乏信息量，疑点较高。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "6659fb03-a47a-4155-bdad-f68a9667f5ea",
+      "ts": 1787510756.5248363,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-4f2875411186",
+        "voter_name": "林笃",
+        "target_id": "P2-9aea6ed4ef68",
+        "target_name": "周慎",
+        "reasoning": "首日我和5、6号都投了魏一，而2号、4号尚未明确表态。当前信息不足，我倾向于观察2号的发言连贯性。5号和6号的逻辑相对清晰且自洽，而2号至今未发言，缺少信息支撑，优先考察其立场。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "3e0b89f0-5a6e-4745-95bf-9bbca9e55248",
+      "ts": 1787510756.5248427,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-619b75c849eb",
+        "voter_name": "沈度",
+        "target_id": "P6-916ccf3159e2",
+        "target_name": "苏正",
+        "reasoning": "苏正发言过于主动梳理逻辑、引导复盘方向，试图掌控场上节奏。作为狼人，我需要把焦点引向一个非狼队友的目标。苏正目前没有明确站队，且发言中试图引导大家复盘首日投票，这对狼队不利，优先放逐他。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e1b46eea-b1e7-4685-ab88-a48e6995d9b8",
+      "ts": 1787510756.524848,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-92965635034d",
+        "voter_name": "韩朴",
+        "target_id": "P6-916ccf3159e2",
+        "target_name": "苏正",
+        "reasoning": "6号苏正发言过于谨慎且试图引导大家复盘首日投票，有带节奏的嫌疑。他声称自己是村民但缺乏实质信息，且没有给出明确立场，这种模糊表态在收窄局面下不利于好人判断。投他出局可以进一步压缩好人空间。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e385eb44-4969-4477-abce-1e7b365ff58b",
+      "ts": 1787510756.5248537,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-916ccf3159e2",
+        "voter_name": "苏正",
+        "target_id": "P5-92965635034d",
+        "target_name": "韩朴",
+        "reasoning": "5号韩朴今天发言有明显带节奏倾向：他反复强调\"局面收窄\"\"每一票都很关键\"，却始终不给明确立场，只说\"想听听大家的看法\"。这种既不归票又不断强调紧迫感、试图引导别人表态的发言模式，在5人局中更像狼人在试探并收集信息。相比之下，3号和4号尚未发言，我目前掌握的线索有限，但5号的发言模式让我更倾向投他。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "d53edf91-5e94-49cd-ae44-9cc1ebffa2a7",
+      "ts": 1787510756.6050148,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "bb6df5b8-fca4-45cb-9724-a447b7fdcb7a",
+      "ts": 1787510756.6050487,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "苏正 was voted out."
+      }
+    },
+    {
+      "id": "143a13aa-b5a7-42a2-b580-7a40ad06f267",
+      "ts": 1787510756.6050599,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P6-916ccf3159e2",
+        "player_name": "苏正",
+        "reason": "vote"
+      }
+    },
+    {
+      "id": "fbd69386-999a-4cc9-a078-cb1805f242f9",
+      "ts": 1787510756.605074,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    },
+    {
+      "id": "0afc334f-333f-40be-b0f0-01d4815aff77",
+      "ts": 1787510756.6051266,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P2-9aea6ed4ef68": "P6-916ccf3159e2",
+    "P3-4f2875411186": "P2-9aea6ed4ef68",
+    "P4-619b75c849eb": "P6-916ccf3159e2",
+    "P5-92965635034d": "P6-916ccf3159e2",
+    "P6-916ccf3159e2": "P5-92965635034d"
+  },
+  "vote_history": {
+    "1": {
+      "P1-7415d5acfdac": "P5-92965635034d",
+      "P2-9aea6ed4ef68": "P7-9de64cb09ada",
+      "P3-4f2875411186": "P7-9de64cb09ada",
+      "P4-619b75c849eb": "P1-7415d5acfdac",
+      "P5-92965635034d": "P1-7415d5acfdac",
+      "P6-916ccf3159e2": "P7-9de64cb09ada",
+      "P7-9de64cb09ada": "P6-916ccf3159e2"
+    },
+    "2": {
+      "P2-9aea6ed4ef68": "P6-916ccf3159e2",
+      "P3-4f2875411186": "P2-9aea6ed4ef68",
+      "P4-619b75c849eb": "P6-916ccf3159e2",
+      "P5-92965635034d": "P6-916ccf3159e2",
+      "P6-916ccf3159e2": "P5-92965635034d"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P7-9de64cb09ada",
+        "seat": 7,
+        "votes": 3.0
+      }
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "陈衡: 我是1号陈衡，预言家。首夜查验了5号韩朴，结果是狼人。",
+      "陈衡: 我不多绕弯子，直接说逻辑。首夜我选择查验5号，是因为这个位置在首置发言里信息密度最低、最容易被狼藏。结果开门见狼，没有任何模糊空间。",
+      "陈衡: 今天我的投票倾向非常明确：出5号韩朴。理由很简单——查验结果是硬信息，我跳出来就是要用这一条信息把节奏带起来。如果5号是好人，他应该能给出合理的解释和反驳；但如果他拿不出站得住的逻辑，那这一票就是对的。",
+      "陈衡: 另外提醒所有人：今天别急着分票，也别被带偏节奏。我们这轮的核心任务就是处理5号。等5号的发言结束，我们再看场上有没有人出来保他、或者试图转移话题——那都是额外的信息增量。",
+      "周慎: 第一天，没什么信息。大家都聊一聊吧，发言和投票我会记着。现在没有查验、没有死讯，唯一能看的就是发言的合理性。先听一轮，不做过多判断。",
+      "林笃: 我是3号，村民。第一天没有太多信息，我简单说说思路。场上7个人，没有警长，白天先听一轮发言。我建议各位不要急着上票，神职如果有信息可以适当引导，但别把身份暴露得太早。我的倾向是先听发言再判断，谁逻辑跳跃、前后矛盾，我会重点标记。先不投，等第二轮发言再定。",
+      "沈度: 第一天，大家先别急着站队，信息量太少。我建议白天多听发言，别一上来就乱投。有几个点想跟大家说：第一，预言家如果验到人，可以考虑跳出来带节奏，但也不要太早暴露位置；第二，女巫的银水信息很关键，如果昨晚有刀口，女巫可以适当透露一下；",
+      "沈度: 第三，大家发言的时候注意逻辑一致性，第一天最容易暴露的是前后矛盾的人。我先表个态，今天不急着投人，听完全场再说。",
+      "韩朴: 我是5号韩朴，首日发言。现在信息很少，大家都在盲区里，我不急着下结论。先说说我的思路：今天没有查验信息，也没有刀口信息，纯粹看发言找逻辑漏洞意义不大。我更关注谁能给出清晰的思路框架，谁在带节奏、谁在搅浑水。建议今天先听一轮所有人的发言，重点观察发言前后一致性和立场稳定性。",
+      "韩朴: 我暂时没有明确的投票倾向，等听完再判断。",
+      "苏正: 我是6号苏正，村民。第一天没有太多信息，我简单说下想法。",
+      "苏正: 这局7个人，节奏会比较快。我希望大家发言的时候尽量给足信息量，不要划水。预言家如果有查验，可以适当引导方向，但注意别暴露太多。",
+      "苏正: 第一天我倾向先听大家的发言，重点关注逻辑是否自洽、有没有明显的跳跃。目前没有明确的怀疑对象，先听一轮再说。我暂时没有投票倾向。",
+      "魏一: 我简单说两句。首夜平安夜，没有信息，大家先别急着下结论。第一天是信息最少的一天，我的建议是听各自发言，重点关注谁在带节奏、谁在强行分析。现在定票太早，等一圈发言下来再判断。我没有特别的倾向，先观察。",
+      "陈衡 voted for 韩朴 (我是预言家，首夜查验5号韩朴，结果为狼人。查验事实明确，投票放逐韩朴。)",
+      "周慎 voted for 魏一 (首日信息极少，无查验、无刀口。魏一发言较为划水，只说\"听发言再判断\"但未给任何具体观察点或逻辑锚定。在没有更明确线索的背景下，划水者值得多一分注意。)",
+      "林笃 voted for 魏一 (第一天信息量极少，所有发言都比较保守，没有明显逻辑漏洞或带节奏迹象。7号发言最简短且内容最空洞，仅重复\"先观察\"没有提供任何实质分析框架，在信息匮乏的首日可优先观察此类划水发言者。)",
+      "沈度 voted for 陈衡 (首日信息量极少，没有明确线索。1号陈衡发言偏稳，但首日不宜过度分析。我选择投1号，基于他发言中带节奏的倾向较明显，且作为首日试探性投票目标合理。)",
+      "韩朴 voted for 陈衡 (首日信息极少，没有明确线索。我倾向投一个发言偏划水、信息量不足的玩家，1号陈衡首日发言未见，观察价值有限，先投他试探场上反应。)",
+      "苏正 voted for 魏一 (第一天信息极少，所有人都在表态观望。7号魏一的发言虽然表面中立，但强调\"谁在带节奏、谁在强行分析\"，带有预设性的引导倾向。在无任何查验信息的情况下，我倾向投给发言中带有轻微引导性的7号，但坦白说这更多是基于直觉的判断，信息不足以支撑更确定的结论。)",
+      "魏一 voted for 苏正 (首日信息极少，但6号苏正自称村民却又在指挥预言家如何行动、建议大家如何发言，带节奏的意图较明显。相比之下4号和5号的发言更克制。在信息不足的情况下，倾向于将暴露更多引导性发言的6号作为优先怀疑对象。)",
+      "魏一 died by vote"
+    ],
+    "2": [
+      "陈衡 died by wolf",
+      "周慎: 第二天了。昨晚死的是1号陈衡，狼刀。加上昨天白天被放逐的7号魏一，现在剩我们五个。",
+      "周慎: 我先把票线理一下。第一天我投了魏一，理由是当时他的发言最站不住脚。现在7号已经被放逐了，1号夜里被刀。1号是我相邻的座位，说实话我对他印象不深，昨晚他话也不多。",
+      "周慎: 现在关键问题是：狼还剩几个？7个玩家，如果按标准两狼来看，现在应该还剩一狼。如果三狼局，那就还剩两狼。这个信息我们必须从发言里挖。",
+      "周慎: 我今天想听3、4、5、6四个人都把自己的立场说清楚。尤其是昨天投票的动机——谁投了魏一、谁没投、谁犹豫过，这些票型背后都藏着信息。我先不急着定票，听完再说。",
+      "林笃: 2号，现在还剩5个人，死了1号陈衡和7号魏一。魏一是被白天票出去的，1号陈衡是晚上被刀的。现在场上狼还剩2个，好人3个。这个阶段信息很关键，我想先听听各位的分析，特别是昨晚有没有什么可推断的信息。我先表个态：我昨天投了魏一，基于当时的发言判断。",
+      "林笃: 现在我需要重新审视剩下的4、5、6号，以及2号的发言。大家逐个说说自己的思路吧。",
+      "沈度: 第二天了，简单盘一下。昨天投票出了7号魏一，晚上又倒了一个1号陈衡。现在剩5个人，狼大概还有两个。我昨天投陈衡是有原因的，他第一天发言太稳，节奏感很强，像是有身份在带。现在他倒了，反而说明他可能是张神牌，我们刀对了。",
+      "沈度: 现在场上剩2、3、5、6和我。我这边信息量有限，但有几个观察点：第一，昨天投票的时候，谁的票型比较暧昧，谁在跟风谁在犹豫，这些细节值得回看。第二，今天发言顺序下来，谁在急着找狼、谁在打太极，也能看出一些东西。",
+      "沈度: 我暂时没有明确目标，先听大家怎么讲。但我提醒一点，现在人少了，狼人藏得深，发言越\"完美\"越可疑。大家别急着表态，把逻辑讲清楚再投票。",
+      "韩朴: 第二天，场上还有5个人，昨天走了两个。现在信息量还是不够，但局面已经收窄了。",
+      "韩朴: 我说下我的判断逻辑。首日我们投了7号，晚上刀了1号。现在存活的是2、3、4、5、6号。狼人大概率还有两个在场，好人也还有三个。这个局面下，每一票都很关键。",
+      "韩朴: 我昨天投了陈衡，但今天我需要重新评估。现在没有查验信息，我只能从发言和投票的连贯性来判断。首日投票时大家的站队情况是关键线索——谁在带节奏，谁在跟票，谁在犹豫。",
+      "韩朴: 我暂时不急着归票，想先听听2号、3号、6号怎么说。特别是首日发言模糊、投票飘忽的人，今天应该给出更明确的立场。如果我们今天不找出一个狼，晚上再少一个人，好人就很难打了。",
+      "苏正: 我是6号苏正，村民。昨天我投了7号魏一，今天他出局了。目前存活五人，狼人应该还有一到两个。",
+      "苏正: 我梳理一下：第一天魏一被放逐，晚上1号陈衡被刀。这个刀法值得注意——1号身份未知，但狼人选择刀他，可能1号有神职身份，也可能只是随机。",
+      "苏正: 现在5人局，我们还有至少一次容错空间。今天必须谨慎，不能再随意放逐。我希望大家把第一天的发言和投票逻辑再复盘一遍，特别是当时投魏一和没投魏一的人，各自说说理由，看看有没有矛盾的地方。",
+      "苏正: 我暂时没有明确的目标，想先听听2号、3号、4号、5号各自的看法再判断。",
+      "周慎 voted for 苏正 (我昨天投了魏一，今天6号苏正开口就说\"我昨天投了魏一\"，似乎在抢着为自己摘清关系。7号魏一已知是狼人方被放逐者，狼人可能反手投同伴做局。6号既无实质分析也无明确立场，发言缺乏信息量，疑点较高。)",
+      "林笃 voted for 周慎 (首日我和5、6号都投了魏一，而2号、4号尚未明确表态。当前信息不足，我倾向于观察2号的发言连贯性。5号和6号的逻辑相对清晰且自洽，而2号至今未发言，缺少信息支撑，优先考察其立场。)",
+      "沈度 voted for 苏正 (苏正发言过于主动梳理逻辑、引导复盘方向，试图掌控场上节奏。作为狼人，我需要把焦点引向一个非狼队友的目标。苏正目前没有明确站队，且发言中试图引导大家复盘首日投票，这对狼队不利，优先放逐他。)",
+      "韩朴 voted for 苏正 (6号苏正发言过于谨慎且试图引导大家复盘首日投票，有带节奏的嫌疑。他声称自己是村民但缺乏实质信息，且没有给出明确立场，这种模糊表态在收窄局面下不利于好人判断。投他出局可以进一步压缩好人空间。)",
+      "苏正 voted for 韩朴 (5号韩朴今天发言有明显带节奏倾向：他反复强调\"局面收窄\"\"每一票都很关键\"，却始终不给明确立场，只说\"想听听大家的看法\"。这种既不归票又不断强调紧迫感、试图引导别人表态的发言模式，在5人局中更像狼人在试探并收集信息。相比之下，3号和4号尚未发言，我目前掌握的线索有限，但5号的发言模式让我更倾向投他。)",
+      "苏正 died by vote",
+      "Game ended: wolf (wolves_reached_parity)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "陈衡",
+        "speaker_id": "P1-7415d5acfdac",
+        "content": "我是1号陈衡，预言家。首夜查验了5号韩朴，结果是狼人。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "陈衡",
+        "speaker_id": "P1-7415d5acfdac",
+        "content": "我不多绕弯子，直接说逻辑。首夜我选择查验5号，是因为这个位置在首置发言里信息密度最低、最容易被狼藏。结果开门见狼，没有任何模糊空间。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "陈衡",
+        "speaker_id": "P1-7415d5acfdac",
+        "content": "今天我的投票倾向非常明确：出5号韩朴。理由很简单——查验结果是硬信息，我跳出来就是要用这一条信息把节奏带起来。如果5号是好人，他应该能给出合理的解释和反驳；但如果他拿不出站得住的逻辑，那这一票就是对的。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "陈衡",
+        "speaker_id": "P1-7415d5acfdac",
+        "content": "另外提醒所有人：今天别急着分票，也别被带偏节奏。我们这轮的核心任务就是处理5号。等5号的发言结束，我们再看场上有没有人出来保他、或者试图转移话题——那都是额外的信息增量。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "周慎",
+        "speaker_id": "P2-9aea6ed4ef68",
+        "content": "第一天，没什么信息。大家都聊一聊吧，发言和投票我会记着。现在没有查验、没有死讯，唯一能看的就是发言的合理性。先听一轮，不做过多判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "林笃",
+        "speaker_id": "P3-4f2875411186",
+        "content": "我是3号，村民。第一天没有太多信息，我简单说说思路。场上7个人，没有警长，白天先听一轮发言。我建议各位不要急着上票，神职如果有信息可以适当引导，但别把身份暴露得太早。我的倾向是先听发言再判断，谁逻辑跳跃、前后矛盾，我会重点标记。先不投，等第二轮发言再定。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "沈度",
+        "speaker_id": "P4-619b75c849eb",
+        "content": "第一天，大家先别急着站队，信息量太少。我建议白天多听发言，别一上来就乱投。有几个点想跟大家说：第一，预言家如果验到人，可以考虑跳出来带节奏，但也不要太早暴露位置；第二，女巫的银水信息很关键，如果昨晚有刀口，女巫可以适当透露一下；"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "沈度",
+        "speaker_id": "P4-619b75c849eb",
+        "content": "第三，大家发言的时候注意逻辑一致性，第一天最容易暴露的是前后矛盾的人。我先表个态，今天不急着投人，听完全场再说。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "韩朴",
+        "speaker_id": "P5-92965635034d",
+        "content": "我是5号韩朴，首日发言。现在信息很少，大家都在盲区里，我不急着下结论。先说说我的思路：今天没有查验信息，也没有刀口信息，纯粹看发言找逻辑漏洞意义不大。我更关注谁能给出清晰的思路框架，谁在带节奏、谁在搅浑水。建议今天先听一轮所有人的发言，重点观察发言前后一致性和立场稳定性。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "韩朴",
+        "speaker_id": "P5-92965635034d",
+        "content": "我暂时没有明确的投票倾向，等听完再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "苏正",
+        "speaker_id": "P6-916ccf3159e2",
+        "content": "我是6号苏正，村民。第一天没有太多信息，我简单说下想法。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "苏正",
+        "speaker_id": "P6-916ccf3159e2",
+        "content": "这局7个人，节奏会比较快。我希望大家发言的时候尽量给足信息量，不要划水。预言家如果有查验，可以适当引导方向，但注意别暴露太多。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "苏正",
+        "speaker_id": "P6-916ccf3159e2",
+        "content": "第一天我倾向先听大家的发言，重点关注逻辑是否自洽、有没有明显的跳跃。目前没有明确的怀疑对象，先听一轮再说。我暂时没有投票倾向。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "魏一",
+        "speaker_id": "P7-9de64cb09ada",
+        "content": "我简单说两句。首夜平安夜，没有信息，大家先别急着下结论。第一天是信息最少的一天，我的建议是听各自发言，重点关注谁在带节奏、谁在强行分析。现在定票太早，等一圈发言下来再判断。我没有特别的倾向，先观察。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "陈衡",
+        "voter_id": "P1-7415d5acfdac",
+        "target_name": "韩朴",
+        "target_id": "P5-92965635034d",
+        "reasoning": "我是预言家，首夜查验5号韩朴，结果为狼人。查验事实明确，投票放逐韩朴。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "周慎",
+        "voter_id": "P2-9aea6ed4ef68",
+        "target_name": "魏一",
+        "target_id": "P7-9de64cb09ada",
+        "reasoning": "首日信息极少，无查验、无刀口。魏一发言较为划水，只说\"听发言再判断\"但未给任何具体观察点或逻辑锚定。在没有更明确线索的背景下，划水者值得多一分注意。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "林笃",
+        "voter_id": "P3-4f2875411186",
+        "target_name": "魏一",
+        "target_id": "P7-9de64cb09ada",
+        "reasoning": "第一天信息量极少，所有发言都比较保守，没有明显逻辑漏洞或带节奏迹象。7号发言最简短且内容最空洞，仅重复\"先观察\"没有提供任何实质分析框架，在信息匮乏的首日可优先观察此类划水发言者。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "沈度",
+        "voter_id": "P4-619b75c849eb",
+        "target_name": "陈衡",
+        "target_id": "P1-7415d5acfdac",
+        "reasoning": "首日信息量极少，没有明确线索。1号陈衡发言偏稳，但首日不宜过度分析。我选择投1号，基于他发言中带节奏的倾向较明显，且作为首日试探性投票目标合理。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "韩朴",
+        "voter_id": "P5-92965635034d",
+        "target_name": "陈衡",
+        "target_id": "P1-7415d5acfdac",
+        "reasoning": "首日信息极少，没有明确线索。我倾向投一个发言偏划水、信息量不足的玩家，1号陈衡首日发言未见，观察价值有限，先投他试探场上反应。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "苏正",
+        "voter_id": "P6-916ccf3159e2",
+        "target_name": "魏一",
+        "target_id": "P7-9de64cb09ada",
+        "reasoning": "第一天信息极少，所有人都在表态观望。7号魏一的发言虽然表面中立，但强调\"谁在带节奏、谁在强行分析\"，带有预设性的引导倾向。在无任何查验信息的情况下，我倾向投给发言中带有轻微引导性的7号，但坦白说这更多是基于直觉的判断，信息不足以支撑更确定的结论。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "魏一",
+        "voter_id": "P7-9de64cb09ada",
+        "target_name": "苏正",
+        "target_id": "P6-916ccf3159e2",
+        "reasoning": "首日信息极少，但6号苏正自称村民却又在指挥预言家如何行动、建议大家如何发言，带节奏的意图较明显。相比之下4号和5号的发言更克制。在信息不足的情况下，倾向于将暴露更多引导性发言的6号作为优先怀疑对象。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "魏一",
+        "player_id": "P7-9de64cb09ada",
+        "reason": "vote"
+      }
+    ],
+    "2": [
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "陈衡",
+        "player_id": "P1-7415d5acfdac",
+        "reason": "wolf"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "周慎",
+        "speaker_id": "P2-9aea6ed4ef68",
+        "content": "第二天了。昨晚死的是1号陈衡，狼刀。加上昨天白天被放逐的7号魏一，现在剩我们五个。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "周慎",
+        "speaker_id": "P2-9aea6ed4ef68",
+        "content": "我先把票线理一下。第一天我投了魏一，理由是当时他的发言最站不住脚。现在7号已经被放逐了，1号夜里被刀。1号是我相邻的座位，说实话我对他印象不深，昨晚他话也不多。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "周慎",
+        "speaker_id": "P2-9aea6ed4ef68",
+        "content": "现在关键问题是：狼还剩几个？7个玩家，如果按标准两狼来看，现在应该还剩一狼。如果三狼局，那就还剩两狼。这个信息我们必须从发言里挖。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "周慎",
+        "speaker_id": "P2-9aea6ed4ef68",
+        "content": "我今天想听3、4、5、6四个人都把自己的立场说清楚。尤其是昨天投票的动机——谁投了魏一、谁没投、谁犹豫过，这些票型背后都藏着信息。我先不急着定票，听完再说。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "林笃",
+        "speaker_id": "P3-4f2875411186",
+        "content": "2号，现在还剩5个人，死了1号陈衡和7号魏一。魏一是被白天票出去的，1号陈衡是晚上被刀的。现在场上狼还剩2个，好人3个。这个阶段信息很关键，我想先听听各位的分析，特别是昨晚有没有什么可推断的信息。我先表个态：我昨天投了魏一，基于当时的发言判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "林笃",
+        "speaker_id": "P3-4f2875411186",
+        "content": "现在我需要重新审视剩下的4、5、6号，以及2号的发言。大家逐个说说自己的思路吧。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "沈度",
+        "speaker_id": "P4-619b75c849eb",
+        "content": "第二天了，简单盘一下。昨天投票出了7号魏一，晚上又倒了一个1号陈衡。现在剩5个人，狼大概还有两个。我昨天投陈衡是有原因的，他第一天发言太稳，节奏感很强，像是有身份在带。现在他倒了，反而说明他可能是张神牌，我们刀对了。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "沈度",
+        "speaker_id": "P4-619b75c849eb",
+        "content": "现在场上剩2、3、5、6和我。我这边信息量有限，但有几个观察点：第一，昨天投票的时候，谁的票型比较暧昧，谁在跟风谁在犹豫，这些细节值得回看。第二，今天发言顺序下来，谁在急着找狼、谁在打太极，也能看出一些东西。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "沈度",
+        "speaker_id": "P4-619b75c849eb",
+        "content": "我暂时没有明确目标，先听大家怎么讲。但我提醒一点，现在人少了，狼人藏得深，发言越\"完美\"越可疑。大家别急着表态，把逻辑讲清楚再投票。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "韩朴",
+        "speaker_id": "P5-92965635034d",
+        "content": "第二天，场上还有5个人，昨天走了两个。现在信息量还是不够，但局面已经收窄了。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "韩朴",
+        "speaker_id": "P5-92965635034d",
+        "content": "我说下我的判断逻辑。首日我们投了7号，晚上刀了1号。现在存活的是2、3、4、5、6号。狼人大概率还有两个在场，好人也还有三个。这个局面下，每一票都很关键。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "韩朴",
+        "speaker_id": "P5-92965635034d",
+        "content": "我昨天投了陈衡，但今天我需要重新评估。现在没有查验信息，我只能从发言和投票的连贯性来判断。首日投票时大家的站队情况是关键线索——谁在带节奏，谁在跟票，谁在犹豫。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "韩朴",
+        "speaker_id": "P5-92965635034d",
+        "content": "我暂时不急着归票，想先听听2号、3号、6号怎么说。特别是首日发言模糊、投票飘忽的人，今天应该给出更明确的立场。如果我们今天不找出一个狼，晚上再少一个人，好人就很难打了。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "苏正",
+        "speaker_id": "P6-916ccf3159e2",
+        "content": "我是6号苏正，村民。昨天我投了7号魏一，今天他出局了。目前存活五人，狼人应该还有一到两个。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "苏正",
+        "speaker_id": "P6-916ccf3159e2",
+        "content": "我梳理一下：第一天魏一被放逐，晚上1号陈衡被刀。这个刀法值得注意——1号身份未知，但狼人选择刀他，可能1号有神职身份，也可能只是随机。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "苏正",
+        "speaker_id": "P6-916ccf3159e2",
+        "content": "现在5人局，我们还有至少一次容错空间。今天必须谨慎，不能再随意放逐。我希望大家把第一天的发言和投票逻辑再复盘一遍，特别是当时投魏一和没投魏一的人，各自说说理由，看看有没有矛盾的地方。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "苏正",
+        "speaker_id": "P6-916ccf3159e2",
+        "content": "我暂时没有明确的目标，想先听听2号、3号、4号、5号各自的看法再判断。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "周慎",
+        "voter_id": "P2-9aea6ed4ef68",
+        "target_name": "苏正",
+        "target_id": "P6-916ccf3159e2",
+        "reasoning": "我昨天投了魏一，今天6号苏正开口就说\"我昨天投了魏一\"，似乎在抢着为自己摘清关系。7号魏一已知是狼人方被放逐者，狼人可能反手投同伴做局。6号既无实质分析也无明确立场，发言缺乏信息量，疑点较高。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "林笃",
+        "voter_id": "P3-4f2875411186",
+        "target_name": "周慎",
+        "target_id": "P2-9aea6ed4ef68",
+        "reasoning": "首日我和5、6号都投了魏一，而2号、4号尚未明确表态。当前信息不足，我倾向于观察2号的发言连贯性。5号和6号的逻辑相对清晰且自洽，而2号至今未发言，缺少信息支撑，优先考察其立场。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "沈度",
+        "voter_id": "P4-619b75c849eb",
+        "target_name": "苏正",
+        "target_id": "P6-916ccf3159e2",
+        "reasoning": "苏正发言过于主动梳理逻辑、引导复盘方向，试图掌控场上节奏。作为狼人，我需要把焦点引向一个非狼队友的目标。苏正目前没有明确站队，且发言中试图引导大家复盘首日投票，这对狼队不利，优先放逐他。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "韩朴",
+        "voter_id": "P5-92965635034d",
+        "target_name": "苏正",
+        "target_id": "P6-916ccf3159e2",
+        "reasoning": "6号苏正发言过于谨慎且试图引导大家复盘首日投票，有带节奏的嫌疑。他声称自己是村民但缺乏实质信息，且没有给出明确立场，这种模糊表态在收窄局面下不利于好人判断。投他出局可以进一步压缩好人空间。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "苏正",
+        "voter_id": "P6-916ccf3159e2",
+        "target_name": "韩朴",
+        "target_id": "P5-92965635034d",
+        "reasoning": "5号韩朴今天发言有明显带节奏倾向：他反复强调\"局面收窄\"\"每一票都很关键\"，却始终不给明确立场，只说\"想听听大家的看法\"。这种既不归票又不断强调紧迫感、试图引导别人表态的发言模式，在5人局中更像狼人在试探并收集信息。相比之下，3号和4号尚未发言，我目前掌握的线索有限，但5号的发言模式让我更倾向投他。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "苏正",
+        "player_id": "P6-916ccf3159e2",
+        "reason": "vote"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "wolf",
+  "night_actions": {
+    "guard_target_id": "P4-619b75c849eb",
+    "last_guard_target_id": "P4-619b75c849eb",
+    "wolf_votes": {
+      "P4-619b75c849eb": "P1-7415d5acfdac",
+      "P5-92965635034d": "P1-7415d5acfdac"
+    },
+    "wolf_target_id": "P1-7415d5acfdac",
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": "P2-9aea6ed4ef68",
+    "seer_result": {
+      "kind": "seer_result",
+      "target_id": "P2-9aea6ed4ef68",
+      "target_name": "周慎",
+      "is_wolf": false,
+      "message": "Seer check: 周慎 is not wolf."
+    },
+    "deaths": [
+      {
+        "player_id": "P1-7415d5acfdac",
+        "reason": "wolf"
+      }
+    ]
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

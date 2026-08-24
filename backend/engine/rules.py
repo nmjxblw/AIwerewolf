@@ -50,6 +50,19 @@ DEFAULT_ROLE_SET: tuple[Role, ...] = (
     Role.VILLAGER,
 )
 
+# 廉价磋商（cheap talk）研究板子（项目对齐文档 w.txt）：
+# 7 人局 = 2 狼人 + 2 平民 + 1 预言家 + 1 女巫 + 1 守卫。
+# 与 DEFAULT_ROLE_SET（带猎人）不同，此板子无猎人。
+CT_ROLES_7P: tuple[Role, ...] = (
+    Role.WEREWOLF,
+    Role.WEREWOLF,
+    Role.VILLAGER,
+    Role.VILLAGER,
+    Role.SEER,
+    Role.WITCH,
+    Role.GUARD,
+)
+
 
 WOLFCHA_ROLE_CONFIGS: dict[int, tuple[Role, ...]] = {
     7: DEFAULT_ROLE_SET,

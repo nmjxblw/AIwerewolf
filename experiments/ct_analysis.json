@@ -1,0 +1,122 @@
+[
+  {
+    "label": "B",
+    "desc": "baseline 无战术",
+    "n": 10,
+    "village_wins": 4,
+    "village_rate_pct": 40.0,
+    "avg_days": 2.3,
+    "day1_exile_roles": {
+      "Werewolf": 5,
+      "Witch": 1,
+      "Seer": 3,
+      "Guard": 1
+    },
+    "day1_exiled_wolf_pct": 50.0,
+    "day1_nonseer_claims_total": 0,
+    "day1_claim_games": 0,
+    "empty_knife_nights": 0,
+    "self_knife_nights": 0,
+    "seer_alive_pct": 40.0,
+    "witch_save_total": 8,
+    "witch_poison_total": 0,
+    "wolf_chat_avg": 3.0,
+    "avg_llm_calls": 39.1,
+    "total_tokens": 1109773,
+    "avg_elapsed_s": 43.5,
+    "seeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110
+    ]
+  },
+  {
+    "label": "WJ",
+    "desc": "狼人悍跳+空刀/自刀",
+    "n": 2,
+    "village_wins": 1,
+    "village_rate_pct": 50.0,
+    "avg_days": 2.5,
+    "day1_exile_roles": {
+      "Seer": 1,
+      "Werewolf": 1
+    },
+    "day1_exiled_wolf_pct": 50.0,
+    "day1_nonseer_claims_total": 7,
+    "day1_claim_games": 2,
+    "empty_knife_nights": 0,
+    "self_knife_nights": 0,
+    "seer_alive_pct": 50.0,
+    "witch_save_total": 2,
+    "witch_poison_total": 0,
+    "wolf_chat_avg": 3.0,
+    "avg_llm_calls": 37.0,
+    "total_tokens": 218497,
+    "avg_elapsed_s": 45.2,
+    "seeds": [
+      201,
+      202
+    ]
+  },
+  {
+    "label": "VJ",
+    "desc": "平民跳预言家挡刀",
+    "n": 2,
+    "village_wins": 0,
+    "village_rate_pct": 0.0,
+    "avg_days": 2.0,
+    "day1_exile_roles": {
+      "Seer": 2
+    },
+    "day1_exiled_wolf_pct": 0.0,
+    "day1_nonseer_claims_total": 3,
+    "day1_claim_games": 2,
+    "empty_knife_nights": 0,
+    "self_knife_nights": 0,
+    "seer_alive_pct": 0.0,
+    "witch_save_total": 1,
+    "witch_poison_total": 0,
+    "wolf_chat_avg": 4.0,
+    "avg_llm_calls": 31.0,
+    "total_tokens": 161914,
+    "avg_elapsed_s": 39.6,
+    "seeds": [
+      301,
+      302
+    ]
+  },
+  {
+    "label": "SQ",
+    "desc": "预言家不发言",
+    "n": 2,
+    "village_wins": 0,
+    "village_rate_pct": 0.0,
+    "avg_days": 2.0,
+    "day1_exile_roles": {
+      "Villager": 2
+    },
+    "day1_exiled_wolf_pct": 0.0,
+    "day1_nonseer_claims_total": 0,
+    "day1_claim_games": 0,
+    "empty_knife_nights": 0,
+    "self_knife_nights": 0,
+    "seer_alive_pct": 50.0,
+    "witch_save_total": 2,
+    "witch_poison_total": 0,
+    "wolf_chat_avg": 4.0,
+    "avg_llm_calls": 31.5,
+    "total_tokens": 159387,
+    "avg_elapsed_s": 39.1,
+    "seeds": [
+      401,
+      402
+    ]
+  }
+]

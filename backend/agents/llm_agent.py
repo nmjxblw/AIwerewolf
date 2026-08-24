@@ -581,6 +581,13 @@ class LLMAgent(Agent):
             "- 白天发言阶段：你只能看到公开的发言和投票结果，看不到其他人的角色和夜间行动。\n"
             "- 遗言：被投票放逐的玩家可以发表遗言，被狼人杀死的玩家通常不能遗言。"
         )
+        # Experiment institution announcement (report §8.4) — mirrors the
+        # cognitive prompts hook so both agent stacks see the same rules.
+        rule_addendum = os.getenv("AIWEREWOLF_RULE_ADDENDUM", "").strip()
+        if rule_addendum:
+            for extra_line in rule_addendum.split("|"):
+                if extra_line.strip():
+                    rules += "\n- " + extra_line.strip()
 
         # History: past transcripts (simplified from events)
         history_lines = ["【历史】"]

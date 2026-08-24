@@ -38,6 +38,24 @@ load_env_file()
 logger = logging.getLogger(__name__)
 _CONCURRENCY_LOCK = threading.Lock()
 _CONCURRENCY_SEMAPHORES: dict[tuple[str, int], threading.BoundedSemaphore] = {}
+_LAST_REQUEST_AT: dict[str, float] = {}
+
+
+def _min_request_interval() -> float:
+    """Optional per-endpoint minimum spacing between requests (seconds).
+
+    Relay stations with burst guards (e.g. ~1 request per 20s) reject
+    back-to-back calls with 429s that outlast the client's retry backoff.
+    Pacing requests below the guard's window avoids the storm entirely.
+    """
+    raw = os.getenv("LLM_MIN_REQUEST_INTERVAL", "").strip()
+    if not raw:
+        return 0.0
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        logger.warning("Invalid LLM_MIN_REQUEST_INTERVAL=%r; disabled", raw)
+        return 0.0
 
 # ---------------------------------------------------------------------------
 # Timeout / Retry — modelled on anthropic.DEFAULT_TIMEOUT + DEFAULT_MAX_RETRIES
@@ -71,6 +89,17 @@ def _jitter(low: float, high: float) -> float:
     return random.uniform(low, high)
 
 
+def _retry_bad_request_enabled() -> bool:
+    """Treat HTTP 400 as retryable (LLM_RETRY_400=1).
+
+    Some relay gateways intermittently reject well-formed bodies with a
+    generic parse error while accepting the same shape on the next attempt;
+    enabling this only for such endpoints turns those glitches into retries
+    instead of fatal crashes.
+    """
+    return os.getenv("LLM_RETRY_400", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _should_retry(status_code: int, exc: Exception | None = None) -> bool:
     """True if the failure is transient and worth retrying.
 
@@ -92,6 +121,8 @@ def _should_retry(status_code: int, exc: Exception | None = None) -> bool:
     if isinstance(exc, ssl.SSLError):
         return True
     if status_code in _RETRYABLE_STATUSES:
+        return True
+    if status_code == 400 and _retry_bad_request_enabled():
         return True
     if status_code >= 500:
         return True
@@ -241,17 +272,31 @@ class DeepSeekClient:
 
     @contextmanager
     def _request_slot(self) -> Iterator[None]:
-        """Bound concurrent requests per provider to avoid upstream 5xx storms."""
+        """Bound concurrent requests per provider to avoid upstream 5xx storms.
+
+        Also enforces LLM_MIN_REQUEST_INTERVAL start-to-start spacing per
+        endpoint (see _min_request_interval) — the sleep happens while the
+        semaphore is held so queued requests inherit the pacing too.
+        """
         limit = _default_concurrency_limit(self.base_url)
         semaphore = _semaphore_for(self.base_url, limit)
-        if semaphore is None:
-            yield
-            return
-        semaphore.acquire()
+        interval = _min_request_interval()
+        base_key = self.base_url.rstrip("/")
+        if semaphore is not None:
+            semaphore.acquire()
         try:
+            if interval > 0:
+                with _CONCURRENCY_LOCK:
+                    last = _LAST_REQUEST_AT.get(base_key, 0.0)
+                    wait = interval - (time.monotonic() - last)
+                if wait > 0:
+                    time.sleep(wait)
+            with _CONCURRENCY_LOCK:
+                _LAST_REQUEST_AT[base_key] = time.monotonic()
             yield
         finally:
-            semaphore.release()
+            if semaphore is not None:
+                semaphore.release()
 
     # ------------------------------------------------------------------
     # chat_sync — production-grade with retry + backoff + jitter
@@ -305,7 +350,11 @@ class DeepSeekClient:
                 latency_ms = int((time.perf_counter() - t0) * 1000)
 
                 # 4xx that aren't retryable → raise immediately
-                if 400 <= response.status_code < 500 and response.status_code not in _RETRYABLE_STATUSES:
+                if (
+                    400 <= response.status_code < 500
+                    and response.status_code not in _RETRYABLE_STATUSES
+                    and not (response.status_code == 400 and _retry_bad_request_enabled())
+                ):
                     try:
                         err = response.json()
                     except Exception:

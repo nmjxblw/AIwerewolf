@@ -41,25 +41,32 @@ class ActionValidator:
             return False
         if decision.action_type == ActionType.VOTE and actor.role == Role.IDIOT and state.abilities.idiot_revealed:
             return False
+        # 廉价磋商板子：空刀（狼人集体放弃袭击 → 平安夜）为合法选择
+        empty_knife_ok = bool(state.board_options.get("wolf_empty_knife")) and decision.action_type == ActionType.ATTACK
         if rule.requires_target:
             if decision.target_id is None:
-                return False
+                if not empty_knife_ok:
+                    return False
+                return True
             try:
                 target = state.player(decision.target_id)
             except KeyError:
                 return False
             if not target.alive:
                 return False
+            # 廉价磋商板子：允许狼人自刀（骗女巫解药）；仍禁止刀狼队友
+            self_knife_ok = bool(state.board_options.get("wolf_self_knife")) and decision.action_type == ActionType.ATTACK
             if target.id == actor.id and decision.action_type in {
                 ActionType.VOTE,
-                ActionType.ATTACK,
                 ActionType.DIVINE,
                 ActionType.WITCH_POISON,
                 ActionType.SHOOT,
             }:
                 return False
+            if target.id == actor.id and decision.action_type == ActionType.ATTACK and not self_knife_ok:
+                return False
             # 狼人不能攻击狼队友（CLAUDE.md 关键规则 #1）
             if decision.action_type == ActionType.ATTACK:
-                if target.alignment == Alignment.WOLF:
+                if target.alignment == Alignment.WOLF and target.id != actor.id:
                     return False
         return True

@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from typing import Any
 from typing import Dict
 from typing import List
@@ -33,6 +34,19 @@ from backend.agents.cognitive.profiles import Profile
 from backend.agents.cognitive.profiles import get_profile
 
 logger = logging.getLogger(__name__)
+
+# Control chars (keep \n \r \t) — some relay gateways run strict JSON parsers
+# that intermittently 400 on unpaired surrogates or stray control bytes in
+# model-generated text echoed back inside later prompts.
+_CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def _sanitize_payload_text(value: Any) -> Any:
+    """Drop unpaired surrogates and control chars from outgoing message text."""
+    if not isinstance(value, str):
+        return value
+    cleaned = value.encode("utf-8", "ignore").decode("utf-8", "ignore")
+    return _CONTROL_CHARS_RE.sub("", cleaned)
 
 
 def create_cognitive_agent(
@@ -156,10 +170,10 @@ class _ToolCallingRunnable(Runnable):
         api_messages = []
         for msg in messages:
             role = _msg_role(msg)
-            entry: Dict[str, Any] = {"role": role, "content": _msg_content(msg)}
+            entry: Dict[str, Any] = {"role": role, "content": _sanitize_payload_text(_msg_content(msg))}
             # Tool messages must include tool_call_id
             if role == "tool" and hasattr(msg, "tool_call_id"):
-                entry["tool_call_id"] = msg.tool_call_id
+                entry["tool_call_id"] = _sanitize_payload_text(msg.tool_call_id)
             # AIMessage may carry tool_calls from previous turns.
             # LangChain stores {id, name, args} — API expects
             # {id, type, function: {name, arguments}}.
@@ -171,11 +185,11 @@ class _ToolCallingRunnable(Runnable):
                         fn_args = json.dumps(fn_args, ensure_ascii=False)
                     api_tool_calls.append(
                         {
-                            "id": tc.get("id", ""),
+                            "id": _sanitize_payload_text(tc.get("id", "")),
                             "type": "function",
                             "function": {
-                                "name": tc.get("name", ""),
-                                "arguments": fn_args,
+                                "name": _sanitize_payload_text(tc.get("name", "")),
+                                "arguments": _sanitize_payload_text(fn_args),
                             },
                         }
                     )
@@ -184,6 +198,14 @@ class _ToolCallingRunnable(Runnable):
 
         # Build call parameters explicitly (avoid **payload issues with httpx serialization)
         max_tokens = kwargs.get("max_tokens", 768)
+        # Reasoning-style models (e.g. hy3-free on OpenCode Zen) spend hidden
+        # chain-of-thought tokens from the same budget; small per-call budgets
+        # truncate content to null. AIWEREWOLF_MAX_TOKENS_FLOOR raises every
+        # call's budget to a floor when set (0/off by default — DeepSeek runs
+        # don't need it).
+        token_floor = int(os.getenv("AIWEREWOLF_MAX_TOKENS_FLOOR", "0") or 0)
+        if token_floor > 0:
+            max_tokens = max(max_tokens, token_floor)
         temperature = kwargs.get("temperature", 0.7)
         tools = self._tool_schemas if self._tool_schemas else None
         force_tool_name = str(kwargs.get("force_tool_name") or "")

@@ -1,0 +1,94 @@
+{
+  "label": "SQ",
+  "n_games": 2,
+  "village_wins": 0,
+  "wolf_wins": 2,
+  "errors": 0,
+  "village_win_rate": "0/2",
+  "avg_days": 2.0,
+  "total_llm_calls": 63,
+  "total_tokens": 159387,
+  "quota_aborted": false,
+  "games": [
+    {
+      "label": "SQ",
+      "seed": 401,
+      "winner": "wolf",
+      "end_reason": "wolves_reached_parity",
+      "days": 2,
+      "elapsed": 48.8,
+      "day1_vote_pattern": {
+        "1号:陈衡": 1,
+        "5号:韩朴": 1,
+        "6号:苏正": 1,
+        "7号:魏一": 4
+      },
+      "day1_pattern_detail": {
+        "5号:韩朴": [
+          "1号:陈衡"
+        ],
+        "1号:陈衡": [
+          "2号:周慎"
+        ],
+        "7号:魏一": [
+          "3号:林笃",
+          "4号:沈度",
+          "5号:韩朴",
+          "6号:苏正"
+        ],
+        "6号:苏正": [
+          "7号:魏一"
+        ]
+      },
+      "day1_seer_claims": [],
+      "day1_nonseer_claims": 0,
+      "empty_knife_nights": 0,
+      "self_knife_nights": 0,
+      "witch_save_used": 1,
+      "witch_poison_used": 0,
+      "wolf_chat_messages": 4,
+      "llm_calls": 38,
+      "prompt_tokens": 96763,
+      "completion_tokens": 5830,
+      "seer_alive": true
+    },
+    {
+      "label": "SQ",
+      "seed": 402,
+      "winner": "wolf",
+      "end_reason": "wolves_reached_parity",
+      "days": 2,
+      "elapsed": 29.5,
+      "day1_vote_pattern": {
+        "5号:韩朴": 1,
+        "6号:苏正": 4,
+        "7号:魏一": 1
+      },
+      "day1_pattern_detail": {
+        "6号:苏正": [
+          "1号:陈衡",
+          "2号:周慎",
+          "3号:林笃",
+          "5号:韩朴"
+        ],
+        "7号:魏一": [
+          "6号:苏正"
+        ],
+        "5号:韩朴": [
+          "7号:魏一"
+        ]
+      },
+      "day1_seer_claims": [],
+      "day1_nonseer_claims": 0,
+      "empty_knife_nights": 0,
+      "self_knife_nights": 0,
+      "witch_save_used": 1,
+      "witch_poison_used": 0,
+      "wolf_chat_messages": 4,
+      "llm_calls": 25,
+      "prompt_tokens": 53548,
+      "completion_tokens": 3246,
+      "seer_alive": false
+    }
+  ]
+}

@@ -82,11 +82,16 @@ class Pipeline:
         memory: Memory,
         is_first_speaker: bool = False,
         is_last_words: bool = False,
+        rejection_note: str = "",
     ) -> dict[str, Any]:
-        """Generate speech via agent loop (or legacy chain)."""
+        """Generate speech via agent loop (or legacy chain).
+
+        rejection_note: set when the engine rejected the previous speech under
+        the honesty rule (report §8.4) — injected so the retry knows why.
+        """
         if self._use_agent_loop:
-            return self._run_loop_speech(obs, memory, is_first_speaker, is_last_words)
-        speech = self._run_legacy_speech(obs, memory, is_first_speaker, is_last_words)
+            return self._run_loop_speech(obs, memory, is_first_speaker, is_last_words, rejection_note)
+        speech = self._run_legacy_speech(obs, memory, is_first_speaker, is_last_words, rejection_note)
         return {"speech": speech, "reasoning": ""}
 
     def run_vote(
@@ -130,12 +135,20 @@ class Pipeline:
         memory: Memory,
         is_first: bool,
         is_last: bool,
+        rejection_note: str = "",
     ) -> dict[str, Any]:
         extra_parts = []
         if is_first:
             extra_parts.append("你是本阶段第一个发言的人")
         if is_last:
             extra_parts.append("这是你的遗言")
+        if rejection_note:
+            extra_parts.append(
+                "【系统驳回提示】你刚才的发言因违反本局诚实规则被系统驳回"
+                f"（原因：{rejection_note}）。重新发言时严禁自称预言家/先知、"
+                "严禁声称自己查验过任何玩家、严禁给任何人金水或查杀；"
+                "请用不涉及预言家身份与查验信息的方式重新表达你的观点。"
+            )
         extra = "; ".join(extra_parts) if extra_parts else ""
 
         loop = AgentLoop(
@@ -211,10 +224,11 @@ class Pipeline:
         memory: Memory,
         is_first: bool,
         is_last: bool,
+        rejection_note: str = "",
     ) -> str:
         obs_result = self._legacy_observe(obs)
         think_result = self._legacy_think(obs, memory, obs_result)
-        return self._legacy_act_speech(obs, think_result, memory, is_first, is_last)
+        return self._legacy_act_speech(obs, think_result, memory, is_first, is_last, rejection_note)
 
     def _run_legacy_vote(self, obs: Observation, memory: Memory) -> dict[str, str]:
         obs_result = self._legacy_observe(obs)
@@ -256,8 +270,15 @@ class Pipeline:
         memory: Memory,
         is_first: bool,
         is_last: bool,
+        rejection_note: str = "",
     ) -> str:
         prompt = build_speech_prompt(obs, think_result, memory, is_first, is_last)
+        if rejection_note:
+            prompt += (
+                "\n\n【系统驳回提示】你刚才的发言因违反本局诚实规则被系统驳回"
+                f"（原因：{rejection_note}）。重新发言时严禁自称预言家/先知、"
+                "严禁声称自己查验过任何玩家、严禁给任何人金水或查杀。"
+            )
         return self._call_legacy(self._system_prompt, prompt, max_tokens=800)
 
     def _legacy_act_vote(self, obs: Observation, think_result: str) -> dict[str, str]:

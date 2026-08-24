@@ -1,0 +1,41 @@
+{
+  "label": "B",
+  "seed": 110,
+  "winner": "wolf",
+  "end_reason": "wolves_reached_parity",
+  "days": 2,
+  "elapsed": 40.8,
+  "day1_vote_pattern": {
+    "4号:沈度": 1,
+    "5号:韩朴": 2,
+    "6号:苏正": 4
+  },
+  "day1_pattern_detail": {
+    "6号:苏正": [
+      "1号:陈衡",
+      "2号:周慎",
+      "3号:林笃",
+      "5号:韩朴"
+    ],
+    "5号:韩朴": [
+      "4号:沈度",
+      "6号:苏正"
+    ],
+    "4号:沈度": [
+      "7号:魏一"
+    ]
+  },
+  "day1_seer_claims": [
+    "6号:苏正(真预言家)"
+  ],
+  "day1_nonseer_claims": 0,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 4,
+  "llm_calls": 37,
+  "prompt_tokens": 94733,
+  "completion_tokens": 5611,
+  "seer_alive": false
+}

@@ -52,6 +52,19 @@ MAX_TOOL_ROUNDS_BY_ACTION: dict[str, int] = {
 MAX_FORMAT_REPAIR_ROUNDS = 1
 MAX_EMPTY_RESPONSE_REPAIR_ROUNDS = 2
 DECISION_TOOL_NAME = "submit_decision"
+
+# 廉价磋商板子（w.txt）：空刀选项开启时，夜晚行动允许"不袭击任何人"。
+# 引擎把夜规则开关同步到 AIWEREWOLF_WOLF_NIGHT_OPTIONS（逗号分隔，
+# 含 "empty" 即允许空刀）；这里把空刀 token 统一解析为空 target，
+# 由 CognitiveAgent.attack() 转成 target_id=None 的 Decision。
+_EMPTY_KNIFE_TOKENS = {"空刀", "空", "无人", "不袭击", "不刀", "放弃袭击", "none", "null"}
+
+
+def _empty_knife_allowed() -> bool:
+    import os as _os
+
+    opts = _os.getenv("AIWEREWOLF_WOLF_NIGHT_OPTIONS", "")
+    return "empty" in {part.strip() for part in opts.split(",")}
 import threading as _threading
 
 _STRATEGY_LOCK = _threading.Lock()
@@ -473,7 +486,11 @@ class AgentLoop:
                     )
                 )
                 continue
-            if text_repair_mode and repair_rounds_used >= MAX_FORMAT_REPAIR_ROUNDS:
+            # Pure-text mode (no native FC) never sets text_repair_mode above,
+            # so extend the dedicated empty-response repair to it — reasoning
+            # models on some gateways return empty content when the token
+            # budget is exhausted by hidden chain-of-thought.
+            if (text_repair_mode or not self._supports_bind_tools) and repair_rounds_used >= MAX_FORMAT_REPAIR_ROUNDS:
                 if not response_text.strip() and empty_response_repairs_used < MAX_EMPTY_RESPONSE_REPAIR_ROUNDS:
                     empty_response_repairs_used += 1
                     context.append(
@@ -686,6 +703,7 @@ class AgentLoop:
                 "- 用「X号」称呼玩家，不要说「X号玩家」\n"
                 "- 不要当主持人报幕，直接以玩家身份发言\n"
                 "- 只基于当前可见信息、你的角色能力边界和已有记忆表达\n"
+                "- 不要重复你之前已说过的内容（如已报过查验、已亮过身份），每次发言要提供新信息或新分析\n"
             ),
             "vote": (
                 "【任务：投票】\n"
@@ -1135,9 +1153,16 @@ class AgentLoop:
                     missing.append("reasoning")
                 return None, f"submit_decision 缺少必填字段: {', '.join(missing)}。"
             target = str(args.get("target", "")).strip()
+            # 空刀（廉价磋商板子）：夜刀选项开启时，空 target 或空刀 token
+            # 是合法的最终决策 —— 不做合法目标解析，直接透传空 target。
+            if self._action_type == "night" and _empty_knife_allowed() and (
+                not target or target in _EMPTY_KNIFE_TOKENS
+            ):
+                if reasoning:
+                    return {"target": "", "reasoning": reasoning}, ""
+                return None, "submit_decision 缺少必填字段: reasoning。"
             if target and self._current_obs is not None:
-                target_text = target + "\n" + json.dumps(args, ensure_ascii=False)
-                resolved_target = self._extract_named_legal_target(target_text, self._current_obs)
+                resolved_target = self._extract_named_legal_target(target, self._current_obs)
                 if not resolved_target:
                     return None, f"submit_decision target 不在合法目标中: {target}。"
                 target = resolved_target
@@ -1399,9 +1424,16 @@ class AgentLoop:
             raw_target = next((data.get(key) for key in target_keys if key in data), "")
             if has_target_field:
                 result["target"] = str(raw_target or "")
+            # 空刀（廉价磋商板子）：见 _EMPTY_KNIFE_TOKENS 注释
+            if (
+                self._action_type == "night"
+                and _empty_knife_allowed()
+                and (not result.get("target") or result["target"] in _EMPTY_KNIFE_TOKENS)
+            ):
+                result["target"] = ""
+                return result
             if obs is not None and result.get("target"):
-                target_text = f"{result['target']}\n{json.dumps(data, ensure_ascii=False)}"
-                legal_target = self._extract_named_legal_target(target_text, obs)
+                legal_target = self._extract_named_legal_target(str(result["target"]), obs)
                 result["target"] = legal_target
             result["reasoning"] = str(data.get("reasoning") or data.get("reason") or "")
         return result
@@ -1422,6 +1454,9 @@ class AgentLoop:
                 return None
             return {"speech": cleaned[:500], "reasoning": "model_freeform_speech"}
 
+        if self._action_type == "night" and _empty_knife_allowed() and "空刀" in text:
+            reasoning = self._strip_format_noise(text)
+            return {"target": "", "reasoning": reasoning[:300] or "model_freeform_empty_knife"}
         target = self._extract_named_legal_target(text, obs)
         if not target:
             return None

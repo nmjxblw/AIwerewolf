@@ -129,7 +129,7 @@ class BeliefTracker:
             etype = e.get("type", "")
             payload = e.get("payload", {}) or {}
             day = e.get("day", 0)
-            actor_id = e.get("actor_id", "")
+            actor_id = payload.get("actor_id", e.get("actor_id", ""))
             actor = _find_player(view, actor_id)
 
             if etype == "CHAT_MESSAGE":
@@ -177,7 +177,7 @@ class BeliefTracker:
         for e in view.public_events:
             if e.get("type") == "VOTE_CAST" and e.get("day") == view.day:
                 payload = e.get("payload", {}) or {}
-                voter_id = e.get("actor_id", "")
+                voter_id = payload.get("voter_id", payload.get("actor_id", ""))
                 target_id = payload.get("target_id", "")
                 day = e.get("day", view.day)
                 vote_key = (voter_id, target_id, day)
@@ -370,10 +370,10 @@ def observe(view: Any, role: str, tracker: Optional[BeliefTracker] = None) -> Ob
     for e in view.public_events:
         if e.get("type") == "CHAT_MESSAGE" and e.get("day") == view.day:
             payload = e.get("payload", {}) or {}
-            actor = _find_player(view, e.get("actor_id", ""))
+            actor = _find_player(view, payload.get("actor_id", ""))
             obs.speeches.append(
                 SpeechInfo(
-                    player_id=e.get("actor_id", ""),
+                    player_id=payload.get("actor_id", ""),
                     player_name=actor.get("name", ""),
                     seat=actor.get("seat", 0),
                     content=payload.get("speech", ""),
@@ -382,11 +382,11 @@ def observe(view: Any, role: str, tracker: Optional[BeliefTracker] = None) -> Ob
 
         elif e.get("type") == "VOTE_CAST" and e.get("day") == view.day:
             payload = e.get("payload", {}) or {}
-            voter = _find_player(view, e.get("actor_id", ""))
+            voter = _find_player(view, payload.get("voter_id", payload.get("actor_id", "")))
             target = _find_player(view, payload.get("target_id", ""))
             obs.votes.append(
                 VoteInfo(
-                    voter_id=e.get("actor_id", ""),
+                    voter_id=payload.get("voter_id", payload.get("actor_id", "")),
                     voter_name=voter.get("name", ""),
                     target_id=payload.get("target_id", ""),
                     target_name=target.get("name", ""),

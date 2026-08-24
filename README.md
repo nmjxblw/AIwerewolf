@@ -1,197 +1,150 @@
-# AI Werewolf
+# AI Werewolf — 廉价磋商（Cheap Talk）研究框架
 
-<p align="center">
-  <img src="docs/assets/ai-werewolf-icon.svg" alt="AI Werewolf logo" width="112">
-</p>
+7 人局狼人杀多智能体实验平台，当前研究方向：**第一天白天 cheap talk 战术
+（狼人悍跳 / 平民挡刀 / 预言家隐藏）对票型与阵营胜率的影响**。
+LLM 仅作为对局工具（理性功利、同质人格），所有对局导出完整文本供复盘分析。
 
-<p align="center">
-  <strong>面向狼人杀博弈的多智能体认知决策与自进化系统</strong><br>
-  Play complete games, evaluate every decision, and evolve reusable strategy knowledge.
-</p>
+> **旧研究已归档**：论文复现/制度实验（A/B/C/P/P2/C2/Z 系列）的全部数据、
+> 报告与脚本已移出本仓库，完整备份在 `../AIwere_old/`。
+> 当前研究方向与规则的权威描述：`w.txt`（项目对齐文档，桌面）。
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/python-3.12+-blue" alt="Python">
-  <img src="https://img.shields.io/badge/db-PostgreSQL%2016-336791?logo=postgresql" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/frontend-Next.js%2016-black?logo=next.js" alt="Next.js">
-</p>
+---
 
-## 项目定位
+## 1. 当前研究的板子与规则（w.txt 对齐）
 
-面向狼人杀博弈的多智能体认知决策与自进化系统。项目围绕规则引擎、信息隔离、Agent 决策、赛后评测和策略知识回流构建，将复杂对局拆成可验证、可复盘、可迭代的工程模块。
+- **板子**：7 人 = 2 狼人 + 2 平民 + 1 预言家 + 1 女巫 + 1 守卫（无猎人）
+- **夜序**：狼队私聊（归票）→ 狼队投票 → 预言家查验 → 女巫用药 →
+  守卫守护 → 结算（**同守同救 = 死亡**）
+- **白天**：公布死者（不公开身份）→ 顺序发言每人一次 → 同时投票、
+  票型公开 → 平票随机决；无警徽、无遗言
+- **胜负**：狼全灭 = 好人胜；狼数 ≥ 存活半数 / 平民全灭 / 神职全灭 = 狼胜
+- **性格**：全员理性功利、同质（同一 ISTJ 分析型人格，仅名字不同）
+- **战术注入**：按角色写入 system prompt（环境变量），baseline 组用
+  反战术条款压制一切跳/悍跳/挡刀/空刀/自刀
 
-主线能力：
+## 2. 快速开始
 
-| 主线 | 项目实现 |
-|---|---|
-| Play | `WerewolfGame` 负责 7-12 人对局、昼夜阶段、警徽、PK、遗言、猎人开枪、白狼王自爆和真人混战 |
-| Evaluate | Track B 基于对局事件和 Agent 决策生成逐步复盘、`PublishedReview`、运行指标和 leaderboard |
-| Evolve | Track C 抽取策略知识，维护 `candidate -> active -> deprecated` 生命周期，并通过 `StrategyRetriever` 回流下一局 Agent |
-| Interaction | Next.js 前端提供大厅、观战、真人操作、人格配置、单局复盘和统计看板 |
+### 环境要求
 
-工程架构说明见 [`docs/ENGINEERING_ARCHITECTURE.md`](docs/ENGINEERING_ARCHITECTURE.md)，核心模块说明见 [`docs/PROJECT_MODULE_DESIGN.md`](docs/PROJECT_MODULE_DESIGN.md)。
+- Windows（Git Bash）/ Linux，Python 3.12+（仓库自带 `.venv`，Windows 下用
+  `./.venv/Scripts/python.exe`）
+- DeepSeek API key（当前唯一在用渠道：`deepseek-v4-flash`，约 **¥0.11/局**）
 
-## 系统架构
+### 配置密钥
 
-系统按“前端体验 -> API 编排 -> 规则引擎 -> Agent 决策 -> 复盘评测 -> 策略进化 -> 数据持久化”组织。前端只负责展示和交互，游戏真相、行动校验、阶段推进和私有信息过滤都在后端完成；Agent 只通过 `PlayerView` 观察局面，并以结构化 `Decision` 表达意图。
+```bash
+cp .env.example .env   # 首次使用
+# 编辑 .env，填入：
+#   DEEPSEEK_API_KEY=sk-xxx
+#   LLM_PROVIDER=deepseek
+#   DEEPSEEK_BASE_URL=https://api.deepseek.com
+#   DEEPSEEK_MODEL=deepseek-v4-flash
+```
 
-设计原则：
+注意：`.env` 含密钥，已在 `.gitignore` 中，**不要提交、不要外传**。
 
-| 原则 | 工程体现 |
-|---|---|
-| 规则由引擎主控 | Agent 只提交 `Decision`，状态推进、行动校验和结算都由 `WerewolfGame` 完成 |
-| 信息隔离在后端完成 | `GameState` 投影为 `PlayerView` 和 public snapshot，前端只渲染后端给出的视图 |
-| Agent 行为可组合 | Persona、Role、Strategy 三层 Prompt 配合 Memory、BeliefTracker、SocialModel 和工具调用 |
-| 复盘证据可追溯 | `GameEvent`、`AgentDecision`、`PublishedReview` 和策略知识形成可回放证据链 |
-| 策略迭代有生命周期 | Track C 新策略先进入候选池，赛后自动门禁和批处理治理会将高质量候选晋级为 active，并把未达门禁、过期或超量候选归档为 deprecated |
+### 三个脚本跑通全部实验
 
-## 已实现内容
+```bash
+# 0) 无 API 验证框架（必跑，几秒钟）
+./.venv/Scripts/python.exe scripts/smoke_cheap_talk.py
 
-| 方向 | 已实现能力 |
-|---|---|
-| 对局能力 | 7-12 人狼人杀配置、昼夜流程、警徽竞选、PK、遗言、猎人开枪、白狼王自爆、真人混战 |
-| Agent 能力 | 角色化 `CognitiveAgent`、人格配置、记忆、社交模型、工具调用、策略检索和多模型 provider 接入 |
-| 复盘能力 | Track B 逐决策质量评估、复盘报告、关键决策展示、leaderboard 和统计看板 |
-| 进化能力 | Track C 策略知识抽取、candidate/active/deprecated 生命周期、策略检索回流 |
-| 前端能力 | 大厅、对局观战、真人操作、单局复盘、统计看板、人格配置页 |
-| 工程能力 | FastAPI REST/WebSocket、SQLAlchemy 持久化、配置化规则、严格信息隔离验证 |
+# 1) 跑实验组（B/WJ/VJ/SQ 四个条件）
+./.venv/Scripts/python.exe scripts/run_cheap_talk_experiments.py --group B  --start-seed 101 --games 10
+./.venv/Scripts/python.exe scripts/run_cheap_talk_experiments.py --group WJ --start-seed 201 --games 2
+./.venv/Scripts/python.exe scripts/run_cheap_talk_experiments.py --group VJ --start-seed 301 --games 2
+./.venv/Scripts/python.exe scripts/run_cheap_talk_experiments.py --group SQ --start-seed 401 --games 2
 
-核心模块设计详见 [`docs/PROJECT_MODULE_DESIGN.md`](docs/PROJECT_MODULE_DESIGN.md)，覆盖对局引擎、信息隔离、CognitiveAgent、AgentLoop、StrategyRetriever、PostgreSQL 证据链、PerStepScorer、Track C 知识层和前端控制台。
+# 2) 汇总分析（票型/假跳/预言家存活/成本）
+./.venv/Scripts/python.exe scripts/analyze_cheap_talk.py
+```
 
-## Track B：复盘评测
+runner 自动清理 zen/公益站时期的环境开关、关闭局后反思（省 7 次调用/局）、
+按组设置战术注入；带余额熔断（疑似 402 停跑，余额以**前后差额**核算，
+接口单次读数会抖动）。同一 seed 重跑会覆盖旧文件，扩样直接接着现有种子往后编。
 
-入口：`backend/eval/per_step_scorer.py`, `backend/eval/track_b.py`
+### 实验组定义（战术条件）
 
-Track B 的目标是把“谁赢了”拆解成“每一步如何影响局势”。系统会读取对局事件、Agent 决策、发言、投票和技能使用记录，生成逐步质量评估、关键决策、复盘报告和 leaderboard。
-
-核心输出：
-
-| 输出 | 作用 |
-|---|---|
-| 逐决策质量评估 | 评价发言、投票、技能、时机和影响 |
-| PublishedReview | 生成单局复盘报告和前端可展示材料 |
-| Leaderboard | 按模型、Agent 版本、角色和行为维度聚合表现 |
-| 决策证据链 | 将复盘结论追溯到具体事件和 Agent 输出 |
-
-## Track C：策略进化
-
-入口：`backend/eval/knowledge_abstractor.py`, `backend/agents/cognitive/retrieval_prod.py`
-
-Track C 的目标是将复盘经验沉淀为可检索策略，并回流到下一局 Agent。系统从 Track B 的高价值片段和改进点中抽取策略知识，先进入 candidate 池，再通过质量、聚类和使用反馈晋级为 active，最后由 `StrategyRetriever` 按角色、阶段和适用条件完成检索。
-
-当前默认检索策略为 `same_role_all_mbti`，即先限定当前角色的 active 策略池，再按关键词、阶段、动作类型和质量分进行上下文重排。`hybrid_role_mbti_global` 保留为可选分层兜底策略，不作为当前最高精度默认口径。
-
-检索精度已经单独评估：在 26 条离线弱标注 query set、374 条 active strategy docs 上，优化后的 `same_role_all_mbti` 达到 P@3=1.0000、Effective@3=1.0000、nDCG@5=0.9885、Coverage=1.0000；对照 `global_only` 为 P@3=0.5385、Effective@3=0.5385。来源：`outputs/retrieval_precision_after_high_precision_default_final/results.json`（local-only ignored）。该指标证明系统已实现并量化策略检索精度，但不等同于胜率或 Track C 因果增益。
-
-运行时 Track C 仍有决策质量侧证据：6 个固定单 Agent 场景的火山 v4flash 轻量 A/B 中，`same_role_all_mbti` 综合质量 8.13，相比无检索 7.33 提升 +0.80。来源：`outputs/single_agent_retrieval_llm_ablation/summary.md`（local-only ignored）。
-
-## Track C 生命周期
-
-Track C 的策略知识分两层触发：
-
-| 层级 | 触发方式 | 作用 |
+| 组 | 条件 | 战术注入要点 |
 |---|---|---|
-| 赛后自动门禁 | 每局结束后由 `run_post_game_scoring()` 调用 `promote_after_store(source_game_id=game_id)` | 只处理本局新知识，按质量、聚类和使用反馈把候选晋级为 active，并做轻量归档 |
-| 批处理治理 | 本地治理脚本或数据库维护任务 | 对全库执行质量晋级、反馈晋级、active 池剪枝、candidate 池上限治理和未达门禁归档 |
+| `B` | baseline | 全员禁战术；预言家必须如实报查验 |
+| `WJ` | 狼人悍跳 | 前置位（1–4 号）率先起跳；后置位（5–7 号）对跳/起身悍跳；开放空刀/自刀 |
+| `VJ` | 平民挡刀 | 前置位假跳预言家吸引狼刀；后置位视情况配合 |
+| `SQ` | 预言家隐藏 | 不公布身份与查验，扮平民发言 |
 
-生产 Agent 的策略检索只加载 `active` 策略。`candidate` 是候选知识池，不直接进入下一局 Prompt；批处理治理限制候选堆积，未达门禁、过期或超量候选进入 `deprecated`。
+战术文本全部在 `scripts/run_cheap_talk_experiments.py` 的 `GROUPS` 字典里，
+改措辞/加条件组直接编辑该文件（战术 = `AIWEREWOLF_TACTIC_<ROLE>` 环境变量，
+夜刀合法性 = `engine_kwargs`）。
 
-初始策略种子在 `configs/seed_strategies.json`（386 条 active 策略，覆盖 14 个角色），首次启动时加载即可获得基线策略能力。
+## 3. 每局产出（研究核心资产）
 
-## 快速开始
+对局写入 `experiments/ct_<组名>/`，每局三件套：
 
-### 方式一：Docker 一键启动
+| 文件 | 内容 |
+|---|---|
+| `game_seed<N>_transcript.md` | **全量对局文本**：座位角色表、狼队私聊原文、每人发言全文 + 内心理由、每张票的目标与理由、夜行动、死亡与胜负 |
+| `game_seed<N>_events.json` | 主持人视角原始事件（含全部私密信息与 `visible_to` 可见性），任何统计可从它重算 |
+| `game_seed<N>_result.json` | 单局摘要：胜者、票型、假跳数、token 成本等 |
+
+另有 `experiments/summary_ct_<组>.json`（组汇总）与 `ct_analysis.md`（跨组对比）。
+**当前成果与结论见 `experiments/CT_CHEAP_TALK_REPORT.md`**（首篇工作记录，
+含 B×10 + 战术组×2 的全部数据、"平民挡刀反噬真预言家"的票型证据、成本实况）。
+
+## 4. 代码结构（改动后）
+
+```
+backend/
+  engine/
+    rules.py          # CT_ROLES_7P 新板子角色组（2狼2民1预言家1女巫1守卫）
+    phases.py         # 新夜序：狼→预言家→女巫→守卫→结算
+    game.py           # 狼队夜间私聊轮、空刀/自刀旗标、同守同救奶穿、屠边胜负
+    actions.py        # validator：空刀/自刀合法性门（刀队友永远非法）
+    visibility.py     # 自刀开启时狼自身进入夜刀合法目标
+    transcript.py     # 全量对局文本导出（新）
+    honesty.py        # 诚实规则开关（诚实 vs 非诚实对照实验用，新）
+  agents/cognitive/
+    agent.py          # wolf_chat() 夜间私聊；attack() 空刀透传
+    agent_loop.py     # 空刀 token 解析（submit_decision/JSON/freeform 三处）
+    prompts.py        # AIWEREWOLF_TACTIC_<ROLE> 按角色战术注入
+scripts/
+  smoke_cheap_talk.py            # 离线冒烟（无 API）
+  run_cheap_talk_experiments.py  # 实验组 runner（B/WJ/VJ/SQ + 熔断）
+  analyze_cheap_talk.py          # 汇总分析
+  e2e_smoke.py / run_backend_full_strict.py / verify_visibility_strict.py  # 平台校验（make 用）
+tests/   # 9 个核心测试文件：引擎/制度开关/认知离线/提示词分层/角色注册等
+configs/ # strategy_library 等（cognitive 检索链路引用，保留）
+```
+
+## 5. 测试与验证
 
 ```bash
-cp .env.example .env
-# 编辑 .env 填入 LLM_PROVIDER 和 API Key
-docker compose up -d
+# 全部测试（195 项，离线，无 API 消耗）
+./.venv/Scripts/python.exe -m pytest tests/ -q
+
+# 新机制冒烟：validator 空刀/自刀门、自刀合法目标、夜序、狼私聊、transcript
+./.venv/Scripts/python.exe scripts/smoke_cheap_talk.py
 ```
 
-后端 `http://localhost:8000/docs`，前端 `http://localhost:3001`。
+引擎旧能力（警徽/PK/猎人/白狼王/12人局等）仍在，当前实验通过
+`disable_badge=True / disable_last_words=True / random_tiebreak=True`
+关闭它们对齐 w.txt 规则；新板子不带猎人是角色组决定的。
 
-### 方式二：手动安装
+## 6. 下一步实验计划（详见 CT_CHEAP_TALK_REPORT.md §7）
 
-```bash
-cp .env.example .env
-python3.12 -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-make dev                              # 后端 http://localhost:8000/docs
-```
+1. B 与 VJ 各扩到 30 局，验证"挡刀反噬"的稳定性（¥0.11/局，预算约 ¥6.6）
+2. 诚实规则对照：复用 `honesty_rule` 开关（挡刀/悍跳发言会被系统驳回）
+3. 收益矩阵：以 B 为基线量化各战术胜率增量与第一天票型流向
+4. 夜战术显形：空刀/自刀需更强措辞或固定脚本夜
 
-```bash
-cd frontend
-npm install --legacy-peer-deps
-npm run dev                           # 前端 http://localhost:3001
-```
+## 7. 遗留系统（与当前研究并行可用）
 
-`.env.example` 默认不设置 `DATABASE_URL`，后端会使用 SQLite 本地模式；如需本地 PostgreSQL，先运行 `make db-up`，再取消 `.env` 中 `DATABASE_URL` 示例行的注释。
-
-## Demo 路线
-
-| 入口 | 路由 | 展示内容 |
-|---|---|---|
-| API 文档 | `http://localhost:8000/docs` | 后端接口、房间、对局、复盘、策略知识 API |
-| 大厅 | `http://localhost:3001/` | 创建房间、选择 AI/Human 席位、进入对局 |
-| 对局观战 | `/room/[id]/play` | 阶段流转、玩家状态、发言、投票、事件流、观众视角 |
-| 真人操作 | `/room/[id]/human` | 真人玩家身份视图、目标选择、行动提交 |
-| 单局复盘 | `/games/[id]/report` | PublishedReview、关键决策、证据链和回放信息 |
-| 统计看板 | `/eval/dashboard` | 多局统计、leaderboard、角色与策略对比 |
-| 人格配置 | `/personas` | MBTI 人格与 Agent 行为参数 |
-
-## 技术栈
-
-| 层 | 技术 |
-|---|---|
-| 后端服务 | Python 3.12+ / FastAPI / WebSocket |
-| 游戏引擎 | dataclass + Enum 纯逻辑规则引擎 |
-| Agent | `CognitiveAgent` / AgentLoop / Memory / SocialModel / StrategyRetriever |
-| LLM 接入 | `backend.llm.create_client()` |
-| 数据库 | SQLAlchemy；PostgreSQL 优先，支持 SQLite 本地模式 |
-| 前端 | Next.js 16 / React 18 / TypeScript / Tailwind CSS |
-
-## 项目结构
-
-```text
-AIwerewolf/
-├── backend/
-│   ├── app.py                 # FastAPI / REST / WebSocket
-│   ├── engine/                # WerewolfGame、规则、阶段、信息隔离
-│   ├── agents/cognitive/      # CognitiveAgent、AgentLoop、Memory、Retriever
-│   ├── eval/                  # Track B/C 复盘评测与知识进化
-│   ├── db/                    # SQLAlchemy models 和持久化
-│   └── protocols/             # Room schema 和 RoomManager
-├── frontend/
-│   ├── app/                   # Next.js App Router 页面
-│   ├── components/            # UI 和 game 组件
-│   ├── hooks/                 # 对局流和真人操作 hooks
-│   └── types/                 # 后端契约 TS 镜像
-├── configs/                   # 规则、策略和实验配置
-├── docs/                      # 架构、模块、需求和参考文档
-└── docs/assets/               # README logo 等轻量项目介绍资产
-```
-
-## 仓库内容
-
-| 内容 | 当前位置 |
-|---|---|
-| 代码仓库 | `backend/`, `frontend/`, `configs/`, `scripts/`, `tests/` |
-| 产品原型 | Next.js 前端：大厅、观战、真人操作、复盘、人格配置 |
-| Demo 链接 | 本地后端 `http://localhost:8000/docs`，本地前端 `http://localhost:3001` |
-| 项目介绍文档 | `docs/FINAL_SHOWCASE_REPORT.md`, `docs/ENGINEERING_ARCHITECTURE.md`, `docs/PROJECT_MODULE_DESIGN.md`, `docs/prd.md` |
-| 轻量展示资产 | `docs/assets/ai-werewolf-icon.svg` |
-
-## 文档导航
-
-| 文档 | 说明 |
-|---|---|
-| [`docs/README.md`](docs/README.md) | 文档阅读顺序和归档说明 |
-| [`docs/FINAL_SHOWCASE_REPORT.md`](docs/FINAL_SHOWCASE_REPORT.md) | GitHub 粗略展示报告和核心量化概览 |
-| [`docs/ENGINEERING_ARCHITECTURE.md`](docs/ENGINEERING_ARCHITECTURE.md) | 分层架构、运行时序、信息隔离、数据闭环和 Track C 生命周期说明 |
-| [`docs/PROJECT_MODULE_DESIGN.md`](docs/PROJECT_MODULE_DESIGN.md) | 核心模块设计与实现说明 |
-| [`docs/prd.md`](docs/prd.md) | 需求和系统设计目标 |
+- FastAPI 后端（`backend/app.py`）+ Next.js 前端（`frontend/`）：可玩对局、
+  观战、真人混战，`make deploy` 一键起
+- Docker 部署：`docker-compose.yml`（PostgreSQL 可选，当前实验链路不依赖 DB）
+- 多渠道 LLM 支持：deepseek / doubao / anthropic / weapi（`backend/llm/`），
+  MODEL_POOL 可混编多模型
+- Makefile：`make test / make lint / make deploy`（详见 Makefile）
 
 ## License
 
-MIT © 2026 wxhfy
+MIT

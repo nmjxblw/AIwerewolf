@@ -9,6 +9,7 @@ No LLM calls, no game logic — pure string construction.
 
 from __future__ import annotations
 
+import os
 from typing import Optional
 
 from backend.agents.cognitive.memory import Memory
@@ -56,6 +57,32 @@ def build_game_context(obs: Observation) -> str:
     lines.append("【规则摘要】")
     lines.append("投票放逐狼人。预言家每晚查验一人。女巫有解药+毒药各一。")
     lines.append("猎人死亡可开枪。守卫每晚守护一人（不能连守）。")
+    # Rule clarification (not strategy guidance): dead players' roles are hidden.
+    # LLMs otherwise hallucinate roles from training-data variants with reveals.
+    lines.append("出局玩家（夜晚被刀或白天被放逐）的身份不会公开，死亡公告不含身份信息；")
+    lines.append("不要假设已知任何死者的身份，只能通过存活玩家的发言与投票推断。")
+
+    # Experiment institution announcement (report §8.4): rule statements only,
+    # no strategy guidance. Lines are "|" separated; set/cleared per experiment
+    # group by scripts/run_experiments.py before agents are created.
+    rule_addendum = os.getenv("AIWEREWOLF_RULE_ADDENDUM", "").strip()
+    if rule_addendum:
+        for extra_line in rule_addendum.split("|"):
+            if extra_line.strip():
+                lines.append(extra_line.strip())
+
+    # 廉价磋商研究（w.txt）：按角色注入的战术指令（实验条件）。
+    # 环境变量 AIWEREWOLF_TACTIC_<ROLE>（如 AIWEREWOLF_TACTIC_WEREWOLF），
+    # 仅进入该角色玩家的所有 prompt（发言/投票/夜行动）。
+    # "|" 分行；由 scripts/run_cheap_talk_experiments.py 按组设置/清除。
+    tactic_key = f"AIWEREWOLF_TACTIC_{str(obs.player_role or '').strip().upper()}"
+    tactic_text = os.getenv(tactic_key, "").strip()
+    if tactic_text:
+        lines.append("")
+        lines.append("【本局战术指令（实验条件，按你的角色下发）】")
+        for tactic_line in tactic_text.split("|"):
+            if tactic_line.strip():
+                lines.append(tactic_line.strip())
 
     return "\n".join(lines)
 

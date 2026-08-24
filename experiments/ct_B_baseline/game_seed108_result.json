@@ -1,0 +1,44 @@
+{
+  "label": "B",
+  "seed": 108,
+  "winner": "village",
+  "end_reason": "all_wolves_dead",
+  "days": 3,
+  "elapsed": 53.8,
+  "day1_vote_pattern": {
+    "1号:陈衡": 1,
+    "2号:周慎": 1,
+    "4号:沈度": 2,
+    "7号:魏一": 3
+  },
+  "day1_pattern_detail": {
+    "2号:周慎": [
+      "1号:陈衡"
+    ],
+    "1号:陈衡": [
+      "2号:周慎"
+    ],
+    "7号:魏一": [
+      "3号:林笃",
+      "4号:沈度",
+      "6号:苏正"
+    ],
+    "4号:沈度": [
+      "5号:韩朴",
+      "7号:魏一"
+    ]
+  },
+  "day1_seer_claims": [
+    "1号:陈衡(真预言家)"
+  ],
+  "day1_nonseer_claims": 0,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 2,
+  "llm_calls": 44,
+  "prompt_tokens": 120880,
+  "completion_tokens": 7827,
+  "seer_alive": false
+}

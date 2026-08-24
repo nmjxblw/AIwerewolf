@@ -1,0 +1,53 @@
+{
+  "label": "B",
+  "n_games": 1,
+  "village_wins": 0,
+  "wolf_wins": 1,
+  "errors": 0,
+  "village_win_rate": "0/1",
+  "avg_days": 3.0,
+  "total_llm_calls": 38,
+  "total_tokens": 107159,
+  "quota_aborted": false,
+  "games": [
+    {
+      "label": "B",
+      "seed": 111,
+      "winner": "wolf",
+      "end_reason": "all_villagers_dead",
+      "days": 3,
+      "elapsed": 44.5,
+      "day1_vote_pattern": {
+        "1号:陈衡": 3,
+        "3号:林笃": 1,
+        "6号:苏正": 3
+      },
+      "day1_pattern_detail": {
+        "3号:林笃": [
+          "1号:陈衡"
+        ],
+        "6号:苏正": [
+          "2号:周慎",
+          "4号:沈度",
+          "5号:韩朴"
+        ],
+        "1号:陈衡": [
+          "3号:林笃",
+          "6号:苏正",
+          "7号:魏一"
+        ]
+      },
+      "day1_seer_claims": [],
+      "day1_nonseer_claims": 0,
+      "empty_knife_nights": 0,
+      "self_knife_nights": 0,
+      "witch_save_used": 1,
+      "witch_poison_used": 0,
+      "wolf_chat_messages": 2,
+      "llm_calls": 38,
+      "prompt_tokens": 101085,
+      "completion_tokens": 6074,
+      "seer_alive": false
+    }
+  ]
+}

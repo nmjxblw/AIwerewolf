@@ -77,7 +77,11 @@ class Visibility:
         elif state.phase == Phase.DAY_VOTE and state.pk_targets:
             target_ids = set(state.pk_targets)
         elif state.phase == Phase.NIGHT_WOLF_ACTION:
+            # 廉价磋商板子：自刀选项开启时，狼人自己也进入合法目标
             target_ids = {target.id for target in state.alive_players if target.alignment != Alignment.WOLF}
+            if state.board_options.get("wolf_self_knife"):
+                target_ids.add(player.id)
+                include_self = True
         elif state.phase in {
             Phase.DAY_VOTE,
             Phase.NIGHT_SEER_ACTION,

@@ -295,6 +295,11 @@ class GameState:
     phase_done: dict[int, list[str]] = field(default_factory=dict)
     winner: Alignment | None = None
     max_days: int = 20
+    # 廉价磋商研究板子的夜规则开关（由 WerewolfGame.__init__ 注入）：
+    # wolf_self_knife  — 允许狼人自刀（骗女巫解药战术）
+    # wolf_empty_knife — 允许狼人空刀（平安夜假象战术）
+    # wolf_night_chat  — 夜晚狼队文本私聊（归票）开关
+    board_options: dict[str, Any] = field(default_factory=dict)
 
     @property
     def alive_players(self) -> list[Player]:

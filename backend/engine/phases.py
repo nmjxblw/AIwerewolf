@@ -47,10 +47,13 @@ def default_phase_handlers() -> dict[Phase, PhaseHandler]:
         phase=Phase.NIGHT_START,
         steps=(
             AtomicPhase(Phase.NIGHT_START, "_begin_night"),
-            # Guard + Wolf + Seer run in parallel via ThreadPoolExecutor.
-            # Witch depends on wolf_target_id so runs sequentially after.
-            AtomicPhase(Phase.NIGHT_GUARD_ACTION, "_night_role_actions_parallel"),
+            # 廉价磋商板子夜序（w.txt）：狼人私聊+投票 → 预言家 → 女巫 → 守卫
+            # → 结算（同守同救=死）。狼人/预言家顺序执行（phase 竞态见
+            # _night_role_actions_parallel 注释），女巫依赖 wolf_target_id，
+            # 守卫最后行动且不知道刀口。
+            AtomicPhase(Phase.NIGHT_WOLF_ACTION, "_night_role_actions_parallel"),
             AtomicPhase(Phase.NIGHT_WITCH_ACTION, "_witch_phase"),
+            AtomicPhase(Phase.NIGHT_GUARD_ACTION, "_guard_phase"),
             AtomicPhase(Phase.NIGHT_RESOLVE, "_night_resolve"),
         ),
     )

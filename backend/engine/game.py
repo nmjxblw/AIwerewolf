@@ -32,6 +32,7 @@ from backend.agents.base import Agent
 from backend.agents.characters import build_character_roster
 from backend.agents.factory import create_agents
 from backend.engine.actions import ActionValidator
+from backend.engine.honesty import detect_fake_seer_claim
 from backend.engine.models import ActionType
 from backend.engine.models import Alignment
 from backend.engine.models import Decision
@@ -198,6 +199,21 @@ class WerewolfGame:
         seed: int | None = None,
         max_days: int = 20,
         player_count: int = 10,
+        kill_side_win: bool = True,
+        disable_speech: bool = False,
+        full_elimination: bool = False,
+        random_tiebreak: bool = False,
+        disable_badge: bool = False,
+        disable_last_words: bool = False,
+        random_vote_device: bool = False,
+        honesty_rule: bool = False,
+        # 廉价磋商研究板子（w.txt）夜规则开关：
+        # wolf_self_knife  — 允许狼人自刀（骗解药战术）
+        # wolf_empty_knife — 允许狼人空刀（平安夜假象战术）
+        # wolf_night_chat  — 夜晚狼队文本私聊（归票）轮
+        wolf_self_knife: bool = False,
+        wolf_empty_knife: bool = False,
+        wolf_night_chat: bool = True,
         observer: Callable[[GameState], None] | None = None,
         strategy_version: str | None = None,
         strategy_bias: dict[str, list[str]] | None = None,
@@ -233,6 +249,48 @@ class WerewolfGame:
         self.human_action_buffer: dict[str, list[Decision]] = {}
         self.interrupt_phase_cycle = False
         self.phase_delay_ms = phase_delay_ms
+        self.kill_side_win = kill_side_win
+        self.disable_speech = disable_speech
+        # Paper-aligned rule switches (arXiv:2408.17177): full elimination
+        # (屠城), random tie-break instead of PK revote, no sheriff badge,
+        # no last words.
+        self.full_elimination = full_elimination
+        self.random_tiebreak = random_tiebreak
+        self.disable_badge = disable_badge
+        self.disable_last_words = disable_last_words
+        # Report §8.4 attribution experiments:
+        # random_vote_device — institutionalise the paper's modulo mechanism:
+        # the day exile target is designated uniformly at random among all
+        # alive players and every player must vote for it (outcome equals
+        # Monte-Carlo model A, "均匀随机处决").
+        # honesty_rule — paper §4.1 honesty rule approximation: non-seer
+        # players may not claim to be the seer or report check results; a
+        # violating speech is rejected and regenerated (bounded retries).
+        self.random_vote_device = random_vote_device
+        self.honesty_rule = honesty_rule
+        # 廉价磋商板子夜规则：写入 GameState 供 validator/visibility 读取，
+        # 并同步到环境变量供 prompt 层（cognitive agent attack()）读取。
+        self.wolf_self_knife = wolf_self_knife
+        self.wolf_empty_knife = wolf_empty_knife
+        self.wolf_night_chat = wolf_night_chat
+        self.state.board_options = {
+            "wolf_self_knife": wolf_self_knife,
+            "wolf_empty_knife": wolf_empty_knife,
+            "wolf_night_chat": wolf_night_chat,
+        }
+        _wolf_opts = [opt for opt, on in (("self", wolf_self_knife), ("empty", wolf_empty_knife)) if on]
+        os.environ["AIWEREWOLF_WOLF_NIGHT_OPTIONS"] = ",".join(_wolf_opts)
+        # Dedicated device stream: build_players' role shuffle and self.rng
+        # both seed Random(seed) — identical MT streams — so a pristine
+        # self.rng first draw is deterministically correlated with the role
+        # permutation (observed: wolves designated 5/30 vs uniform 10/30 on
+        # day 1). A string-derived seed keeps per-game reproducibility while
+        # decorrelating the device from role assignment.
+        self.device_rng = Random(f"random_vote_device:{seed}")
+        # Tie-break stream: same rationale — a pristine self.rng first draw
+        # would correlate with the role shuffle. Real games reach the tie-break
+        # with LLM-dependent history, but deterministic streams stay clean.
+        self.tiebreak_rng = Random(f"random_tiebreak:{seed}")
         self.persona_sampler = persona_sampler
         self.on_game_start = on_game_start
         self.on_game_end = on_game_end
@@ -453,6 +511,18 @@ class WerewolfGame:
                 "role_count": len(self.state.players),
             },
         )
+        if self.random_vote_device:
+            self._log(
+                EventType.SYSTEM_MESSAGE,
+                "public",
+                {"message": "【规则公告】本局白天放逐目标由公共随机装置（全员报数取模）指定，等价于均匀随机指定一名存活玩家；所有玩家必须按装置结果投票，装置结果对所有人生效。"},
+            )
+        if self.honesty_rule:
+            self._log(
+                EventType.SYSTEM_MESSAGE,
+                "public",
+                {"message": "【规则公告】本局启用诚实规则：只有真正的预言家可以在发言中声称预言家身份、公布查验结果或发放金水/查杀；其他玩家发言中不得自称或暗示自己是预言家/先知、不得声称自己查验过任何玩家、不得给任何人金水或查杀。违反诚实规则的发言将被系统当场驳回。"},
+            )
         for player in self.state.players:
             view = self.visibility.for_player(self.state, player.id)
             self.agents[player.id].initialize(
@@ -620,6 +690,14 @@ class WerewolfGame:
     def _badge_signup_phase(self) -> None:
         if self._phase_done(Phase.DAY_BADGE_SIGNUP):
             return
+        if self.disable_speech or self.disable_badge:
+            self.state.badge.candidates = []
+            self.state.badge.signup = {}
+            self.state.badge.votes = {}
+            self._mark_phase_done(Phase.DAY_BADGE_SIGNUP)
+            self._mark_phase_done(Phase.DAY_BADGE_SPEECH)
+            self._mark_phase_done(Phase.DAY_BADGE_ELECTION)
+            return
         if self.state.day != 1 or self.state.badge.holder_id is not None:
             # Badge campaign only happens on day 1 and only if no sheriff exists
             # yet. Wipe any residual state and short-circuit without emitting
@@ -762,20 +840,14 @@ class WerewolfGame:
         self._mark_phase_done(Phase.DAY_BADGE_ELECTION)
 
     def _night_role_actions_parallel(self) -> None:
-        """Run Guard + Wolf + Seer night actions in deterministic phase order.
+        """Run Wolf + Seer night actions in deterministic phase order (w.txt 夜序).
 
-        This function used to run guard/seer in background threads while wolf
-        actions ran on the main thread. That is unsafe because all three paths
-        mutate ``state.phase`` before building PlayerView; a wolf could observe
-        a seer/guard phase and receive the wrong legal target set. LLM-only
-        validation must fail on real model errors, not on local phase races.
+        廉价磋商板子夜序：狼人（私聊+投票）→ 预言家 → 女巫 → 守卫 → 结算。
+        守卫在女巫之后由 CompositePhase 步骤单独驱动（见 phases.py）；
+        本函数只负责狼人与预言家。历史上这里曾用后台线程并行 guard/seer，
+        因三个路径都会改写 ``state.phase`` 导致狼人观察到错误的合法目标集
+        而废弃 — 顺序执行是安全要求，不是性能选择。
         """
-        if not self._phase_done(Phase.NIGHT_GUARD_ACTION):
-            if self._alive_role(Role.GUARD):
-                self._clear_phase_done(Phase.NIGHT_GUARD_ACTION)
-                self._guard_phase()
-            else:
-                self._mark_phase_done(Phase.NIGHT_GUARD_ACTION)
         if not self._phase_done(Phase.NIGHT_WOLF_ACTION):
             self._wolf_phase()
         if not self._phase_done(Phase.NIGHT_SEER_ACTION):
@@ -839,6 +911,32 @@ class WerewolfGame:
             visible_to=wolf_ids,
         )
 
+        # 夜间狼队文本私聊（w.txt：狼人夜间私聊用于归票）。仅当 ≥2 狼存活
+        # 且开关开启时进行；私聊内容作为 PRIVATE_INFO 对狼队可见，并进入
+        # 后续投票决策的观察上下文。单狼存活时私聊无意义，跳过以省调用。
+        if self.wolf_night_chat and len(wolves) >= 2:
+            for wolf in self._seat_sorted(wolves):
+                if not callable(getattr(self.agents[wolf.id], "wolf_chat", None)):
+                    break
+                try:
+                    chat_decision = self._ask(wolf, "WOLF_CHAT", lambda agent: agent.wolf_chat())
+                except Exception:
+                    logger.warning("wolf_chat failed for %s; continuing to vote", wolf.name, exc_info=True)
+                    continue
+                if isinstance(chat_decision, Decision) and (chat_decision.speech or "").strip():
+                    self._log(
+                        EventType.PRIVATE_INFO,
+                        "private",
+                        {
+                            "kind": "wolf_chat_message",
+                            "actor_id": wolf.id,
+                            "actor_name": wolf.name,
+                            "message": f"{wolf.name}（私聊）：{chat_decision.speech.strip()}",
+                            "speech": chat_decision.speech.strip(),
+                        },
+                        visible_to=wolf_ids,
+                    )
+
         def handle(wolf: Player) -> None:
             if wolf.id in self.state.night_actions.wolf_votes:
                 return
@@ -890,18 +988,43 @@ class WerewolfGame:
             )
 
         self._run_actor_sequence(Phase.NIGHT_WOLF_ACTION, self._seat_sorted(wolves), handle)
-        if self.state.night_actions.wolf_votes:
+        # 计票：空刀票（target 为空）不参与具体目标多数；全部空刀 → 空刀
+        # （平安夜）。只要有具体目标票，就在具体目标中取多数（沿用确定性
+        # 平票字典序规则）。
+        actual_votes = {
+            voter_id: target_id
+            for voter_id, target_id in self.state.night_actions.wolf_votes.items()
+            if target_id
+        }
+        empty_votes = len(self.state.night_actions.wolf_votes) - len(actual_votes)
+        if actual_votes:
             with self._shared_lock:
-                self.state.night_actions.wolf_target_id = self._majority_target(self.state.night_actions.wolf_votes)
+                self.state.night_actions.wolf_target_id = self._majority_target(actual_votes)
             final_target = self.state.player(self.state.night_actions.wolf_target_id)
+            empty_note = f"（{empty_votes} 票空刀）" if empty_votes else ""
             self._log(
                 EventType.PRIVATE_INFO,
                 "private",
                 {
                     "kind": "wolf_attack_tally",
-                    "message": f"Wolf team final attack target is {final_target.name}.",
+                    "message": f"Wolf team final attack target is {final_target.name}.{empty_note}",
                     "target_id": final_target.id,
                     "target_name": final_target.name,
+                    "votes": dict(self.state.night_actions.wolf_votes),
+                },
+                visible_to=wolf_ids,
+            )
+        elif self.state.night_actions.wolf_votes:
+            with self._shared_lock:
+                self.state.night_actions.wolf_target_id = None
+            self._log(
+                EventType.PRIVATE_INFO,
+                "private",
+                {
+                    "kind": "wolf_attack_tally",
+                    "message": "狼队 unanimous 空刀：今晚不袭击任何人（空刀战术，制造平安夜）。",
+                    "target_id": None,
+                    "target_name": None,
                     "votes": dict(self.state.night_actions.wolf_votes),
                 },
                 visible_to=wolf_ids,
@@ -1087,6 +1210,9 @@ class WerewolfGame:
     def _speech_phase(self) -> None:
         if self._phase_done(Phase.DAY_SPEECH):
             return
+        if self.disable_speech:
+            self._mark_phase_done(Phase.DAY_SPEECH)
+            return
         self._set_phase(Phase.DAY_SPEECH)
 
         speakers = self._day_speech_order()
@@ -1106,6 +1232,10 @@ class WerewolfGame:
                         "talk decision must contain non-empty speech",
                     )
                 continue
+            if self.honesty_rule and player.role != Role.SEER:
+                decision = self._honesty_filter(player, decision)
+                if decision is None:
+                    continue
             self._emit_speech(player, decision, {})
             if self._maybe_white_wolf_king_boom(player):
                 return
@@ -1114,6 +1244,10 @@ class WerewolfGame:
     def _sheriff_closing_phase(self) -> None:
         """警长归票：警长总结发言并推荐投票目标."""
         if self._phase_done(Phase.DAY_SHERIFF_CLOSING):
+            return
+        if self.disable_speech:
+            self._mark_phase_done(Phase.DAY_SHERIFF_CLOSING)
+            return
             return
         sheriff_id = self.state.badge.holder_id
         if sheriff_id is None:
@@ -1144,6 +1278,8 @@ class WerewolfGame:
         self._mark_phase_done(Phase.DAY_SHERIFF_CLOSING)
 
     def _pk_speech_phase(self, target_ids: list[str]) -> None:
+        if self.disable_speech:
+            return
         self._set_phase(Phase.DAY_PK_SPEECH)
         pk_players = [self.state.player(player_id) for player_id in target_ids if self.state.player(player_id).alive]
         if not pk_players:
@@ -1176,6 +1312,44 @@ class WerewolfGame:
         allowed_targets = set(self.state.pk_targets) if self.state.pk_targets else None
         eligible_voters = self._eligible_day_voters()
         sorted_voters = self._seat_sorted(eligible_voters)
+        if not sorted_voters:
+            self._mark_phase_done(Phase.DAY_VOTE)
+            return
+
+        if self.random_vote_device:
+            # Institutionalised modulo mechanism (report §8.4 device
+            # experiment): the target is designated uniformly at random
+            # among ALL alive players and compliance is compulsory — a
+            # defector would be identified and exiled (paper §3), so in
+            # equilibrium everyone votes the designated target.
+            candidates = self._seat_sorted([p for p in self.state.alive_players])
+            designated = self.device_rng.choice(candidates)
+            self._log(
+                EventType.SYSTEM_MESSAGE,
+                "public",
+                {"message": f"随机投票装置（全员报数取模）指定 {designated.seat}号:{designated.name} 为今日放逐目标，全体玩家依装置结果投票。"},
+            )
+            for voter in sorted_voters:
+                self.state.votes[voter.id] = designated.id
+                self._log(
+                    EventType.VOTE_CAST,
+                    "public",
+                    {
+                        "voter_id": voter.id,
+                        "voter_name": voter.name,
+                        "target_id": designated.id,
+                        "target_name": designated.name,
+                        "reasoning": "服从随机投票装置的指定结果。",
+                        "agent_source": "random_device",
+                        "agent_model": "",
+                        "agent_provider": "",
+                        "agent_fallback": False,
+                        "vote_weight": self._vote_weight(voter.id),
+                        "is_pk_vote": bool(self.state.pk_targets),
+                    },
+                )
+            self._mark_phase_done(Phase.DAY_VOTE)
+            return
 
         # Parallel LLM execution for all votes (simultaneous voting is the
         # real game rule — each player decides independently).
@@ -1241,16 +1415,29 @@ class WerewolfGame:
         target_ids = self._top_targets(self.state.votes, weighted=True)
         if len(target_ids) > 1 and not self.state.pk_targets:
             self.state.day_history[self.state.day] = {"voteTie": True}
-            self.state.pk_targets = list(target_ids)
-            self.state.pk_source = "vote"
-            # Allow the PK round to re-run the speech + vote phases that we
-            # already marked done for the regular day flow.
-            self._clear_phase_done(Phase.DAY_PK_SPEECH, Phase.DAY_VOTE, Phase.DAY_RESOLVE)
-            self._pk_speech_phase(target_ids)
-            self.state.votes = {}
-            self._vote_phase()
-            self._day_resolve()
-            return
+            if self.random_tiebreak:
+                # Paper rule (arXiv:2408.17177): a tied vote eliminates one of
+                # the tied players uniformly at random — no PK revote.
+                chosen = self.tiebreak_rng.choice(sorted(target_ids))
+                chosen_player = self.state.player(chosen)
+                tied_names = ", ".join(self.state.player(tid).name for tid in sorted(target_ids))
+                self._log(
+                    EventType.SYSTEM_MESSAGE,
+                    "public",
+                    {"message": f"Vote tied among {tied_names}. Random tie-break eliminates {chosen_player.name}."},
+                )
+                target_ids = [chosen]
+            else:
+                self.state.pk_targets = list(target_ids)
+                self.state.pk_source = "vote"
+                # Allow the PK round to re-run the speech + vote phases that we
+                # already marked done for the regular day flow.
+                self._clear_phase_done(Phase.DAY_PK_SPEECH, Phase.DAY_VOTE, Phase.DAY_RESOLVE)
+                self._pk_speech_phase(target_ids)
+                self.state.votes = {}
+                self._vote_phase()
+                self._day_resolve()
+                return
         if len(target_ids) > 1 and self.state.pk_targets:
             self.state.day_history[self.state.day] = {"voteTie": True}
             self._log(
@@ -1353,6 +1540,8 @@ class WerewolfGame:
         self._refresh_day_summary()
 
     def _last_words_phase(self, player_id: str) -> None:
+        if self.disable_speech or self.disable_last_words:
+            return
         player = self.state.player(player_id)
         if not player.alive:
             return
@@ -1408,6 +1597,54 @@ class WerewolfGame:
         if isinstance(raw_segments, list):
             return any(str(segment).strip() for segment in raw_segments)
         return bool(str(decision.speech or "").strip())
+
+    HONESTY_MAX_RETRIES = 2
+
+    @staticmethod
+    def _speech_text(decision: Decision) -> str:
+        """Everything a talk decision would broadcast (mirrors _emit_speech)."""
+        parts = [str(decision.speech or "")]
+        raw_segments = decision.metadata.get("segments")
+        if isinstance(raw_segments, list):
+            parts.extend(str(segment) for segment in raw_segments)
+        return "\n".join(part for part in parts if part)
+
+    def _honesty_filter(self, player: Player, decision: Decision) -> Decision | None:
+        """Reject fake-seer-claim speeches from non-seer players (report §8.4).
+
+        Returns a compliant Decision (possibly the original), or None when the
+        speech could not be salvaged within HONESTY_MAX_RETRIES — the message
+        is then not broadcast, which is exactly what the paper's honesty rule
+        prescribes: the false statement simply cannot be conveyed.
+        """
+        violation = detect_fake_seer_claim(self._speech_text(decision))
+        retries = 0
+        while violation and retries < self.HONESTY_MAX_RETRIES:
+            retries += 1
+            self._log(
+                EventType.SYSTEM_MESSAGE,
+                "public",
+                {"message": f"{player.name} 的发言违反诚实规则（{violation}），系统驳回并要求重新发言（第{retries}次）。"},
+            )
+            notify = getattr(self.agents.get(player.id), "notify_speech_rejected", None)
+            if callable(notify):
+                notify(violation)
+            try:
+                decision = self._ask(player, "TALK", lambda agent: agent.talk())
+            except Exception:
+                logger.warning("honesty-rule retry failed for %s", player.name, exc_info=True)
+                return None
+            if not isinstance(decision, Decision) or not self._valid_talk_decision(decision):
+                return None
+            violation = detect_fake_seer_claim(self._speech_text(decision))
+        if violation:
+            self._log(
+                EventType.SYSTEM_MESSAGE,
+                "public",
+                {"message": f"{player.name} 的发言多次违反诚实规则，本回合发言被系统驳回（未播出）。"},
+            )
+            return None
+        return decision
 
     def _maybe_white_wolf_king_boom(self, player: Player) -> bool:
         if player.role != Role.WHITE_WOLF_KING or not player.alive or self.state.abilities.white_wolf_king_boom_used:
@@ -1625,6 +1862,8 @@ class WerewolfGame:
                 return results
 
         n = len(players)
+        if n == 0:
+            return []
 
         # ---- Phase 1: Pre-compute views (main thread, no I/O) ----
         views: list[dict] = []
@@ -1861,22 +2100,28 @@ class WerewolfGame:
         if not alive_wolves:
             winner = Alignment.VILLAGE
             reason = "all_wolves_dead"
+        # 屠城模式（论文规则）：狼人只有杀光所有好人阵营才获胜，
+        # 不在人数持平时提前结束
+        elif self.full_elimination:
+            if not alive_village:
+                winner = Alignment.WOLF
+                reason = "all_village_dead"
         # 狼人赢：屠城（人数平局或狼人更多）
         elif len(alive_wolves) >= len(alive_village):
             winner = Alignment.WOLF
             reason = "wolves_reached_parity"
-        # 狼人赢：屠边（所有神死 或 所有村民死）
-        else:
+        # 狼人赢：屠边（所有神死 或 所有村民死）— 可通过 kill_side_win 关闭
+        elif self.kill_side_win:
             # 区分神民和平民
             gods = [p for p in alive_village if p.role in {Role.SEER, Role.WITCH, Role.HUNTER, Role.GUARD, Role.IDIOT}]
             villagers = [p for p in alive_village if p.role == Role.VILLAGER]
 
             if not gods and villagers:
-                # 所有神出局，只剩村民 → 狼人屠边胜利
+                # 所有神出局，只剩村民 -> 狼人屠边胜利
                 winner = Alignment.WOLF
                 reason = "all_gods_dead"
             elif not villagers and gods:
-                # 所有村民出局，只剩神 → 狼人屠边胜利
+                # 所有村民出局，只剩神 -> 狼人屠边胜利
                 winner = Alignment.WOLF
                 reason = "all_villagers_dead"
 

@@ -1,0 +1,41 @@
+{
+  "label": "WJ",
+  "seed": 201,
+  "winner": "wolf",
+  "end_reason": "all_gods_dead",
+  "days": 3,
+  "elapsed": 48.3,
+  "day1_vote_pattern": {
+    "1号:陈衡": 6,
+    "7号:魏一": 1
+  },
+  "day1_pattern_detail": {
+    "7号:魏一": [
+      "1号:陈衡"
+    ],
+    "1号:陈衡": [
+      "2号:周慎",
+      "3号:林笃",
+      "4号:沈度",
+      "5号:韩朴",
+      "6号:苏正",
+      "7号:魏一"
+    ]
+  },
+  "day1_seer_claims": [
+    "1号:陈衡(真预言家)",
+    "2号:周慎(狼人)",
+    "2号:周慎(狼人)",
+    "7号:魏一(狼人)"
+  ],
+  "day1_nonseer_claims": 3,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 4,
+  "llm_calls": 39,
+  "prompt_tokens": 105565,
+  "completion_tokens": 6331,
+  "seer_alive": false
+}

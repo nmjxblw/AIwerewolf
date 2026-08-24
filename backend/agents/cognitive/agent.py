@@ -27,6 +27,7 @@ from typing import Any
 from langchain_core.runnables import Runnable
 
 from backend.agents.cognitive import trace_keys
+from backend.agents.cognitive.agent_loop import _EMPTY_KNIFE_TOKENS
 from backend.agents.cognitive.agent_loop import get_last_loop_trace
 from backend.agents.cognitive.humanization import build_humanization_profile
 from backend.agents.cognitive.memory import Memory
@@ -158,6 +159,10 @@ class CognitiveAgent:
         # Speech memory (anti-repeat)
         self._today_speech_count = 0
 
+        # Honesty-rule rejection note set by the engine between talk() calls
+        # (report §8.4): consumed and cleared at the start of the next talk().
+        self._speech_rejection_note: str = ""
+
         # Game tracking (for post-game reflection)
         self._game_id = ""
         self._turn_phase = ""  # Track phase changes for analysis cache invalidation
@@ -206,6 +211,10 @@ class CognitiveAgent:
 
     # ---- Talk (multi-bubble) ----
 
+    def notify_speech_rejected(self, reason: str) -> None:
+        """Engine callback (honesty rule): our last speech violated the rule."""
+        self._speech_rejection_note = str(reason)
+
     def talk(self) -> Decision:
         obs = self._observe()
         today_chat_count = sum(
@@ -216,7 +225,11 @@ class CognitiveAgent:
         is_first = today_chat_count == 0
         is_last_words = self._view.phase == "DAY_LAST_WORDS"
 
-        result = self._pipeline.run_speech(obs, self.memory, is_first, is_last_words)
+        rejection_note = self._speech_rejection_note
+        self._speech_rejection_note = ""
+        result = self._pipeline.run_speech(
+            obs, self.memory, is_first, is_last_words, rejection_note=rejection_note
+        )
         raw = result.get("speech", "")
         reasoning = result.get("reasoning", "")
 
@@ -358,12 +371,105 @@ class CognitiveAgent:
             return self._night_decision({"target": only_target.id, "reasoning": reasoning}, ActionType.ATTACK)
 
         extra = self._build_wolf_extra()
+        extra += self._wolf_night_options_text()
         result = self._pipeline.run_night(obs, self.memory, extra)
 
         # Mark strategic intent as executed if this was the target phase
         self._mark_active_intent_executed_if_target_phase_contains("NIGHT", "WOLF")
 
+        # 空刀（廉价磋商板子）：选项开启时，空 target / 空刀 token 是模型
+        # 主动选择的合法决策，直接透传 target_id=None，不走必选目标修复。
+        raw_target = str(result.get("target") or "").strip()
+        if "empty" in self._wolf_night_options() and (not raw_target or raw_target in _EMPTY_KNIFE_TOKENS):
+            reasoning = str(result.get("reasoning") or "").strip() or "选择空刀，制造平安夜假象"
+            return self._decision(
+                ActionType.ATTACK,
+                target_id=None,
+                reasoning=reasoning,
+                metadata=trace_keys.loop_metadata_from_result(result),
+            )
+
         return self._night_decision(result, ActionType.ATTACK)
+
+    @staticmethod
+    def _wolf_night_options() -> set[str]:
+        import os as _os
+
+        opts = _os.getenv("AIWEREWOLF_WOLF_NIGHT_OPTIONS", "")
+        return {part.strip() for part in opts.split(",") if part.strip()}
+
+    def _wolf_night_options_text(self) -> str:
+        """夜刀合法性说明（不是战术建议）：告诉狼模型本局允许哪些特殊刀。"""
+        opts = self._wolf_night_options()
+        if not opts:
+            return ""
+        lines = ["【本局夜刀规则】"]
+        if "empty" in opts:
+            lines.append(
+                '- 允许空刀：若判断不袭击更有利（制造平安夜假象），target 输出 "空刀"。'
+            )
+        if "self" in opts:
+            lines.append(
+                "- 允许自刀：你自己也在合法目标列表中，可以袭击自己（骗女巫解药的战术）。"
+            )
+        return "\n".join(lines) + "\n"
+
+    def wolf_chat(self) -> Decision:
+        """夜间狼队私聊（w.txt：狼人夜间私聊用于归票）。
+
+        单次 LLM 调用：基于当前观察 + 此前队友私聊内容，产出 1-3 句
+        归票建议（可建议具体刀口 / 空刀 / 自刀）。仅表达倾向，最终
+        目标由随后的队内投票决定。
+        """
+        obs = self._observe()
+        teammates = []
+        for w in getattr(self._view, "known_wolves", []) or []:
+            wid = w.get("id", w.get("player_id", ""))
+            if wid and wid != self.player_id:
+                teammates.append(f"{w.get('seat', '?')}号:{w.get('name', '?')}")
+        chat_history = []
+        for ev in getattr(self._view, "private_events", []) or []:
+            payload = ev.get("payload", {}) if isinstance(ev, dict) else {}
+            if payload.get("kind") == "wolf_chat_message":
+                chat_history.append(str(payload.get("message", "")))
+
+        options_line = "可以建议：刀某位具体玩家"
+        opts = self._wolf_night_options()
+        if "empty" in opts:
+            options_line += "；空刀（今晚不袭击，制造平安夜）"
+        if "self" in opts:
+            options_line += "；自刀（刀你自己骗解药）"
+
+        prev = ("\n【此前队友私聊】\n" + "\n".join(chat_history)) if chat_history else ""
+        prompt = (
+            format_observation(obs)
+            + "\n\n"
+            + self._strategy_bias_text("wolf_chat")
+            + "\n\n你是狼人，现在是夜晚狼队私聊环节（仅狼队可见，好人看不到）。"
+            + f"\n狼队成员: {', '.join(teammates) if teammates else '仅剩你一人'}"
+            + prev
+            + "\n请用 1-3 句话给出今晚的归票建议（"
+            + options_line
+            + "），说明理由。"
+            + '\n只输出 JSON：{"reasoning": "一句话理由", "message": "私聊内容"}'
+        )
+        raw = self._pipeline.direct_call(prompt, max_tokens=300)
+        message, reasoning = "", ""
+        try:
+            data = json.loads(raw[raw.index("{") : raw.rindex("}") + 1])
+            message = str(data.get("message") or data.get("speech") or "").strip()
+            reasoning = str(data.get("reasoning") or "").strip()
+            # 兼容只返回 target 的模型（如离线 fake LLM）：把刀口建议转成私聊文本
+            if not message:
+                target_text = str(data.get("target") or "").strip()
+                if target_text:
+                    message = f"建议今晚处理 {target_text}。"
+        except Exception:
+            message = raw.strip()
+        if not message:
+            raise RuntimeError(f"LLM wolf chat response is empty for {self.player_name}")
+        self.memory.add_action("wolf_chat", None, message, reasoning)
+        return self._decision(ActionType.TALK, speech=message, reasoning=reasoning or "夜间狼队私聊")
 
     def divine(self) -> Decision:
         obs = self._observe()

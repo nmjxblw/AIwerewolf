@@ -1,0 +1,42 @@
+{
+  "label": "B",
+  "seed": 105,
+  "winner": "wolf",
+  "end_reason": "wolves_reached_parity",
+  "days": 2,
+  "elapsed": 41.1,
+  "day1_vote_pattern": {
+    "2号:周慎": 1,
+    "3号:林笃": 1,
+    "6号:苏正": 1,
+    "7号:魏一": 4
+  },
+  "day1_pattern_detail": {
+    "2号:周慎": [
+      "1号:陈衡"
+    ],
+    "7号:魏一": [
+      "2号:周慎",
+      "3号:林笃",
+      "4号:沈度",
+      "6号:苏正"
+    ],
+    "3号:林笃": [
+      "5号:韩朴"
+    ],
+    "6号:苏正": [
+      "7号:魏一"
+    ]
+  },
+  "day1_seer_claims": [],
+  "day1_nonseer_claims": 0,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 4,
+  "llm_calls": 37,
+  "prompt_tokens": 95420,
+  "completion_tokens": 5612,
+  "seer_alive": false
+}
