@@ -862,6 +862,46 @@ def test_search_does_not_materialize_preview_without_consumer(monkeypatch) -> No
     assert len(result["nodes"]) > 0
 
 
+def test_search_can_publish_stats_without_live_preview(monkeypatch) -> None:
+    """关闭迭代树时仍发布统计，但不得构造节点和边预览对象。"""
+
+    import search_simulator._tree_search as tree_search
+
+    progress_events: queue.Queue[dict] = queue.Queue()
+    simulator = SearchSimulator(
+        number_of_players=3,
+        number_of_wolves=1,
+        include_seer=False,
+        include_witch=False,
+        include_guard=False,
+        smart_vote=True,
+        tactics="",
+        all_positions=False,
+        persistence_enabled=False,
+        progress_queue=progress_events,
+        live_preview_enabled=False,
+    )
+    monkeypatch.setattr(
+        tree_search,
+        "game_state_dict_from_compact",
+        lambda *args, **kwargs: pytest.fail("关闭迭代树时不应构造节点预览"),
+    )
+    result = tree_search._search_root(
+        simulator,
+        simulator.initial_state,
+        position_index=1,
+        total_positions=1,
+    )
+
+    assert len(result["nodes"]) > 0
+    events = []
+    while not progress_events.empty():
+        events.append(progress_events.get_nowait())
+    assert events
+    assert all(event["preview_nodes"] == [] for event in events if "preview_nodes" in event)
+    assert all(event["preview_edges"] == [] for event in events if "preview_edges" in event)
+
+
 @pytest.mark.skipif(os.name != "nt", reason="仅验证 Windows spawn 隔离参数")
 def test_windows_compute_worker_spawn_adds_no_site_and_restores() -> None:
     """计算 worker 必须带 -S，退出局部上下文后不得污染其他子进程。"""
@@ -910,6 +950,52 @@ def test_search_resumes_inside_position_from_atomic_checkpoint(tmp_path) -> None
     assert len(result["nodes"]) == 3
     _remove_search_checkpoint(checkpoint_path)
     assert not checkpoint_path.exists()
+
+
+def test_checkpoint_streams_edge_reasons_before_pickle(tmp_path) -> None:
+    """有结果队列时，检查点不得再次聚合待写入边原因。"""
+
+    import search_simulator._tree_search as tree_search
+
+    result_queue: queue.Queue[dict[str, object]] = queue.Queue()
+    simulator = SearchSimulator(
+        number_of_players=3,
+        number_of_wolves=1,
+        include_seer=False,
+        include_witch=False,
+        include_guard=False,
+        smart_vote=True,
+        tactics="",
+        all_positions=False,
+        persistence_enabled=False,
+        result_queue=result_queue,
+    )
+    checkpoint_path = tmp_path / "streamed-reasons.pickle"
+    result = tree_search._search_root(
+        simulator,
+        simulator.initial_state,
+        position_index=1,
+        total_positions=1,
+        materialize_graph=True,
+        checkpoint_path=str(checkpoint_path),
+        node_budget=1,
+    )
+
+    assert result["chunk_incomplete"] is True
+    messages: list[dict[str, object]] = []
+    while True:
+        try:
+            messages.append(result_queue.get_nowait())
+        except queue.Empty:
+            break
+    assert any(message["kind"] == "position_stage_edges" for message in messages)
+    checkpoint = tree_search._load_search_checkpoint(
+        checkpoint_path,
+        position_signature_value=simulator.initial_state.position_signature,
+    )
+    assert checkpoint is not None
+    assert checkpoint.edges.pending_reasons == {}
+    _remove_search_checkpoint(checkpoint_path)
 
 
 def test_failed_memory_run_can_resume_same_run_id(tmp_path) -> None:

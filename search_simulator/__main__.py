@@ -104,6 +104,7 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
         progress_queue=getattr(args, "progress_queue", None),
         result_queue=getattr(args, "result_queue", None),
         resume_event=getattr(args, "resume_event", None),
+        live_preview_enabled=getattr(args, "live_preview_enabled", True),
     )
     result = simulator.run(start_state=_load_start_state(args))
 

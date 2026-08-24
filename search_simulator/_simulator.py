@@ -131,6 +131,9 @@ class SearchSimulator:
         self.progress_queue = kwargs.get("progress_queue")
         self.result_queue = kwargs.get("result_queue")
         self.resume_event = kwargs.get("resume_event")
+        # 实时迭代树属于观测层开关；关闭时仍发送计数和阶段进度，避免
+        # GUI 关闭 DAG 后 worker 继续构造完整 GameState 预览占用内存。
+        self.live_preview_enabled = bool(kwargs.get("live_preview_enabled", True))
 
         self.initial_state = GameState(
             players=players_for_layout(self.roster),

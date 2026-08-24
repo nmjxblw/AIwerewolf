@@ -90,3 +90,57 @@
 - 将 GUI 视觉验收要求固化到 `AGENTS.md`：任何 GUI 代码、布局、样式、交互、hover、动画或可视化改动，都必须用 Computer Use（电脑工具）启动真实 Windows 窗口检查；离屏 smoke、截图或坐标回归只能作为补充，不能替代真实窗口验收。
 - 本轮使用电脑工具启动真实 `狼人杀树分支迭代模拟器`，确认中文固定 DFS 界面、lambda 滑块与数值显示、参数 hover 文本、角色勾选与战术禁用提示、单站位模式，以及开始迭代后的运行状态和完成弹窗均可见且未发现明显重叠。
 - 以 3 人 1 狼、无神职、关闭“全部站位”的最小配置完成 1/1 站位 DFS；完成弹窗显示运行 ID、检查点、日志路径和 crash 日志路径，结果表显示节点/边/终局计数。该次真实窗口检查未提交截图、临时数据库或日志文件。
+
+## 2026-08-23 access violation 检查点与绘制路径修复
+
+- 检查点格式升级为 v4：节点快照、frontier、父子节点数组、multiplicity 数组和派生原因分块写入独立 pickle 记录；节点块为 2048 条、原因块为 1024 条。写入临时文件后执行 flush/fsync，再原子替换正式检查点，避免一次性 `pickle.dump` 整棵大图造成瞬时序列化峰值。
+- v4 不持久化可由节点快照重建的 `node_id_by_key` 重复索引；加载时校验 magic、版本、规范配置、计数和重复状态键。既有 v2/v3 检查点仍可读取，恢复后由下一次保存迁移为 v4。
+- GUI 图形坐标统一经过有限值检查和边界裁剪。水平/垂直线使用安全整数填充，虚线先在小型透明离屏 surface 上合成后单次 blit 到真实窗口；DAG 边也使用安全绘制路径，避免把浮点或极端坐标直接交给 Windows Pygame-ce 原生绘制函数。
+- 节点详情读取紧凑状态快照时改为统一的状态恢复函数，并对损坏或旧格式快照做受控异常处理，避免详情面板因紧凑元组下标不匹配引发绘制线程异常。
+
+### 实际验证
+
+- 使用 Computer Use 启动真实 Windows 窗口 `狼人杀树分支迭代模拟器`：启动画面稳定，中文固定 DFS 界面、深度轴、竖向深度分隔线和横向虚线网格可见，未出现标签重叠。
+- 通过真实窗口设置 3 人、1 狼、关闭预言家/女巫/守卫和“全部站位”，保持智能投票；点击开始后立即显示 worker 启动中的运行状态和可用暂停按钮，随后完成 1/1 站位（3 个节点、2 条边、100%）。
+- 通过真实窗口点击结果行加载持久化 DAG，节点详情栏显示中文玩家信息及完整边原因；本次验收期间未再次出现 access violation。验收结束后已关闭 GUI，并清理本轮遗留的孤立 Python worker helper 进程。
+- 共享 Python 3.12 `.venv` 下 `pytest tests/test_search_simulator_tree.py -q` 为 46 项通过；`py_compile`、`ruff check` 和 `git diff --check` 通过。
+- 独立 v4 检查点往返验证通过（分块读取、10 个节点、12 条边）；最小配置 DFS CLI 和显式 BFS CLI 均完成 1/1 站位；dummy Pygame 安全绘制 smoke 覆盖有限值、极端坐标和非有限坐标，真实 display 的裁剪/填充 smoke 通过。
+
+## 2026-08-23 暂停迭代树 GUI 渲染
+
+- `_gui.py` 增加临时开关 `ENABLE_ITERATION_TREE_RENDERING = False`。GUI 不再进入实时预览节点合并、SQLite DAG 加载、布局、节点/边绘制、hover、平移缩放和 lambda interval 重算路径；“全部展开/收起/定位根节点”控件同步隐藏。
+- 后台进度队列仍由 GUI 持续消费，站位进度、结果表、统计卡片、进度条、暂停/恢复、检查点续算和终态弹窗保持可用。树区域改为明确提示面板，不保留旧的空白或假进度展示。
+- 使用 Computer Use 启动真实 Windows GUI，设置 3 人、1 狼，关闭预言家/女巫/守卫和“全部站位”，先验证已有 solution 加载，再点击“重新迭代 · DFS”强制启动 worker。worker 运行中立即显示“迭代中 · DFS”和可用暂停按钮，最终完成 1/1 站位；结果表为 3 个状态、2 条边、2 个终局，树统计不触发 DAG 绘制。
+- 完成弹窗显示 `complete`、运行 ID、检查点 `1/1`、无下一恢复站位和日志路径；本次运行对应 crash 日志大小为 0，验收期间未再次出现 access violation。窗口已通过真实 GUI 操作关闭。
+- 本次代码验证：`py_compile _gui.py`、`ruff check _gui.py`、`pytest tests/test_search_simulator_tree.py -q`（46 项通过）和 `git diff --check` 均通过。该开关为临时 GUI 降级措施，后续恢复树 UI 时需重新执行真实窗口视觉验收。
+
+## 2026-08-24 worker 检查点边原因流式修复
+
+- 根据两条 worker 都落在 `_save_search_checkpoint` 边原因 pickle 行的崩溃栈，确认计算 worker 构造 `SearchSimulator` 时遗漏了 `result_queue`。因此 `_search_root` 的 `stream_staged_edges` 一直为假，边原因持续积累到 checkpoint 保存阶段，最终在大批量 `pending_reasons` 序列化时触发 Windows 原生 access violation。
+- `_position_task` 现在显式把 `result_queue` 传入 worker 模拟器；检查点边在保存前通过有界结果队列分批交给父进程并从 worker 暂存中释放，checkpoint 不再重复持有已写入边的原因对象。
+- 从站位内检查点恢复时，父进程先重建/清空暂存站位；worker 将已有边从游标 0 重新流式回放，兼容此前未流式保存的旧检查点，避免恢复后再次把历史原因聚合进 pickle。
+- 新增检查点回归测试，验证边原因先进入 `position_stage_edges`，且保存后的 checkpoint `pending_reasons` 为空。
+
+### 实际验证
+
+- `pytest tests/test_search_simulator_tree.py -q`：47 项通过。
+- 3 人、1 狼、无神职、单站位强制 DFS：1/1 完成，3 个状态、2 条边、2 个终局。
+- 同一 SQLite 第二次 DFS：输出 `SOLUTION_LOADED`，未创建新的 worker。
+- 同配置显式 BFS：1/1 完成，3 个状态、2 条边、2 个终局。
+- `py_compile _tree_search.py`、`ruff check _tree_search.py` 和 `git diff --check` 通过；隔离 CLI 输出目录已清理，正式 `crash_log/` 按约束保留。
+
+## 2026-08-24 关闭 GUI 实时预览负载
+
+- 根据 `BrokenProcessPool` 后续 crash 日志确认：GUI 树渲染已经关闭，但 worker 仍在构造完整节点快照、边原因和实时预览事件；这会额外占用 worker 堆、跨进程队列和父进程内存，增加状态编码与 SQLite 写入并发压力。
+- `SearchSimulator` 增加显式 `live_preview_enabled` 边界参数。GUI 固定传 `False`；worker 在该开关关闭时只发布已展开/已发现/frontier/边/终局计数和 path/interval 后处理事件，不构造或传输 `preview_nodes`、`preview_edges`。CLI/API 未显式关闭时保持原有默认值 `True`。
+- 该改动不改变 DFS/BFS 分支、状态签名、检查点格式、结果队列背压和 SQLite 持久化语义；关闭的是观测负载，不是后台迭代。
+- 新增回归测试，验证关闭实时预览时仍有进度事件且不会调用紧凑状态到完整 GameState 的预览重建函数。
+
+### 实际验证
+
+- 共享 Python 3.12 `.venv`：`pytest tests/test_search_simulator_tree.py -q`，48 项通过。
+- `py_compile`、`ruff check`（`_tree_search.py`、`_simulator.py`、`__main__.py`、`_gui.py` 及测试）和 `git diff --check` 通过。
+- 3 人、1 狼、无神职单站位：DFS 完成 1/1；同一 SQLite 第二次命中 `SOLUTION_LOADED`；显式 BFS 强制重算完成 1/1，三次退出码均为 0。
+- 使用 Computer Use 启动真实 Windows GUI，确认崩溃提示可见且可关闭；关闭提示后真实窗口显示“迭代树渲染已暂时关闭”，后台 DFS/检查点/结果统计说明可见，未进入 DAG 绘制路径。验收窗口随后已关闭。
+- 随后在真实 GUI 设置 3 人、1 狼、无预言家/女巫/守卫、单站位，第一次点击命中已有 solution；第二次点击“重新迭代 · DFS”确实进入“正在计算 1/1 个站位”，完成弹窗显示 1/1、3 状态、2 边、2 终局。该启动对应 crash 日志大小为 0，未再次出现 access violation。
+- 用户提供的 `run_id=6f640f206c4c4b269b45adec27fd37a4` 仍保留在正式日志和 crash 日志中作为故障证据；该运行的 `BrokenProcessPool` 重试曾从 70,000 推进到 90,000 个已处理状态，但最终未形成终态，不能将其记为完成。

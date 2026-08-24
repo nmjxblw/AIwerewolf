@@ -53,7 +53,10 @@ WORKER_PROGRESS_LOG_INTERVAL_SECONDS = 5.0
 WORKER_NODE_BUDGET = 10_000
 WORKER_MIN_NODE_BUDGET = 250
 WORKER_CHUNK_RETRY_LIMIT = 6
-SEARCH_CHECKPOINT_VERSION = 3
+SEARCH_CHECKPOINT_VERSION = 4
+_CHECKPOINT_MAGIC = "search_simulator_checkpoint"
+_CHECKPOINT_NODE_CHUNK_SIZE = 2_048
+_CHECKPOINT_REASON_CHUNK_SIZE = 1_024
 _NO_SITE_SPAWN_LOCK = threading.Lock()
 
 
@@ -133,13 +136,70 @@ class _SearchCheckpoint:
 
 
 def _save_search_checkpoint(path: Path, checkpoint: _SearchCheckpoint) -> None:
-    """原子写入站位内检查点，崩溃时旧版本仍保持可恢复。"""
+    """以分块 pickle 原子写入站位内检查点，崩溃时旧版本仍保持可恢复。
+
+    不能把整个搜索图和 ``node_id_by_key`` 一次性交给 ``pickle.dump``：
+    默认 7 人板在恢复点可能已有数十万节点和数百万条边，单次序列化会
+    让 pickle memo、临时缓冲和文件缓存同时达到峰值，Windows 下容易触发
+    C 级 access violation。v4 将元数据、节点块、frontier、三条拓扑数组
+    和待落库原因分开写入；去重字典由读取端根据节点状态键重建，避免把
+    同一份状态键在检查点里长期保存两份。
+    """
 
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = path.with_suffix(f"{path.suffix}.{os.getpid()}.tmp")
     try:
         with temporary_path.open("wb") as handle:
-            pickle.dump(checkpoint, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            metadata = {
+                "position_signature": checkpoint.position_signature,
+                "processed_states": checkpoint.processed_states,
+                "terminal_count": checkpoint.terminal_count,
+                "focus_node_id": checkpoint.focus_node_id,
+                "accumulated_runtime_seconds": checkpoint.accumulated_runtime_seconds,
+                "node_count": len(checkpoint.nodes),
+                "frontier_count": len(checkpoint.frontier),
+                "edge_count": len(checkpoint.edges),
+                "pending_reason_count": len(checkpoint.edges.pending_reasons),
+            }
+            pickle.dump(
+                (_CHECKPOINT_MAGIC, SEARCH_CHECKPOINT_VERSION, metadata),
+                handle,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
+            for start in range(0, len(checkpoint.nodes), _CHECKPOINT_NODE_CHUNK_SIZE):
+                pickle.dump(
+                    checkpoint.nodes[start : start + _CHECKPOINT_NODE_CHUNK_SIZE],
+                    handle,
+                    protocol=pickle.HIGHEST_PROTOCOL,
+                )
+            pickle.dump(
+                list(checkpoint.frontier),
+                handle,
+                protocol=pickle.HIGHEST_PROTOCOL,
+            )
+            for values in (
+                checkpoint.edges.parent_ids,
+                checkpoint.edges.child_ids,
+                checkpoint.edges.multiplicities,
+            ):
+                pickle.dump(values, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+            pending_items: list[tuple[int, tuple[tuple[tuple[Any, ...], int], ...]]] = []
+            for edge_index, reasons in checkpoint.edges.pending_reasons.items():
+                pending_items.append((edge_index, reasons))
+                if len(pending_items) >= _CHECKPOINT_REASON_CHUNK_SIZE:
+                    pickle.dump(
+                        pending_items,
+                        handle,
+                        protocol=pickle.HIGHEST_PROTOCOL,
+                    )
+                    pending_items.clear()
+            if pending_items:
+                pickle.dump(
+                    pending_items,
+                    handle,
+                    protocol=pickle.HIGHEST_PROTOCOL,
+                )
             handle.flush()
             os.fsync(handle.fileno())
         os.replace(temporary_path, path)
@@ -157,35 +217,119 @@ def _load_search_checkpoint(
     if not path.exists():
         return None
     with path.open("rb") as handle:
-        checkpoint = pickle.load(handle)
-    if not isinstance(checkpoint, _SearchCheckpoint):
-        raise TypeError(f"无效搜索检查点类型: {type(checkpoint).__name__}")
-    if checkpoint.version not in {2, SEARCH_CHECKPOINT_VERSION}:
-        raise ValueError(f"不支持的搜索检查点版本: {checkpoint.version}")
-    if checkpoint.position_signature != position_signature_value:
-        raise ValueError("搜索检查点站位签名不匹配")
-    if checkpoint.version == 2:
-        # v2 为每个节点保留多元素 tuple 和 32 字符哈希。迁移时先清空旧
-        # 去重字典，再逐节点替换，避免新旧两份大型索引同时驻留造成峰值。
-        checkpoint.node_id_by_key.clear()
-        migrated_index: dict[bytes, int] = {}
-        for node_id, node in enumerate(checkpoint.nodes):
-            if isinstance(node.state_key, bytes):
-                state_blob = node.state_key
-            else:
-                state_blob = encode_compact_state_blob(node.state_key)
-            node.state_key = state_blob
-            node.state_signature = ""
-            migrated_index[state_blob] = node_id
-        checkpoint.node_id_by_key = migrated_index
-        checkpoint.version = SEARCH_CHECKPOINT_VERSION
-        logger.info(
-            "WORKER_CHECKPOINT_MIGRATED position_signature=%s nodes=%s v2->v%s",
-            position_signature_value,
-            len(checkpoint.nodes),
-            SEARCH_CHECKPOINT_VERSION,
-        )
-    return checkpoint
+        first_record = pickle.load(handle)
+        if isinstance(first_record, _SearchCheckpoint):
+            # v2/v3 是旧的单对象格式，保留读取兼容性；下一次 checkpoint
+            # 保存时一定转成 v4 分块格式。
+            checkpoint = first_record
+            if checkpoint.version not in {2, 3}:
+                raise ValueError(f"不支持的搜索检查点版本: {checkpoint.version}")
+            if checkpoint.position_signature != position_signature_value:
+                raise ValueError("搜索检查点站位签名不匹配")
+            if checkpoint.version == 2:
+                # v2 为每个节点保留多元素 tuple 和 32 字符哈希。迁移时先清空旧
+                # 去重字典，再逐节点替换，避免新旧两份大型索引同时驻留造成峰值。
+                checkpoint.node_id_by_key.clear()
+                migrated_index: dict[bytes, int] = {}
+                for node_id, node in enumerate(checkpoint.nodes):
+                    if isinstance(node.state_key, bytes):
+                        state_blob = node.state_key
+                    else:
+                        state_blob = encode_compact_state_blob(node.state_key)
+                    node.state_key = state_blob
+                    node.state_signature = ""
+                    migrated_index[state_blob] = node_id
+                checkpoint.node_id_by_key = migrated_index
+                checkpoint.version = 3
+                logger.info(
+                    "WORKER_CHECKPOINT_MIGRATED position_signature=%s nodes=%s v2->v3",
+                    position_signature_value,
+                    len(checkpoint.nodes),
+                )
+            return checkpoint
+
+        if (
+            not isinstance(first_record, tuple)
+            or len(first_record) != 3
+            or first_record[0] != _CHECKPOINT_MAGIC
+        ):
+            raise TypeError(
+                "无效搜索检查点头部: "
+                f"{type(first_record).__name__}"
+            )
+        version = int(first_record[1])
+        metadata = first_record[2]
+        if version != SEARCH_CHECKPOINT_VERSION or not isinstance(metadata, dict):
+            raise ValueError(f"不支持的搜索检查点版本: {version}")
+        if metadata.get("position_signature") != position_signature_value:
+            raise ValueError("搜索检查点站位签名不匹配")
+
+        node_count = int(metadata["node_count"])
+        nodes: list[_CompactSearchNode] = []
+        for start in range(0, node_count, _CHECKPOINT_NODE_CHUNK_SIZE):
+            chunk = pickle.load(handle)
+            if not isinstance(chunk, list):
+                raise TypeError("搜索检查点节点块类型无效")
+            nodes.extend(chunk)
+        if len(nodes) != node_count:
+            raise ValueError("搜索检查点节点数量不完整")
+
+        frontier_values = pickle.load(handle)
+        if not isinstance(frontier_values, list):
+            raise TypeError("搜索检查点 frontier 类型无效")
+        frontier = deque(int(node_id) for node_id in frontier_values)
+
+        topology_arrays: list[array] = []
+        for expected_typecode in ("I", "I", "Q"):
+            values = pickle.load(handle)
+            if not isinstance(values, array) or values.typecode != expected_typecode:
+                raise TypeError("搜索检查点拓扑数组类型无效")
+            topology_arrays.append(values)
+        if any(len(values) != int(metadata["edge_count"]) for values in topology_arrays):
+            raise ValueError("搜索检查点拓扑数组数量不一致")
+
+        pending_reason_count = int(metadata["pending_reason_count"])
+        pending_reasons: dict[
+            int,
+            tuple[tuple[tuple[Any, ...], int], ...],
+        ] = {}
+        loaded_reason_count = 0
+        while loaded_reason_count < pending_reason_count:
+            chunk = pickle.load(handle)
+            if not isinstance(chunk, list):
+                raise TypeError("搜索检查点边原因块类型无效")
+            for edge_index, reasons in chunk:
+                pending_reasons[int(edge_index)] = tuple(reasons)
+                loaded_reason_count += 1
+        if loaded_reason_count != pending_reason_count:
+            raise ValueError("搜索检查点边原因数量不完整")
+
+    node_id_by_key: dict[bytes, int] = {}
+    for node_id, node in enumerate(nodes):
+        if not isinstance(node, _CompactSearchNode):
+            raise TypeError("搜索检查点节点类型无效")
+        if not isinstance(node.state_key, bytes):
+            raise TypeError("v4 搜索检查点状态键必须是 bytes")
+        if node.state_key in node_id_by_key:
+            raise ValueError("搜索检查点包含重复状态键")
+        node_id_by_key[node.state_key] = node_id
+    return _SearchCheckpoint(
+        version=SEARCH_CHECKPOINT_VERSION,
+        position_signature=position_signature_value,
+        nodes=nodes,
+        node_id_by_key=node_id_by_key,
+        frontier=frontier,
+        edges=_CompactEdges(
+            parent_ids=topology_arrays[0],
+            child_ids=topology_arrays[1],
+            multiplicities=topology_arrays[2],
+            pending_reasons=pending_reasons,
+        ),
+        processed_states=int(metadata["processed_states"]),
+        terminal_count=int(metadata["terminal_count"]),
+        focus_node_id=int(metadata["focus_node_id"]),
+        accumulated_runtime_seconds=float(metadata["accumulated_runtime_seconds"]),
+    )
 
 
 def _remove_search_checkpoint(path: Path) -> None:
@@ -636,6 +780,10 @@ def _search_root(
         getattr(simulator, "progress_queue", None) is not None
         or getattr(simulator, "iteration_callback", None) is not None
     )
+    live_preview_enabled = bool(
+        getattr(simulator, "live_preview_enabled", True)
+    )
+    has_live_preview_consumer = has_progress_consumer and live_preview_enabled
     pending_preview_node_ids: deque[int] = deque(
         maxlen=PREVIEW_NODE_BATCH_LIMIT * 2
     )
@@ -646,7 +794,10 @@ def _search_root(
         getattr(simulator, "result_queue", None) is not None
         and checkpoint_file is not None
     )
-    staged_edge_cursor = len(edges)
+    # 新 worker 会把已有检查点边也重新流式回放给唯一写入者；否则旧版
+    # 检查点中的 pending_reasons 会一直留在内存，并在下一次保存时重新
+    # 聚合成高峰 pickle。没有恢复数据时从当前边数开始，只发送本轮新增边。
+    staged_edge_cursor = 0 if stream_staged_edges and checkpoint is not None else len(edges)
 
     def flush_staged_edges() -> None:
         """只在 checkpoint 边界批量落新边，保证 SQLite 与快照一致。"""
@@ -733,7 +884,7 @@ def _search_root(
         ]
         return [node_preview(node_id) for node_id in unique_node_ids]
 
-    if has_progress_consumer:
+    if has_live_preview_consumer:
         pending_preview_node_ids.append(focus_node_id)
 
     def publish_progress(*, kind: str = "node_progress", force: bool = False) -> None:
@@ -749,23 +900,24 @@ def _search_root(
                 frontier[0] if simulator.search_mode == "bfs" else frontier[-1]
             )
         if has_progress_consumer:
-            preview_nodes = latest_node_previews()
+            preview_nodes = latest_node_previews() if live_preview_enabled else []
             preview_edges: list[dict[str, Any]] = []
-            recent_edge_indices = list(pending_preview_edge_indices)[
-                -PREVIEW_EDGE_BATCH_LIMIT:
-            ]
-            for edge_index in recent_edge_indices:
-                preview_edge = _compact_edge_to_dict(
-                    simulator,
-                    edges=edges,
-                    edge_index=edge_index,
-                    nodes=nodes,
-                )
-                # 实时预览仍受边批次上限约束，但不能截断或丢弃派生原因；
-                # 边 hover 必须与持久化 DAG 使用同一完整原因集合。
-                preview_edge["action_label"] = str(preview_edge["action_label"])
-                preview_edge["live_preview"] = True
-                preview_edges.append(preview_edge)
+            if live_preview_enabled:
+                recent_edge_indices = list(pending_preview_edge_indices)[
+                    -PREVIEW_EDGE_BATCH_LIMIT:
+                ]
+                for edge_index in recent_edge_indices:
+                    preview_edge = _compact_edge_to_dict(
+                        simulator,
+                        edges=edges,
+                        edge_index=edge_index,
+                        nodes=nodes,
+                    )
+                    # 实时预览仍受边批次上限约束，但不能截断或丢弃派生原因；
+                    # 边 hover 必须与持久化 DAG 使用同一完整原因集合。
+                    preview_edge["action_label"] = str(preview_edge["action_label"])
+                    preview_edge["live_preview"] = True
+                    preview_edges.append(preview_edge)
             _publish_search_progress(
                 simulator,
                 {
@@ -875,7 +1027,7 @@ def _search_root(
         node.result = result
         node.expanded = True
         focus_node_id = node_id
-        if has_progress_consumer:
+        if has_live_preview_consumer:
             pending_preview_node_ids.append(node_id)
         processed_states += 1
         if is_terminal:
@@ -914,7 +1066,7 @@ def _search_root(
                         ),
                     )
                 )
-                if has_progress_consumer:
+                if has_live_preview_consumer:
                     pending_preview_node_ids.append(child_id)
                 frontier.append(child_id)
 
@@ -945,7 +1097,7 @@ def _search_root(
                 multiplicity=int(edge_data["multiplicity"]),
                 reasons=tuple(edge_data["reasons"].items()),
             )
-            if has_progress_consumer:
+            if has_live_preview_consumer:
                 pending_preview_edge_indices.append(edge_index)
         node.outgoing_count = len(edges) - node.outgoing_start
         publish_progress()
@@ -1244,6 +1396,10 @@ def _position_task(payload: dict[str, Any]) -> dict[str, Any]:
         persistence_enabled=False,
         iteration_callback=None,
         progress_queue=payload.get("progress_queue"),
+        live_preview_enabled=config["live_preview_enabled"],
+        # 检查点边必须在 worker 内存达到峰值前分批交给父进程；若遗漏
+        # 该边界参数，_search_root 会把全部 pending_reasons 留到 pickle。
+        result_queue=payload.get("result_queue"),
         resume_event=payload.get("resume_event"),
     )
     layout = PositionLayout(
@@ -1373,6 +1529,9 @@ def _worker_config(simulator: Any) -> dict[str, Any]:
         "parallel_workers": 1,
         "memory_reserve_gib": simulator.memory_reserve_gib,
         "memory_reserve_ratio": simulator.memory_reserve_ratio,
+        "live_preview_enabled": bool(
+            getattr(simulator, "live_preview_enabled", True)
+        ),
     }
 
 
@@ -1838,10 +1997,11 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
                 ensure_memory_available()
                 payload = payload_for(layout)
                 checkpoint_path = Path(payload["checkpoint_path"])
-                if (
-                    simulator.result_queue is not None
-                    and not checkpoint_path.exists()
-                ):
+                if simulator.result_queue is not None:
+                    # 新起算和从站位内检查点恢复都先重建暂存行。恢复时清空
+                    # 旧的半写入图，worker 会从检查点把已有边重新分批回放，
+                    # 这样旧版未流式保存的 pending_reasons 也不会再次聚合
+                    # 到 checkpoint pickle 的单个高峰中。
                     simulator.result_queue.put(
                         {
                             "kind": "position_stage_begin",

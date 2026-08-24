@@ -70,6 +70,9 @@ LIVE_PREVIEW_NODE_LIMIT = 80
 DAG_VISIBLE_NODE_LIMIT = 240
 UI_DATA_REFRESH_SECONDS = 0.5
 LIVE_NODE_FADE_SECONDS = 0.4
+# 先关闭迭代树的实时/持久化绘制，保留后台搜索、检查点、结果表和统计卡片。
+# 进度队列仍由 GUI 消费，避免 worker 因有界队列背压而停在 UI 渲染上。
+ENABLE_ITERATION_TREE_RENDERING = False
 # DAG 网格的列/行间距固定，避免深度或同层节点数量变化时发生重叠。
 # 坐标单位是未缩放的画布像素；用户缩放时只改变可视投影，不改变深度编号。
 GRAPH_GRID_COLUMN_SPACING = 124.0
@@ -77,6 +80,7 @@ GRAPH_GRID_ROW_SPACING = 34.0
 GRAPH_GRID_DASH_LENGTH = 7
 GRAPH_GRID_GAP_LENGTH = 5
 GRAPH_AXIS_BOTTOM_MARGIN = 24
+GRAPH_SAFE_COORDINATE_LIMIT = 8_192
 
 
 def _yes_no(value: Any) -> str:
@@ -490,6 +494,15 @@ class PygameSimulatorUI:
             text=t("gui.locate_root"),
             manager=self.manager,
         )
+        if not ENABLE_ITERATION_TREE_RENDERING:
+            # 暂停树 UI 时连同展开/收起/定位控件一起隐藏，避免用户触发
+            # 仍会读取大图或启动 interval 回传的旧交互路径。
+            for button in (
+                self.expand_all_button,
+                self.collapse_all_button,
+                self.locate_root_button,
+            ):
+                button.hide()
         self.progress_bar = UIProgressBar(
             pygame.Rect(650, 327, 430, 30), manager=self.manager
         )
@@ -780,7 +793,108 @@ class PygameSimulatorUI:
         return positions
 
     @staticmethod
+    def _safe_surface_point(
+        surface: pygame.Surface,
+        point: tuple[float, float],
+    ) -> tuple[int, int] | None:
+        """把绘制坐标收敛为有限整数，避免把异常浮点值传入 SDL。
+
+        搜索图的画布坐标来自平移、缩放和深度计算。正常情况下它们都在
+        视口附近，但原生 Pygame 绘制接口不应接收 NaN、无穷大或超大浮点
+        数；这类值在 Windows 下可能绕过 Python 异常直接触发 access
+        violation。先做有限性检查、有限范围裁剪和整数化，再由
+        ``clipline`` 负责视口外裁剪。
+        """
+
+        try:
+            x_value = float(point[0])
+            y_value = float(point[1])
+        except (TypeError, ValueError, IndexError):
+            return None
+        if not math.isfinite(x_value) or not math.isfinite(y_value):
+            return None
+        width, height = surface.get_size()
+        coordinate_limit = max(
+            GRAPH_SAFE_COORDINATE_LIMIT,
+            max(width, height) * 4,
+        )
+        return (
+            max(-coordinate_limit, min(coordinate_limit, int(round(x_value)))),
+            max(-coordinate_limit, min(coordinate_limit, int(round(y_value)))),
+        )
+
+    @classmethod
+    def _draw_safe_line(
+        cls,
+        surface: pygame.Surface,
+        color: pygame.Color,
+        start: tuple[float, float],
+        end: tuple[float, float],
+        width: int = 1,
+    ) -> None:
+        """只向 Pygame 传递已经裁剪过的整数线段。"""
+
+        start_point = cls._safe_surface_point(surface, start)
+        end_point = cls._safe_surface_point(surface, end)
+        if start_point is None or end_point is None:
+            return
+        safe_width = max(1, min(64, int(width)))
+        if start_point[1] == end_point[1]:
+            left = min(start_point[0], end_point[0])
+            cls._fill_safe_rect(
+                surface,
+                color,
+                left,
+                start_point[1] - safe_width // 2,
+                abs(end_point[0] - start_point[0]) + 1,
+                safe_width,
+            )
+            return
+        if start_point[0] == end_point[0]:
+            top = min(start_point[1], end_point[1])
+            cls._fill_safe_rect(
+                surface,
+                color,
+                start_point[0] - safe_width // 2,
+                top,
+                safe_width,
+                abs(end_point[1] - start_point[1]) + 1,
+            )
+            return
+        clipped = surface.get_rect().clipline(start_point, end_point)
+        if not clipped:
+            return
+        pygame.draw.line(
+            surface,
+            color,
+            clipped[0],
+            clipped[1],
+            safe_width,
+        )
+
+    @staticmethod
+    def _fill_safe_rect(
+        surface: pygame.Surface,
+        color: pygame.Color,
+        left: int,
+        top: int,
+        width: int,
+        height: int,
+    ) -> None:
+        """用纯整数边界填充线段，避免 Rect/line 的原生裁剪路径。"""
+
+        surface_width, surface_height = surface.get_size()
+        right = min(surface_width, left + max(0, width))
+        bottom = min(surface_height, top + max(0, height))
+        left = max(0, left)
+        top = max(0, top)
+        if right <= left or bottom <= top:
+            return
+        surface.fill(color, (left, top, right - left, bottom - top))
+
+    @classmethod
     def _draw_dashed_line(
+        cls,
         surface: pygame.Surface,
         start: tuple[float, float],
         end: tuple[float, float],
@@ -790,25 +904,65 @@ class PygameSimulatorUI:
         gap_length: int = GRAPH_GRID_GAP_LENGTH,
         width: int = 1,
     ) -> None:
-        """绘制不会改变节点拓扑的虚线网格线。"""
+        """在离屏小 surface 上合成虚线，再一次性 blit 到视口。
 
-        dx = end[0] - start[0]
-        dy = end[1] - start[1]
+        Pygame-ce 2.5.8 在 Windows 真窗口上对显示 surface 连续执行
+        细粒度 ``draw.line``/``fill`` 时可能破坏 SDL surface；具体版本
+        的崩溃栈还会落在调用者的 Python 算术行，无法由异常处理捕获。
+        网格线先在有界离屏 surface 上合成，显示 surface 每条线只接收
+        一次 blit；节点、边和搜索数据不依赖这些观测装饰。
+        """
+
+        safe_start = cls._safe_surface_point(surface, start)
+        safe_end = cls._safe_surface_point(surface, end)
+        if safe_start is None or safe_end is None:
+            return
+        dx = safe_end[0] - safe_start[0]
+        dy = safe_end[1] - safe_start[1]
         length = math.hypot(dx, dy)
         if length <= 0.0:
+            return
+        dash_length = max(1, int(dash_length))
+        gap_length = max(0, int(gap_length))
+        safe_width = max(1, min(64, int(width)))
+        if safe_start[1] == safe_end[1]:
+            left = min(safe_start[0], safe_end[0])
+            span = abs(safe_end[0] - safe_start[0]) + 1
+            pattern = pygame.Surface((span, safe_width), flags=pygame.SRCALPHA)
+            pattern.fill((0, 0, 0, 0))
+            cursor = 0
+            while cursor < span:
+                dash_end = min(span, cursor + dash_length)
+                pattern.fill(color, (cursor, 0, dash_end - cursor, safe_width))
+                cursor += dash_length + gap_length
+            surface.blit(pattern, (left, safe_start[1] - safe_width // 2))
+            return
+        if safe_start[0] == safe_end[0]:
+            top = min(safe_start[1], safe_end[1])
+            span = abs(safe_end[1] - safe_start[1]) + 1
+            pattern = pygame.Surface((safe_width, span), flags=pygame.SRCALPHA)
+            pattern.fill((0, 0, 0, 0))
+            cursor = 0
+            while cursor < span:
+                dash_end = min(span, cursor + dash_length)
+                pattern.fill(color, (0, cursor, safe_width, dash_end - cursor))
+                cursor += dash_length + gap_length
+            surface.blit(pattern, (safe_start[0] - safe_width // 2, top))
             return
         ux = dx / length
         uy = dy / length
         cursor = 0.0
         while cursor < length:
             dash_end = min(length, cursor + dash_length)
-            pygame.draw.line(
-                surface,
-                color,
-                (start[0] + ux * cursor, start[1] + uy * cursor),
-                (start[0] + ux * dash_end, start[1] + uy * dash_end),
-                width,
+            dash_start = (
+                int(round(safe_start[0] + ux * cursor)),
+                int(round(safe_start[1] + uy * cursor)),
             )
+            dash_stop = (
+                int(round(safe_start[0] + ux * dash_end)),
+                int(round(safe_start[1] + uy * dash_end)),
+            )
+            cls._draw_safe_line(surface, color, dash_start, dash_stop, safe_width)
             cursor += dash_length + gap_length
 
     def _graph_view_rect(self, rect: pygame.Rect) -> pygame.Rect:
@@ -874,12 +1028,11 @@ class PygameSimulatorUI:
                     (x, axis_y),
                     depth_color,
                 )
-                pygame.draw.line(
+                self._draw_safe_line(
                     self.screen,
                     depth_color,
                     (x, axis_y - 4),
                     (x, axis_y + 4),
-                    1,
                 )
                 self._text(
                     f"D{depth}",
@@ -889,12 +1042,11 @@ class PygameSimulatorUI:
                     max_width=34,
                 )
 
-        pygame.draw.line(
+        self._draw_safe_line(
             self.screen,
             axis_color,
             (view.left, axis_y),
             (view.right - 8, axis_y),
-            1,
         )
         pygame.draw.polygon(
             self.screen,
@@ -990,7 +1142,6 @@ class PygameSimulatorUI:
         node = self._graph_structure(graph)["node_by_id"].get(target_node)
         if node is None:
             return []
-        compact = node.get("state_compact") or []
         if node.get("live_preview", False):
             state_label = "已展开" if node.get("expanded", False) else "frontier"
             details = [
@@ -1003,33 +1154,34 @@ class PygameSimulatorUI:
             details = [
                 f"节点 {target_node} · {node['phase']} · wide={node['wide_interval']} · narrow={node['narrow_interval']}"
             ]
-        if len(compact) >= 12 and self.selected_row is not None:
-            roles = self.rows[self.selected_row]["roles"]
-            checks = {int(pair[0]): bool(pair[1]) for pair in compact[4]}
-            public_good = {int(value) for value in compact[6]}
-            public_wolf = {int(value) for value in compact[7]}
-            claims = {int(pair[0]): str(pair[1]) for pair in compact[8]}
-            idiots = {int(value) for value in compact[9]}
-            player_states = compact[11]
-            chips: list[str] = []
-            for index, role in enumerate(roles):
-                alive = bool(player_states[index][0])
-                icons: list[str] = []
-                if index in checks:
-                    icons.append("验狼" if checks[index] else "验好")
-                if index in claims:
-                    icons.append("宣" + claims[index])
-                if index in public_good:
-                    icons.append("公好")
-                if index in public_wolf:
-                    icons.append("公狼")
-                if index in idiots:
-                    icons.append("身份揭示")
-                chips.append(
-                    f"{index + 1}:{role}{'·死' if not alive else ''}"
-                    + ("[" + "/".join(icons) + "]" if icons else "")
-                )
-            details.append("  ".join(chips))
+        if self.selected_row is not None:
+            try:
+                state = node.get("state")
+                if not isinstance(state, dict):
+                    compact = node.get("state_compact") or []
+                    roles = self.rows[self.selected_row].get("roles", [])
+                    if compact and roles:
+                        state = game_state_dict_from_compact(
+                            compact,
+                            roles=roles,
+                            position_signature=str(graph.get("position_signature", "")),
+                            is_game_over=bool(node.get("is_terminal", False)),
+                            state_id=target_node,
+                            observation=node.get("state_observation"),
+                        )
+                if isinstance(state, dict) and not state.get("unavailable"):
+                    players = state.get("players") or []
+                    chips = [
+                        f"{index + 1}:{player.get('role', '未知')}"
+                        f"{'·死' if not player.get('is_alive', False) else ''}"
+                        for index, player in enumerate(players)
+                    ]
+                    if chips:
+                        details.append("  ".join(chips))
+            except (TypeError, ValueError, KeyError, IndexError):
+                # 旧节点快照可能无法按当前角色列表恢复；详情区不能因此
+                # 让主绘制循环抛出异常或中断后续 Pygame 事件处理。
+                details.append("玩家状态：旧快照不可恢复")
         structure = self._graph_structure(graph)
         incident = [
             *structure["edges_by_parent"].get(target_node, []),
@@ -1149,7 +1301,7 @@ class PygameSimulatorUI:
             )
             color = _faded_color(color, alpha)
             is_hovered = edge is self.hovered_edge and self.hovered_node is None
-            pygame.draw.line(
+            self._draw_safe_line(
                 self.screen,
                 color,
                 parent,
@@ -1267,6 +1419,36 @@ class PygameSimulatorUI:
                 color=MUTED,
             )
 
+    def _draw_iteration_tree_disabled(self) -> None:
+        """显示后台迭代状态，不进入迭代树的布局和原生绘制路径。
+
+        worker 进度仍由 ``_drain_events`` 消费并汇总到统计卡片，确保有界
+        进度队列不会因暂时关闭树 UI 而阻塞后台搜索。这里不读取实时 DAG、
+        不加载 SQLite 图，也不执行节点/边 hover、布局或 interval 重算。
+        """
+
+        rect = self._graph_rect()
+        self._panel(rect, "迭代树渲染已暂时关闭")
+        self._draw_live_stats(rect)
+        self._text(
+            "当前仅保留后台 DFS、检查点续算、结果表和运行统计。",
+            (rect.x + 24, rect.y + 116),
+            size=16,
+            color=ACCENT,
+            max_width=rect.width - 48,
+        )
+        self._text(
+            "后台迭代完成后不会加载或绘制 DAG；可继续使用暂停/恢复和结果分页。",
+            (rect.x + 24, rect.y + 150),
+            size=13,
+            color=MUTED,
+            max_width=rect.width - 48,
+        )
+        self.node_screen_positions.clear()
+        self.hovered_node = None
+        self.hovered_edge = None
+        self.hover_tooltip = []
+
     def _build_args(self) -> argparse.Namespace:
         values = vars(self.parser.parse_args([])).copy()
         values.update(
@@ -1280,6 +1462,8 @@ class PygameSimulatorUI:
                 "lang": "zh-CN",
                 "smart_vote": self.values["smart_vote"],
                 "disable_plot": True,
+                # 迭代树渲染暂时关闭；后台仍保留计数、阶段进度、检查点和结果。
+                "live_preview_enabled": False,
                 "tactics": ",".join(
                     key
                     for key, selected in self.tactics.items()
@@ -1501,6 +1685,8 @@ class PygameSimulatorUI:
         threading.Thread(target=self._worker, args=(args,), daemon=True).start()
 
     def _load_selected_graph(self) -> None:
+        if not ENABLE_ITERATION_TREE_RENDERING:
+            return
         if self.selected_row is None or self.simulator is None:
             return
         row = self.rows[self.selected_row]
@@ -1979,9 +2165,13 @@ class PygameSimulatorUI:
                 "completed": False,
             }
             self._upsert_progress_row(payload)
-            if event_kind in {"position_started", "node_progress"}:
+            if ENABLE_ITERATION_TREE_RENDERING and event_kind in {
+                "position_started",
+                "node_progress",
+            }:
                 self._merge_live_preview(payload)
-            self._choose_preview_position()
+            if ENABLE_ITERATION_TREE_RENDERING:
+                self._choose_preview_position()
             self.active_position = position_index
             self.live_stats["total_positions"] = int(
                 payload.get("total_positions", self.live_stats["total_positions"])
@@ -2042,7 +2232,8 @@ class PygameSimulatorUI:
             "terminal_count": int(payload["terminal_count"]),
             "completed": True,
         }
-        self._choose_preview_position()
+        if ENABLE_ITERATION_TREE_RENDERING:
+            self._choose_preview_position()
         self._sync_live_node_totals()
         self.progress = done * 100.0 / max(1, total)
         self.progress_bar.set_current_progress(self.progress)
@@ -2292,8 +2483,11 @@ class PygameSimulatorUI:
         for rect, row_index in self.table_row_rects:
             if rect.collidepoint(position):
                 self.selected_row = row_index
-                self._load_selected_graph()
+                if ENABLE_ITERATION_TREE_RENDERING:
+                    self._load_selected_graph()
                 return
+        if not ENABLE_ITERATION_TREE_RENDERING:
+            return
         graph_rect = self._graph_rect()
         if graph_rect.collidepoint(position):
             nearest = self._node_at(position)
@@ -2340,16 +2534,22 @@ class PygameSimulatorUI:
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             graph_node = (
                 self._node_at(event.pos)
-                if self._graph_rect().collidepoint(event.pos)
+                if ENABLE_ITERATION_TREE_RENDERING
+                and self._graph_rect().collidepoint(event.pos)
                 else None
             )
             self._handle_custom_click(event.pos)
             graph_control_clicked = (
-                self.expand_all_button.rect.collidepoint(event.pos)
-                or self.collapse_all_button.rect.collidepoint(event.pos)
-                or self.locate_root_button.rect.collidepoint(event.pos)
+                ENABLE_ITERATION_TREE_RENDERING
+                and (
+                    self.expand_all_button.rect.collidepoint(event.pos)
+                    or self.collapse_all_button.rect.collidepoint(event.pos)
+                    or self.locate_root_button.rect.collidepoint(event.pos)
+                )
             )
             if (
+                ENABLE_ITERATION_TREE_RENDERING
+                and
                 self._graph_rect().collidepoint(event.pos)
                 and graph_node is None
                 and not graph_control_clicked
@@ -2363,7 +2563,9 @@ class PygameSimulatorUI:
             self.graph_pan[0] = self.pan_origin[0] + event.pos[0] - self.drag_origin[0]
             self.graph_pan[1] = self.pan_origin[1] + event.pos[1] - self.drag_origin[1]
         elif event.type == pygame.MOUSEWHEEL:
-            if self._graph_rect().collidepoint(pygame.mouse.get_pos()):
+            if ENABLE_ITERATION_TREE_RENDERING and self._graph_rect().collidepoint(
+                pygame.mouse.get_pos()
+            ):
                 self.graph_zoom = max(0.25, min(2.4, self.graph_zoom * (1.12 ** event.y)))
         self.manager.process_events(event)
 
@@ -2535,6 +2737,8 @@ class PygameSimulatorUI:
     def draw(self) -> None:
         current_lambda = round(float(self.lambda_slider.get_current_value()), 2)
         if (
+            ENABLE_ITERATION_TREE_RENDERING
+            and
             not self.running
             and not self.paused
             and self.graph.get("nodes")
@@ -2544,7 +2748,10 @@ class PygameSimulatorUI:
         self.screen.fill(BACKGROUND)
         self._draw_config()
         self._draw_table()
-        self._draw_graph()
+        if ENABLE_ITERATION_TREE_RENDERING:
+            self._draw_graph()
+        else:
+            self._draw_iteration_tree_disabled()
         self._update_option_hover_tooltip()
         self._update_input_hover_tooltip()
         self._text(self.status, (18, 752), size=12, color=MUTED, max_width=285)
