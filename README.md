@@ -59,7 +59,7 @@ cp .env.example .env   # 首次使用
 ./.venv/Scripts/python.exe scripts/analyze_cheap_talk.py
 ```
 
-runner 自动清理 zen/公益站时期的环境开关、关闭局后反思（省 7 次调用/局）、
+runner 自动清理早期环境开关、关闭局后反思（省 7 次调用/局）、
 按组设置战术注入；带余额熔断（疑似 402 停跑，余额以**前后差额**核算，
 接口单次读数会抖动）。同一 seed 重跑会覆盖旧文件，扩样直接接着现有种子往后编。
 
