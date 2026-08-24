@@ -55,7 +55,9 @@ class ActionValidator:
             if not target.alive:
                 return False
             # 廉价磋商板子：允许狼人自刀（骗女巫解药）；仍禁止刀狼队友
-            self_knife_ok = bool(state.board_options.get("wolf_self_knife")) and decision.action_type == ActionType.ATTACK
+            self_knife_ok = (
+                bool(state.board_options.get("wolf_self_knife")) and decision.action_type == ActionType.ATTACK
+            )
             if target.id == actor.id and decision.action_type in {
                 ActionType.VOTE,
                 ActionType.DIVINE,

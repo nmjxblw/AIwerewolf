@@ -17,6 +17,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+
 from backend.engine.visibility import PlayerView
 
 # ============================================================
@@ -289,9 +290,7 @@ class BeliefTracker:
         if self.claims:
             lines = ["=== 角色声称 ==="]
             for c in self.claims[-8:]:
-                lines.append(
-                    f"  {c.seat}号:{c.player_name} 声称是 {c.claimed_role} (D{c.day}, {c.context})"
-                )
+                lines.append(f"  {c.seat}号:{c.player_name} 声称是 {c.claimed_role} (D{c.day}, {c.context})")
             parts.append("\n".join(lines))
 
         if self.contradictions:
@@ -391,9 +390,7 @@ class Observation:
     """BeliefTracker 生成的局势摘要文本（直接注入 prompt）"""
 
 
-def observe(
-    view: PlayerView, role: str, tracker: Optional[BeliefTracker] = None
-) -> Observation:
+def observe(view: PlayerView, role: str, tracker: Optional[BeliefTracker] = None) -> Observation:
     """Build an Observation from a PlayerView.
 
     Args:
@@ -480,8 +477,7 @@ def observe(
     known_wolves = list(getattr(view, "known_wolves", []) or [])
     if known_wolves:
         obs.private["known_wolves"] = [
-            f"{wolf.get('seat', '?')}号:{wolf.get('name', wolf.get('id', '?'))}"
-            for wolf in known_wolves
+            f"{wolf.get('seat', '?')}号:{wolf.get('name', wolf.get('id', '?'))}" for wolf in known_wolves
         ]
     for e in view.private_events:
         payload = e.get("payload", {}) or {}
@@ -530,9 +526,7 @@ def format_observation(obs: Observation) -> str:
     ]
 
     if obs.legal_targets:
-        lines.append(
-            f"合法目标：{'，'.join(f'{p.seat}号:{p.name}' for p in obs.legal_targets)}"
-        )
+        lines.append(f"合法目标：{'，'.join(f'{p.seat}号:{p.name}' for p in obs.legal_targets)}")
 
     if obs.speeches:
         lines.append("\n=== 今日发言 ===")

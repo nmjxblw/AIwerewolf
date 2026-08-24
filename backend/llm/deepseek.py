@@ -57,6 +57,7 @@ def _min_request_interval() -> float:
         logger.warning("Invalid LLM_MIN_REQUEST_INTERVAL=%r; disabled", raw)
         return 0.0
 
+
 # ---------------------------------------------------------------------------
 # Timeout / Retry — modelled on anthropic.DEFAULT_TIMEOUT + DEFAULT_MAX_RETRIES
 # ---------------------------------------------------------------------------

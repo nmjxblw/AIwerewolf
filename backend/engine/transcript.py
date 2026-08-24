@@ -150,9 +150,7 @@ def render_transcript(
                     f"{_public_label(players_index, v)}→{_public_label(players_index, t) or '空刀'}"
                     for v, t in (payload.get("current_votes") or {}).items()
                 )
-            lines.append(
-                f"[夜行动] {actor} {action} → {target or '（无目标/空刀）'}{ignored}｜理由：{reason}{extra}"
-            )
+            lines.append(f"[夜行动] {actor} {action} → {target or '（无目标/空刀）'}{ignored}｜理由：{reason}{extra}")
         elif etype == EventType.PRIVATE_INFO.value:
             kind = str(payload.get("kind", ""))
             if kind == "wolf_chat_message":

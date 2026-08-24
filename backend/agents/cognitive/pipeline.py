@@ -32,9 +32,7 @@ from backend.agents.cognitive.prompts import build_strategy_bias_block
 from backend.agents.cognitive.prompts import build_think_prompt
 from backend.agents.cognitive.prompts import build_vote_prompt
 from backend.agents.cognitive.retrieval import format_strategies_for_prompt
-from backend.agents.cognitive.retrieval import (
-    retrieve_strategies as retrieve_strategies_tfidf,
-)
+from backend.agents.cognitive.retrieval import retrieve_strategies as retrieve_strategies_tfidf
 from backend.agents.cognitive.retrieval_prod import retrieve_strategies_prod
 
 
@@ -68,18 +66,13 @@ class Pipeline:
         self._strategy_bias = strategy_bias or {}
         self._persona_mbti = persona_mbti
         self._persona_style = persona_style
-        self._use_agent_loop = (
-            use_agent_loop
-            and os.getenv("COGNITIVE_USE_AGENT_LOOP", "true").lower() != "false"
-        )
+        self._use_agent_loop = use_agent_loop and os.getenv("COGNITIVE_USE_AGENT_LOOP", "true").lower() != "false"
         self._retrieval_policy = retrieval_policy
         self._player_id = player_id
         self._game_id = game_id
         self._feature_flags = dict(feature_flags or {})
         self._cached_analysis: str = ""
-        self._tentative_vote: dict[str, str] = (
-            {}
-        )  # {target, reasoning} from speech for vote reuse
+        self._tentative_vote: dict[str, str] = {}  # {target, reasoning} from speech for vote reuse
 
     # ================================================================
     # Public API (called by CognitiveAgent)
@@ -120,9 +113,7 @@ class Pipeline:
             return self._run_loop_vote(obs, memory, vote_temperature=vote_temperature)
         return self._run_legacy_vote(obs, memory)
 
-    def run_night(
-        self, obs: Observation, memory: Memory, extra: str = ""
-    ) -> dict[str, Any]:
+    def run_night(self, obs: Observation, memory: Memory, extra: str = "") -> dict[str, Any]:
         """Generate night action via agent loop (or legacy chain)."""
         if self._use_agent_loop:
             return self._run_loop_night(obs, memory, extra)
@@ -130,9 +121,7 @@ class Pipeline:
 
     def direct_call(self, user_prompt: str, max_tokens: int = 500) -> str:
         """Single LLM call for special actions (shoot, boom, badge transfer)."""
-        return self._call_legacy(
-            self._system_prompt, user_prompt, max_tokens=max_tokens
-        )
+        return self._call_legacy(self._system_prompt, user_prompt, max_tokens=max_tokens)
 
     def get_tentative_vote(self) -> dict[str, str]:
         """Return the tentative vote captured from the last speech (Plan A optimisation)."""
@@ -185,9 +174,7 @@ class Pipeline:
             self._tentative_vote = {"raw": tentative}
         else:
             self._tentative_vote = {}
-        return trace_keys.copy_loop_result_keys(
-            result, {"speech": speech, "reasoning": reasoning}
-        )
+        return trace_keys.copy_loop_result_keys(result, {"speech": speech, "reasoning": reasoning})
 
     def _run_loop_vote(
         self,
@@ -217,9 +204,7 @@ class Pipeline:
             },
         )
 
-    def _run_loop_night(
-        self, obs: Observation, memory: Memory, extra: str
-    ) -> dict[str, Any]:
+    def _run_loop_night(self, obs: Observation, memory: Memory, extra: str) -> dict[str, Any]:
         loop = AgentLoop(
             self._llm,
             self._system_prompt,
@@ -261,9 +246,7 @@ class Pipeline:
         think_result = self._legacy_think(obs, memory, obs_result)
         return self._legacy_act_vote(obs, think_result)
 
-    def _run_legacy_night(
-        self, obs: Observation, memory: Memory, extra: str
-    ) -> dict[str, str]:
+    def _run_legacy_night(self, obs: Observation, memory: Memory, extra: str) -> dict[str, str]:
         obs_result = self._legacy_observe(obs)
         think_result = self._legacy_think(obs, memory, obs_result)
         return self._legacy_act_night(obs, think_result, extra)
@@ -279,9 +262,7 @@ class Pipeline:
     def _legacy_think(self, obs: Observation, memory: Memory, obs_result: str) -> str:
         strategies = []
         if self._feature_flags.get("enable_strategy", True):
-            strategies = retrieve_strategies_prod(
-                obs.player_role, obs.phase, situation=obs_result, limit=3
-            )
+            strategies = retrieve_strategies_prod(obs.player_role, obs.phase, situation=obs_result, limit=3)
             if not strategies:
                 strategies = retrieve_strategies_tfidf(
                     obs.player_role,
@@ -318,9 +299,7 @@ class Pipeline:
         result = self._call_legacy(self._system_prompt, prompt, max_tokens=300)
         return parse_json_target(result)
 
-    def _legacy_act_night(
-        self, obs: Observation, think_result: str, extra: str
-    ) -> dict[str, str]:
+    def _legacy_act_night(self, obs: Observation, think_result: str, extra: str) -> dict[str, str]:
         prompt = build_night_prompt(obs, think_result, extra)
         result = self._call_legacy(self._system_prompt, prompt, max_tokens=300)
         return parse_json_target(result)

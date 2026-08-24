@@ -24,7 +24,10 @@ _FIRST_PERSON_CLAIM_PATTERNS: tuple[tuple[str, str], ...] = (
     (r"我(?:就|才|真的?|一直|现在|正式|都|可|肯定)?是[^。，！？!?,\n]{0,2}(?:预言家|先知)", "自称预言家"),
     (r"(?:预言家|先知)[^。，！？!?,\n]{0,4}是我", "自称预言家"),
     (r"我[^。，！？!?,\n]{0,4}(?:起)?跳[^。，！？!?,\n]{0,8}(?:预言家|先知)", "跳预言家"),
-    (r"我(?:昨天|昨夜|昨晚|前夜|夜里|第[0-9一二三四五六七八九十]+夜)[^。，！？!?,\n]{0,6}(?:查验|检查|查|验)[了过的到]?", "声称查验"),
+    (
+        r"我(?:昨天|昨夜|昨晚|前夜|夜里|第[0-9一二三四五六七八九十]+夜)[^。，！？!?,\n]{0,6}(?:查验|检查|查|验)[了过的到]?",
+        "声称查验",
+    ),
     (r"我(?:查验|检查)[了过到]?\s*[0-9一二三四五六七八九十]+\s*号", "声称查验"),
     (r"我[查验][了过的到]?\s*[0-9一二三四五六七八九十]+\s*号", "声称查验"),
     (r"我(?:的)?(?:查验|检查)结果", "声称查验"),
@@ -40,9 +43,7 @@ _COMPILED = tuple((re.compile(pattern), label) for pattern, label in _FIRST_PERS
 # Strip the hypothetical clause (marker up to the first comma/sentence end)
 # before checking; remaining clauses still get checked, so
 # "就算我是预言家吧，反正我昨晚查了3号" still trips on the second clause.
-_HYPOTHETICAL_CLAUSE = re.compile(
-    r"(?:如果|要是|假如|若|就算|即使|万一|好比|比如|譬如说)[^。！？!?,，]*[，,。！？!?]?"
-)
+_HYPOTHETICAL_CLAUSE = re.compile(r"(?:如果|要是|假如|若|就算|即使|万一|好比|比如|譬如说)[^。！？!?,，]*[，,。！？!?]?")
 
 
 def detect_fake_seer_claim(text: str) -> str | None:

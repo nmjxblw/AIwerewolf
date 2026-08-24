@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from collections import Counter
 from pathlib import Path
 
@@ -66,9 +65,7 @@ def analyze_group(label: str, dir_name: str, desc: str, include_seed100: bool) -
         "village_rate_pct": round(village / n * 100, 1),
         "avg_days": round(sum(g["days"] for g in games) / n, 1),
         "day1_exile_roles": dict(exile_roles),
-        "day1_exiled_wolf_pct": round(
-            sum(1 for g in games if day1_exile_role(g) == "Werewolf") / n * 100, 1
-        ),
+        "day1_exiled_wolf_pct": round(sum(1 for g in games if day1_exile_role(g) == "Werewolf") / n * 100, 1),
         "day1_nonseer_claims_total": sum(g.get("day1_nonseer_claims", 0) for g in games),
         "day1_claim_games": sum(1 for g in games if g.get("day1_nonseer_claims", 0) > 0),
         "empty_knife_nights": sum(g.get("empty_knife_nights", 0) for g in games),
@@ -113,7 +110,9 @@ def main() -> None:
         if s.get("n", 0) == 0:
             continue
         lines.append(f"## {s['label']} — {s['desc']}")
-        lines.append(f"- 局数 {s['n']}（seeds {s['seeds']}），好人胜 {s['village_wins']}（{s['village_rate_pct']}%），均 {s['avg_days']} 天")
+        lines.append(
+            f"- 局数 {s['n']}（seeds {s['seeds']}），好人胜 {s['village_wins']}（{s['village_rate_pct']}%），均 {s['avg_days']} 天"
+        )
         lines.append(f"- D1 放逐角色分布: {s['day1_exile_roles']}｜D1 放逐到狼比例 {s['day1_exiled_wolf_pct']}%")
         lines.append(
             f"- 假跳（非预言家声称）总次数 {s['day1_nonseer_claims_total']}，出现假跳的局数 {s['day1_claim_games']}；"

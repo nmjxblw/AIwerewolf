@@ -37,9 +37,7 @@ def _legacy_spec(spec: _RegistryRoleSpec) -> RoleSpec:
     )
 
 
-ROLE_SPECS: dict[Role, RoleSpec] = {
-    role: _legacy_spec(spec) for role, spec in ROLE_REGISTRY.items()
-}
+ROLE_SPECS: dict[Role, RoleSpec] = {role: _legacy_spec(spec) for role, spec in ROLE_REGISTRY.items()}
 
 
 DEFAULT_ROLE_SET: tuple[Role, ...] = (

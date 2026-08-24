@@ -326,11 +326,7 @@ class GameState:
             "phase": self._public_phase(),
             "day": self.day,
             "players": [player.public_dict() for player in self.players],
-            "events": [
-                self._public_event_dict(event)
-                for event in self.events
-                if event.visibility == "public"
-            ],
+            "events": [self._public_event_dict(event) for event in self.events if event.visibility == "public"],
             "votes": dict(self.votes),
             "vote_history": dict(self.vote_history),
             "day_history": dict(self.day_history),
@@ -420,9 +416,7 @@ class GameState:
         data["phase"] = self.phase.value
         data["players"] = [player.private_dict() for player in self.players]
         data["events"] = [event.to_dict() for event in self.events]
-        data["pending_input"] = (
-            self.pending_input.to_dict() if self.pending_input else None
-        )
+        data["pending_input"] = self.pending_input.to_dict() if self.pending_input else None
         data["night_actions"] = {
             "guard_target_id": self.night_actions.guard_target_id,
             "last_guard_target_id": self.night_actions.last_guard_target_id,

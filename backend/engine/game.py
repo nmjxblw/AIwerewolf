@@ -60,7 +60,8 @@ def _filter_personas_pool(names: list[str], count: int, seed: int | None) -> lis
     full PERSONA_POOL (avoiding duplicates where possible).
     """
     import random as _random
-    from backend.agents.characters import PERSONA_POOL, PERSONA_BY_NAME
+
+    from backend.agents.characters import PERSONA_POOL
 
     rng = _random.Random(seed or 0)
     # Build a lookup: name → persona dict
@@ -96,6 +97,7 @@ def _filter_personas_pool(names: list[str], count: int, seed: int | None) -> lis
 def _shuffle_personas_pool(count: int, seed: int | None) -> list[dict]:
     """Shuffle in-memory PERSONA_POOL by seed for random persona assignment."""
     import random as _random
+
     from backend.agents.characters import PERSONA_POOL
 
     rng = _random.Random(seed or 0)
@@ -166,9 +168,7 @@ def _strip_public_speech_artifacts(text: str) -> str:
         if cleaned.lower().startswith(prefix.lower()):
             cleaned = cleaned[len(prefix) :].strip()
 
-    if (cleaned.startswith('"') and cleaned.endswith('"')) or (
-        cleaned.startswith("'") and cleaned.endswith("'")
-    ):
+    if (cleaned.startswith('"') and cleaned.endswith('"')) or (cleaned.startswith("'") and cleaned.endswith("'")):
         cleaned = cleaned[1:-1].strip()
     if cleaned.startswith("“") and cleaned.endswith("”"):
         cleaned = cleaned[1:-1].strip()
@@ -187,9 +187,7 @@ def _strip_public_speech_artifacts(text: str) -> str:
             marker in normalized for marker in ("分析", "局势", "现在我是", "需要")
         ):
             continue
-        if normalized.startswith(
-            ("思考：", "思考:", "分析：", "分析:", "推理：", "推理:")
-        ):
+        if normalized.startswith(("思考：", "思考:", "分析：", "分析:", "推理：", "推理:")):
             continue
         kept.append(line)
 
@@ -211,11 +209,7 @@ def _split_public_speech_segment(text: str, max_chars: int = 140) -> list[str]:
             segments.append(paragraph)
             continue
         buffer = ""
-        sentences = [
-            match.group(0).strip()
-            for match in _SENTENCE_RE.finditer(paragraph)
-            if match.group(0).strip()
-        ]
+        sentences = [match.group(0).strip() for match in _SENTENCE_RE.finditer(paragraph) if match.group(0).strip()]
         if not sentences:
             segments.append(paragraph)
             continue
@@ -297,9 +291,7 @@ class WerewolfGame:
             if custom_roles:
                 exclude_set = [Role(r) for r in custom_roles.get("exclude", [])]
                 include_set = [Role(r) for r in custom_roles.get("include", [])]
-                roles = build_custom_role_config(
-                    player_count, exclude=exclude_set, include=include_set
-                )
+                roles = build_custom_role_config(player_count, exclude=exclude_set, include=include_set)
             else:
                 roles = get_role_configuration(player_count)
             players = build_players(roles, seed=seed)
@@ -390,13 +382,9 @@ class WerewolfGame:
         # Agent 独占锁：保护并发 _batch_ask 时的 agent.update() 和决策调用
         self._agent_locks: dict[str, _threading.RLock] = {}
         if persona_names:
-            sampled_personas = _filter_personas_pool(
-                persona_names, len(self.state.players), seed
-            )
+            sampled_personas = _filter_personas_pool(persona_names, len(self.state.players), seed)
         else:
-            sampled_personas = sampled_personas or self._sample_personas(
-                len(self.state.players), seed
-            )
+            sampled_personas = sampled_personas or self._sample_personas(len(self.state.players), seed)
         if not sampled_personas:
             # DB unavailable — shuffle in-memory PERSONA_POOL per seed so
             # each MBTI plays different roles across games (not name-bound).
@@ -496,9 +484,7 @@ class WerewolfGame:
     def _log_night_phase_completed(self, phase: Phase) -> None:
         with self._shared_lock:
             has_public_action = any(
-                event.type == EventType.NIGHT_ACTION
-                and event.visibility == "public"
-                and event.phase == phase
+                event.type == EventType.NIGHT_ACTION and event.visibility == "public" and event.phase == phase
                 for event in self.state.events
             )
             if has_public_action:
@@ -577,8 +563,7 @@ class WerewolfGame:
         recent_deaths = [
             player
             for player in self.state.players
-            if not player.alive
-            and player.death_day in (self.state.day - 1, self.state.day)
+            if not player.alive and player.death_day in (self.state.day - 1, self.state.day)
         ]
         if not recent_deaths:
             return None
@@ -599,13 +584,17 @@ class WerewolfGame:
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
-                {"message": "【规则公告】本局白天放逐目标由公共随机装置（全员报数取模）指定，等价于均匀随机指定一名存活玩家；所有玩家必须按装置结果投票，装置结果对所有人生效。"},
+                {
+                    "message": "【规则公告】本局白天放逐目标由公共随机装置（全员报数取模）指定，等价于均匀随机指定一名存活玩家；所有玩家必须按装置结果投票，装置结果对所有人生效。"
+                },
             )
         if self.honesty_rule:
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
-                {"message": "【规则公告】本局启用诚实规则：只有真正的预言家可以在发言中声称预言家身份、公布查验结果或发放金水/查杀；其他玩家发言中不得自称或暗示自己是预言家/先知、不得声称自己查验过任何玩家、不得给任何人金水或查杀。违反诚实规则的发言将被系统当场驳回。"},
+                {
+                    "message": "【规则公告】本局启用诚实规则：只有真正的预言家可以在发言中声称预言家身份、公布查验结果或发放金水/查杀；其他玩家发言中不得自称或暗示自己是预言家/先知、不得声称自己查验过任何玩家、不得给任何人金水或查杀。违反诚实规则的发言将被系统当场驳回。"
+                },
             )
         for player in self.state.players:
             view = self.visibility.for_player(self.state, player.id)
@@ -747,17 +736,13 @@ class WerewolfGame:
         # these apart because both have NIGHT_START marked done for the current
         # day. Without the phase check, day stays at 1 and play_until_blocked
         # spins forever on DAY_RESOLVE → run(NIGHT_START) → skip.
-        if self._phase_done(Phase.NIGHT_START) and self.state.phase.value.startswith(
-            "NIGHT"
-        ):
+        if self._phase_done(Phase.NIGHT_START) and self.state.phase.value.startswith("NIGHT"):
             return
         self.state.day = self.state.day + 1
         self.state.votes = {}
         self.state.pk_targets = []
         self.state.pk_source = None
-        self.state.night_actions = NightActions(
-            last_guard_target_id=self.state.night_actions.last_guard_target_id
-        )
+        self.state.night_actions = NightActions(last_guard_target_id=self.state.night_actions.last_guard_target_id)
         self.state.current_speaker_id = None
         self.state.phase_cursor = {}
         self.interrupt_phase_cycle = False
@@ -820,9 +805,7 @@ class WerewolfGame:
         self._log(
             EventType.SYSTEM_MESSAGE,
             "public",
-            {
-                "message": f"Badge signup opens. Candidates: {', '.join(candidate_names)}."
-            },
+            {"message": f"Badge signup opens. Candidates: {', '.join(candidate_names)}."},
         )
         self._mark_phase_done(Phase.DAY_BADGE_SIGNUP)
 
@@ -834,16 +817,11 @@ class WerewolfGame:
             self._mark_phase_done(Phase.DAY_BADGE_SPEECH)
             return
         candidates = self._seat_sorted(
-            [
-                self.state.player(candidate_id)
-                for candidate_id in self.state.badge.candidates
-            ]
+            [self.state.player(candidate_id) for candidate_id in self.state.badge.candidates]
         )
 
         if self.parallel_speech:
-            decisions = self._batch_ask(
-                candidates, "BADGE_SPEECH", lambda agent: agent.talk()
-            )
+            decisions = self._batch_ask(candidates, "BADGE_SPEECH", lambda agent: agent.talk())
             for player, decision in zip(candidates, decisions):
                 if not isinstance(decision, Decision):
                     continue
@@ -879,11 +857,7 @@ class WerewolfGame:
             return
         self._set_phase(Phase.DAY_BADGE_ELECTION)
         candidates = self._seat_sorted(
-            [
-                self.state.player(pid)
-                for pid in self.state.badge.candidates
-                if self.state.player(pid).alive
-            ]
+            [self.state.player(pid) for pid in self.state.badge.candidates if self.state.player(pid).alive]
         )
         if len(candidates) < 1:
             self.state.badge.candidates = []
@@ -893,13 +867,7 @@ class WerewolfGame:
         candidate_ids = {player.id for player in candidates}
 
         # Voters in seat order, candidates excluded.
-        voters = self._seat_sorted(
-            [
-                player
-                for player in self.state.alive_players
-                if player.id not in candidate_ids
-            ]
-        )
+        voters = self._seat_sorted([player for player in self.state.alive_players if player.id not in candidate_ids])
         if not voters:
             voters = self._seat_sorted(self.state.alive_players)
 
@@ -1031,20 +999,14 @@ class WerewolfGame:
         with self._shared_lock:
             self.state.night_actions.guard_target_id = decision.target_id
             self.state.night_actions.last_guard_target_id = decision.target_id
-        self._log_decision(
-            decision, "private", {"target_id": decision.target_id}, [guard.id]
-        )
+        self._log_decision(decision, "private", {"target_id": decision.target_id}, [guard.id])
         self._log_night_phase_completed(Phase.NIGHT_GUARD_ACTION)
         self._mark_phase_done(Phase.NIGHT_GUARD_ACTION)
 
     def _wolf_phase(self) -> None:
         if self._phase_done(Phase.NIGHT_WOLF_ACTION):
             return
-        wolves = [
-            player
-            for player in self.state.alive_players
-            if player.alignment == Alignment.WOLF
-        ]
+        wolves = [player for player in self.state.alive_players if player.alignment == Alignment.WOLF]
         if not wolves:
             self._mark_phase_done(Phase.NIGHT_WOLF_ACTION)
             return
@@ -1096,9 +1058,7 @@ class WerewolfGame:
                     "wolf_id": voter_id,
                     "wolf_name": self.state.player(voter_id).name,
                     "target_id": target_id,
-                    "target_name": (
-                        self.state.player(target_id).name if target_id else None
-                    ),
+                    "target_name": (self.state.player(target_id).name if target_id else None),
                 }
                 for voter_id, target_id in self.state.night_actions.wolf_votes.items()
                 if target_id
@@ -1134,33 +1094,23 @@ class WerewolfGame:
                 {
                     "kind": "wolf_attack_vote",
                     "target_id": decision.target_id,
-                    "target_name": (
-                        self.state.player(decision.target_id).name
-                        if decision.target_id
-                        else None
-                    ),
+                    "target_name": (self.state.player(decision.target_id).name if decision.target_id else None),
                     "current_votes": dict(self.state.night_actions.wolf_votes),
                 },
                 wolf_ids,
             )
 
-        self._run_actor_sequence(
-            Phase.NIGHT_WOLF_ACTION, self._seat_sorted(wolves), handle
-        )
+        self._run_actor_sequence(Phase.NIGHT_WOLF_ACTION, self._seat_sorted(wolves), handle)
         # 计票：空刀票（target 为空）不参与具体目标多数；全部空刀 → 空刀
         # （平安夜）。只要有具体目标票，就在具体目标中取多数（沿用确定性
         # 平票字典序规则）。
         actual_votes = {
-            voter_id: target_id
-            for voter_id, target_id in self.state.night_actions.wolf_votes.items()
-            if target_id
+            voter_id: target_id for voter_id, target_id in self.state.night_actions.wolf_votes.items() if target_id
         }
         empty_votes = len(self.state.night_actions.wolf_votes) - len(actual_votes)
         if actual_votes:
             with self._shared_lock:
-                self.state.night_actions.wolf_target_id = self._majority_target(
-                    actual_votes
-                )
+                self.state.night_actions.wolf_target_id = self._majority_target(actual_votes)
             final_target = self.state.player(self.state.night_actions.wolf_target_id)
             empty_note = f"（{empty_votes} 票空刀）" if empty_votes else ""
             self._log(
@@ -1214,9 +1164,7 @@ class WerewolfGame:
             return
         self._set_phase(Phase.NIGHT_WITCH_ACTION)
         victim_id = self.state.night_actions.wolf_target_id
-        decisions = self._ask(
-            witch, "WITCH", lambda agent: agent.witch_act(victim_id), many=True
-        )
+        decisions = self._ask(witch, "WITCH", lambda agent: agent.witch_act(victim_id), many=True)
         for decision in decisions:
             if decision.action_type == ActionType.WITCH_SAVE:
                 if self.state.abilities.witch_heal_used:
@@ -1227,9 +1175,7 @@ class WerewolfGame:
                             decision,
                             "witch antidote already used",
                         )
-                    logger.warning(
-                        f"Witch {witch.name} save rejected: heal already used"
-                    )
+                    logger.warning(f"Witch {witch.name} save rejected: heal already used")
                     continue
                 if decision.target_id != victim_id:
                     if self._requires_strict_llm_decision(witch, decision):
@@ -1261,9 +1207,7 @@ class WerewolfGame:
                             decision,
                             "witch save validator failed",
                         )
-                    logger.warning(
-                        f"Witch {witch.name} save rejected: validator failed"
-                    )
+                    logger.warning(f"Witch {witch.name} save rejected: validator failed")
             elif decision.action_type == ActionType.WITCH_POISON:
                 if self.state.abilities.witch_poison_used:
                     if self._requires_strict_llm_decision(witch, decision):
@@ -1273,16 +1217,12 @@ class WerewolfGame:
                             decision,
                             "witch poison already used",
                         )
-                    logger.warning(
-                        f"Witch {witch.name} poison rejected: poison already used"
-                    )
+                    logger.warning(f"Witch {witch.name} poison rejected: poison already used")
                     continue
                 if self.validator.validate(self.state, decision):
                     with self._shared_lock:
                         self.state.abilities.witch_poison_used = True
-                        self.state.night_actions.witch_poison_target_id = (
-                            decision.target_id
-                        )
+                        self.state.night_actions.witch_poison_target_id = decision.target_id
                     self._log_decision(
                         decision,
                         "private",
@@ -1297,9 +1237,7 @@ class WerewolfGame:
                             decision,
                             "witch poison validator failed",
                         )
-                    logger.warning(
-                        f"Witch {witch.name} poison rejected: validator failed"
-                    )
+                    logger.warning(f"Witch {witch.name} poison rejected: validator failed")
             elif decision.action_type == ActionType.SKIP:
                 self._log_decision(decision, "private", {"skipped": True}, [witch.id])
             elif self._requires_strict_llm_decision(witch, decision):
@@ -1370,21 +1308,15 @@ class WerewolfGame:
         witch_save = self.state.night_actions.witch_save
 
         # 奶穿判定：同时被守卫守护和女巫解药救 → 死亡（CLAUDE.md 核心规则）
-        both_guarded_and_saved = (
-            wolf_target_id and witch_save and wolf_target_id == guard_target_id
-        )
+        both_guarded_and_saved = wolf_target_id and witch_save and wolf_target_id == guard_target_id
 
         if wolf_target_id:
             if both_guarded_and_saved:
                 # 同守同救（奶穿）→ 死
-                deaths.append(
-                    {"player_id": wolf_target_id, "reason": "guard_witch_conflict"}
-                )
+                deaths.append({"player_id": wolf_target_id, "reason": "guard_witch_conflict"})
             elif not witch_save and wolf_target_id != guard_target_id:
                 # 既没被守也没被救 → 死
-                deaths.append(
-                    {"player_id": wolf_target_id, "reason": "werewolf_killed"}
-                )
+                deaths.append({"player_id": wolf_target_id, "reason": "werewolf_killed"})
             # else: 只被守或只被救（但不同时）→ 活
 
         poison_target_id = self.state.night_actions.witch_poison_target_id
@@ -1401,9 +1333,7 @@ class WerewolfGame:
         for death in unique_deaths:
             self._kill(death["player_id"], death["reason"])
         if unique_deaths:
-            names = [
-                self.state.player(death["player_id"]).name for death in unique_deaths
-            ]
+            names = [self.state.player(death["player_id"]).name for death in unique_deaths]
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
@@ -1423,9 +1353,7 @@ class WerewolfGame:
                 self._hunter_shoot_from_pending()
         if self.pending_badge_transfer_from_id and self.state.winner is None:
             self._badge_transfer_from_pending()
-            self._set_phase(
-                Phase.NIGHT_RESOLVE
-            )  # restore: while-loop routes NIGHT_RESOLVE → DAY
+            self._set_phase(Phase.NIGHT_RESOLVE)  # restore: while-loop routes NIGHT_RESOLVE → DAY
         # If hunter shot happened, restore phase so the main while-loop routes
         # NIGHT_RESOLVE → DAY_START instead of HUNTER_SHOOT → NIGHT_START.
         if self.state.phase != Phase.NIGHT_RESOLVE:
@@ -1524,11 +1452,7 @@ class WerewolfGame:
         if self.disable_speech:
             return
         self._set_phase(Phase.DAY_PK_SPEECH)
-        pk_players = [
-            self.state.player(player_id)
-            for player_id in target_ids
-            if self.state.player(player_id).alive
-        ]
+        pk_players = [self.state.player(player_id) for player_id in target_ids if self.state.player(player_id).alive]
         if not pk_players:
             return
         names = ", ".join(player.name for player in pk_players)
@@ -1573,12 +1497,14 @@ class WerewolfGame:
             # among ALL alive players and compliance is compulsory — a
             # defector would be identified and exiled (paper §3), so in
             # equilibrium everyone votes the designated target.
-            candidates = self._seat_sorted([p for p in self.state.alive_players])
+            candidates = self._seat_sorted(list(self.state.alive_players))
             designated = self.device_rng.choice(candidates)
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
-                {"message": f"随机投票装置（全员报数取模）指定 {designated.seat}号:{designated.name} 为今日放逐目标，全体玩家依装置结果投票。"},
+                {
+                    "message": f"随机投票装置（全员报数取模）指定 {designated.seat}号:{designated.name} 为今日放逐目标，全体玩家依装置结果投票。"
+                },
             )
             for voter in sorted_voters:
                 self.state.votes[voter.id] = designated.id
@@ -1617,8 +1543,7 @@ class WerewolfGame:
             if voter.id in self.state.votes:
                 continue
             if not self.validator.validate(self.state, decision) or (
-                allowed_targets is not None
-                and decision.target_id not in allowed_targets
+                allowed_targets is not None and decision.target_id not in allowed_targets
             ):
                 if self._requires_strict_llm_decision(voter, decision):
                     self._raise_invalid_llm_decision(
@@ -1674,18 +1599,11 @@ class WerewolfGame:
                 # the tied players uniformly at random — no PK revote.
                 chosen = self.tiebreak_rng.choice(sorted(target_ids))
                 chosen_player = self.state.player(chosen)
-                tied_names = ", ".join(
-                    self.state.player(tid).name for tid in sorted(target_ids)
-                )
+                tied_names = ", ".join(self.state.player(tid).name for tid in sorted(target_ids))
                 self._log(
                     EventType.SYSTEM_MESSAGE,
                     "public",
-                    {
-                        "message": (
-                            f"Vote tied among {tied_names}. Random tie-break "
-                            f"eliminates {chosen_player.name}."
-                        )
-                    },
+                    {"message": (f"Vote tied among {tied_names}. Random tie-break eliminates {chosen_player.name}.")},
                 )
                 target_ids = [chosen]
             else:
@@ -1693,9 +1611,7 @@ class WerewolfGame:
                 self.state.pk_source = "vote"
                 # Allow the PK round to re-run the speech + vote phases that we
                 # already marked done for the regular day flow.
-                self._clear_phase_done(
-                    Phase.DAY_PK_SPEECH, Phase.DAY_VOTE, Phase.DAY_RESOLVE
-                )
+                self._clear_phase_done(Phase.DAY_PK_SPEECH, Phase.DAY_VOTE, Phase.DAY_RESOLVE)
                 self._pk_speech_phase(target_ids)
                 self.state.votes = {}
                 self._vote_phase()
@@ -1723,9 +1639,7 @@ class WerewolfGame:
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
-                {
-                    "message": f"{executed.name} revealed as Idiot and survives exile, but loses voting rights."
-                },
+                {"message": f"{executed.name} revealed as Idiot and survives exile, but loses voting rights."},
             )
             self.state.pk_targets = []
             self.state.pk_source = None
@@ -1831,9 +1745,7 @@ class WerewolfGame:
         self._emit_speech(player, decision, {"last_words": True})
         self.state.current_speaker_id = None
 
-    def _emit_speech(
-        self, player: Player, decision: Decision, extra_fields: dict
-    ) -> None:
+    def _emit_speech(self, player: Player, decision: Decision, extra_fields: dict) -> None:
         """Emit CHAT_MESSAGE events. Uses pre-parsed segments from metadata if available."""
         raw_segments = decision.metadata.get("segments")
         if raw_segments and isinstance(raw_segments, list) and len(raw_segments) > 0:
@@ -1856,9 +1768,7 @@ class WerewolfGame:
                 "agent_source": decision.metadata.get("source") if i == 0 else "",
                 "agent_model": decision.metadata.get("model") if i == 0 else "",
                 "agent_provider": decision.metadata.get("provider") if i == 0 else "",
-                "agent_fallback": (
-                    bool(decision.metadata.get("fallback", False)) if i == 0 else False
-                ),
+                "agent_fallback": (bool(decision.metadata.get("fallback", False)) if i == 0 else False),
                 **extra_fields,
             }
             self._log(EventType.CHAT_MESSAGE, "public", payload)
@@ -1899,7 +1809,9 @@ class WerewolfGame:
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
-                {"message": f"{player.name} 的发言违反诚实规则（{violation}），系统驳回并要求重新发言（第{retries}次）。"},
+                {
+                    "message": f"{player.name} 的发言违反诚实规则（{violation}），系统驳回并要求重新发言（第{retries}次）。"
+                },
             )
             notify = getattr(self.agents.get(player.id), "notify_speech_rejected", None)
             if callable(notify):
@@ -1922,11 +1834,7 @@ class WerewolfGame:
         return decision
 
     def _maybe_white_wolf_king_boom(self, player: Player) -> bool:
-        if (
-            player.role != Role.WHITE_WOLF_KING
-            or not player.alive
-            or self.state.abilities.white_wolf_king_boom_used
-        ):
+        if player.role != Role.WHITE_WOLF_KING or not player.alive or self.state.abilities.white_wolf_king_boom_used:
             return False
         decision = self._ask(player, "BOOM", lambda agent: agent.boom())
         if decision.action_type != ActionType.BOOM:
@@ -1976,9 +1884,7 @@ class WerewolfGame:
         self._log(
             EventType.SYSTEM_MESSAGE,
             "public",
-            {
-                "message": f"{king.name} self-destructs as White Wolf King and takes {target.name}."
-            },
+            {"message": f"{king.name} self-destructs as White Wolf King and takes {target.name}."},
         )
         if target.role == Role.HUNTER and self.state.abilities.hunter_can_shoot:
             self.pending_hunter_id = target.id
@@ -2074,25 +1980,17 @@ class WerewolfGame:
             if not player.is_ai:
                 queued = self.human_action_buffer.get(player.id, [])
                 if not queued:
-                    self.state.pending_input = self._build_pending_input(
-                        player, request
-                    )
+                    self.state.pending_input = self._build_pending_input(player, request)
                     if self.observer is not None:
                         self.observer(self.state)
-                    raise GamePaused(
-                        f"Waiting for human input: {player.name} {request}"
-                    )
+                    raise GamePaused(f"Waiting for human input: {player.name} {request}")
                 result = queued if many else queued[0]
                 self.human_action_buffer[player.id] = []
                 if isinstance(result, Decision):
-                    self._record_decision(
-                        player, request, view.__dict__, result, raw_output="[human]"
-                    )
+                    self._record_decision(player, request, view.__dict__, result, raw_output="[human]")
                 else:
                     for item in result:
-                        self._record_decision(
-                            player, request, view.__dict__, item, raw_output="[human]"
-                        )
+                        self._record_decision(player, request, view.__dict__, item, raw_output="[human]")
                 return result
             # AI turn — emit a "thinking" snapshot BEFORE we block on the LLM
             # round-trip. The frontend reads `current_speaker_id` to light up the
@@ -2108,28 +2006,21 @@ class WerewolfGame:
                 # Only clear if we set it for this _ask — phases like DAY_SPEECH
                 # already manage current_speaker_id externally and we shouldn't
                 # blow it away.
-                if (
-                    self.state.current_speaker_id == player.id
-                    and prior_speaker != player.id
-                ):
+                if self.state.current_speaker_id == player.id and prior_speaker != player.id:
                     self.state.current_speaker_id = prior_speaker
             if isinstance(result, Decision):
                 raw = str(result.metadata.get("raw_text", ""))
                 reasoning = str(result.metadata.get("reasoning", ""))
                 if reasoning:
                     raw = f"[推理]\n{reasoning[:3000]}\n\n[输出]\n{raw}"
-                self._record_decision(
-                    player, request, view.__dict__, result, raw_output=raw
-                )
+                self._record_decision(player, request, view.__dict__, result, raw_output=raw)
             elif isinstance(result, list):
                 for item in result:
                     raw = str(item.metadata.get("raw_text", ""))
                     reasoning = str(item.metadata.get("reasoning", ""))
                     if reasoning:
                         raw = f"[推理]\n{reasoning[:3000]}\n\n[输出]\n{raw}"
-                    self._record_decision(
-                        player, request, view.__dict__, item, raw_output=raw
-                    )
+                    self._record_decision(player, request, view.__dict__, item, raw_output=raw)
             return result if many else result
 
     def _batch_ask(
@@ -2377,9 +2268,7 @@ class WerewolfGame:
         try:
             self.on_game_start(self.state)
         except Exception:
-            logger.warning(
-                "on_game_start hook failed (non-fatal, game continues)", exc_info=True
-            )
+            logger.warning("on_game_start hook failed (non-fatal, game continues)", exc_info=True)
 
     def _emit_game_end(self) -> None:
         if self.on_game_end is None:
@@ -2423,16 +2312,8 @@ class WerewolfGame:
         # Guard against duplicate calls — winner is already set
         if self.state.winner is not None:
             return True
-        alive_wolves = [
-            player
-            for player in self.state.alive_players
-            if player.alignment == Alignment.WOLF
-        ]
-        alive_village = [
-            player
-            for player in self.state.alive_players
-            if player.alignment == Alignment.VILLAGE
-        ]
+        alive_wolves = [player for player in self.state.alive_players if player.alignment == Alignment.WOLF]
+        alive_village = [player for player in self.state.alive_players if player.alignment == Alignment.VILLAGE]
         winner: Alignment | None = None
         reason = ""
 
@@ -2453,12 +2334,7 @@ class WerewolfGame:
         # 狼人赢：屠边（所有神死 或 所有村民死）— 可通过 kill_side_win 关闭
         elif self.kill_side_win:
             # 区分神民和平民
-            gods = [
-                p
-                for p in alive_village
-                if p.role
-                in {Role.SEER, Role.WITCH, Role.HUNTER, Role.GUARD, Role.IDIOT}
-            ]
+            gods = [p for p in alive_village if p.role in {Role.SEER, Role.WITCH, Role.HUNTER, Role.GUARD, Role.IDIOT}]
             villagers = [p for p in alive_village if p.role == Role.VILLAGER]
 
             if not gods and villagers:
@@ -2472,9 +2348,7 @@ class WerewolfGame:
 
         if winner:
             self.state.winner = winner
-            self._log(
-                EventType.GAME_END, "public", {"winner": winner.value, "reason": reason}
-            )
+            self._log(EventType.GAME_END, "public", {"winner": winner.value, "reason": reason})
             self._refresh_day_summary()
             return True
         return False
@@ -2492,21 +2366,15 @@ class WerewolfGame:
             remaining = [player for player in alive if player not in candidates]
             candidates.extend(remaining[: 2 - len(candidates)])
         if len(candidates) > 3:
-            candidates = sorted(
-                candidates, key=lambda player: (player.seat, player.name)
-            )[:3]
+            candidates = sorted(candidates, key=lambda player: (player.seat, player.name))[:3]
         return candidates
 
     def _pick_badge_successor(self, alive: list[Player]) -> Player:
-        preferred = [
-            player for player in alive if player.alignment == Alignment.VILLAGE
-        ]
+        preferred = [player for player in alive if player.alignment == Alignment.VILLAGE]
         pool = preferred or alive
         return sorted(pool, key=lambda player: (player.seat, player.name))[0]
 
-    def _requires_strict_llm_decision(
-        self, player: Player, decision: Decision | None = None
-    ) -> bool:
+    def _requires_strict_llm_decision(self, player: Player, decision: Decision | None = None) -> bool:
         if not player.is_ai:
             return False
         agent_type = str(player.agent_type).strip().lower()
@@ -2514,15 +2382,7 @@ class WerewolfGame:
             return True
         if decision is None:
             return False
-        source = (
-            str(
-                decision.metadata.get("source")
-                or decision.metadata.get("agent_source")
-                or ""
-            )
-            .strip()
-            .lower()
-        )
+        source = str(decision.metadata.get("source") or decision.metadata.get("agent_source") or "").strip().lower()
         return source in {"llm", "cognitive"}
 
     def _raise_invalid_llm_decision(
@@ -2553,8 +2413,7 @@ class WerewolfGame:
                 and record.day == self.state.day
                 and record.phase == self.state.phase.value
                 and record.request == request
-                and record.parsed_action.get("action_type")
-                == decision.action_type.value
+                and record.parsed_action.get("action_type") == decision.action_type.value
                 and record.parsed_action.get("target_id") == decision.target_id
             ):
                 record.is_valid = False
@@ -2575,17 +2434,13 @@ class WerewolfGame:
                 break
 
     def _alive_role(self, role: Role) -> Player | None:
-        return next(
-            (player for player in self.state.alive_players if player.role == role), None
-        )
+        return next((player for player in self.state.alive_players if player.role == role), None)
 
     def _role_in_roster(self, role: Role) -> bool:
         """Check whether *any* player (dead or alive) has this role."""
         return any(player.role == role for player in self.state.players)
 
-    def _fallback_vote_target(
-        self, voter: Player, target_ids: list[str] | None = None
-    ) -> Player:
+    def _fallback_vote_target(self, voter: Player, target_ids: list[str] | None = None) -> Player:
         allowed = set(target_ids) if target_ids else None
         return next(
             player
@@ -2596,9 +2451,7 @@ class WerewolfGame:
     def _majority_target(self, votes: dict[str, str]) -> str:
         counts = Counter(votes.values())
         max_votes = max(counts.values())
-        tied = sorted(
-            target_id for target_id, count in counts.items() if count == max_votes
-        )
+        tied = sorted(target_id for target_id, count in counts.items() if count == max_votes)
         return tied[0]
 
     def _vote_weight(self, voter_id: str) -> float:
@@ -2612,18 +2465,14 @@ class WerewolfGame:
             counts[target_id] = counts.get(target_id, 0.0) + self._vote_weight(voter_id)
         return counts
 
-    def _top_targets(
-        self, votes: dict[str, str], *, weighted: bool = False
-    ) -> list[str]:
+    def _top_targets(self, votes: dict[str, str], *, weighted: bool = False) -> list[str]:
         counts = (
             self._weighted_tally(votes)
             if weighted
             else {key: float(value) for key, value in Counter(votes.values()).items()}
         )
         max_votes = max(counts.values())
-        return sorted(
-            target_id for target_id, count in counts.items() if count == max_votes
-        )
+        return sorted(target_id for target_id, count in counts.items() if count == max_votes)
 
     def _eligible_day_voters(self) -> list[Player]:
         alive = [
@@ -2658,9 +2507,7 @@ class WerewolfGame:
             except GamePaused:
                 raise
             except Exception:
-                logger.exception(
-                    f"Handler failed for {player.name} (seat={player.seat}) in phase {phase.value}"
-                )
+                logger.exception(f"Handler failed for {player.name} (seat={player.seat}) in phase {phase.value}")
                 if self._requires_strict_llm_decision(player):
                     raise
         self.state.current_speaker_id = None
@@ -2674,11 +2521,7 @@ class WerewolfGame:
         visible_to: list[str] | None = None,
     ) -> None:
         actor = self.state.player(decision.actor_id)
-        target = (
-            self.state.player(decision.target_id).public_dict()
-            if decision.target_id
-            else None
-        )
+        target = self.state.player(decision.target_id).public_dict() if decision.target_id else None
         full_payload = {
             "actor_id": actor.id,
             "actor_name": actor.name,
@@ -2691,9 +2534,7 @@ class WerewolfGame:
             "agent_fallback": bool(decision.metadata.get("fallback", False)),
             **payload,
         }
-        self._log(
-            EventType.NIGHT_ACTION, visibility, full_payload, visible_to=visible_to
-        )
+        self._log(EventType.NIGHT_ACTION, visibility, full_payload, visible_to=visible_to)
 
     def _log(
         self,
@@ -2731,9 +2572,7 @@ class WerewolfGame:
         meta = decision.metadata if isinstance(decision.metadata, dict) else {}
         usage = meta.get("usage") or {}
         prompt_tokens = usage.get("prompt_tokens") if isinstance(usage, dict) else None
-        completion_tokens = (
-            usage.get("completion_tokens") if isinstance(usage, dict) else None
-        )
+        completion_tokens = usage.get("completion_tokens") if isinstance(usage, dict) else None
         latency_ms = meta.get("latency_ms")
         if latency_ms is None and isinstance(usage, dict):
             latency_ms = usage.get("latency_ms")
@@ -2752,9 +2591,7 @@ class WerewolfGame:
         # Estimate cost from token usage (DeepSeek pricing: ~$0.28/M input, $1.10/M output)
         cost_usd = None
         if prompt_tokens is not None and completion_tokens is not None:
-            cost_usd = round(
-                (prompt_tokens * 0.28 + completion_tokens * 1.10) / 1_000_000, 6
-            )
+            cost_usd = round((prompt_tokens * 0.28 + completion_tokens * 1.10) / 1_000_000, 6)
 
         # Extract visible facts from player view
         visible_facts = []
@@ -2763,16 +2600,12 @@ class WerewolfGame:
             visible_facts.append("role=" + str(sv.get("role", "?")))
             visible_facts.append("alive=" + str(sv.get("alive", "?")))
             alive = view.get("alive_players", [])
-            visible_facts.append(
-                "alive_count=" + str(len(alive) if isinstance(alive, list) else "?")
-            )
+            visible_facts.append("alive_count=" + str(len(alive) if isinstance(alive, list) else "?"))
 
         # Populate candidate actions from legal actions or metadata
         candidate_actions = meta.get("candidate_actions", [])
         if not candidate_actions:
-            view_targets = (
-                view.get("legal_targets", []) if isinstance(view, dict) else []
-            )
+            view_targets = view.get("legal_targets", []) if isinstance(view, dict) else []
             for target in view_targets:
                 candidate_actions.append(
                     {
@@ -2781,18 +2614,10 @@ class WerewolfGame:
                     }
                 )
             if not candidate_actions:
-                allowed = (
-                    set(self.state.pk_targets)
-                    if request == "VOTE" and self.state.pk_targets
-                    else None
-                )
+                allowed = set(self.state.pk_targets) if request == "VOTE" and self.state.pk_targets else None
                 for target in self.state.alive_players:
-                    if target.id != player.id and (
-                        allowed is None or target.id in allowed
-                    ):
-                        candidate_actions.append(
-                            {"target_id": target.id, "target_name": target.name}
-                        )
+                    if target.id != player.id and (allowed is None or target.id in allowed):
+                        candidate_actions.append({"target_id": target.id, "target_name": target.name})
 
         # Task 2: Buffer decision for deferred batch DB write
         decision_data = {
@@ -2809,28 +2634,16 @@ class WerewolfGame:
                 "speech": decision.speech,
                 "reasoning": decision.reasoning,
                 "metadata": decision.metadata,
-                "retrieved_knowledge_ids": list(
-                    decision.metadata.get("retrieved_knowledge_ids", [])
-                ),
-                "retrieval_query_summary": decision.metadata.get(
-                    "retrieval_query_summary"
-                ),
+                "retrieved_knowledge_ids": list(decision.metadata.get("retrieved_knowledge_ids", [])),
+                "retrieval_query_summary": decision.metadata.get("retrieval_query_summary"),
                 "retrieval_used": bool(decision.metadata.get("retrieval_used", False)),
             },
             "raw_output": raw_output,
             "is_valid": is_valid,
             "error_type": error_type,
-            "latency_ms": (
-                int(latency_ms) if isinstance(latency_ms, (int, float)) else None
-            ),
-            "prompt_tokens": (
-                int(prompt_tokens) if isinstance(prompt_tokens, (int, float)) else None
-            ),
-            "completion_tokens": (
-                int(completion_tokens)
-                if isinstance(completion_tokens, (int, float))
-                else None
-            ),
+            "latency_ms": (int(latency_ms) if isinstance(latency_ms, (int, float)) else None),
+            "prompt_tokens": (int(prompt_tokens) if isinstance(prompt_tokens, (int, float)) else None),
+            "completion_tokens": (int(completion_tokens) if isinstance(completion_tokens, (int, float)) else None),
             "visible_facts": visible_facts,
             "candidate_actions": candidate_actions,
             "confidence": meta.get("confidence"),
@@ -2849,12 +2662,8 @@ class WerewolfGame:
             try:
                 from backend.db.persist import save_prompt_snapshot
 
-                system_text = next(
-                    (m["content"] for m in prompt_json if m.get("role") == "system"), ""
-                )
-                user_text = next(
-                    (m["content"] for m in prompt_json if m.get("role") == "user"), ""
-                )
+                system_text = next((m["content"] for m in prompt_json if m.get("role") == "system"), "")
+                user_text = next((m["content"] for m in prompt_json if m.get("role") == "user"), "")
                 save_prompt_snapshot(
                     game_id=self.state.id,
                     player_id=player.id,
@@ -2894,33 +2703,15 @@ class WerewolfGame:
                         "speech": decision.speech,
                         "reasoning": decision.reasoning,
                         "metadata": decision.metadata,
-                        "retrieved_knowledge_ids": list(
-                            decision.metadata.get("retrieved_knowledge_ids", [])
-                        ),
-                        "retrieval_query_summary": decision.metadata.get(
-                            "retrieval_query_summary"
-                        ),
-                        "retrieval_used": bool(
-                            decision.metadata.get("retrieval_used", False)
-                        ),
+                        "retrieved_knowledge_ids": list(decision.metadata.get("retrieved_knowledge_ids", [])),
+                        "retrieval_query_summary": decision.metadata.get("retrieval_query_summary"),
+                        "retrieval_used": bool(decision.metadata.get("retrieval_used", False)),
                     },
                     is_valid=is_valid,
                     error_type=error_type,
-                    latency_ms=(
-                        int(latency_ms)
-                        if isinstance(latency_ms, (int, float))
-                        else None
-                    ),
-                    prompt_tokens=(
-                        int(prompt_tokens)
-                        if isinstance(prompt_tokens, (int, float))
-                        else None
-                    ),
-                    completion_tokens=(
-                        int(completion_tokens)
-                        if isinstance(completion_tokens, (int, float))
-                        else None
-                    ),
+                    latency_ms=(int(latency_ms) if isinstance(latency_ms, (int, float)) else None),
+                    prompt_tokens=(int(prompt_tokens) if isinstance(prompt_tokens, (int, float)) else None),
+                    completion_tokens=(int(completion_tokens) if isinstance(completion_tokens, (int, float)) else None),
                     created_at=self.state.events[-1].ts if self.state.events else 0.0,
                     # v2 DecisionTrace fields
                     visible_facts=visible_facts,
@@ -2932,23 +2723,16 @@ class WerewolfGame:
                     provider=meta.get("provider"),
                     fallback_used=bool(meta.get("fallback", False)),
                     fallback_reason=meta.get("fallback_reason"),
-                    metadata=(
-                        decision.metadata if isinstance(decision.metadata, dict) else {}
-                    ),
+                    metadata=(decision.metadata if isinstance(decision.metadata, dict) else {}),
                 )
             )
 
     def _build_pending_input(self, player: Player, request: str) -> PendingInput:
-        allowed_targets = (
-            set(self.state.pk_targets)
-            if request == "VOTE" and self.state.pk_targets
-            else None
-        )
+        allowed_targets = set(self.state.pk_targets) if request == "VOTE" and self.state.pk_targets else None
         option_players = [
             target
             for target in self.state.alive_players
-            if target.id != player.id
-            and (allowed_targets is None or target.id in allowed_targets)
+            if target.id != player.id and (allowed_targets is None or target.id in allowed_targets)
         ]
         action_type = "speech"
         prompt = f"{player.name} is expected to act in phase {self.state.phase.value}."
@@ -2970,11 +2754,7 @@ class WerewolfGame:
             prompt = f"轮到 {player.name} 选择投票目标。"
         elif request in {"ATTACK", "WOLF_TEAM_VOTE"}:
             action_type = "night_action"
-            option_players = [
-                target
-                for target in option_players
-                if target.alignment != Alignment.WOLF
-            ]
+            option_players = [target for target in option_players if target.alignment != Alignment.WOLF]
             prompt = f"轮到 {player.name} 选择夜袭目标。"
         elif request == "DIVINE":
             action_type = "night_action"
@@ -2982,9 +2762,7 @@ class WerewolfGame:
         elif request == "GUARD":
             action_type = "night_action"
             option_players = [
-                target
-                for target in option_players
-                if target.id != self.state.night_actions.last_guard_target_id
+                target for target in option_players if target.id != self.state.night_actions.last_guard_target_id
             ]
             prompt = f"轮到 {player.name} 选择守护目标。"
         elif request == "SHOOT":
@@ -2997,14 +2775,9 @@ class WerewolfGame:
             action_type = "special"
             can_skip = True
             victim_id = self.state.night_actions.wolf_target_id
-            option_players = [
-                target for target in option_players if target.id != victim_id
-            ]
+            option_players = [target for target in option_players if target.id != victim_id]
             prompt = f"轮到 {player.name} 决定是否救人或毒人。"
-        options = [
-            {"id": target.id, "name": target.name, "seat": target.seat}
-            for target in option_players
-        ]
+        options = [{"id": target.id, "name": target.name, "seat": target.seat} for target in option_players]
         return PendingInput(
             player_id=player.id,
             player_name=player.name,

@@ -25,7 +25,6 @@ os.environ["AIWEREWOLF_RULE_ADDENDUM"] = ""
 os.environ["AIWEREWOLF_TACTIC_WEREWOLF"] = "战术注入冒烟：此行应出现在狼人 prompt 中。"
 os.environ["AIWEREWOLF_WOLF_NIGHT_OPTIONS"] = "self,empty"
 
-from tests.test_cognitive_offline import DeterministicCognitiveLLM
 from backend.agents.cognitive.factory import create_cognitive_agent_with_character
 from backend.engine.actions import ActionValidator
 from backend.engine.game import WerewolfGame
@@ -40,6 +39,7 @@ from backend.engine.rules import CT_ROLES_7P
 from backend.engine.rules import build_players
 from backend.engine.transcript import build_transcript
 from backend.engine.visibility import Visibility
+from tests.test_cognitive_offline import DeterministicCognitiveLLM
 
 
 def _mk_player(pid: str, role: Role, alignment: Alignment, seat: int = 1) -> Player:
@@ -47,14 +47,21 @@ def _mk_player(pid: str, role: Role, alignment: Alignment, seat: int = 1) -> Pla
 
 
 def test_validator() -> None:
-    state = GameState(id="t", phase=Phase.NIGHT_WOLF_ACTION, day=1, players=[
-        _mk_player("W1", Role.WEREWOLF, Alignment.WOLF, 1),
-        _mk_player("W2", Role.WEREWOLF, Alignment.WOLF, 2),
-        _mk_player("V1", Role.VILLAGER, Alignment.VILLAGE, 3),
-        _mk_player("S1", Role.SEER, Alignment.VILLAGE, 4),
-    ])
+    state = GameState(
+        id="t",
+        phase=Phase.NIGHT_WOLF_ACTION,
+        day=1,
+        players=[
+            _mk_player("W1", Role.WEREWOLF, Alignment.WOLF, 1),
+            _mk_player("W2", Role.WEREWOLF, Alignment.WOLF, 2),
+            _mk_player("V1", Role.VILLAGER, Alignment.VILLAGE, 3),
+            _mk_player("S1", Role.SEER, Alignment.VILLAGE, 4),
+        ],
+    )
     v = ActionValidator()
-    attack = lambda actor, target: Decision(actor, ActionType.ATTACK, target_id=target, reasoning="r")
+
+    def attack(actor: str, target: str | None) -> Decision:
+        return Decision(actor, ActionType.ATTACK, target_id=target, reasoning="r")
 
     # 默认（无旗标）：空刀/自刀均非法
     state.board_options = {}
@@ -71,11 +78,16 @@ def test_validator() -> None:
 
 
 def test_visibility() -> None:
-    state = GameState(id="t", phase=Phase.NIGHT_WOLF_ACTION, day=1, players=[
-        _mk_player("W1", Role.WEREWOLF, Alignment.WOLF, 1),
-        _mk_player("W2", Role.WEREWOLF, Alignment.WOLF, 2),
-        _mk_player("V1", Role.VILLAGER, Alignment.VILLAGE, 3),
-    ])
+    state = GameState(
+        id="t",
+        phase=Phase.NIGHT_WOLF_ACTION,
+        day=1,
+        players=[
+            _mk_player("W1", Role.WEREWOLF, Alignment.WOLF, 1),
+            _mk_player("W2", Role.WEREWOLF, Alignment.WOLF, 2),
+            _mk_player("V1", Role.VILLAGER, Alignment.VILLAGE, 3),
+        ],
+    )
     vis = Visibility()
     state.board_options = {}
     targets = {t["id"] for t in vis.for_player(state, "W1").legal_targets}
@@ -91,17 +103,27 @@ def run_offline_game(label: str, seed: int, **engine_kwargs) -> WerewolfGame:
     fake = DeterministicCognitiveLLM()
     agents = {
         p.id: create_cognitive_agent_with_character(
-            player_id=p.id, role=p.role.value, llm=fake,
-            player_name=p.name, player_seat=p.seat, character=None,
+            player_id=p.id,
+            role=p.role.value,
+            llm=fake,
+            player_name=p.name,
+            player_seat=p.seat,
+            character=None,
         )
         for p in players
     }
     for p in players:
         p.agent_type = "llm"
     game = WerewolfGame(
-        players=players, agents=agents, seed=seed,
-        max_days=8, disable_badge=True, disable_last_words=True,
-        random_tiebreak=True, kill_side_win=True, full_elimination=False,
+        players=players,
+        agents=agents,
+        seed=seed,
+        max_days=8,
+        disable_badge=True,
+        disable_last_words=True,
+        random_tiebreak=True,
+        kill_side_win=True,
+        full_elimination=False,
         **engine_kwargs,
     )
     state = game.play()
@@ -112,7 +134,11 @@ def run_offline_game(label: str, seed: int, **engine_kwargs) -> WerewolfGame:
 
 def test_full_game_tactics(seed: int = 7) -> None:
     game = run_offline_game(
-        "tactics-on", seed, wolf_self_knife=True, wolf_empty_knife=True, wolf_night_chat=True,
+        "tactics-on",
+        seed,
+        wolf_self_knife=True,
+        wolf_empty_knife=True,
+        wolf_night_chat=True,
     )
     state = game.state
     events = [e.to_dict() for e in state.events]
@@ -143,8 +169,16 @@ def test_full_game_tactics(seed: int = 7) -> None:
 
     # 胜负原因属于 4 种合法值
     end = [e for e in events if e["type"] == "GAME_END"][0]["payload"]
-    assert end["reason"] in {"all_wolves_dead", "wolves_reached_parity", "all_gods_dead", "all_villagers_dead", "max_days_reached"}
-    print(f"  [3] tactics-on offline game OK: winner={end['winner']} reason={end['reason']} days={state.day} wolf_chats={len(chats)}")
+    assert end["reason"] in {
+        "all_wolves_dead",
+        "wolves_reached_parity",
+        "all_gods_dead",
+        "all_villagers_dead",
+        "max_days_reached",
+    }
+    print(
+        f"  [3] tactics-on offline game OK: winner={end['winner']} reason={end['reason']} days={state.day} wolf_chats={len(chats)}"
+    )
 
 
 def test_full_game_baseline(seed: int = 11) -> None:

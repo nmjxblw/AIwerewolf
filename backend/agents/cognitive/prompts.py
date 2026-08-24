@@ -252,9 +252,7 @@ def _build_speech_task(phase: str, is_first: bool, is_last_words: bool) -> str:
     if "BADGE" in str(phase):
         return "【警徽竞选发言】当前是警徽相关发言阶段。围绕你的可见信息、角色边界和当前判断表达。"
     if "PK" in str(phase):
-        return (
-            "【PK发言】场上已有少数焦点位。回应与你相关的公开质疑，保持事实和推断分离。"
-        )
+        return "【PK发言】场上已有少数焦点位。回应与你相关的公开质疑，保持事实和推断分离。"
     if is_first:
         return "【首个发言】第一个发言。基于当前已经公开的信息表达你的初始观察。"
     return "【白天发言】从上一个发言者的观点切入，认同、质疑、补充都可以。不需要面面俱到，只说此刻最在意的一点。"
@@ -351,9 +349,7 @@ def build_strategy_bias_block(strategy_bias: dict, action: str) -> str:
         "witch_act": ("skill_policy", "risk_rules"),
     }
 
-    sections = action_sections.get(
-        action, ("speech_policy", "vote_policy", "skill_policy", "risk_rules")
-    )
+    sections = action_sections.get(action, ("speech_policy", "vote_policy", "skill_policy", "risk_rules"))
     lines = [
         "【本局强制策略规则 — 高优先级，必须严格遵守】",
         "下列规则由本轮策略版本指定，优先级高于你的通用策略直觉。",

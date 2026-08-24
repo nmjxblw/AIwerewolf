@@ -36,10 +36,10 @@ load_env_file()
 
 # ── 通道卫生：回到 DeepSeek 官方渠道，清掉 zen/公益站实验遗留的环境开关 ──
 for _var in (
-    "AGENT_USE_NATIVE_FC",          # zen 需要=0（文本决策）；DeepSeek 官方支持原生 FC
+    "AGENT_USE_NATIVE_FC",  # zen 需要=0（文本决策）；DeepSeek 官方支持原生 FC
     "AIWEREWOLF_MAX_TOKENS_FLOOR",  # zen 混元推理模型的补全预算下限
-    "LLM_MIN_REQUEST_INTERVAL",     # 公益站限速垫片
-    "LLM_RETRY_400",                # 公益站 400 重试开关
+    "LLM_MIN_REQUEST_INTERVAL",  # 公益站限速垫片
+    "LLM_RETRY_400",  # 公益站 400 重试开关
     "MODEL_POOL",
     "EXP_LABEL_PREFIX",
     "AIWEREWOLF_RULE_ADDENDUM",
@@ -86,14 +86,12 @@ def _homogeneous_rational(count: int, seed: int | None) -> list[dict]:
 
 
 # ── 实验条件（战术文本按角色注入；engine_kwargs 控制夜刀合法性）─────────
-_BASE_SEER_HONEST = (
-    "你是预言家：白天发言时必须如实公布你的身份与查验结果（查验对象+好人/狼人），不得隐藏、不得谎报。"
-)
+_BASE_SEER_HONEST = "你是预言家：白天发言时必须如实公布你的身份与查验结果（查验对象+好人/狼人），不得隐藏、不得谎报。"
 
 GROUPS: dict[str, dict] = {
     "B": {
         "dir": "ct_B_baseline",
-        "engine_kwargs": dict(wolf_self_knife=False, wolf_empty_knife=False),
+        "engine_kwargs": {"wolf_self_knife": False, "wolf_empty_knife": False},
         "rule_addendum": (
             "本局为基线对局：所有玩家按标准方式打牌。"
             "|禁止使用任何特殊战术：不得跳预言家、不得悍跳、不得挡刀、不得空刀、不得自刀。"
@@ -103,10 +101,8 @@ GROUPS: dict[str, dict] = {
     },
     "WJ": {
         "dir": "ct_WJ_wolf_jump",
-        "engine_kwargs": dict(wolf_self_knife=True, wolf_empty_knife=True),
-        "rule_addendum": (
-            "本局为战术实验局（狼人悍跳条件）：其他玩家按标准方式打牌。"
-        ),
+        "engine_kwargs": {"wolf_self_knife": True, "wolf_empty_knife": True},
+        "rule_addendum": ("本局为战术实验局（狼人悍跳条件）：其他玩家按标准方式打牌。"),
         "tactics": {
             "WEREWOLF": (
                 "本局启用狼人悍跳预言家战术。"
@@ -120,10 +116,8 @@ GROUPS: dict[str, dict] = {
     },
     "VJ": {
         "dir": "ct_VJ_villager_jump",
-        "engine_kwargs": dict(wolf_self_knife=False, wolf_empty_knife=False),
-        "rule_addendum": (
-            "本局为战术实验局（平民挡刀条件）：其他玩家按标准方式打牌。"
-        ),
+        "engine_kwargs": {"wolf_self_knife": False, "wolf_empty_knife": False},
+        "rule_addendum": ("本局为战术实验局（平民挡刀条件）：其他玩家按标准方式打牌。"),
         "tactics": {
             "VILLAGER": (
                 "本局启用平民跳预言家挡刀战术。"
@@ -136,10 +130,8 @@ GROUPS: dict[str, dict] = {
     },
     "SQ": {
         "dir": "ct_SQ_seer_quiet",
-        "engine_kwargs": dict(wolf_self_knife=False, wolf_empty_knife=False),
-        "rule_addendum": (
-            "本局为战术实验局（预言家隐藏条件）：其他玩家按标准方式打牌。"
-        ),
+        "engine_kwargs": {"wolf_self_knife": False, "wolf_empty_knife": False},
+        "rule_addendum": ("本局为战术实验局（预言家隐藏条件）：其他玩家按标准方式打牌。"),
         "tactics": {
             "SEER": (
                 "本局启用预言家不发言战术。"
@@ -200,15 +192,15 @@ def _analyse_game(state, game) -> dict:
     for e in events:
         if e.get("type") != "NIGHT_ACTION" or e.get("payload", {}).get("action_type") != "attack":
             continue
-        if e.get("payload", {}).get("actor_id") and e.get("payload", {}).get("actor_id") == e.get("payload", {}).get("target_id"):
+        if e.get("payload", {}).get("actor_id") and e.get("payload", {}).get("actor_id") == e.get("payload", {}).get(
+            "target_id"
+        ):
             self_knife_nights += 1
 
     witch_save = sum(1 for e in events if e.get("payload", {}).get("action_type") == "witch_save")
     witch_poison = sum(1 for e in events if e.get("payload", {}).get("action_type") == "witch_poison")
     wolf_chat_msgs = sum(
-        1
-        for e in events
-        if e.get("type") == "PRIVATE_INFO" and e.get("payload", {}).get("kind") == "wolf_chat_message"
+        1 for e in events if e.get("type") == "PRIVATE_INFO" and e.get("payload", {}).get("kind") == "wolf_chat_message"
     )
 
     llm_calls = len(state.decision_records)
@@ -339,9 +331,15 @@ def main() -> None:
             r = run_one_game(seed, group_cfg, label)
         except Exception as e:  # noqa: BLE001 — 单局崩溃不拖垮整组
             r = {
-                "label": label, "seed": seed, "winner": "error",
-                "end_reason": f"crash: {str(e)[:160]}", "days": 0, "elapsed": 0,
-                "llm_calls": 0, "prompt_tokens": 0, "completion_tokens": 0,
+                "label": label,
+                "seed": seed,
+                "winner": "error",
+                "end_reason": f"crash: {str(e)[:160]}",
+                "days": 0,
+                "elapsed": 0,
+                "llm_calls": 0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
             }
             (EXP_DIR / group_cfg["dir"]).mkdir(parents=True, exist_ok=True)
             (EXP_DIR / group_cfg["dir"] / f"game_seed{seed}_result.json").write_text(

@@ -37,19 +37,13 @@ class Visibility:
 
     def for_player(self, state: GameState, player_id: str) -> PlayerView:
         player = state.player(player_id)
-        public_events = [
-            event.to_dict() for event in state.events if event.visibility == "public"
-        ]
+        public_events = [event.to_dict() for event in state.events if event.visibility == "public"]
         private_events = [
-            event.to_dict()
-            for event in state.events
-            if event.visibility == "private" and player_id in event.visible_to
+            event.to_dict() for event in state.events if event.visibility == "private" and player_id in event.visible_to
         ]
         known_wolves = []
         if player.alignment == Alignment.WOLF:
-            known_wolves = [
-                p.private_dict() for p in state.players if p.alignment == Alignment.WOLF
-            ]
+            known_wolves = [p.private_dict() for p in state.players if p.alignment == Alignment.WOLF]
 
         role_roster = sorted({p.role.value for p in state.players})
         return PlayerView(
@@ -94,11 +88,7 @@ class Visibility:
             target_ids = set(state.pk_targets)
         elif state.phase == Phase.NIGHT_WOLF_ACTION:
             # 廉价磋商板子：自刀选项开启时，狼人自己也进入合法目标
-            target_ids = {
-                target.id
-                for target in state.alive_players
-                if target.alignment != Alignment.WOLF
-            }
+            target_ids = {target.id for target in state.alive_players if target.alignment != Alignment.WOLF}
             if state.board_options.get("wolf_self_knife"):
                 target_ids.add(player.id)
                 include_self = True

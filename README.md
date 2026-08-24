@@ -110,15 +110,15 @@ scripts/
   smoke_cheap_talk.py            # 离线冒烟（无 API）
   run_cheap_talk_experiments.py  # 实验组 runner（B/WJ/VJ/SQ + 熔断）
   analyze_cheap_talk.py          # 汇总分析
-  e2e_smoke.py / run_backend_full_strict.py / verify_visibility_strict.py  # 平台校验（make 用）
-tests/   # 9 个核心测试文件：引擎/制度开关/认知离线/提示词分层/角色注册等
+  run_backend_full_strict.py / verify_visibility_strict.py  # 平台校验（make 用）
+tests/   # 核心测试：引擎/制度开关/认知离线/提示词分层/角色注册/搜索模拟器等
 configs/ # strategy_library 等（cognitive 检索链路引用，保留）
 ```
 
 ## 5. 测试与验证
 
 ```bash
-# 全部测试（195 项，离线，无 API 消耗）
+# 全部测试（230 项，离线，无 API 消耗）
 ./.venv/Scripts/python.exe -m pytest tests/ -q
 
 # 新机制冒烟：validator 空刀/自刀门、自刀合法目标、夜序、狼私聊、transcript

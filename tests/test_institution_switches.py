@@ -34,6 +34,7 @@ def _make_game(seed: int = 13, **engine_kwargs) -> WerewolfGame:
 # Detector
 # ------------------------------------------------------------------
 
+
 def test_detect_fake_seer_claim_positives() -> None:
     claims = [
         "我是预言家，昨晚我查验了1号，1号是狼人。",
@@ -74,6 +75,7 @@ def test_detect_fake_seer_claim_hypothetical_plus_real_claim() -> None:
 # ------------------------------------------------------------------
 # random_vote_device
 # ------------------------------------------------------------------
+
 
 def test_random_vote_device_designates_target_and_bypasses_agent_votes() -> None:
     game = _make_game(random_vote_device=True, disable_badge=True)
@@ -121,6 +123,7 @@ def test_random_vote_device_covers_all_alive_players_over_many_days() -> None:
 # ------------------------------------------------------------------
 # honesty_rule
 # ------------------------------------------------------------------
+
 
 def _speech_decision(player_id: str, speech: str) -> Decision:
     return Decision(player_id, ActionType.TALK, speech=speech, reasoning="test", metadata={"source": "llm"})
@@ -190,11 +193,7 @@ def test_honesty_rule_drops_speech_after_repeated_violations() -> None:
 
     game._speech_phase()
 
-    chats = [
-        e.to_dict()["payload"]["actor_id"]
-        for e in game.state.events
-        if e.to_dict().get("type") == "CHAT_MESSAGE"
-    ]
+    chats = [e.to_dict()["payload"]["actor_id"] for e in game.state.events if e.to_dict().get("type") == "CHAT_MESSAGE"]
     # Everyone violated; only the real seer (exempt) gets broadcast.
     assert chats == ["P3"]
 
@@ -213,10 +212,6 @@ def test_honesty_rule_off_by_default() -> None:
         _speech_decision(p.id, "我是预言家，昨晚查验了3号。") for p in players
     ]
     game._speech_phase()
-    chats = [
-        e.to_dict()["payload"]["actor_id"]
-        for e in game.state.events
-        if e.to_dict().get("type") == "CHAT_MESSAGE"
-    ]
+    chats = [e.to_dict()["payload"]["actor_id"] for e in game.state.events if e.to_dict().get("type") == "CHAT_MESSAGE"]
     # Without the switch every claim is broadcast (cheap-talk baseline).
     assert len(chats) == 4
