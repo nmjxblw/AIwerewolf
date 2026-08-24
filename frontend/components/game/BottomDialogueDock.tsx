@@ -105,7 +105,7 @@ export function BottomDialogueDock({
           )}
         </div>
 
-        <div className="min-h-[96px] min-w-0 flex-1 rounded-2xl border border-border bg-background/70 px-5 py-4 shadow-card">
+        <div className="min-h-[5.5rem] min-w-0 flex-1 rounded-2xl border border-border bg-background/70 px-5 py-4 shadow-card">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate font-display text-base font-bold text-primary">

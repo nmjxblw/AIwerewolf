@@ -23,21 +23,35 @@ class PlayerView:
     observations: list[str]
     legal_targets: list[dict[str, Any]] = field(default_factory=list)
     game_id: str = ""
+    role_roster: list[str] = field(default_factory=list)
+    has_badge: bool = True
+    """本局实际角色清单（如 ["Werewolf","Seer","Witch","Villager"]），用于 prompt 规则摘要"""
 
 
 class Visibility:
     """Builds per-agent views and keeps private role information isolated."""
 
+    def __init__(self, share_persona: bool = True, has_badge: bool = True):
+        self.share_persona = share_persona
+        self.has_badge = has_badge
+
     def for_player(self, state: GameState, player_id: str) -> PlayerView:
         player = state.player(player_id)
-        public_events = [event.to_dict() for event in state.events if event.visibility == "public"]
+        public_events = [
+            event.to_dict() for event in state.events if event.visibility == "public"
+        ]
         private_events = [
-            event.to_dict() for event in state.events if event.visibility == "private" and player_id in event.visible_to
+            event.to_dict()
+            for event in state.events
+            if event.visibility == "private" and player_id in event.visible_to
         ]
         known_wolves = []
         if player.alignment == Alignment.WOLF:
-            known_wolves = [p.private_dict() for p in state.players if p.alignment == Alignment.WOLF]
+            known_wolves = [
+                p.private_dict() for p in state.players if p.alignment == Alignment.WOLF
+            ]
 
+        role_roster = sorted({p.role.value for p in state.players})
         return PlayerView(
             player_id=player_id,
             day=state.day,
@@ -50,6 +64,8 @@ class Visibility:
             observations=self._observations(private_events),
             legal_targets=self._legal_targets(state, player),
             game_id=state.id,
+            role_roster=role_roster,
+            has_badge=self.has_badge,
         )
 
     def _visible_player(self, viewer: Player, target: Player) -> dict[str, Any]:
@@ -57,7 +73,7 @@ class Visibility:
             return target.private_dict()
         if viewer.alignment == Alignment.WOLF and target.alignment == Alignment.WOLF:
             return target.private_dict()
-        return target.public_dict()
+        return target.public_dict(share_persona=self.share_persona)
 
     def _observations(self, events: list[dict[str, Any]]) -> list[str]:
         observations: list[str] = []
@@ -78,7 +94,11 @@ class Visibility:
             target_ids = set(state.pk_targets)
         elif state.phase == Phase.NIGHT_WOLF_ACTION:
             # 廉价磋商板子：自刀选项开启时，狼人自己也进入合法目标
-            target_ids = {target.id for target in state.alive_players if target.alignment != Alignment.WOLF}
+            target_ids = {
+                target.id
+                for target in state.alive_players
+                if target.alignment != Alignment.WOLF
+            }
             if state.board_options.get("wolf_self_knife"):
                 target_ids.add(player.id)
                 include_self = True
@@ -103,5 +123,12 @@ class Visibility:
                 continue
             if target.id == player.id and not include_self:
                 continue
-            targets.append({"id": target.id, "seat": target.seat, "name": target.name, "alive": target.alive})
+            targets.append(
+                {
+                    "id": target.id,
+                    "seat": target.seat,
+                    "name": target.name,
+                    "alive": target.alive,
+                }
+            )
         return targets

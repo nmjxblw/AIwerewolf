@@ -57,11 +57,11 @@ def resolve_night(snapshot: NightActionsSnapshot) -> NightResolutionResult:
     if snapshot.wolf_target_id:
         blocked = snapshot.witch_save_used or snapshot.wolf_target_id == snapshot.guard_target_id
         if not blocked:
-            deaths.append({"player_id": snapshot.wolf_target_id, "reason": "wolf"})
+            deaths.append({"player_id": snapshot.wolf_target_id, "reason": "werewolf_killed"})
 
     # Witch poison: target dies unconditionally
     if snapshot.witch_poison_target_id:
-        deaths.append({"player_id": snapshot.witch_poison_target_id, "reason": "poison"})
+        deaths.append({"player_id": snapshot.witch_poison_target_id, "reason": "witch_killed"})
 
     # Deduplicate (same player can't die twice)
     unique_deaths: list[dict[str, str]] = []

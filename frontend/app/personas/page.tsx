@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
+import { GENDER_LABELS_CN, HUMOR_LABELS_CN, MBTI_LABELS_CN, STYLE_LABELS_CN, labelOrValue } from "@/lib/personaLabels";
 
 /* ── Constants ─────────────────────────────────────────────────── */
 
@@ -136,7 +137,7 @@ function Card({ persona: p, onClick, onDelete }: {
         <div className="min-w-0">
           <h3 className="font-semibold text-textPrimary truncate">{p.name}</h3>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-text-sub/60">
-            <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[11px]">{p.mbti}</span>
+            <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[11px]">{labelOrValue(MBTI_LABELS_CN, p.mbti)}</span>
             <span>{p.gender === "male" ? "♂" : p.gender === "female" ? "♀" : "⚧"}</span>
             <span>{p.age}岁</span>
           </div>
@@ -153,7 +154,7 @@ function Card({ persona: p, onClick, onDelete }: {
       )}
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
         {p.style_label && (
-          <span className="rounded bg-surface px-1.5 py-0.5 text-[11px] text-text-sub/50">{p.style_label}</span>
+          <span className="rounded bg-surface px-1.5 py-0.5 text-[11px] text-text-sub/50">{labelOrValue(STYLE_LABELS_CN, p.style_label)}</span>
         )}
         {p.social_habit && (
           <span className="rounded bg-surface px-1.5 py-0.5 text-[11px] text-text-sub/50">{p.social_habit}</span>
@@ -170,11 +171,11 @@ function Card({ persona: p, onClick, onDelete }: {
 
 function DetailModal({ persona: p, onClose }: { persona: PersonaItem; onClose: () => void }) {
   const fields: [string, string | number | null][] = [
-    ["MBTI", p.mbti], ["性别", p.gender === "male" ? "男" : p.gender === "female" ? "女" : "非二元"],
-    ["年龄", p.age], ["桌面风格", p.style_label], ["经验", p.werewolf_experience],
+    ["MBTI", labelOrValue(MBTI_LABELS_CN, p.mbti)], ["性别", labelOrValue(GENDER_LABELS_CN, p.gender)],
+    ["年龄", p.age], ["人物风格", labelOrValue(STYLE_LABELS_CN, p.style_label)], ["经验", p.werewolf_experience],
     ["用词风格", p.vocabulary_style], ["发言长度", p.speech_length_habit],
     ["推理风格", p.reasoning_style], ["社交习惯", p.social_habit],
-    ["幽默风格", p.humor_style], ["逻辑风格", p.logic_style],
+    ["幽默风格", labelOrValue(HUMOR_LABELS_CN, p.humor_style)], ["逻辑风格", p.logic_style],
     ["压力反应", p.pressure_style], ["不确定时", p.uncertainty_style],
     ["典型弱点", p.mistake_pattern],
   ];
@@ -264,13 +265,13 @@ function AddModal({ onClose, onCreated }: { onClose: () => void; onCreated: () =
           <div>
             <label className={labelClass}>MBTI</label>
             <select value={form.mbti} onChange={e => setForm({...form, mbti: e.target.value})} className={fieldClass}>
-              {MBTI_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              {MBTI_TYPES.map(t => <option key={t} value={t}>{labelOrValue(MBTI_LABELS_CN, t)}</option>)}
             </select>
           </div>
           <div>
             <label className={labelClass}>性别</label>
             <select value={form.gender} onChange={e => setForm({...form, gender: e.target.value})} className={fieldClass}>
-              {GENDERS.map(g => <option key={g} value={g}>{g === "male" ? "男" : g === "female" ? "女" : "非二元"}</option>)}
+              {GENDERS.map(g => <option key={g} value={g}>{labelOrValue(GENDER_LABELS_CN, g)}</option>)}
             </select>
           </div>
           <div>
@@ -282,10 +283,10 @@ function AddModal({ onClose, onCreated }: { onClose: () => void; onCreated: () =
             <textarea value={form.basic_info} rows={2} onChange={e => setForm({...form, basic_info: e.target.value})} className={fieldClass} placeholder="一两句话描述职业、性格特点。" />
           </div>
           <div>
-            <label className={labelClass}>桌面风格</label>
+            <label className={labelClass}>人物风格</label>
             <select value={form.style_label} onChange={e => setForm({...form, style_label: e.target.value})} className={fieldClass}>
               <option value="">-- 选一个 --</option>
-              {STYLE_LABELS.map(s => <option key={s} value={s}>{s}</option>)}
+              {STYLE_LABELS.map(s => <option key={s} value={s}>{labelOrValue(STYLE_LABELS_CN, s)}</option>)}
             </select>
           </div>
           <div>
@@ -303,7 +304,7 @@ function AddModal({ onClose, onCreated }: { onClose: () => void; onCreated: () =
           <div>
             <label className={labelClass}>幽默风格</label>
             <select value={form.humor_style} onChange={e => setForm({...form, humor_style: e.target.value})} className={fieldClass}>
-              {HUMOR_OPTIONS.map(h => <option key={h} value={h}>{h}</option>)}
+              {HUMOR_OPTIONS.map(h => <option key={h} value={h}>{labelOrValue(HUMOR_LABELS_CN, h)}</option>)}
             </select>
           </div>
           <div><label className={labelClass}>逻辑风格</label><input value={form.logic_style} onChange={e => setForm({...form, logic_style: e.target.value})} className={fieldClass} placeholder="如：证据链 + 时间线核对" /></div>

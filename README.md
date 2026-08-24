@@ -129,6 +129,9 @@ configs/ # strategy_library 等（cognitive 检索链路引用，保留）
 `disable_badge=True / disable_last_words=True / random_tiebreak=True`
 关闭它们对齐 w.txt 规则；新板子不带猎人是角色组决定的。
 
+需要完整平台界面时，后端地址为 `http://localhost:8001/docs`，前端地址为
+`http://localhost:3001`。
+
 ## 6. 下一步实验计划（详见 CT_CHEAP_TALK_REPORT.md §7）
 
 1. B 与 VJ 各扩到 30 局，验证"挡刀反噬"的稳定性（¥0.11/局，预算约 ¥6.6）

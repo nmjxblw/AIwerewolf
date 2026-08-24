@@ -20,6 +20,7 @@ interface GameEndPanelProps {
   onLobby: () => void;
   onReport?: () => void;
   onExport?: () => void;
+  onThoughtProcess?: () => void;
   reportReady?: boolean;
   reportChecking?: boolean;
 }
@@ -40,7 +41,7 @@ function winReasonText(winner: Alignment, language: Language): string {
 }
 
 export function GameEndPanel({
-  winner, day, aliveCount, eventCount, language, showPanel, ballPos, dragRef, onOpen, onClose, onBallMove, onLobby, onReport, onExport,
+  winner, day, aliveCount, eventCount, language, showPanel, ballPos, dragRef, onOpen, onClose, onBallMove, onLobby, onReport, onExport, onThoughtProcess,
   reportReady = true,
   reportChecking = false,
 }: GameEndPanelProps) {
@@ -136,6 +137,11 @@ export function GameEndPanel({
               {onExport && (
                 <Button variant="secondary" onClick={onExport} className="w-full">
                   {t("exportGameRecord", language)}
+                </Button>
+              )}
+              {onThoughtProcess && (
+                <Button variant="secondary" onClick={onThoughtProcess} className="w-full">
+                  {language === "zh" ? "导出心路历程" : "Export Thought Process"}
                 </Button>
               )}
               <div className="flex gap-2">

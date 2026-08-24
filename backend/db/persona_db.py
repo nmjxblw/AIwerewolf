@@ -105,7 +105,10 @@ def seed_personas() -> int:
 def list_personas() -> list[dict[str, Any]]:
     db = SessionLocal()
     try:
-        return [_row_to_dict(row) for row in db.query(PersonaRow).filter(PersonaRow.is_active.is_(True)).all()]
+        return [
+            _row_to_dict(row)
+            for row in db.query(PersonaRow).filter(PersonaRow.is_active.is_(True)).all()
+        ]
     finally:
         db.close()
 
@@ -138,6 +141,8 @@ def update_persona(name: str, data: dict[str, Any]) -> dict[str, Any]:
         if row is None:
             raise KeyError(f"Persona '{name}' not found")
         _apply_persona_fields(row, data)
+        if "is_active" in data:
+            row.is_active = bool(data["is_active"])
         # Regenerate system_prompt when core fields change
         entry = _row_to_dict(row)
         persona = _hydrate_persona(entry)

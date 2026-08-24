@@ -8,6 +8,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        // 在默认 sm/md/lg/xl/2xl 基础上添加更细粒度的响应式断点
+        xs: "480px", // 小手机横屏
+        "3xl": "1800px", // 超宽屏
+      },
       colors: {
         // Colors reference CSS custom properties so Tailwind classes
         // automatically track day↔night variable changes in globals.css.
@@ -37,7 +42,8 @@ const config: Config = {
         accent: "0 0 16px rgb(var(--color-gold-rgb) / 0.25)",
       },
       backgroundImage: {
-        "night-overlay": "radial-gradient(ellipse at 50% 0%, rgb(25 25 35 / 0.25) 0%, rgb(0 0 0 / 0.55) 100%)",
+        "night-overlay":
+          "radial-gradient(ellipse at 50% 0%, rgb(25 25 35 / 0.25) 0%, rgb(0 0 0 / 0.55) 100%)",
       },
       borderRadius: {
         card: "12px",
@@ -46,7 +52,12 @@ const config: Config = {
       },
       fontFamily: {
         display: ['"Noto Serif SC"', "serif"],
-        body: ['"Noto Sans SC"', "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        body: [
+          '"Noto Sans SC"',
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "sans-serif",
+        ],
       },
       animation: {
         "dot-1": "dotPulse 1.4s ease-in-out infinite",

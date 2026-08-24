@@ -107,7 +107,7 @@ export function DayEventBlock({
     // 观众视角只看夜间完成摘要；全局视角保留夜间行动细节。
     !isNightActionDetail(event, viewMode) &&
     // 过滤投票放逐的 PLAYER_DIED 事件，统一在遗言后渲染一次确认
-    !(event.type === EventType.PLAYER_DIED && (event.payload as any)?.reason === "vote")
+    !(event.type === EventType.PLAYER_DIED && (event.payload as any)?.reason === "voted_out")
   );
 
   const timelineEvents = mergeConsecutiveChats(rawEvents);
@@ -167,8 +167,8 @@ export function DayEventBlock({
 
           // 插入发言思考阶段占位卡片
           if (
-            speakerState?.state === "thinking" && 
-            speakerState.speakerId && 
+            speakerState?.state === "thinking" &&
+            speakerState.speakerId &&
             players &&
             // 仅当前天的发言阶段显示
             day === currentDay &&

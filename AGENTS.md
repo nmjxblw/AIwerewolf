@@ -17,6 +17,7 @@
 - 当团队规模 >= 2 时本段失效，恢复 `skills/10-git-workflow.md` 和 `skills/70-ai-collaboration.md` 的多人 PR 规则。
 
 > 本段显式覆盖：
+>
 > - `skills/10-git-workflow.md` §一 “main 受保护、禁止直推”
 > - `skills/10-git-workflow.md` §三 “至少 1 人 approve” + 重灾区 “2 人 approve”
 > - `skills/10-git-workflow.md` §七 “禁止 AI 直接 git push 到 main”
@@ -45,6 +46,18 @@
 
 ---
 
+## 算法设计与代码更新文档边界（强制）
+
+算法设计文档和代码更新文档必须分开维护，不得混写：
+
+- **算法设计文档**只描述设计思路：研究目标、建模假设、状态定义、转移与分支语义、数学公式、复杂度、风险和设计不变量。
+- **算法设计文档禁止包含**文件增删改记录、类名/函数名等代码落地清单、数据库表或迁移记录、运行环境变更、测试命令与通过数量、完成状态和按日期排列的修改日志。
+- **代码更新文档**负责记录实际工程事实：改动文件、接口和数据结构变化、持久化结构、兼容性处理、迁移过程、运行环境以及测试/验证结果。
+- 同一任务同时影响算法和代码时，分别更新两份文档：算法文档回答“为什么这样建模、算法如何成立”，代码更新文档回答“具体改了什么、如何验证”。不得将代码更新段落复制到算法设计文档。
+- `search_simulator/ALGORITHM_DESIGN.md` 与 `search_simulator/CODE_CHANGES.md` 必须遵守上述边界；其他模块中语义相同的文档也按本规则归类。
+
+---
+
 ## 当前项目概述
 
 AI Werewolf 是一个多智能体狼人杀研究平台：AI 玩家在严格信息隔离下完成狼人杀对局，并通过赛后复盘分析、复盘报告、策略知识抽取和检索回流形成 Play -> Evaluate -> Evolve 闭环。
@@ -61,7 +74,7 @@ AI Werewolf 是一个多智能体狼人杀研究平台：AI 玩家在严格信�
 
 | 层 | 当前实现 |
 |---|---|
-| 后端 | Python 3.12+ / FastAPI / WebSocket |
+| 后端 | Python 3.12 / FastAPI / WebSocket |
 | 游戏引擎 | dataclass + Enum 纯逻辑，入口 `backend/engine/game.py` |
 | Agent | `backend/agents/cognitive/` 的 `CognitiveAgent` + `HumanAgent` |
 | LLM | `backend.llm.create_client()`，支持 `doubao` / `dsv4flash` / `ark` / `deepseek` / `anthropic` / `weapi` / `mimo` / test-only `fake` |
@@ -226,7 +239,7 @@ talk, vote, attack, divine, guard, witch_save, witch_poison, shoot, boom, skip
 
 ```bash
 make dev
-# http://localhost:8000/docs
+# http://localhost:8001/docs
 ```
 
 前端默认：

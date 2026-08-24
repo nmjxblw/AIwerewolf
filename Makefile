@@ -11,7 +11,7 @@ ENV_FILE ?= .env
 APP_HOST ?= $(shell sed -n 's/^APP_HOST=//p' $(ENV_FILE) 2>/dev/null | tail -1)
 APP_HOST := $(or $(APP_HOST),0.0.0.0)
 BACKEND_PORT ?= $(shell sed -n 's/^BACKEND_PORT=//p' $(ENV_FILE) 2>/dev/null | tail -1)
-BACKEND_PORT := $(or $(BACKEND_PORT),8000)
+BACKEND_PORT := $(or $(BACKEND_PORT),8001)
 FRONTEND_PORT ?= $(shell sed -n 's/^FRONTEND_PORT=//p' $(ENV_FILE) 2>/dev/null | tail -1)
 FRONTEND_PORT := $(or $(FRONTEND_PORT),3001)
 POSTGRES_PORT ?= $(shell sed -n 's/^POSTGRES_PORT=//p' $(ENV_FILE) 2>/dev/null | tail -1)

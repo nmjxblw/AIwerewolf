@@ -52,12 +52,22 @@ class Game(Base):
     started_at = Column(DateTime, nullable=True)
     finished_at = Column(DateTime, nullable=True)
 
-    players = relationship("Player", back_populates="game", cascade="all, delete-orphan")
-    events = relationship("GameEvent", back_populates="game", cascade="all, delete-orphan")
-    decisions = relationship("AgentDecision", back_populates="game", cascade="all, delete-orphan")
-    snapshots = relationship("GameSnapshot", back_populates="game", cascade="all, delete-orphan")
+    players = relationship(
+        "Player", back_populates="game", cascade="all, delete-orphan"
+    )
+    events = relationship(
+        "GameEvent", back_populates="game", cascade="all, delete-orphan"
+    )
+    decisions = relationship(
+        "AgentDecision", back_populates="game", cascade="all, delete-orphan"
+    )
+    snapshots = relationship(
+        "GameSnapshot", back_populates="game", cascade="all, delete-orphan"
+    )
     votes = relationship("Vote", back_populates="game", cascade="all, delete-orphan")
-    evaluations = relationship("Evaluation", back_populates="game", cascade="all, delete-orphan")
+    evaluations = relationship(
+        "Evaluation", back_populates="game", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         # History listing: ORDER BY created_at DESC LIMIT N (api/history)
@@ -100,7 +110,9 @@ class GameEvent(Base):
     id = Column(String, primary_key=True, default=_uuid)
     game_id = Column(String, ForeignKey("games.id"), nullable=False, index=True)
     seq = Column(Integer, default=0, index=True)  # monotonic ordering inside one game
-    ts = Column(Float, default=0.0)  # engine-side timestamp (time()) for replay ordering
+    ts = Column(
+        Float, default=0.0
+    )  # engine-side timestamp (time()) for replay ordering
     day = Column(Integer, default=0)
     phase = Column(String, default="")
     event_type = Column(String, nullable=False)
@@ -149,15 +161,33 @@ class AgentDecision(Base):
     created_at = Column(DateTime, default=_utcnow)
 
     # ---- v2 DecisionTrace fields (blueprints §G2 + §G10) ----
-    candidate_actions = Column(JSON, nullable=True, comment="List of {action, score, rationale} considered")
-    visible_facts = Column(JSON, nullable=True, comment="List of facts visible to agent at decision time")
-    confidence = Column(Float, nullable=True, comment="Agent self-reported confidence 0.0-1.0")
-    prompt_hash = Column(String, nullable=True, comment="SHA256 of the assembled prompt")
-    cost_usd = Column(Float, nullable=True, comment="Estimated USD cost for this LLM call")
-    model_name = Column(String, nullable=True, comment="LLM model used (e.g. doubao-seed-2.0-pro)")
-    provider = Column(String, nullable=True, comment="LLM provider (e.g. doubao, deepseek)")
+    candidate_actions = Column(
+        JSON, nullable=True, comment="List of {action, score, rationale} considered"
+    )
+    visible_facts = Column(
+        JSON, nullable=True, comment="List of facts visible to agent at decision time"
+    )
+    confidence = Column(
+        Float, nullable=True, comment="Agent self-reported confidence 0.0-1.0"
+    )
+    prompt_hash = Column(
+        String, nullable=True, comment="SHA256 of the assembled prompt"
+    )
+    cost_usd = Column(
+        Float, nullable=True, comment="Estimated USD cost for this LLM call"
+    )
+    model_name = Column(
+        String, nullable=True, comment="LLM model used (e.g. doubao-seed-2.0-pro)"
+    )
+    provider = Column(
+        String, nullable=True, comment="LLM provider (e.g. doubao, deepseek)"
+    )
     decision_metadata = Column(
-        "metadata", JSON, nullable=True, default=dict, comment="AgentDecision metadata dict (tool traces, strategy IDs)"
+        "metadata",
+        JSON,
+        nullable=True,
+        default=dict,
+        comment="AgentDecision metadata dict (tool traces, strategy IDs)",
     )
 
     game = relationship("Game", back_populates="decisions")
@@ -167,6 +197,41 @@ class AgentDecision(Base):
         Index("ix_decisions_invalid", "is_valid", "error_type"),
         Index("ix_decisions_model", "model_name", "provider"),
     )
+
+
+class PromptSnapshot(Base):
+    """Full LLM prompt/response snapshot for analysis and debugging.
+
+    Captures the complete engineering prompt, system messages, user messages,
+    LLM thinking/reasoning and final response for every agent decision.
+    """
+
+    __tablename__ = "prompt_snapshots"
+
+    id = Column(String, primary_key=True, default=_uuid)
+    decision_id = Column(
+        String, ForeignKey("agent_decisions.id"), nullable=True, index=True
+    )
+    game_id = Column(String, ForeignKey("games.id"), nullable=False, index=True)
+    player_id = Column(String, ForeignKey("players.id"), nullable=False, index=True)
+    day = Column(Integer, default=0)
+    phase = Column(String, default="")
+    request = Column(String, default="")  # e.g. "TALK", "VOTE", "GUARD"
+    system_prompt = Column(Text, nullable=True)  # full system message content
+    user_prompt = Column(Text, nullable=True)  # full user message content
+    thinking = Column(Text, nullable=True)  # LLM reasoning/thinking output
+    response = Column(Text, nullable=True)  # raw LLM response text
+    prompt_json = Column(
+        JSON, nullable=True
+    )  # full messages array as JSON (list of {role, content})
+    model_name = Column(String, nullable=True)
+    provider = Column(String, nullable=True)
+    prompt_tokens = Column(Integer, nullable=True)
+    completion_tokens = Column(Integer, nullable=True)
+    latency_ms = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=_utcnow)
+
+    decision = relationship("AgentDecision", backref="prompt_snapshots")
 
 
 class GameSnapshot(Base):
@@ -262,7 +327,9 @@ class LeaderboardEntry(Base):
     __tablename__ = "leaderboard_entries"
 
     id = Column(String, primary_key=True, default=_uuid)
-    agent_version_id = Column(String, ForeignKey("agent_versions.id"), nullable=True, index=True)
+    agent_version_id = Column(
+        String, ForeignKey("agent_versions.id"), nullable=True, index=True
+    )
     name = Column(String, nullable=False, index=True)  # e.g. "doubao-pro+wolf-v3"
     role = Column(String, default="ALL")
     games_played = Column(Integer, default=0)
@@ -308,8 +375,12 @@ class PublishedReview(Base):
     __tablename__ = "published_reviews"
 
     id = Column(String, primary_key=True, default=_uuid)
-    game_id = Column(String, ForeignKey("games.id"), nullable=False, unique=True, index=True)
-    status = Column(String, default="draft", index=True)  # draft / approved / needs_revision / rejected
+    game_id = Column(
+        String, ForeignKey("games.id"), nullable=False, unique=True, index=True
+    )
+    status = Column(
+        String, default="draft", index=True
+    )  # draft / approved / needs_revision / rejected
     view_scope = Column(String, default="moderator_view")
     grade = Column(String, default="needs_revision")
     score = Column(Float, default=0.0)
@@ -381,11 +452,15 @@ class StrategyKnowledgeDoc(Base):
         index=True,
         comment="L0_fact | L1_rule | L2_statistical | L3_strategic | L4_speculative",
     )
-    judge_agreement = Column(Float, nullable=True, comment="Inter-judge agreement 0.0-1.0 (L3)")
+    judge_agreement = Column(
+        Float, nullable=True, comment="Inter-judge agreement 0.0-1.0 (L3)"
+    )
     times_upvoted = Column(Integer, default=0)
     contradiction_count = Column(Integer, default=0)
     games_since_creation = Column(Integer, default=0)
-    human_verdict = Column(String, nullable=True, comment="confirmed | rejected | revised | unreviewed")
+    human_verdict = Column(
+        String, nullable=True, comment="confirmed | rejected | revised | unreviewed"
+    )
 
     # ---- Access Control (knowledge_confidence.KnowledgeAccessControl) ----
     visibility_scope = Column(
@@ -394,13 +469,19 @@ class StrategyKnowledgeDoc(Base):
         index=True,
         comment="public | self_private | wolf_team_private | postgame_only | global_deidentified",
     )
-    allowed_roles = Column(JSON, nullable=True, comment="Roles allowed for self_private scope")
+    allowed_roles = Column(
+        JSON, nullable=True, comment="Roles allowed for self_private scope"
+    )
     deidentified = Column(Boolean, default=False, comment="Player IDs removed")
     contains_current_game_private_info = Column(Boolean, default=False)
 
     # ---- Applicability (knowledge_confidence.KnowledgeApplicability) ----
-    applicability_role = Column(String, nullable=True, comment="Required role, None=any")
-    applicability_phase = Column(String, nullable=True, comment="Required phase, None=any")
+    applicability_role = Column(
+        String, nullable=True, comment="Required role, None=any"
+    )
+    applicability_phase = Column(
+        String, nullable=True, comment="Required phase, None=any"
+    )
     min_players = Column(Integer, nullable=True)
     max_players = Column(Integer, nullable=True)
     required_public_facts = Column(JSON, default=list)
@@ -409,8 +490,16 @@ class StrategyKnowledgeDoc(Base):
 
     __table_args__ = (
         Index("ix_strategy_knowledge_role_phase_status", "role", "phase", "status"),
-        Index("ix_strategy_knowledge_tier_scope", "confidence_tier", "visibility_scope"),
-        Index("ix_strategy_knowledge_version_rank", "version_group", "status", "maturity", "knowledge_epoch"),
+        Index(
+            "ix_strategy_knowledge_tier_scope", "confidence_tier", "visibility_scope"
+        ),
+        Index(
+            "ix_strategy_knowledge_version_rank",
+            "version_group",
+            "status",
+            "maturity",
+            "knowledge_epoch",
+        ),
     )
 
 
@@ -426,8 +515,12 @@ class TrackCPostGameJob(Base):
     __tablename__ = "track_c_post_game_jobs"
 
     id = Column(String, primary_key=True, default=_uuid)
-    game_id = Column(String, ForeignKey("games.id"), nullable=False, unique=True, index=True)
-    status = Column(String, default="pending", index=True)  # pending | running | completed | failed
+    game_id = Column(
+        String, ForeignKey("games.id"), nullable=False, unique=True, index=True
+    )
+    status = Column(
+        String, default="pending", index=True
+    )  # pending | running | completed | failed
     attempts = Column(Integer, default=0)
     max_attempts = Column(Integer, default=3)
     lessons_stored = Column(Integer, default=0)
@@ -555,7 +648,9 @@ class KnowledgeUsageFeedback(Base):
     game_id = Column(String, ForeignKey("games.id"), nullable=False, index=True)
     decision_id = Column(String, nullable=True, index=True)
     player_id = Column(String, ForeignKey("players.id"), nullable=False, index=True)
-    knowledge_doc_id = Column(String, ForeignKey("strategy_knowledge_docs.id"), nullable=False, index=True)
+    knowledge_doc_id = Column(
+        String, ForeignKey("strategy_knowledge_docs.id"), nullable=False, index=True
+    )
     retrieved = Column(Boolean, default=True)
     used = Column(Boolean, default=False)
     decision_outcome = Column(String, default="")
@@ -578,7 +673,9 @@ class EvolutionRound(Base):
     id = Column(String, primary_key=True, default=_uuid)
     round_no = Column(Integer, nullable=False, index=True)
     baseline_version_id = Column(String, ForeignKey("agent_versions.id"), nullable=True)
-    challenger_version_id = Column(String, ForeignKey("agent_versions.id"), nullable=True)
+    challenger_version_id = Column(
+        String, ForeignKey("agent_versions.id"), nullable=True
+    )
     games_per_round = Column(Integer, default=20)
     baseline_wins = Column(Integer, default=0)
     challenger_wins = Column(Integer, default=0)

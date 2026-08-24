@@ -11,7 +11,7 @@ export async function proxy(request: NextRequest) {
 
   if (actionMatch && request.method === "POST") {
     const roomId = actionMatch[1];
-    const backend = process.env.BACKEND_ORIGIN || "http://127.0.0.1:8000";
+    const backend = process.env.BACKEND_ORIGIN || "http://127.0.0.1:8001";
     const body = await request.text();
 
     try {
@@ -23,7 +23,10 @@ export async function proxy(request: NextRequest) {
       const data = await resp.json();
       return NextResponse.json(data, { status: resp.status });
     } catch (e: any) {
-      return NextResponse.json({ error: e?.message || "Proxy error" }, { status: 502 });
+      return NextResponse.json(
+        { error: e?.message || "Proxy error" },
+        { status: 502 },
+      );
     }
   }
 

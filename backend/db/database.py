@@ -15,29 +15,31 @@ load_env_file()
 # PostgreSQL via DATABASE_URL env, fallback to local SQLite for dev
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-if DATABASE_URL:
-    # PostgreSQL (Supabase / cloud / local pg)
-    SQLALCHEMY_DATABASE_URL = DATABASE_URL
-    _pool_size = int(os.getenv("DB_POOL_SIZE", "10"))
-    _max_overflow = int(os.getenv("DB_MAX_OVERFLOW", "10"))
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL,
-        pool_pre_ping=True,
-        pool_recycle=1800,
-        pool_size=_pool_size,
-        max_overflow=_max_overflow,
-    )
-else:
-    # SQLite fallback for local development
-    sqlite_path = os.getenv("AIWEREWOLF_SQLITE_PATH", "").strip()
-    DB_PATH = (
-        Path(sqlite_path).expanduser()
-        if sqlite_path
-        else Path(__file__).resolve().parent.parent.parent / "data" / "werewolf.db"
-    )
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
-    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# if DATABASE_URL:
+#     # PostgreSQL (Supabase / cloud / local pg)
+#     SQLALCHEMY_DATABASE_URL = DATABASE_URL
+#     _pool_size = int(os.getenv("DB_POOL_SIZE", "10"))
+#     _max_overflow = int(os.getenv("DB_MAX_OVERFLOW", "10"))
+#     engine = create_engine(
+#         SQLALCHEMY_DATABASE_URL,
+#         pool_pre_ping=True,
+#         pool_recycle=1800,
+#         pool_size=_pool_size,
+#         max_overflow=_max_overflow,
+#     )
+# else:
+# SQLite fallback for local development
+sqlite_path = os.getenv("AIWEREWOLF_SQLITE_PATH", "").strip()
+DB_PATH = (
+    Path(sqlite_path).expanduser()
+    if sqlite_path
+    else Path(__file__).resolve().parent.parent.parent / "data" / "werewolf.db"
+)
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

@@ -47,7 +47,7 @@ export function PlayerRail({
     }
   }
   return (
-    <aside className={`hidden w-[21%] min-w-[150px] flex-col gap-2 overflow-y-auto p-3 lg:flex timeline-scroll ${side === "left" ? "border-r" : "border-l"} border-border`}>
+    <aside className={`hidden w-[20%] min-w-[7.5rem] max-w-[12rem] flex-col gap-2 overflow-y-auto p-3 lg:flex timeline-scroll ${side === "left" ? "border-r" : "border-l"} border-border`}>
       {visiblePlayers.map((player, index) => (
         <PlayerCard
           key={player.id || index}
@@ -108,7 +108,7 @@ export function MobilePlayerRail({
   return (
     <div className="relative z-10 flex gap-2 overflow-x-auto px-4 py-2 lg:hidden">
       {visiblePlayers.map((player, index) => (
-        <div key={player.id || index} className="w-[100px] flex-shrink-0">
+        <div key={player.id || index} className="w-[min(6rem,18vw)] flex-shrink-0">
           <PlayerCard
             player={player}
             isSpeaking={

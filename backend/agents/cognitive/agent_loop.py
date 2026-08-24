@@ -68,7 +68,9 @@ def _empty_knife_allowed() -> bool:
 import threading as _threading
 
 _STRATEGY_LOCK = _threading.Lock()
-_TRACK_C_RETRIEVAL_CACHE: dict[tuple[str, str, str, str, str, str, int, float], tuple[float, list[dict[str, Any]]]] = {}
+_TRACK_C_RETRIEVAL_CACHE: dict[
+    tuple[str, str, str, str, str, str, int, float], tuple[float, list[dict[str, Any]]]
+] = {}
 _LAST_RETRIEVED_STRATEGIES: dict = {}
 _LAST_LOOP_TRACE: dict = {}
 
@@ -86,7 +88,9 @@ def _feature_enabled(env_var: str, default: bool = True) -> bool:
     return val in ("1", "true", "yes", "on")
 
 
-def _feature_value_from_config(config: dict[str, bool] | None, env_var: str, default: bool = True) -> bool:
+def _feature_value_from_config(
+    config: dict[str, bool] | None, env_var: str, default: bool = True
+) -> bool:
     """Resolve a feature flag from agent config first, then environment."""
     if config and env_var in config:
         return bool(config[env_var])
@@ -151,7 +155,14 @@ _TOOL_PARAM_SCHEMAS: Dict[str, Dict] = {
         "properties": {
             "filter": {
                 "type": "string",
-                "enum": ["all", "judgments", "suspicious", "trusted", "recent_actions", "role_state"],
+                "enum": [
+                    "all",
+                    "judgments",
+                    "suspicious",
+                    "trusted",
+                    "recent_actions",
+                    "role_state",
+                ],
                 "description": "记忆筛选类型",
             },
             "target_player": {
@@ -228,7 +239,11 @@ def _target_candidate_players(obs: Observation | None) -> list[Any]:
         ]
     if phase == "NIGHT_GUARD_ACTION":
         return alive_players
-    return [player for player in alive_players if str(getattr(player, "id", "") or "") != current_player_id]
+    return [
+        player
+        for player in alive_players
+        if str(getattr(player, "id", "") or "") != current_player_id
+    ]
 
 
 def _legal_target_labels(obs: Observation | None) -> list[str]:
@@ -282,6 +297,7 @@ class AgentLoop:
         player_id: str = "",
         retrieval_policy: str = "",
         feature_flags: dict[str, bool] | None = None,
+        game_id: str = "",
     ):
         self._llm = llm
         self._system_prompt = system_prompt
@@ -294,6 +310,7 @@ class AgentLoop:
         self._temperature = temperature
         self._accumulated_usage: Dict[str, int] = {}
         self._current_obs: Observation | None = None
+        self._game_id = game_id
         # Native function calling via llm.bind_tools().
         # DeepSeek models (dsv4flash provider) support OpenAI-compatible tool calling.
         # Set AGENT_USE_NATIVE_FC=0 to disable and fall back to text-mode parsing.
@@ -301,7 +318,9 @@ class AgentLoop:
 
         _native_fc_env = _os.getenv("AGENT_USE_NATIVE_FC", "").strip()
         _native_fc_disabled = _native_fc_env == "0" or _native_fc_env.lower() == "false"
-        self._supports_bind_tools = hasattr(llm, "bind_tools") and not _native_fc_disabled
+        self._supports_bind_tools = (
+            hasattr(llm, "bind_tools") and not _native_fc_disabled
+        )
 
     # ================================================================
     # Run
@@ -339,7 +358,11 @@ class AgentLoop:
         )
         max_tool_rounds = self._max_tool_rounds(cached_analysis)
         tools = self._select_tools(all_tools, obs) if max_tool_rounds > 0 else {}
-        info_tool_schemas = self._tools_to_bind_schemas(tools) if self._supports_bind_tools and tools else []
+        info_tool_schemas = (
+            self._tools_to_bind_schemas(tools)
+            if self._supports_bind_tools and tools
+            else []
+        )
         decision_schema = self._decision_tool_schema(obs)
         context = []  # list of messages for the conversation
         tool_trace: list[dict] = []  # track tool calls for auditing
@@ -350,7 +373,9 @@ class AgentLoop:
         # identical across calls lets the API skip re-processing 60-80% of
         # prompt tokens. This matches what Anthropic SDK / Claude Code does.
         static_system = self._build_static_system_text(obs, tools)
-        dynamic_context = self._build_dynamic_context(obs, memory, extra_context, cached_analysis)
+        dynamic_context = self._build_dynamic_context(
+            obs, memory, extra_context, cached_analysis
+        )
         context.append(SystemMessage(content=static_system))
         context.append(HumanMessage(content=dynamic_context))
 
@@ -372,8 +397,12 @@ class AgentLoop:
 
         while True:
             call_count += 1
-            response = self._call_llm(context, active_schemas or None, force_tool_name=force_tool_name)
-            response_text = response.content if hasattr(response, "content") else str(response)
+            response = self._call_llm(
+                context, active_schemas or None, force_tool_name=force_tool_name
+            )
+            response_text = (
+                response.content if hasattr(response, "content") else str(response)
+            )
             last_response_preview = response_text[:500].replace("\n", "\\n")
 
             # Detect native tool calls for proper ToolMessage handling
@@ -383,7 +412,11 @@ class AgentLoop:
             if self._supports_bind_tools and not text_repair_mode:
                 decision, decision_error = self._parse_submit_decision(response)
                 if decision:
-                    logger.info("Call %s: submit_decision found (%s)", call_count, list(decision.keys()))
+                    logger.info(
+                        "Call %s: submit_decision found (%s)",
+                        call_count,
+                        list(decision.keys()),
+                    )
                     self._inject_tool_trace(decision, tool_trace, obs)
                     return decision
 
@@ -398,12 +431,20 @@ class AgentLoop:
                 )
 
                 # Record tool trace for auditing
-                tool_names = self._extract_tool_names(response, is_native, allowed_tool_names=set(tools))
-                tool_keywords = self._extract_tool_keywords(response, is_native, allowed_tool_names=set(tools))
+                tool_names = self._extract_tool_names(
+                    response, is_native, allowed_tool_names=set(tools)
+                )
+                tool_keywords = self._extract_tool_keywords(
+                    response, is_native, allowed_tool_names=set(tools)
+                )
                 for idx, tr in enumerate(tool_results):
                     tname = tool_names[idx] if idx < len(tool_names) else "unknown"
                     # Extract doc_ids from formatted strategy output
-                    doc_ids = re.findall(r"\[([\w\-]+)\s+score=", tr) if tname == "search_strategies" else []
+                    doc_ids = (
+                        re.findall(r"\[([\w\-]+)\s+score=", tr)
+                        if tname == "search_strategies"
+                        else []
+                    )
                     tool_trace.append(
                         {
                             "iteration": tool_rounds_used,
@@ -433,9 +474,13 @@ class AgentLoop:
                 # Add assistant response + tool results to context
                 if is_native:
                     context.append(response)
-                    tool_call_ids = self._extract_tool_call_ids(response, allowed_tool_names=set(tools))
+                    tool_call_ids = self._extract_tool_call_ids(
+                        response, allowed_tool_names=set(tools)
+                    )
                     for i, tr in enumerate(tool_results):
-                        tc_id = tool_call_ids[i] if i < len(tool_call_ids) else f"call_{i}"
+                        tc_id = (
+                            tool_call_ids[i] if i < len(tool_call_ids) else f"call_{i}"
+                        )
                         context.append(ToolMessage(content=tr, tool_call_id=tc_id))
                 else:
                     context.append(HumanMessage(content=response_text))
@@ -451,9 +496,15 @@ class AgentLoop:
                     force_tool_name = None
                 continue
 
-            if not self._supports_bind_tools or not active_schemas or response_text.strip():
+            if (
+                not self._supports_bind_tools
+                or not active_schemas
+                or response_text.strip()
+            ):
                 decision = self._parse_decision(response_text, obs)
-                if not decision and not self._looks_like_structured_decision_response(response_text):
+                if not decision and not self._looks_like_structured_decision_response(
+                    response_text
+                ):
                     decision = self._parse_freeform_decision(response_text, obs)
                 if decision:
                     keys = list(decision.keys())
@@ -463,7 +514,9 @@ class AgentLoop:
 
             # Neither info tool call nor valid final decision — ask once for the structured final call.
             preview = response_text[:150].replace("\n", "\\n")
-            logger.info(f"Call {call_count}: no usable final decision found. Response preview: {preview}...")
+            logger.info(
+                f"Call {call_count}: no usable final decision found. Response preview: {preview}..."
+            )
             if (
                 self._supports_bind_tools
                 and force_tool_name == DECISION_TOOL_NAME
@@ -490,8 +543,13 @@ class AgentLoop:
             # so extend the dedicated empty-response repair to it — reasoning
             # models on some gateways return empty content when the token
             # budget is exhausted by hidden chain-of-thought.
-            if (text_repair_mode or not self._supports_bind_tools) and repair_rounds_used >= MAX_FORMAT_REPAIR_ROUNDS:
-                if not response_text.strip() and empty_response_repairs_used < MAX_EMPTY_RESPONSE_REPAIR_ROUNDS:
+            if (
+                text_repair_mode or not self._supports_bind_tools
+            ) and repair_rounds_used >= MAX_FORMAT_REPAIR_ROUNDS:
+                if (
+                    not response_text.strip()
+                    and empty_response_repairs_used < MAX_EMPTY_RESPONSE_REPAIR_ROUNDS
+                ):
                     empty_response_repairs_used += 1
                     context.append(
                         HumanMessage(
@@ -507,7 +565,9 @@ class AgentLoop:
                 context.append(HumanMessage(content=response_text))
             if repair_rounds_used >= MAX_FORMAT_REPAIR_ROUNDS and not text_repair_mode:
                 break
-            context.append(HumanMessage(content=self._final_decision_instruction(decision_error)))
+            context.append(
+                HumanMessage(content=self._final_decision_instruction(decision_error))
+            )
             if self._supports_bind_tools:
                 active_schemas = [decision_schema]
                 force_tool_name = DECISION_TOOL_NAME
@@ -575,7 +635,7 @@ class AgentLoop:
         blocks.append(self._task_for_action(role, obs))
 
         track_c_strategy_text = ""
-        if self._feature_enabled("COGNITIVE_ENABLE_TRACK_C", True):
+        if self._feature_enabled("enable_strategy", True):
             track_c_strategy_text = _build_track_c_strategy_block(
                 obs,
                 self._action_type,
@@ -586,7 +646,9 @@ class AgentLoop:
         if track_c_strategy_text:
             blocks.append(track_c_strategy_text)
 
-        strategy_bias_text = build_strategy_bias_block(self._strategy_bias, self._strategy_action())
+        strategy_bias_text = build_strategy_bias_block(
+            self._strategy_bias, self._strategy_action()
+        )
         if strategy_bias_text:
             blocks.append(strategy_bias_text)
 
@@ -619,7 +681,9 @@ class AgentLoop:
         if not self._supports_bind_tools:
             blocks.append(self._format_tools(tools))
         blocks.append(self._output_format())
-        strategy_bias_text = build_strategy_bias_block(self._strategy_bias, self._strategy_action())
+        strategy_bias_text = build_strategy_bias_block(
+            self._strategy_bias, self._strategy_action()
+        )
         if strategy_bias_text:
             blocks.append(strategy_bias_text)
         return "\n\n".join(blocks)
@@ -655,7 +719,7 @@ class AgentLoop:
         if legal_target_text and self._action_type in {"vote", "night"}:
             blocks.append("【本次合法目标约束】\n" + legal_target_text.strip())
         track_c_strategy_text = ""
-        if self._feature_enabled("COGNITIVE_ENABLE_TRACK_C", True):
+        if self._feature_enabled("enable_strategy", True):
             track_c_strategy_text = _build_track_c_strategy_block(
                 obs,
                 self._action_type,
@@ -730,14 +794,26 @@ class AgentLoop:
         return base
 
     def _feature_enabled(self, env_var: str, default: bool = True) -> bool:
-        return _feature_value_from_config(self._feature_flags, env_var, default)
+        # Check feature_flags dict first (set by factory from frontend toggle)
+        if self._feature_flags and env_var in self._feature_flags:
+            return bool(self._feature_flags[env_var])
+        # Backward compat: also check legacy COGNITIVE_ENABLE_TRACK_C env var
+        # when the standard key is enable_strategy
+        if env_var == "enable_strategy":
+            legacy = os.getenv("COGNITIVE_ENABLE_TRACK_C", "").strip().lower()
+            if legacy:
+                return legacy in ("1", "true", "yes", "on")
+        return _feature_enabled(env_var, default)
 
     def _format_tools(self, tools: Dict[str, Any]) -> str:
         """Format tool descriptions for the system prompt (text fallback mode)."""
         max_tool_rounds = self._max_tool_rounds("")
         if not tools or max_tool_rounds <= 0:
             return "【可用工具】\n本动作不暴露信息工具，请直接输出 DECISION。"
-        lines = ["【可用工具】", f"你可以最多调用 {max_tool_rounds} 轮工具。需要信息时，用以下格式调用："]
+        lines = [
+            "【可用工具】",
+            f"你可以最多调用 {max_tool_rounds} 轮工具。需要信息时，用以下格式调用：",
+        ]
         lines.append("TOOL: <工具名>")
         lines.append("ARGUMENTS: <JSON>")
         lines.append("")
@@ -805,10 +881,14 @@ class AgentLoop:
             try:
                 return max(0, int(raw))
             except ValueError:
-                logger.warning("Invalid %s=%r; using default %s", env_name, raw, default)
+                logger.warning(
+                    "Invalid %s=%r; using default %s", env_name, raw, default
+                )
         return max(0, default)
 
-    def _select_tools(self, all_tools: Dict[str, Any], obs: Observation) -> Dict[str, Any]:
+    def _select_tools(
+        self, all_tools: Dict[str, Any], obs: Observation
+    ) -> Dict[str, Any]:
         """Select a narrow information-tool set for the current action.
 
         Final decisions are submitted through submit_decision, which is not an
@@ -816,7 +896,12 @@ class AgentLoop:
         """
         phase = str(getattr(obs, "phase", "") or "").upper()
         if self._action_type == "speech":
-            names = ["recall_memory", "get_social_info", "search_strategies", "set_strategic_intent"]
+            names = [
+                "recall_memory",
+                "get_social_info",
+                "search_strategies",
+                "set_strategic_intent",
+            ]
         elif self._action_type == "vote":
             names = ["recall_memory", "analyze_votes", "get_social_info"]
         elif self._action_type == "night":
@@ -850,7 +935,9 @@ class AgentLoop:
             legal_targets = _legal_target_labels(obs)
             target_description = "最终目标，必须是当前可见且合法的玩家名或座位号。"
             if legal_targets:
-                target_description += " 只能从以下值中选择：" + "、".join(legal_targets) + "。"
+                target_description += (
+                    " 只能从以下值中选择：" + "、".join(legal_targets) + "。"
+                )
             properties = {
                 "target": {
                     "type": "string",
@@ -901,7 +988,9 @@ class AgentLoop:
                 human_lines.append(stripped)
             clean_desc = " ".join(human_lines) if human_lines else desc_lines[0][:200]
 
-            param_schema = _TOOL_PARAM_SCHEMAS.get(name, {"type": "object", "properties": {}})
+            param_schema = _TOOL_PARAM_SCHEMAS.get(
+                name, {"type": "object", "properties": {}}
+            )
             schemas.append(
                 {
                     "type": "function",
@@ -956,7 +1045,57 @@ class AgentLoop:
 
         # Accumulate token usage from response_metadata
         self._accumulate_usage(resp)
+
+        # Save prompt snapshot synchronously (AgentLoop is the default path)
+        self._save_prompt_snapshot(messages, resp)
+
         return resp
+
+    def _save_prompt_snapshot(self, messages: list, resp: Any) -> None:
+        """Save LLM prompt/response for analysis."""
+        if not self._game_id:
+            return
+        try:
+            from backend.db.persist import save_prompt_snapshot
+
+            obs = self._current_obs
+            system_text = ""
+            user_parts: list[str] = []
+            for m in messages:
+                role = getattr(m, "type", "") or getattr(m, "role", "")
+                content = getattr(m, "content", "") or ""
+                if role == "system":
+                    system_text = content
+                elif role in ("human", "user"):
+                    user_parts.append(content)
+                elif role in ("ai", "assistant", "tool"):
+                    # Include async tool results / assistant responses for full context
+                    role_label = getattr(m, "type", "ai")
+                    if hasattr(m, "tool_call_id"):
+                        user_parts.append(
+                            f"[工具结果 {m.tool_call_id}]\n{content[:2000]}"
+                        )
+                    elif content:
+                        user_parts.append(f"[{role_label}]\n{content[:1000]}")
+            user_text = "\n\n---\n\n".join(user_parts)
+
+            content = getattr(resp, "content", "") or ""
+            usage = getattr(resp, "usage_metadata", None) or {}
+
+            save_prompt_snapshot(
+                game_id=self._game_id,
+                player_id=self._player_id,
+                day=getattr(obs, "day", 0) if obs else 0,
+                phase=getattr(obs, "phase", "") if obs else "",
+                request=self._action_type,
+                system_prompt=system_text[:20000],
+                user_prompt=user_text[:20000],
+                response=content[:10000],
+                prompt_tokens=getattr(usage, "input_tokens", None),
+                completion_tokens=getattr(usage, "output_tokens", None),
+            )
+        except Exception:
+            pass  # non-critical
 
     def _max_tokens(self, force_tool_name: str | None) -> int:
         """Bound completion tokens tightly for faster decisions."""
@@ -971,7 +1110,9 @@ class AgentLoop:
             try:
                 return max(64, int(raw))
             except ValueError:
-                logger.warning("Invalid %s=%r; using default %s", env_name, raw, default)
+                logger.warning(
+                    "Invalid %s=%r; using default %s", env_name, raw, default
+                )
         return default
 
     def _accumulate_usage(self, resp: Any) -> None:
@@ -1047,7 +1188,9 @@ class AgentLoop:
 
         return results
 
-    def _execute_single_tool(self, name: str, args: Dict[str, Any], tools: Dict[str, Any]) -> str:
+    def _execute_single_tool(
+        self, name: str, args: Dict[str, Any], tools: Dict[str, Any]
+    ) -> str:
         """Execute a single tool by name and return the result string."""
         if name not in tools:
             return f"未知工具: {name}。可用工具: {', '.join(tools.keys())}"
@@ -1074,7 +1217,9 @@ class AgentLoop:
         text = response.content if hasattr(response, "content") else str(response)
         return [m.group(1) for m in re.finditer(r"TOOL:\s*(\w+)", text, re.IGNORECASE)]
 
-    def _extract_tool_call_ids(self, response, allowed_tool_names: set[str] | None = None) -> list[str]:
+    def _extract_tool_call_ids(
+        self, response, allowed_tool_names: set[str] | None = None
+    ) -> list[str]:
         """Extract native tool call IDs matching executable information tools."""
         if not hasattr(response, "tool_calls") or not response.tool_calls:
             return []
@@ -1122,7 +1267,9 @@ class AgentLoop:
                 pass
         return result
 
-    def _parse_submit_decision(self, response: Any) -> tuple[Optional[Dict[str, str]], str]:
+    def _parse_submit_decision(
+        self, response: Any
+    ) -> tuple[Optional[Dict[str, str]], str]:
         """Parse final decision from native submit_decision tool calls."""
         if not hasattr(response, "tool_calls") or not response.tool_calls:
             return None, ""
@@ -1145,7 +1292,9 @@ class AgentLoop:
                     reasoning = "submit_decision_reasoning_missing"
                 if speech and reasoning:
                     return {"speech": speech, "reasoning": reasoning}, ""
-                logger.warning("submit_decision missing speech/reasoning for speech action")
+                logger.warning(
+                    "submit_decision missing speech/reasoning for speech action"
+                )
                 missing = []
                 if not speech:
                     missing.append("speech")
@@ -1162,13 +1311,19 @@ class AgentLoop:
                     return {"target": "", "reasoning": reasoning}, ""
                 return None, "submit_decision 缺少必填字段: reasoning。"
             if target and self._current_obs is not None:
-                resolved_target = self._extract_named_legal_target(target, self._current_obs)
+                target_text = target + "\n" + json.dumps(args, ensure_ascii=False)
+                resolved_target = self._extract_named_legal_target(
+                    target_text, self._current_obs
+                )
                 if not resolved_target:
                     return None, f"submit_decision target 不在合法目标中: {target}。"
                 target = resolved_target
             if target and reasoning:
                 return {"target": target, "reasoning": reasoning}, ""
-            logger.warning("submit_decision missing target/reasoning for %s action", self._action_type)
+            logger.warning(
+                "submit_decision missing target/reasoning for %s action",
+                self._action_type,
+            )
             missing = []
             if not target:
                 missing.append("target")
@@ -1183,25 +1338,42 @@ class AgentLoop:
         if self._supports_bind_tools:
             if self._action_type == "speech":
                 return (
-                    prefix + f"信息已足够。现在不要调用任何信息工具，只调用 {DECISION_TOOL_NAME}，"
+                    prefix
+                    + f"信息已足够。现在不要调用任何信息工具，只调用 {DECISION_TOOL_NAME}，"
                     "参数必须包含 speech 和 reasoning。"
                 )
             return (
-                prefix + f"信息已足够。现在不要调用任何信息工具，只调用 {DECISION_TOOL_NAME}，"
+                prefix
+                + f"信息已足够。现在不要调用任何信息工具，只调用 {DECISION_TOOL_NAME}，"
                 "参数必须包含 target 和 reasoning。"
             )
         if self._action_type == "speech":
-            return prefix + '请直接输出最终决策，格式必须是：DECISION: {"speech": "...", "reasoning": "..."}'
-        return prefix + '请直接输出最终决策，格式必须是：DECISION: {"target": "...", "reasoning": "..."}'
+            return (
+                prefix
+                + '请直接输出最终决策，格式必须是：DECISION: {"speech": "...", "reasoning": "..."}'
+            )
+        return (
+            prefix
+            + '请直接输出最终决策，格式必须是：DECISION: {"target": "...", "reasoning": "..."}'
+        )
 
-    def _text_decision_instruction(self, obs: Observation | None = None, previous_error: str = "") -> str:
+    def _text_decision_instruction(
+        self, obs: Observation | None = None, previous_error: str = ""
+    ) -> str:
         """Pure-text repair instruction used after native function-call failure."""
 
         prefix = f"上一次最终决策格式无效：{previous_error}\n" if previous_error else ""
         if self._action_type == "speech":
-            return prefix + '请只输出一行：DECISION: {"speech": "你的最终发言", "reasoning": "发言依据"}'
+            return (
+                prefix
+                + '请只输出一行：DECISION: {"speech": "你的最终发言", "reasoning": "发言依据"}'
+            )
         legal_targets = _legal_target_labels(obs)
-        legal_text = f" 合法目标只能从这些值中选一个：{'、'.join(legal_targets)}。" if legal_targets else ""
+        legal_text = (
+            f" 合法目标只能从这些值中选一个：{'、'.join(legal_targets)}。"
+            if legal_targets
+            else ""
+        )
         return (
             prefix
             + "请只输出一行："
@@ -1209,13 +1381,17 @@ class AgentLoop:
             + legal_text
         )
 
-    def _inject_tool_trace(self, decision: dict, tool_trace: list[dict], obs: Observation) -> None:
+    def _inject_tool_trace(
+        self, decision: dict, tool_trace: list[dict], obs: Observation
+    ) -> None:
         """Inject tool trace and auto-injected strategy IDs into the decision dict."""
         decision[trace_keys.TOOL_TRACE] = tool_trace
         player_id = str(getattr(obs, "player_id", "") or "")
         with _STRATEGY_LOCK:
             auto_injected = _LAST_RETRIEVED_STRATEGIES.pop(player_id, [])
-        decision[trace_keys.AUTO_INJECTED_STRATEGIES] = [s.get("doc_id", "") for s in auto_injected]
+        decision[trace_keys.AUTO_INJECTED_STRATEGIES] = [
+            s.get("doc_id", "") for s in auto_injected
+        ]
         # Extract tool-called strategy doc_ids from the tool trace and merge
         tool_called_ids: list[str] = []
         for entry in tool_trace:
@@ -1223,7 +1399,11 @@ class AgentLoop:
                 for did in entry.get("doc_ids", []):
                     if did and did not in tool_called_ids:
                         tool_called_ids.append(did)
-        merged_ids = list(dict.fromkeys(decision[trace_keys.AUTO_INJECTED_STRATEGIES] + tool_called_ids))
+        merged_ids = list(
+            dict.fromkeys(
+                decision[trace_keys.AUTO_INJECTED_STRATEGIES] + tool_called_ids
+            )
+        )
         decision[trace_keys.RETRIEVED_KNOWLEDGE_IDS] = merged_ids
         # Inject accumulated token usage
         usage = getattr(self, "_accumulated_usage", None) or {}
@@ -1238,7 +1418,9 @@ class AgentLoop:
                 usage=usage,
             )
 
-    def _parse_decision(self, response: str, obs: Observation | None = None) -> Optional[Dict[str, str]]:
+    def _parse_decision(
+        self, response: str, obs: Observation | None = None
+    ) -> Optional[Dict[str, str]]:
         """Parse final decision from LLM response.
 
         Expected format:
@@ -1295,7 +1477,9 @@ class AgentLoop:
                     if isinstance(data, dict) and self._looks_like_decision_data(data):
                         result = self._decision_from_data(data, response, obs)
                         if self._is_valid_decision(result):
-                            logger.info(f"No DECISION: marker, but found JSON directly: {list(result.keys())}")
+                            logger.info(
+                                f"No DECISION: marker, but found JSON directly: {list(result.keys())}"
+                            )
                             return result
                 except json.JSONDecodeError:
                     pass
@@ -1342,7 +1526,10 @@ class AgentLoop:
             # Try to salvage the speech text from the partial JSON.
             salvaged = self._salvage_partial_json(json_str)
             if salvaged:
-                if salvaged.get("speech") and not str(salvaged.get("reasoning", "") or "").strip():
+                if (
+                    salvaged.get("speech")
+                    and not str(salvaged.get("reasoning", "") or "").strip()
+                ):
                     salvaged["reasoning"] = "partial_json_reasoning_missing"
                 logger.warning(
                     f"Salvaged partial decision JSON (original parse failed). "
@@ -1353,7 +1540,9 @@ class AgentLoop:
             return None
 
         result: Dict[str, str] = {}
-        result = self._decision_from_data(data, response, obs, marker_start=marker_match.start())
+        result = self._decision_from_data(
+            data, response, obs, marker_start=marker_match.start()
+        )
         return result if self._is_valid_decision(result) else None
 
     def _is_valid_decision(self, decision: dict[str, str]) -> bool:
@@ -1383,7 +1572,9 @@ class AgentLoop:
     def _looks_like_structured_decision_response(self, response: str) -> bool:
         if re.search(r"DECISION:\s*", response, re.IGNORECASE):
             return True
-        return bool(re.search(r'\{\s*"(?:speech|target|reasoning|reason)"\s*:', response))
+        return bool(
+            re.search(r'\{\s*"(?:speech|target|reasoning|reason)"\s*:', response)
+        )
 
     def _decision_from_data(
         self,
@@ -1397,14 +1588,20 @@ class AgentLoop:
         if self._action_type == "speech":
             speech_keys = ("speech", "content", "message", "utterance")
             has_speech_field = any(key in data for key in speech_keys)
-            speech_value = next((data.get(key) for key in speech_keys if key in data), "")
+            speech_value = next(
+                (data.get(key) for key in speech_keys if key in data), ""
+            )
             if has_speech_field:
                 result["speech"] = str(speech_value or "")
             result["reasoning"] = str(data.get("reasoning") or data.get("reason") or "")
             if result.get("speech") and not result["reasoning"].strip():
                 result["reasoning"] = "decision_json_reasoning_missing"
             if "speech" not in result:
-                text = source_text[:marker_start].strip() if marker_start is not None else source_text.strip()
+                text = (
+                    source_text[:marker_start].strip()
+                    if marker_start is not None
+                    else source_text.strip()
+                )
                 if len(text) > 10:
                     result["speech"] = text[:500]
                     if not result["reasoning"].strip():
@@ -1433,12 +1630,17 @@ class AgentLoop:
                 result["target"] = ""
                 return result
             if obs is not None and result.get("target"):
-                legal_target = self._extract_named_legal_target(str(result["target"]), obs)
+                target_text = (
+                    f"{result['target']}\n{json.dumps(data, ensure_ascii=False)}"
+                )
+                legal_target = self._extract_named_legal_target(target_text, obs)
                 result["target"] = legal_target
             result["reasoning"] = str(data.get("reasoning") or data.get("reason") or "")
         return result
 
-    def _parse_freeform_decision(self, response: str, obs: Observation) -> Optional[Dict[str, str]]:
+    def _parse_freeform_decision(
+        self, response: str, obs: Observation
+    ) -> Optional[Dict[str, str]]:
         """Parse a usable decision from real LLM free-form text.
 
         This is not a heuristic fallback decision. It only converts the model's
@@ -1461,11 +1663,19 @@ class AgentLoop:
         if not target:
             return None
         reasoning = self._strip_format_noise(text)
-        return {"target": target, "reasoning": reasoning[:300] or "model_freeform_target"}
+        return {
+            "target": target,
+            "reasoning": reasoning[:300] or "model_freeform_target",
+        }
 
     @staticmethod
     def _strip_format_noise(text: str) -> str:
-        cleaned = re.sub(r"^\s*(DECISION|ANSWER|最终决策|发言|理由)\s*[:：]\s*", "", text.strip(), flags=re.I)
+        cleaned = re.sub(
+            r"^\s*(DECISION|ANSWER|最终决策|发言|理由)\s*[:：]\s*",
+            "",
+            text.strip(),
+            flags=re.I,
+        )
         cleaned = re.sub(r"```(?:json)?", "", cleaned).replace("```", "").strip()
         return cleaned
 
@@ -1547,15 +1757,25 @@ def _build_track_c_strategy_block(
     for index, item in enumerate(lessons[:3], start=1):
         doc_id = str(item.get("doc_id") or item.get("id") or f"lesson-{index}")
         trigger = str(
-            item.get("trigger") or item.get("situation_pattern") or item.get("trigger_conditions") or ""
+            item.get("trigger")
+            or item.get("situation_pattern")
+            or item.get("trigger_conditions")
+            or ""
         ).strip()
         recommendation = str(
-            item.get("recommendation") or item.get("recommended_action") or item.get("strategy") or ""
+            item.get("recommendation")
+            or item.get("recommended_action")
+            or item.get("strategy")
+            or ""
         ).strip()
         avoid = str(item.get("avoid_action") or "").strip()
-        rationale = str(item.get("rationale") or item.get("evidence_summary") or "").strip()
+        rationale = str(
+            item.get("rationale") or item.get("evidence_summary") or ""
+        ).strip()
         score = item.get("score", item.get("quality_score", ""))
-        score_text = f" score={float(score):.2f}" if isinstance(score, (int, float)) else ""
+        score_text = (
+            f" score={float(score):.2f}" if isinstance(score, (int, float)) else ""
+        )
         doc_type = str(item.get("doc_type", ""))
         status = str(item.get("status", ""))
         label_parts = []
@@ -1575,7 +1795,9 @@ def _build_track_c_strategy_block(
         if rationale:
             detail_parts.append(f"依据：{rationale}")
         if detail_parts:
-            lines.append(f"{index}. [{doc_id}{label_str}{score_text}] " + "；".join(detail_parts))
+            lines.append(
+                f"{index}. [{doc_id}{label_str}{score_text}] " + "；".join(detail_parts)
+            )
     return "\n".join(lines) if len(lines) > 2 else ""
 
 
@@ -1598,7 +1820,11 @@ def _retrieve_track_c_strategy_lessons(
         action = _strategy_query_action(action_type)
         mbti_key = _normalize_mbti(mbti)
         alignment_key = (alignment or _derive_alignment(role)).lower().strip()
-        policy_raw = os.getenv("TRACK_C_AUTO_RETRIEVAL_POLICY", "").strip() or retrieval_policy or "same_role_all_mbti"
+        policy_raw = (
+            os.getenv("TRACK_C_AUTO_RETRIEVAL_POLICY", "").strip()
+            or retrieval_policy
+            or "same_role_all_mbti"
+        )
         try:
             policy = RetrievalPolicy(policy_raw)
         except ValueError:
@@ -1611,8 +1837,19 @@ def _retrieve_track_c_strategy_lessons(
                 with _STRATEGY_LOCK:
                     _LAST_RETRIEVED_STRATEGIES.pop(player_id, None)
             return []
-        fetch_limit = _track_c_env_int("TRACK_C_AUTO_RETRIEVAL_FETCH_LIMIT", max(limit * 24, 24), minimum=limit)
-        cache_key = (role, phase, action, mbti_key, alignment_key, policy.value, limit, min_quality)
+        fetch_limit = _track_c_env_int(
+            "TRACK_C_AUTO_RETRIEVAL_FETCH_LIMIT", max(limit * 24, 24), minimum=limit
+        )
+        cache_key = (
+            role,
+            phase,
+            action,
+            mbti_key,
+            alignment_key,
+            policy.value,
+            limit,
+            min_quality,
+        )
         if cache_ttl > 0:
             cached = _TRACK_C_RETRIEVAL_CACHE.get(cache_key)
             now = time.monotonic()
@@ -1655,7 +1892,9 @@ def _retrieve_track_c_strategy_lessons(
             )
         ][:limit]
         lessons = [
-            _normalize_strategy_row(row, index) for index, row in enumerate(rows, start=1) if isinstance(row, dict)
+            _normalize_strategy_row(row, index)
+            for index, row in enumerate(rows, start=1)
+            if isinstance(row, dict)
         ]
         if cache_ttl > 0:
             _TRACK_C_RETRIEVAL_CACHE[cache_key] = (time.monotonic(), lessons)
@@ -1668,7 +1907,9 @@ def _retrieve_track_c_strategy_lessons(
                 with _STRATEGY_LOCK:
                     _LAST_RETRIEVED_STRATEGIES.pop(player_id, None)
             if os.getenv("REQUIRE_STRATEGY_USAGE_TRACE", "").lower() == "true":
-                logger.error("STRICT FAIL: Track C auto-retrieval returned no strategies")
+                logger.error(
+                    "STRICT FAIL: Track C auto-retrieval returned no strategies"
+                )
         return lessons
     except Exception as exc:
         logger.debug("Track C strategy retrieval skipped: %s", exc)
@@ -1751,11 +1992,17 @@ def _track_c_row_safe_for_runtime(
         return False
 
     doc_type = str(row.get("doc_type", "") or "").lower().strip()
-    if doc_type.startswith("reflection") and not _feature_enabled("TRACK_C_RUNTIME_ALLOW_REFLECTIONS", False):
+    if doc_type.startswith("reflection") and not _feature_enabled(
+        "TRACK_C_RUNTIME_ALLOW_REFLECTIONS", False
+    ):
         return False
 
     quality = _track_c_row_quality(row)
-    min_quality = min_quality if min_quality is not None else _track_c_env_float("TRACK_C_RUNTIME_MIN_QUALITY", 0.82)
+    min_quality = (
+        min_quality
+        if min_quality is not None
+        else _track_c_env_float("TRACK_C_RUNTIME_MIN_QUALITY", 0.82)
+    )
     if doc_type.startswith("reflection"):
         min_quality = max(min_quality, 0.85)
     if quality is not None and quality < min_quality:
@@ -1776,7 +2023,12 @@ def _track_c_row_safe_for_runtime(
 
     row_role = _extract_track_c_role_scope(row)
     role_key = role.lower().strip()
-    if row_role and row_role not in {"global", "any"} and role_key and row_role != role_key:
+    if (
+        row_role
+        and row_role not in {"global", "any"}
+        and role_key
+        and row_role != role_key
+    ):
         return False
 
     if not _track_c_phase_safe_for_runtime(row, phase, action):
@@ -1818,7 +2070,9 @@ def _track_c_row_quality(row: dict[str, Any]) -> float | None:
     return None
 
 
-def _track_c_phase_safe_for_runtime(row: dict[str, Any], phase: str, action: str) -> bool:
+def _track_c_phase_safe_for_runtime(
+    row: dict[str, Any], phase: str, action: str
+) -> bool:
     """Avoid injecting stale phase advice into unrelated decisions."""
     if not _feature_enabled("TRACK_C_RUNTIME_REQUIRE_PHASE_MATCH", True):
         return True
@@ -1833,7 +2087,8 @@ def _track_c_phase_safe_for_runtime(row: dict[str, Any], phase: str, action: str
     scopes.discard("ANY")
     if scopes:
         return phase_key in scopes or any(
-            _track_c_phase_action_compatible(scope, phase_key, action_key) for scope in scopes
+            _track_c_phase_action_compatible(scope, phase_key, action_key)
+            for scope in scopes
         )
     return _feature_enabled("TRACK_C_RUNTIME_ALLOW_GLOBAL_PHASE", action_key == "talk")
 
@@ -1915,7 +2170,11 @@ def _track_c_auto_keywords(role: str, phase: str, action: str) -> list[str]:
     }
     seen: set[str] = set()
     keywords: list[str] = []
-    for term in role_terms.get(role, [role]) + phase_terms.get(phase, [phase]) + action_terms.get(action, [action]):
+    for term in (
+        role_terms.get(role, [role])
+        + phase_terms.get(phase, [phase])
+        + action_terms.get(action, [action])
+    ):
         clean = str(term).strip()
         if clean and clean not in seen:
             seen.add(clean)
@@ -1925,9 +2184,18 @@ def _track_c_auto_keywords(role: str, phase: str, action: str) -> list[str]:
 
 def _normalize_strategy_row(row: dict[str, Any], index: int) -> dict[str, Any]:
     return {
-        "doc_id": row.get("doc_id") or row.get("id") or row.get("doc_type") or f"strategy-{index}",
-        "trigger": row.get("trigger") or row.get("situation") or row.get("situation_pattern") or "",
-        "recommendation": row.get("recommendation") or row.get("strategy") or row.get("recommended_action") or "",
+        "doc_id": row.get("doc_id")
+        or row.get("id")
+        or row.get("doc_type")
+        or f"strategy-{index}",
+        "trigger": row.get("trigger")
+        or row.get("situation")
+        or row.get("situation_pattern")
+        or "",
+        "recommendation": row.get("recommendation")
+        or row.get("strategy")
+        or row.get("recommended_action")
+        or "",
         "avoid_action": row.get("avoid_action") or "",
         "rationale": row.get("rationale") or row.get("evidence_summary") or "",
         "score": row.get("score", row.get("quality", row.get("quality_score", ""))),

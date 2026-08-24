@@ -27,6 +27,13 @@ class RoomManager:
             request.agent_type,
             request.human_seat,
             request.rule_pack_id,
+            request.custom_roles,
+            request.has_badge,
+            request.share_persona,
+            request.enable_strategy,
+            request.persona_names,
+            request.has_last_words,
+            request.parallel_speech,
         )
         self.rooms[room.id] = room
         return room
@@ -70,7 +77,9 @@ class RoomManager:
         room.latest_snapshot = snapshot
         room.updated_at = time()
 
-    def record_game(self, room_id: str, state: GameState, snapshot: dict | None) -> RoomRecord:
+    def record_game(
+        self, room_id: str, state: GameState, snapshot: dict | None
+    ) -> RoomRecord:
         room = self.get_room(room_id)
         self.games[state.id] = state
         room.current_game_id = state.id
