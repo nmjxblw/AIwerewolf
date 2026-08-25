@@ -43,6 +43,30 @@ cp .env.example .env   # 首次使用
 
 注意：`.env` 含密钥，已在 `.gitignore` 中，**不要提交、不要外传**。
 
+### 一键启动前后端（Windows）
+
+双击仓库根目录的 `run_game.cmd`，或在 PowerShell 中执行：
+
+```powershell
+# 默认：fake LLM，不消耗 API，适合先验证界面和完整对局流程
+.\run_game.cmd
+
+# 真实模型：读取根目录 .env 中的模型和密钥配置
+.\run_game.cmd -Mode real
+```
+
+启动器会检查 Python 与 npm、在首次运行时安装前端依赖、补齐
+`frontend/.env.local`，然后分别打开前后端日志窗口。服务就绪后会自动打开
+`http://localhost:3001`。停止服务时，在两个日志窗口中分别按 `Ctrl+C`。
+如果 real 模式缺少根目录 `.env`，启动器会从 `.env.example` 创建并用记事本
+打开它；填写真实 provider 和 API Key、保存后，再执行一次 real 模式即可。
+
+如只想检查本机环境而不启动服务：
+
+```powershell
+.\run_game.cmd -CheckOnly
+```
+
 ### 三个脚本跑通全部实验
 
 ```bash
