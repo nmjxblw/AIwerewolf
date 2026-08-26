@@ -40,28 +40,20 @@ def _legacy_spec(spec: _RegistryRoleSpec) -> RoleSpec:
 ROLE_SPECS: dict[Role, RoleSpec] = {role: _legacy_spec(spec) for role, spec in ROLE_REGISTRY.items()}
 
 
+# 对齐文档默认板：7 人局 = 2 狼人 + 2 平民 + 1 预言家 + 1 女巫 + 1 守卫。
+# 无猎人、无白狼王、无白痴；警徽由 WerewolfGame.has_badge 关闭。
 DEFAULT_ROLE_SET: tuple[Role, ...] = (
     Role.WEREWOLF,
     Role.WEREWOLF,
+    Role.VILLAGER,
+    Role.VILLAGER,
     Role.SEER,
     Role.WITCH,
-    Role.HUNTER,
     Role.GUARD,
-    Role.VILLAGER,
 )
 
-# 廉价磋商（cheap talk）研究板子（项目对齐文档 w.txt）：
-# 7 人局 = 2 狼人 + 2 平民 + 1 预言家 + 1 女巫 + 1 守卫。
-# 与 DEFAULT_ROLE_SET（带猎人）不同，此板子无猎人。
-CT_ROLES_7P: tuple[Role, ...] = (
-    Role.WEREWOLF,
-    Role.WEREWOLF,
-    Role.VILLAGER,
-    Role.VILLAGER,
-    Role.SEER,
-    Role.WITCH,
-    Role.GUARD,
-)
+# 廉价磋商研究板子与引擎默认 7 人板相同。
+CT_ROLES_7P = DEFAULT_ROLE_SET
 
 
 WOLFCHA_ROLE_CONFIGS: dict[int, tuple[Role, ...]] = {

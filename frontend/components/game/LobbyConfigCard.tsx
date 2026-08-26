@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 
 // ── 默认角色配置（与后端 WOLFCHA_ROLE_CONFIGS 保持一致） ──
 const DEFAULT_ROLE_CONFIGS: Record<number, Role[]> = {
-  7: [Role.WEREWOLF, Role.WEREWOLF, Role.SEER, Role.WITCH, Role.HUNTER, Role.GUARD, Role.VILLAGER],
+  7: [Role.WEREWOLF, Role.WEREWOLF, Role.SEER, Role.WITCH, Role.GUARD, Role.VILLAGER, Role.VILLAGER],
   8: [Role.WEREWOLF, Role.WEREWOLF, Role.SEER, Role.WITCH, Role.HUNTER, Role.GUARD, Role.VILLAGER, Role.VILLAGER],
   9: [Role.WEREWOLF, Role.WEREWOLF, Role.WEREWOLF, Role.SEER, Role.WITCH, Role.HUNTER, Role.VILLAGER, Role.VILLAGER, Role.VILLAGER],
   10: [Role.WEREWOLF, Role.WEREWOLF, Role.WHITE_WOLF_KING, Role.SEER, Role.WITCH, Role.HUNTER, Role.GUARD, Role.VILLAGER, Role.VILLAGER, Role.VILLAGER],

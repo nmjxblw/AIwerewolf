@@ -4,7 +4,9 @@
  */
 import { CustomRolesConfig } from "@/types";
 
-const PREFERENCES_KEY = "gamePreferences";
+// Bump the key when aligned defaults change so legacy badge/parallel-speech
+// preferences do not silently override the current research rules.
+const PREFERENCES_KEY = "gamePreferences.v2";
 
 export interface GamePreferences {
   playerCount: number;
@@ -23,11 +25,11 @@ const DEFAULTS: GamePreferences = {
   mode: "ai",
   humanSeat: 1,
   customRoles: null,
-  hasBadge: true,
+  hasBadge: false,
   sharePersona: true,
   enableStrategy: true,
-  hasLastWords: true,
-  parallelSpeech: true,
+  hasLastWords: false,
+  parallelSpeech: false,
 };
 
 export function loadGamePreferences(): GamePreferences {
@@ -50,6 +52,22 @@ export function loadGamePreferences(): GamePreferences {
         typeof parsed.hasBadge === "boolean"
           ? parsed.hasBadge
           : DEFAULTS.hasBadge,
+      sharePersona:
+        typeof parsed.sharePersona === "boolean"
+          ? parsed.sharePersona
+          : DEFAULTS.sharePersona,
+      enableStrategy:
+        typeof parsed.enableStrategy === "boolean"
+          ? parsed.enableStrategy
+          : DEFAULTS.enableStrategy,
+      hasLastWords:
+        typeof parsed.hasLastWords === "boolean"
+          ? parsed.hasLastWords
+          : DEFAULTS.hasLastWords,
+      parallelSpeech:
+        typeof parsed.parallelSpeech === "boolean"
+          ? parsed.parallelSpeech
+          : DEFAULTS.parallelSpeech,
     };
   } catch {
     return { ...DEFAULTS };

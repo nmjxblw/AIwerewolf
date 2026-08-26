@@ -52,6 +52,8 @@ def build_game_context(obs: Observation) -> str:
         f"存活玩家: {alive_list}",
         f"死亡玩家: {dead_list}",
     ]
+    if obs.last_night_summary:
+        lines.append(f"昨夜结算（系统公告）: {obs.last_night_summary}")
 
     # Rules summary — based on actual game role roster, NOT player claims
     lines.append("")
@@ -59,17 +61,23 @@ def build_game_context(obs: Observation) -> str:
     lines.append("投票放逐狼人。")
     roster = obs.role_roster if obs.role_roster else []
     if "Seer" in roster:
-        lines.append("预言家每晚查验一人。")
+        lines.append("预言家夜间可查验一名其他玩家并获知好人/狼人，也可跳过。")
     if "Witch" in roster:
-        lines.append("女巫有解药+毒药各一。")
+        lines.append(
+            "女巫有解药、毒药各一且每瓶整局限用一次；同夜最多用一瓶。"
+            "解药只救当晚刀口且仅首夜可自救；毒药不能毒自己。"
+        )
     if "Hunter" in roster:
         lines.append("猎人死亡可开枪。")
     if "Guard" in roster:
-        lines.append("守卫每晚守护一人（不能连守）。")
+        lines.append(
+            "守卫夜间可守护一名其他玩家或跳过，不能自守、不能连续两夜守同一人；"
+            "守救同一刀口会奶穿死亡，守护不能挡毒。"
+        )
 
     # Rule clarification (not strategy guidance): dead players' roles are hidden.
     # LLMs otherwise hallucinate roles from training-data variants with reveals.
-    lines.append("出局玩家（夜晚被刀或白天被放逐）的身份不会公开，死亡公告不含身份信息；")
+    lines.append("死亡公告公开死者和死因，但不公开死者身份；无遗言、无警徽。")
     lines.append("不要假设已知任何死者的身份，只能通过存活玩家的发言与投票推断。")
 
     # Experiment institution announcement (report §8.4): rule statements only,
@@ -236,6 +244,7 @@ def build_speech_prompt(
         "【输出格式】",
         f"返回 JSON 字符串数组，{min_seg}-{max_seg} 条消息气泡，每条 1-2 句。",
         '格式: ["第一条消息", "第二条消息"]',
+        "涉及昨夜死亡情况时，必须以“昨夜结算（系统公告）”为准；不得把历史死亡说成昨晚死亡。",
         "",
         "像真人聊天一样说话。可以从上一个人发言的观点切入，表示认同或质疑。",
         "至少点名 1 位玩家。尽量挂住 1 条真实的桌面事实。",
@@ -301,7 +310,8 @@ def build_vote_prompt(obs: Observation, think_result: str) -> str:
 def build_night_prompt(obs: Observation, think_result: str, extra: str = "") -> str:
     """Build prompt for a night action."""
     game_ctx = build_game_context(obs)
-    alive_names = ", ".join(f"{p.seat}号:{p.name}" for p in obs.alive)
+    target_players = obs.legal_targets or obs.alive
+    target_names = ", ".join(f"{p.seat}号:{p.name}" for p in target_players)
 
     parts = [game_ctx]
 
@@ -313,9 +323,10 @@ def build_night_prompt(obs: Observation, think_result: str, extra: str = "") -> 
             "",
             f"=== 分析结论 ===\n{think_result}",
             "",
-            f"【夜晚行动】可选目标: {alive_names}",
+            f"【夜晚行动】可选目标: {target_names}",
             "请选择目标。输出 JSON：",
             '{"reasoning": "选择理由（1-2句，结合可见信息和角色能力）", "target": "玩家名字"}',
+            "target 与 reasoning 中最终选择的玩家必须完全一致。",
         ]
     )
 

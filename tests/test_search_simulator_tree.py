@@ -310,6 +310,39 @@ def test_night_tactics_require_protection_role_and_two_wolves_for_self_kill() ->
     assert {profile.mode for profile in enumerate_night_tactic_profiles(unprotected)} == {"normal"}
 
 
+def test_night_expansion_forbids_self_guard_allows_seer_skip_and_resolves_milk_through() -> None:
+    simulator = SearchSimulator(
+        number_of_players=5,
+        number_of_wolves=1,
+        include_seer=True,
+        include_witch=True,
+        include_guard=True,
+        tactics="",
+        smart_vote=False,
+        persistence_enabled=False,
+    )
+    # Seats: wolf=0, witch=1, guard=2, seer=3, villager=4.
+    state = GameState(
+        players=players_for_layout(("狼人", "女巫", "守卫", "预言家", "村民")),
+        phase="night",
+    )
+    transitions = simulator._expand_night(state)
+    action_keys = [transition.action_key for transition in transitions]
+
+    assert all(action_key[4] != 2 for action_key in action_keys)
+    assert any(action_key[7] is None for action_key in action_keys)
+
+    milk_through = [
+        action_key
+        for action_key in action_keys
+        if action_key[3] == 4
+        and action_key[4] == 4
+        and action_key[5] == "save"
+    ]
+    assert milk_through
+    assert all(4 in action_key[8] for action_key in milk_through)
+
+
 def test_vote_dynamic_program_preserves_assignment_multiplicity() -> None:
     alive = [0, 1, 2]
     allowed = {0: [1, 2], 1: [0, 2], 2: [0, 1]}

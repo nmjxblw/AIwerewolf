@@ -433,6 +433,8 @@ class CognitiveAgent:
                 teammates.append(f"{w.get('seat', '?')}号:{w.get('name', '?')}")
         chat_history = []
         for ev in getattr(self._view, "private_events", []) or []:
+            if ev.get("day") != self._view.day:
+                continue
             payload = ev.get("payload", {}) if isinstance(ev, dict) else {}
             if payload.get("kind") == "wolf_chat_message":
                 chat_history.append(str(payload.get("message", "")))
@@ -452,38 +454,45 @@ class CognitiveAgent:
             + "\n\n你是狼人，现在是夜晚狼队私聊环节（仅狼队可见，好人看不到）。"
             + f"\n狼队成员: {', '.join(teammates) if teammates else '仅剩你一人'}"
             + prev
-            + "\n请用 1-3 句话给出今晚的归票建议（"
+            + "\n请明确提出唯一一个今晚刀口，再用 1-3 句话说明归票建议（"
             + options_line
-            + "），说明理由。"
-            + '\n只输出 JSON：{"reasoning": "一句话理由", "message": "私聊内容"}'
+            + "）。私聊内容必须明确写出该目标，不能只分析候选人。"
+            + '\n只输出 JSON：{"target": "X号:名字或空刀", "reasoning": "一句话理由", "message": "明确刀口的私聊内容"}'
         )
         raw = self._pipeline.direct_call(prompt, max_tokens=300)
-        message, reasoning = "", ""
+        message, reasoning, target_text = "", "", ""
         try:
             data = json.loads(raw[raw.index("{") : raw.rindex("}") + 1])
             message = str(data.get("message") or data.get("speech") or "").strip()
             reasoning = str(data.get("reasoning") or "").strip()
-            # 兼容只返回 target 的模型（如离线 fake LLM）：把刀口建议转成私聊文本
-            if not message:
-                target_text = str(data.get("target") or "").strip()
-                if target_text:
-                    message = f"建议今晚处理 {target_text}。"
+            target_text = str(data.get("target") or "").strip()
         except Exception:
             message = raw.strip()
+        target_id = self._resolve_target(target_text) if target_text else self._resolve_target(message)
+        empty_knife = target_text in _EMPTY_KNIFE_TOKENS and "empty" in self._wolf_night_options()
+        if target_id and target_id not in self._legal_target_ids():
+            raise RuntimeError(f"LLM wolf chat named an illegal target for {self.player_name}: {target_text!r}")
+        if not target_id and not empty_knife:
+            raise RuntimeError(f"LLM wolf chat did not name a legal target for {self.player_name}")
+        target_label = "空刀"
+        target = None
+        if target_id:
+            target = self._find_player(target_id)
+            target_label = self._player_dict_label(target) if target else target_id
         if not message:
-            raise RuntimeError(f"LLM wolf chat response is empty for {self.player_name}")
+            message = f"我明确提议今晚刀 {target_label}。"
+        elif target_label not in message and (not target or target.get("name", "") not in message):
+            message = f"{message} 我明确提议今晚刀 {target_label}。"
         self.memory.add_action("wolf_chat", None, message, reasoning)
-        return self._decision(ActionType.TALK, speech=message, reasoning=reasoning or "夜间狼队私聊")
+        return self._decision(
+            ActionType.TALK,
+            target_id=target_id,
+            speech=message,
+            reasoning=reasoning or "夜间狼队私聊",
+        )
 
     def divine(self) -> Decision:
         obs = self._observe()
-
-        # ── Optimisation: skip LLM when there is only one legal target ──
-        only_target = self._single_legal_target(obs)
-        if self._skip_optimisations_enabled() and only_target:
-            reasoning = f"唯一合法查验目标 {only_target.seat}号:{only_target.name}，无需LLM决策"
-            return self._night_decision({"target": only_target.id, "reasoning": reasoning}, ActionType.DIVINE)
-
         result = self._pipeline.run_night(obs, self.memory)
         return self._night_decision(result, ActionType.DIVINE)
 
@@ -494,14 +503,6 @@ class CognitiveAgent:
         else:
             extra = "第一晚守护，没有历史限制。"
         obs = self._observe()
-
-        # ── Optimisation: skip LLM when there is only one legal target ──
-        only_target = self._single_legal_target(obs)
-        if only_target:
-            reasoning = f"唯一合法守护目标 {only_target.seat}号:{only_target.name}，无需LLM决策"
-            self._record_guard_protection(only_target.id)
-            return self._night_decision({"target": only_target.id, "reasoning": reasoning}, ActionType.GUARD)
-
         result = self._pipeline.run_night(obs, self.memory, extra)
         decision = self._night_decision(result, ActionType.GUARD)
         if decision.target_id:
@@ -803,6 +804,16 @@ class CognitiveAgent:
         become deception signals, and vote alignment updates trust scores.
         """
         obs = observe(self._view, self.role, tracker=self._tracker)
+        seer_checks = obs.private.get("seer_checks", [])
+        if seer_checks:
+            self.memory.role_state["seer_checks"] = [
+                (
+                    f"D{check.get('day', 0)} "
+                    f"{check.get('target_name', check.get('target_id', '?'))}:"
+                    f"{'狼人' if check.get('is_wolf') else '好人'}"
+                )
+                for check in seer_checks
+            ]
         self._sync_social_from_tracker(obs)
         self._update_trust_from_events(obs)
         return obs
@@ -1160,9 +1171,9 @@ class CognitiveAgent:
     def _night_decision(self, result: dict[str, str], action_type: ActionType) -> Decision:
         """Create a Decision for a night action.
 
-        LLM-only mode requires a legal target for night actions that the engine
-        requests. Local target synthesis would hide empty or invalid model
-        output, so strict mode raises instead.
+        Wolf, Seer and Guard may explicitly skip according to the aligned
+        rules. Other invalid or unresolved target text remains an error in
+        strict mode.
         """
         target_id: str | None = None
         repair_reason = ""
@@ -1170,13 +1181,17 @@ class CognitiveAgent:
             target_id, repair_reason = self._required_night_target_status(result)
             if not repair_reason:
                 break
+            if repair_reason == "skip keyword or empty required target":
+                break
             result = self._repair_required_night_target(result, action_type, repair_reason)
 
         raw_target = (result.get("target") or "").strip()
         if repair_reason == "skip keyword or empty required target":
-            if self._strict_no_fallback:
-                raise RuntimeError(f"LLM returned skip keyword for required {action_type.value} target: {raw_target!r}")
-            target_id = None
+            return self._decision(
+                ActionType.SKIP,
+                reasoning=result.get("reasoning", "") or f"跳过 {action_type.value}",
+                metadata=trace_keys.loop_metadata_from_result(result),
+            )
         elif repair_reason == "unresolved required target":
             if self._strict_no_fallback:
                 raise RuntimeError(f"LLM returned unresolved {action_type.value} target: {result['target']!r}")
@@ -1393,8 +1408,51 @@ class CognitiveAgent:
             coord_ctx = build_wolf_coordination_context(self.player_id, self._wolf_team_view)
             parts.append(coord_ctx)
 
+        # 刀口确认必须看到真实的狼队私聊与前序共识轮。此前这些事件虽在
+        # PlayerView.private_events 中，却没有进入通用 Observation，导致
+        # 后行动的狼人无法可靠地对齐队友提案。
+        consensus_kinds = {
+            "wolf_chat_message",
+            "wolf_consensus_round",
+            "wolf_consensus_turn",
+            "wolf_consensus_disagreement",
+        }
+        private_messages = []
+        for event in (getattr(self._view, "private_events", []) or [])[-20:]:
+            if event.get("day") != self._view.day:
+                continue
+            payload = event.get("payload", {}) if isinstance(event, dict) else {}
+            if payload.get("kind") not in consensus_kinds:
+                continue
+            message = str(payload.get("message", "") or "").strip()
+            if message:
+                private_messages.append(message)
+            vote_rows = payload.get("current_votes") or payload.get("previous_votes") or []
+            if isinstance(vote_rows, list) and vote_rows:
+                vote_text = "；".join(
+                    f"{row.get('wolf_name', row.get('wolf_id', '?'))}→"
+                    f"{row.get('target_name') or '空刀'}"
+                    for row in vote_rows
+                    if isinstance(row, dict)
+                )
+                if vote_text:
+                    private_messages.append(f"已提交目标：{vote_text}")
+            disagreement_votes = payload.get("votes")
+            if isinstance(disagreement_votes, dict) and disagreement_votes:
+                vote_text = "；".join(
+                    f"{voter_id}→{self._find_player(target_id).get('name', target_id) if target_id and self._find_player(target_id) else '空刀'}"
+                    for voter_id, target_id in disagreement_votes.items()
+                )
+                private_messages.append(f"上一轮分歧：{vote_text}")
+        if private_messages:
+            parts.append("【本夜狼队私聊与共识记录】\n" + "\n".join(private_messages[-10:]))
+
         parts.append("作为狼人阵营的一员，选择击杀目标。")
-        parts.append("注意：你只能基于公开发言、投票和狼队内部信息做判断，不能查看其他玩家的真实身份。")
+        parts.append(
+            "注意：你只能基于公开发言、投票和狼队内部信息做判断，不能查看其他玩家的真实身份。"
+            "双狼存活时，最终 target 必须与队友达成一致；看到队友本轮已提交目标时应明确确认同一目标，"
+            "若不同意则在理由中说明，并在下一轮根据完整分歧记录收敛。"
+        )
         return "\n".join(parts)
 
     def _record_strategy_usage(self, doc_ids: list[str]) -> None:

@@ -6,6 +6,7 @@ from backend.engine.models import ActionType
 from backend.engine.models import Alignment
 from backend.engine.models import Decision
 from backend.engine.models import GameState
+from backend.engine.models import Phase
 from backend.engine.models import Role
 
 
@@ -41,6 +42,19 @@ class ActionValidator:
             return False
         if decision.action_type == ActionType.VOTE and actor.role == Role.IDIOT and state.abilities.idiot_revealed:
             return False
+        if (
+            decision.action_type == ActionType.VOTE
+            and state.phase == Phase.DAY_VOTE
+            and actor.role == Role.SEER
+            and any(
+                event.payload.get("kind") == "seer_result"
+                and actor.id in event.visible_to
+                and event.payload.get("target_id") == decision.target_id
+                and not bool(event.payload.get("is_wolf"))
+                for event in state.events
+            )
+        ):
+            return False
         # 廉价磋商板子：空刀（狼人集体放弃袭击 → 平安夜）为合法选择
         empty_knife_ok = bool(state.board_options.get("wolf_empty_knife")) and decision.action_type == ActionType.ATTACK
         if rule.requires_target:
@@ -61,9 +75,21 @@ class ActionValidator:
             if target.id == actor.id and decision.action_type in {
                 ActionType.VOTE,
                 ActionType.DIVINE,
+                ActionType.GUARD,
                 ActionType.WITCH_POISON,
                 ActionType.SHOOT,
             }:
+                return False
+            if (
+                target.id == actor.id
+                and decision.action_type == ActionType.WITCH_SAVE
+                and state.day != 1
+            ):
+                return False
+            if (
+                decision.action_type == ActionType.GUARD
+                and target.id == state.night_actions.last_guard_target_id
+            ):
                 return False
             if target.id == actor.id and decision.action_type == ActionType.ATTACK and not self_knife_ok:
                 return False

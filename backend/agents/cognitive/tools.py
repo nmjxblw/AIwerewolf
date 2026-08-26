@@ -183,7 +183,7 @@ def create_tools(
     # ---- check_rules ----
     _RULES_FAQ = {
         "守卫可以连续守同一个人吗": "不能。守卫不能连续两晚守护同一人。",
-        "守卫守护了狼人刀的人会怎样": "被守护的人不会死。如果是同守同救（女巫也救了），那人会死（奶穿规则，默认不启用）。",
+        "守卫守护了狼人刀的人会怎样": "被守护的人不会死。如果女巫也对同一刀口使用解药，则奶穿死亡。",
         "女巫可以同一晚用解药和毒药吗": "不能。女巫每晚只能使用一瓶药（解药或毒药）。",
         "解药用过了还能用吗": "不能。解药只能使用一次。",
         "毒药用过了还能用吗": "不能。毒药只能使用一次。",
@@ -215,21 +215,23 @@ def create_tools(
 
     # ---- analyze_votes ----
     def analyze_votes() -> str:
-        """Analyze current voting patterns from observation data."""
+        """Analyze complete public voting history from observation data."""
         votes = obs.votes
         if not votes:
-            return "本回合暂无投票数据。"
+            return "暂无历史投票数据。"
 
-        tally: Dict[str, List[str]] = {}
-        for v in votes:
-            target = v.target_name or v.target_id
-            voter = v.voter_name or v.voter_id
-            tally.setdefault(target, []).append(voter)
-
-        lines = ["=== 今日投票分析 ==="]
-        for target, voters in sorted(tally.items(), key=lambda x: -len(x[1])):
-            lines.append(f"  {target} ← {', '.join(voters)} ({len(voters)}票)")
-        lines.append(f"  总投票人数: {len(votes)}")
+        lines = ["=== 历史票型分析 ==="]
+        for day in sorted({vote.day for vote in votes}):
+            day_votes = [vote for vote in votes if vote.day == day]
+            tally: Dict[str, List[str]] = {}
+            for vote in day_votes:
+                target = vote.target_name or vote.target_id
+                voter = vote.voter_name or vote.voter_id
+                tally.setdefault(target, []).append(voter)
+            lines.append(f"D{day}:")
+            for target, voters in sorted(tally.items(), key=lambda item: -len(item[1])):
+                lines.append(f"  {target} ← {', '.join(voters)} ({len(voters)}票)")
+            lines.append(f"  本日票数: {len(day_votes)}")
         return "\n".join(lines)
 
     # ---- set_strategic_intent ----
@@ -334,7 +336,7 @@ def create_tools(
         },
         "analyze_votes": {
             "fn": analyze_votes,
-            "description": ("analyze_votes()\n  分析当前投票模式。自动统计票型分布。"),
+            "description": ("analyze_votes()\n  按 D1/D2/... 分析全部公开投票历史与票型分布。"),
         },
     }
 

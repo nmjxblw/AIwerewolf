@@ -16,12 +16,12 @@ class RoomCreateRequest:
     human_seat: int | None = None
     rule_pack_id: str = "wolfcha-default"
     custom_roles: dict | None = None
-    has_badge: bool = True
+    has_badge: bool = False
     share_persona: bool = True
     enable_strategy: bool = True
     persona_names: list[str] | None = None
-    has_last_words: bool = True
-    parallel_speech: bool = True
+    has_last_words: bool = False
+    parallel_speech: bool = False
 
 
 @dataclass
@@ -34,12 +34,12 @@ class RoomRecord:
     human_seat: int | None = None
     rule_pack_id: str = "wolfcha-default"
     custom_roles: dict | None = None
-    has_badge: bool = True
+    has_badge: bool = False
     share_persona: bool = True
     enable_strategy: bool = True
     persona_names: list[str] | None = None
-    has_last_words: bool = True
-    parallel_speech: bool = True
+    has_last_words: bool = False
+    parallel_speech: bool = False
     status: str = "idle"
     created_at: float = field(default_factory=time)
     updated_at: float = field(default_factory=time)
@@ -57,12 +57,12 @@ class RoomRecord:
         human_seat: int | None = None,
         rule_pack_id: str = "wolfcha-default",
         custom_roles: dict | None = None,
-        has_badge: bool = True,
+        has_badge: bool = False,
         share_persona: bool = True,
         enable_strategy: bool = True,
         persona_names: list[str] | None = None,
-        has_last_words: bool = True,
-        parallel_speech: bool = True,
+        has_last_words: bool = False,
+        parallel_speech: bool = False,
     ) -> RoomRecord:
         return cls(
             id=str(uuid4()),

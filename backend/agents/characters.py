@@ -1086,6 +1086,7 @@ def build_character_roster(
     seed: int = 0,
     *,
     sampled_personas: list[dict] | None = None,
+    homogeneous_mind: bool = False,
 ) -> dict[str, Character]:
     """Build stable characters per concrete player seat/id.
 
@@ -1106,7 +1107,9 @@ def build_character_roster(
             persona_data = sampled_personas[index % len(sampled_personas)]
         else:
             persona_data = PERSONA_BY_NAME.get(player.name) or PERSONA_POOL[index % len(PERSONA_POOL)]
-        mind_data = MIND_POOL[mind_indices[index % len(mind_indices)]]
+        # The aligned research board uses one rational, utility-oriented mind
+        # for every player. Other callers may retain the diverse mind pool.
+        mind_data = MIND_POOL[1] if homogeneous_mind else MIND_POOL[mind_indices[index % len(mind_indices)]]
         persona = _hydrate_persona(persona_data)
         # Keep the player's pre-assigned name as the in-game display name; the
         # persona dict may carry a different display name when sampled from DB.

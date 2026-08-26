@@ -47,10 +47,7 @@ class DegradationHeuristic:
         }
 
     def vote(self, player_view: dict | None = None) -> dict[str, Any]:
-        """Heuristic vote: villagers abstain, wolves follow majority.
-
-        Falls back to abstaining when no clear target is available.
-        """
+        """Heuristic vote: always choose a legal target when one exists."""
         # Try to extract legal targets from player view
         legal_targets: list[str] = []
         if player_view:
@@ -64,18 +61,10 @@ class DegradationHeuristic:
                 ]
 
         if not legal_targets:
-            return {"vote_target": None, "reasoning": "[降级] 无合法目标，弃权。"}
+            return {"vote_target": None, "reasoning": "[降级] 未收到合法目标，由引擎强制补票。"}
 
-        # Simple vote heuristic
-        if self.alignment == "wolf":
-            # Wolf: vote a random non-wolf (heuristic, no teammate info needed)
-            target = random.choice(legal_targets)
-            reason = "跟票观察。"
-        else:
-            # Villager: abstain (safest when uncertain)
-            return {"vote_target": None, "reasoning": "[降级] 村民弃权，避免错误投票。"}
-
-        return {"vote_target": target, "reasoning": f"[降级] {reason}"}
+        target = random.choice(legal_targets)
+        return {"vote_target": target, "reasoning": "[降级] 从合法目标中强制投票。"}
 
     def attack(self, player_view: dict | None = None) -> dict[str, Any]:
         """Heuristic wolf kill: target a random non-wolf legal target."""
@@ -104,19 +93,12 @@ class DegradationHeuristic:
         }
 
     def guard(self, player_view: dict | None = None) -> dict[str, Any]:
-        """Heuristic guard: guard self if allowed, otherwise random."""
+        """Heuristic guard: choose a random legal non-self target."""
         legal_targets: list[str] = []
         if player_view:
             legal_targets = player_view.get("legal_targets", []) or []
         if not legal_targets:
             return {"guard_target": None, "reasoning": "[降级] 无合法守护目标。"}
-        my_id = player_view.get("player_id", "") if player_view else ""
-        # Guard self if legal (first night standard tactic)
-        if my_id and my_id in legal_targets:
-            return {
-                "guard_target": my_id,
-                "reasoning": "[降级] 守卫自守。",
-            }
         target = random.choice(legal_targets)
         return {
             "guard_target": target,

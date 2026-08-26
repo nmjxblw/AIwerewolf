@@ -882,7 +882,14 @@ class AgentLoop:
             description = "提交本次发言的最终决策。可选给出暂定投票倾向。"
         else:
             legal_targets = _legal_target_labels(obs)
+            night_skip_allowed = bool(
+                self._action_type == "night"
+                and obs is not None
+                and any(token in str(obs.phase) for token in ("WOLF", "SEER", "GUARD"))
+            )
             target_description = "最终目标，必须是当前可见且合法的玩家名或座位号。"
+            if night_skip_allowed:
+                target_description += " 若本晚不行动，填写“跳过”。"
             if legal_targets:
                 target_description += " 只能从以下值中选择：" + "、".join(legal_targets) + "。"
             properties = {
@@ -898,7 +905,10 @@ class AgentLoop:
             required = ["target", "reasoning"]
             description = "提交本次投票或夜晚行动的最终决策。"
             if legal_targets:
-                properties["target"]["enum"] = legal_targets
+                properties["target"]["enum"] = [
+                    *legal_targets,
+                    *(["跳过"] if night_skip_allowed else []),
+                ]
                 description += " target 必须严格使用合法目标枚举中的一个值。"
         return {
             "type": "function",
@@ -1521,8 +1531,10 @@ class AgentLoop:
                 result["target"] = ""
                 return result
             if obs is not None and result.get("target"):
-                target_text = f"{result['target']}\n{json.dumps(data, ensure_ascii=False)}"
-                legal_target = self._extract_named_legal_target(target_text, obs)
+                # 结构化 target 是唯一权威目标。不能把完整 JSON（尤其是
+                # reasoning 中对其他玩家的比较分析）一起扫描，否则候选列表
+                # 中更靠前的玩家可能覆盖模型明确提交的 target。
+                legal_target = self._extract_named_legal_target(result["target"], obs)
                 result["target"] = legal_target
             result["reasoning"] = str(data.get("reasoning") or data.get("reason") or "")
         return result

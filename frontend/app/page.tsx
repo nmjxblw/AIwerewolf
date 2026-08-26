@@ -111,13 +111,13 @@ export default function LobbyPage() {
   const [mode, setMode] = useState<"ai" | "human">("ai");
   const [humanSeat, setHumanSeat] = useState(1);
   const [customRoles, setCustomRoles] = useState<CustomRolesConfig | null>(null);
-  const [hasBadge, setHasBadge] = useState(true);
+  const [hasBadge, setHasBadge] = useState(false);
   const [sharePersona, setSharePersona] = useState(true);
   const [enableStrategy, setEnableStrategy] = useState(true);
   const [personaNames, setPersonaNames] = useState<string[]>([]);
   const [allPersonaNames, setAllPersonaNames] = useState<string[]>([]);
-  const [hasLastWords, setHasLastWords] = useState(true);
-  const [parallelSpeech, setParallelSpeech] = useState(true);
+  const [hasLastWords, setHasLastWords] = useState(false);
+  const [parallelSpeech, setParallelSpeech] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
   // 客户端挂载后从 localStorage 恢复偏好（避免 SSR hydration 不匹配）

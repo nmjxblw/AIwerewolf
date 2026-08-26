@@ -69,6 +69,8 @@ class VoteInfo:
     """被投票玩家名称"""
     day: int = 0
     """投票所在天数"""
+    phase: str = ""
+    """投票所在阶段，用于区分普通轮与 PK 轮。"""
 
 
 @dataclass
@@ -83,6 +85,8 @@ class DeathInfo:
     """死亡玩家座位号"""
     cause: str
     """死因：werewolf_killed(狼杀) / voted_out(投票放逐) / witch_killed(女巫毒杀) / hunter_killed(猎人开枪) / white_wolf_king_boom(白狼王自爆) / guard_witch_conflict(奶穿)"""
+    day: int = 0
+    """死亡发生的游戏日；用于区分历史死亡与上一夜死亡。"""
     revealed_role: str = ""
     """死亡翻牌时揭示的角色（空字符串表示未翻牌）"""
 
@@ -210,16 +214,21 @@ class BeliefTracker:
     def _extract_votes(self, view: Any) -> None:
         """Extract votes from public events.
 
-        Deduplicates: a (voter_id, target_id, day) key prevents the same
-        vote from being recorded twice when update() runs on every _observe() call.
+        Deduplicates by event id while retaining every day's regular/PK ballots.
         """
         for e in view.public_events:
-            if e.get("type") == "VOTE_CAST" and e.get("day") == view.day:
+            if e.get("type") == "VOTE_CAST" and not (e.get("payload", {}) or {}).get("badge_election"):
                 payload = e.get("payload", {}) or {}
                 voter_id = payload.get("voter_id", payload.get("actor_id", ""))
                 target_id = payload.get("target_id", "")
                 day = e.get("day", view.day)
-                vote_key = (voter_id, target_id, day)
+                vote_key = e.get("id") or (
+                    voter_id,
+                    target_id,
+                    day,
+                    e.get("phase", ""),
+                    bool(payload.get("is_pk_vote")),
+                )
                 if vote_key in self._seen_vote_keys:
                     continue
                 self._seen_vote_keys.add(vote_key)
@@ -232,6 +241,7 @@ class BeliefTracker:
                         target_id=target_id,
                         target_name=target.get("name", ""),
                         day=day,
+                        phase=e.get("phase", ""),
                     )
                 )
 
@@ -253,6 +263,7 @@ class BeliefTracker:
                         player_name=dead.get("name", pid),
                         seat=dead.get("seat", 0),
                         cause=cause,
+                        day=int(e.get("day", 0) or 0),
                         revealed_role=payload.get("role", ""),
                     )
                 )
@@ -300,13 +311,12 @@ class BeliefTracker:
             parts.append("\n".join(lines))
 
         if self.votes:
-            latest_day = max(v.day for v in self.votes) if self.votes else 0
-            day_votes = [v for v in self.votes if v.day == latest_day]
-            if day_votes:
-                lines = [f"=== D{latest_day} 投票 ==="]
-                for v in day_votes:
+            lines = ["=== 历史票型 ==="]
+            for day in sorted({v.day for v in self.votes}):
+                lines.append(f"  D{day}:")
+                for v in (vote for vote in self.votes if vote.day == day):
                     lines.append(f"  {v.voter_name} -> {v.target_name}")
-                parts.append("\n".join(lines))
+            parts.append("\n".join(lines))
 
         return "\n\n".join(parts)
 
@@ -363,6 +373,8 @@ class Observation:
     # ── 历史 ──
     deaths: List[DeathInfo] = field(default_factory=list)
     """全局死亡记录（含死因和翻牌角色）"""
+    last_night_summary: str = ""
+    """最近一次公开夜间结算公告，例如“昨夜无人死亡”。"""
 
     # ── 私有信息（角色专属） ──
     private: Dict[str, Any] = field(default_factory=dict)
@@ -378,7 +390,7 @@ class Observation:
     role_roster: List[str] = field(default_factory=list)
     """本局实际角色清单（来自游戏引擎配置，非玩家声称）。
     用于 prompt 构建中的规则摘要，例如判断本局是否有预言家/女巫/守卫/猎人。"""
-    has_badge: bool = True
+    has_badge: bool = False
     """本局是否有警长/警徽机制（来自前端 toggle）。False 时 prompt 不显示警长相关内容。"""
 
     # ── BeliefTracker 输出 ──
@@ -446,7 +458,7 @@ def observe(view: PlayerView, role: str, tracker: Optional[BeliefTracker] = None
                 )
             )
 
-        elif e.get("type") == "VOTE_CAST" and e.get("day") == view.day:
+        elif e.get("type") == "VOTE_CAST" and not (e.get("payload", {}) or {}).get("badge_election"):
             payload = e.get("payload", {}) or {}
             voter = _find_player(view, payload.get("voter_id", payload.get("actor_id", "")))
             target = _find_player(view, payload.get("target_id", ""))
@@ -457,6 +469,7 @@ def observe(view: PlayerView, role: str, tracker: Optional[BeliefTracker] = None
                     target_id=payload.get("target_id", ""),
                     target_name=target.get("name", ""),
                     day=e.get("day", view.day),
+                    phase=e.get("phase", ""),
                 )
             )
 
@@ -469,9 +482,20 @@ def observe(view: PlayerView, role: str, tracker: Optional[BeliefTracker] = None
                     player_name=dead.get("name", ""),
                     seat=dead.get("seat", 0),
                     cause=payload.get("cause", payload.get("reason", "unknown")),
+                    day=int(e.get("day", 0) or 0),
                     revealed_role=payload.get("role", ""),
                 )
             )
+        elif e.get("type") == "SYSTEM_MESSAGE":
+            message = str((e.get("payload", {}) or {}).get("message", "") or "").strip()
+            if (
+                message == "昨夜无人死亡。"
+                or message.startswith("昨夜死亡：")
+                or message == "No one died last night."
+                or message.startswith("Night death")
+            ):
+                # 事件按时间顺序遍历，后出现的公告自然覆盖旧公告。
+                obs.last_night_summary = message
 
     # Private info
     known_wolves = list(getattr(view, "known_wolves", []) or [])
@@ -479,14 +503,19 @@ def observe(view: PlayerView, role: str, tracker: Optional[BeliefTracker] = None
         obs.private["known_wolves"] = [
             f"{wolf.get('seat', '?')}号:{wolf.get('name', wolf.get('id', '?'))}" for wolf in known_wolves
         ]
+    seer_checks: list[dict[str, Any]] = []
     for e in view.private_events:
         payload = e.get("payload", {}) or {}
         if payload.get("kind") == "seer_result":
-            obs.private["seer_check"] = payload
+            check = {**payload, "day": int(e.get("day", 0) or 0)}
+            seer_checks.append(check)
+            obs.private["seer_check"] = check
         if "check_result" in payload:
             obs.private["seer_check"] = payload
         if "victim_id" in payload:
             obs.private["witch_victim"] = payload
+    if seer_checks:
+        obs.private["seer_checks"] = seer_checks
 
     # Social signals
     my_seat = f"@{obs.player_seat}号"
@@ -534,15 +563,20 @@ def format_observation(obs: Observation) -> str:
             lines.append(f"  {s.seat}号:{s.player_name}：{s.content[:200]}")
 
     if obs.votes:
-        lines.append("\n=== 今日投票 ===")
-        for v in obs.votes:
-            lines.append(f"  {v.voter_name} -> {v.target_name}")
+        lines.append("\n=== 历史票型 ===")
+        for day in sorted({v.day for v in obs.votes}):
+            lines.append(f"  D{day}:")
+            for v in (vote for vote in obs.votes if vote.day == day):
+                lines.append(f"    {v.voter_name} -> {v.target_name}")
 
     if obs.deaths:
         lines.append("\n=== 淘汰记录 ===")
         for d in obs.deaths:
             role_str = f"({d.revealed_role})" if d.revealed_role else ""
-            lines.append(f"  第{d.seat}号:{d.player_name} {role_str} | 原因：{d.cause}")
+            lines.append(f"  D{d.day} 第{d.seat}号:{d.player_name} {role_str} | 原因：{d.cause}")
+
+    if obs.last_night_summary:
+        lines.append(f"\n=== 昨夜结算（系统公告）===\n  {obs.last_night_summary}")
 
     if obs.role_claims:
         lines.append("\n=== 角色声称 ===")
@@ -563,6 +597,14 @@ def format_observation(obs: Observation) -> str:
     if obs.private:
         lines.append("\n=== 私有信息 ===")
         for k, v in obs.private.items():
+            if k == "seer_checks" and isinstance(v, list):
+                lines.append("  完整查验历史:")
+                for check in v:
+                    result = "狼人" if check.get("is_wolf") else "好人"
+                    lines.append(
+                        f"    D{check.get('day', 0)} {check.get('target_name', check.get('target_id', '?'))}: {result}"
+                    )
+                continue
             lines.append(f"  {k}: {v}")
 
     return "\n".join(lines)

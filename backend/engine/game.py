@@ -109,6 +109,30 @@ def _shuffle_personas_pool(count: int, seed: int | None) -> list[dict]:
     return result
 
 
+def _homogeneous_rational_personas(players: list[Player]) -> list[dict]:
+    """Return the aligned rational-utilitarian persona for every seat."""
+
+    base = {
+        "mbti": "ISTJ",
+        "gender": "neutral",
+        "age": 30,
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "vocabulary_style": "平实精确",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "reasoning_style": "期望收益与信息推理",
+        "social_habit": "独立分析，按证据投票",
+        "humor_style": "none",
+        "pressure_style": "用证据回应质疑",
+        "uncertainty_style": "承认不确定，按概率行动",
+        "voice_rules": ["concise", "structured"],
+        "logic_style": "事实加概率推断",
+        "trigger_topics": [],
+        "werewolf_experience": "熟练",
+    }
+    return [dict(base, name=player.name) for player in players]
+
+
 def _phase_already_past(current: Phase, target: Phase) -> bool:
     """Legacy helper — see _phase_done in WerewolfGame for the resume guard.
 
@@ -243,11 +267,11 @@ class WerewolfGame:
         agents: dict[str, Agent] | None = None,
         seed: int | None = None,
         max_days: int = 20,
-        player_count: int = 10,
+        player_count: int = 7,
         kill_side_win: bool = True,
         disable_speech: bool = False,
         full_elimination: bool = False,
-        random_tiebreak: bool = False,
+        random_tiebreak: bool = True,
         disable_badge: bool = False,
         disable_last_words: bool = False,
         random_vote_device: bool = False,
@@ -257,7 +281,7 @@ class WerewolfGame:
         # wolf_empty_knife — 允许狼人空刀（平安夜假象战术）
         # wolf_night_chat  — 夜晚狼队文本私聊（归票）轮
         wolf_self_knife: bool = False,
-        wolf_empty_knife: bool = False,
+        wolf_empty_knife: bool = True,
         wolf_night_chat: bool = True,
         observer: Callable[[GameState], None] | None = None,
         strategy_version: str | None = None,
@@ -271,12 +295,13 @@ class WerewolfGame:
         on_post_game: Callable[[GameState], None] | None = None,
         phase_delay_ms: float = 0,
         custom_roles: dict | None = None,
-        has_badge: bool = True,
+        has_badge: bool = False,
         share_persona: bool = True,
         enable_strategy: bool = True,
         persona_names: list[str] | None = None,
-        has_last_words: bool = True,
-        parallel_speech: bool = True,
+        has_last_words: bool = False,
+        parallel_speech: bool = False,
+        homogeneous_personality: bool = True,
     ):
         self.rng = Random(seed)
         self.has_badge = has_badge
@@ -313,9 +338,8 @@ class WerewolfGame:
         self.phase_delay_ms = phase_delay_ms
         self.kill_side_win = kill_side_win
         self.disable_speech = disable_speech
-        # Paper-aligned rule switches (arXiv:2408.17177): full elimination
-        # (屠城), random tie-break instead of PK revote, no sheriff badge,
-        # no last words.
+        # 对齐文档默认：屠边胜负、平票随机放逐、无警徽、无遗言。
+        # full_elimination 仍可用于切回论文屠城规则。
         self.full_elimination = full_elimination
         self.random_tiebreak = random_tiebreak
         self.disable_badge = disable_badge
@@ -381,8 +405,12 @@ class WerewolfGame:
         self.is_paused: bool = False
         # Agent 独占锁：保护并发 _batch_ask 时的 agent.update() 和决策调用
         self._agent_locks: dict[str, _threading.RLock] = {}
+        homogeneous_mind = False
         if persona_names:
             sampled_personas = _filter_personas_pool(persona_names, len(self.state.players), seed)
+        elif homogeneous_personality and sampled_personas is None:
+            sampled_personas = _homogeneous_rational_personas(self.state.players)
+            homogeneous_mind = True
         else:
             sampled_personas = sampled_personas or self._sample_personas(len(self.state.players), seed)
         if not sampled_personas:
@@ -399,6 +427,7 @@ class WerewolfGame:
             self.state.players,
             seed=seed or 0,
             sampled_personas=sampled_personas,
+            homogeneous_mind=homogeneous_mind,
         )
         self.agents = {}
         role_models_from_bias: dict[str, dict[str, Any]] = {}
@@ -974,6 +1003,15 @@ class WerewolfGame:
             return
         self._set_phase(Phase.NIGHT_GUARD_ACTION)
         decision = self._ask(guard, "GUARD", lambda agent: agent.guard())
+        if decision.action_type == ActionType.SKIP:
+            # Skipping breaks the consecutive-guard chain: no player was
+            # guarded tonight, so any player is eligible next night.
+            self.state.night_actions.guard_target_id = None
+            self.state.night_actions.last_guard_target_id = None
+            self._log_decision(decision, "private", {"skipped": True}, [guard.id])
+            self._log_night_phase_completed(Phase.NIGHT_GUARD_ACTION)
+            self._mark_phase_done(Phase.NIGHT_GUARD_ACTION)
+            return
         if not self.validator.validate(self.state, decision):
             if self._requires_strict_llm_decision(guard, decision):
                 self._raise_invalid_llm_decision(
@@ -1046,9 +1084,24 @@ class WerewolfGame:
                             "actor_name": wolf.name,
                             "message": f"{wolf.name}（私聊）：{chat_decision.speech.strip()}",
                             "speech": chat_decision.speech.strip(),
+                            "proposed_target_id": chat_decision.target_id,
+                            "proposed_target_name": (
+                                self.state.player(chat_decision.target_id).name
+                                if chat_decision.target_id
+                                else "空刀"
+                            ),
                         },
                         visible_to=wolf_ids,
                     )
+
+        # 默认双狼板：私聊结束后必须形成明确一致的刀口，不能用两票平局
+        # 的字典序结果冒充“协商一致”。只有两名存活狼人都提交同一目标
+        # （或都明确空刀）后，才写入最终 wolf_target_id。
+        if self.wolf_night_chat and len(wolves) == 2:
+            self._run_two_wolf_consensus(self._seat_sorted(wolves), wolf_ids)
+            self._log_night_phase_completed(Phase.NIGHT_WOLF_ACTION)
+            self._mark_phase_done(Phase.NIGHT_WOLF_ACTION)
+            return
 
         def handle(wolf: Player) -> None:
             if wolf.id in self.state.night_actions.wolf_votes:
@@ -1143,6 +1196,160 @@ class WerewolfGame:
         self._log_night_phase_completed(Phase.NIGHT_WOLF_ACTION)
         self._mark_phase_done(Phase.NIGHT_WOLF_ACTION)
 
+    def _run_two_wolf_consensus(self, wolves: list[Player], wolf_ids: list[str]) -> None:
+        """Require two living wolves to agree before selecting the kill target."""
+
+        max_rounds = max(1, int(os.getenv("AIWEREWOLF_WOLF_CONSENSUS_ROUNDS", "3")))
+        previous_votes: dict[str, str] = {}
+
+        for round_number in range(1, max_rounds + 1):
+            previous_summary = [
+                {
+                    "wolf_id": voter_id,
+                    "wolf_name": self.state.player(voter_id).name,
+                    "target_id": target_id or None,
+                    "target_name": self.state.player(target_id).name if target_id else "空刀",
+                }
+                for voter_id, target_id in previous_votes.items()
+            ]
+            self._log(
+                EventType.PRIVATE_INFO,
+                "private",
+                {
+                    "kind": "wolf_consensus_round",
+                    "round": round_number,
+                    "message": (
+                        f"狼队共识第 {round_number} 轮：结合此前私聊"
+                        "明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。"
+                    ),
+                    "previous_votes": previous_summary,
+                },
+                visible_to=wolf_ids,
+            )
+
+            round_votes: dict[str, str] = {}
+            for wolf in wolves:
+                current_summary = [
+                    {
+                        "wolf_id": voter_id,
+                        "wolf_name": self.state.player(voter_id).name,
+                        "target_id": target_id or None,
+                        "target_name": self.state.player(target_id).name if target_id else "空刀",
+                    }
+                    for voter_id, target_id in round_votes.items()
+                ]
+                self._log(
+                    EventType.PRIVATE_INFO,
+                    "private",
+                    {
+                        "kind": "wolf_consensus_turn",
+                        "round": round_number,
+                        "actor_id": wolf.id,
+                        "actor_name": wolf.name,
+                        "message": (
+                            f"{wolf.name} 正在确认狼队最终刀口。"
+                            "必须参考私聊、上一轮分歧以及本轮队友已提交的目标。"
+                        ),
+                        "current_votes": current_summary,
+                    },
+                    visible_to=wolf_ids,
+                )
+                decision = self._ask(wolf, "WOLF_CONSENSUS_VOTE", lambda agent: agent.attack())
+                if not self.validator.validate(self.state, decision):
+                    if self._requires_strict_llm_decision(wolf, decision):
+                        self._raise_invalid_llm_decision(
+                            wolf,
+                            "WOLF_CONSENSUS_VOTE",
+                            decision,
+                            "wolf consensus target is invalid",
+                        )
+                    continue
+                round_votes[wolf.id] = decision.target_id or ""
+                self._log_decision(
+                    decision,
+                    "private",
+                    {
+                        "kind": "wolf_consensus_vote",
+                        "round": round_number,
+                        "target_id": decision.target_id,
+                        "target_name": (
+                            self.state.player(decision.target_id).name if decision.target_id else None
+                        ),
+                    },
+                    wolf_ids,
+                )
+
+            if len(round_votes) == 2 and len(set(round_votes.values())) == 1:
+                agreed_target_id = next(iter(round_votes.values()))
+                with self._shared_lock:
+                    self.state.night_actions.wolf_votes = dict(round_votes)
+                    self.state.night_actions.wolf_target_id = agreed_target_id or None
+                agreed_name = self.state.player(agreed_target_id).name if agreed_target_id else "空刀"
+                self._log(
+                    EventType.PRIVATE_INFO,
+                    "private",
+                    {
+                        "kind": "wolf_consensus_reached",
+                        "round": round_number,
+                        "message": f"狼队已达成一致：今晚目标为{agreed_name}。",
+                        "target_id": agreed_target_id or None,
+                        "target_name": None if not agreed_target_id else agreed_name,
+                        "votes": dict(round_votes),
+                    },
+                    visible_to=wolf_ids,
+                )
+                return
+
+            previous_votes = round_votes
+            disagreement = [
+                f"{self.state.player(voter_id).name}→"
+                f"{self.state.player(target_id).name if target_id else '空刀'}"
+                for voter_id, target_id in round_votes.items()
+            ]
+            self._log(
+                EventType.PRIVATE_INFO,
+                "private",
+                {
+                    "kind": "wolf_consensus_disagreement",
+                    "round": round_number,
+                    "message": f"狼队本轮尚未一致：{'；'.join(disagreement) or '未形成有效提案'}。",
+                    "votes": dict(round_votes),
+                },
+                visible_to=wolf_ids,
+            )
+
+        # 多轮仍无法收敛时，从双方最后一轮的有效提案中随机裁决；
+        # 若最后一轮没有有效提案，则从当前合法的非狼人目标中随机选择。
+        candidate_ids = sorted({target_id for target_id in previous_votes.values() if target_id})
+        if not candidate_ids:
+            candidate_ids = sorted(
+                player.id for player in self.state.alive_players if player.alignment != Alignment.WOLF
+            )
+        if not candidate_ids:
+            raise RuntimeError("狼队无法达成一致，且场上没有可供随机裁决的合法刀口")
+        fallback_target_id = self.rng.choice(candidate_ids)
+        fallback_target = self.state.player(fallback_target_id)
+        with self._shared_lock:
+            self.state.night_actions.wolf_votes = dict(previous_votes)
+            self.state.night_actions.wolf_target_id = fallback_target_id
+        self._log(
+            EventType.PRIVATE_INFO,
+            "private",
+            {
+                "kind": "wolf_consensus_random_fallback",
+                "round": max_rounds,
+                "message": (
+                    f"狼队经过 {max_rounds} 轮仍未一致，系统从最终提案中随机裁决："
+                    f"今晚目标为{fallback_target.name}。"
+                ),
+                "target_id": fallback_target.id,
+                "target_name": fallback_target.name,
+                "votes": dict(previous_votes),
+                "candidates": candidate_ids,
+            },
+            visible_to=wolf_ids,
+        )
+
     def _witch_phase(self) -> None:
         if self._phase_done(Phase.NIGHT_WITCH_ACTION):
             return
@@ -1165,8 +1372,18 @@ class WerewolfGame:
         self._set_phase(Phase.NIGHT_WITCH_ACTION)
         victim_id = self.state.night_actions.wolf_target_id
         decisions = self._ask(witch, "WITCH", lambda agent: agent.witch_act(victim_id), many=True)
+        potion_used_this_night = False
         for decision in decisions:
             if decision.action_type == ActionType.WITCH_SAVE:
+                if potion_used_this_night:
+                    if self._requires_strict_llm_decision(witch, decision):
+                        self._raise_invalid_llm_decision(
+                            witch,
+                            "WITCH",
+                            decision,
+                            "witch may use at most one potion per night",
+                        )
+                    continue
                 if self.state.abilities.witch_heal_used:
                     if self._requires_strict_llm_decision(witch, decision):
                         self._raise_invalid_llm_decision(
@@ -1193,6 +1410,7 @@ class WerewolfGame:
                     with self._shared_lock:
                         self.state.abilities.witch_heal_used = True
                         self.state.night_actions.witch_save = True
+                    potion_used_this_night = True
                     self._log_decision(
                         decision,
                         "private",
@@ -1209,6 +1427,15 @@ class WerewolfGame:
                         )
                     logger.warning(f"Witch {witch.name} save rejected: validator failed")
             elif decision.action_type == ActionType.WITCH_POISON:
+                if potion_used_this_night:
+                    if self._requires_strict_llm_decision(witch, decision):
+                        self._raise_invalid_llm_decision(
+                            witch,
+                            "WITCH",
+                            decision,
+                            "witch may use at most one potion per night",
+                        )
+                    continue
                 if self.state.abilities.witch_poison_used:
                     if self._requires_strict_llm_decision(witch, decision):
                         self._raise_invalid_llm_decision(
@@ -1223,6 +1450,7 @@ class WerewolfGame:
                     with self._shared_lock:
                         self.state.abilities.witch_poison_used = True
                         self.state.night_actions.witch_poison_target_id = decision.target_id
+                    potion_used_this_night = True
                     self._log_decision(
                         decision,
                         "private",
@@ -1271,6 +1499,11 @@ class WerewolfGame:
             return
         self._set_phase(Phase.NIGHT_SEER_ACTION)
         decision = self._ask(seer, "DIVINE", lambda agent: agent.divine())
+        if decision.action_type == ActionType.SKIP:
+            self._log_decision(decision, "private", {"skipped": True}, [seer.id])
+            self._log_night_phase_completed(Phase.NIGHT_SEER_ACTION)
+            self._mark_phase_done(Phase.NIGHT_SEER_ACTION)
+            return
         if not self.validator.validate(self.state, decision):
             if self._requires_strict_llm_decision(seer, decision):
                 self._raise_invalid_llm_decision(
@@ -1333,18 +1566,34 @@ class WerewolfGame:
         for death in unique_deaths:
             self._kill(death["player_id"], death["reason"])
         if unique_deaths:
-            names = [self.state.player(death["player_id"]).name for death in unique_deaths]
+            reason_labels = {
+                "werewolf_killed": "狼刀",
+                "witch_killed": "毒杀",
+                "guard_witch_conflict": "奶穿",
+            }
+            death_descriptions = [
+                (
+                    f"{self.state.player(death['player_id']).name}"
+                    f"（{reason_labels.get(death['reason'], death['reason'])}）"
+                )
+                for death in unique_deaths
+            ]
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
-                {"message": f"Night deaths: {', '.join(names)}."},
+                {"message": f"昨夜死亡：{'、'.join(death_descriptions)}。"},
             )
         else:
             self._log(
                 EventType.SYSTEM_MESSAGE,
                 "public",
-                {"message": "No one died last night."},
+                {"message": "昨夜无人死亡。"},
             )
+        # 文档顺序：死亡结算后立即判定胜负；已结束则不再触发扩展角色
+        # 的开枪或警徽流程。
+        if self._check_win():
+            self._mark_phase_done(Phase.NIGHT_RESOLVE)
+            return
         # Hunter killed at night can shoot (unless poisoned - handled in _kill)
         for death in unique_deaths:
             target = self.state.player(death["player_id"])
@@ -1507,16 +1756,29 @@ class WerewolfGame:
                 },
             )
             for voter in sorted_voters:
-                self.state.votes[voter.id] = designated.id
+                vote_target = designated
+                designated_vote = Decision(
+                    voter.id,
+                    ActionType.VOTE,
+                    target_id=designated.id,
+                    reasoning="服从随机投票装置的指定结果。",
+                )
+                if not self.validator.validate(self.state, designated_vote):
+                    vote_target = self._fallback_vote_target(voter)
+                self.state.votes[voter.id] = vote_target.id
                 self._log(
                     EventType.VOTE_CAST,
                     "public",
                     {
                         "voter_id": voter.id,
                         "voter_name": voter.name,
-                        "target_id": designated.id,
-                        "target_name": designated.name,
-                        "reasoning": "服从随机投票装置的指定结果。",
+                        "target_id": vote_target.id,
+                        "target_name": vote_target.name,
+                        "reasoning": (
+                            "服从随机投票装置的指定结果。"
+                            if vote_target.id == designated.id
+                            else "指定目标是预言家已确认好人，改投合法目标。"
+                        ),
                         "agent_source": "random_device",
                         "agent_model": "",
                         "agent_provider": "",
@@ -2135,7 +2397,16 @@ class WerewolfGame:
                     metadata={"source": "human"},
                 )
             ]
-        if pending.request in {"ATTACK", "WOLF_TEAM_VOTE"}:
+        if pending.request in {"ATTACK", "WOLF_TEAM_VOTE", "WOLF_CONSENSUS_VOTE"}:
+            if target_id is None:
+                return [
+                    Decision(
+                        player.id,
+                        ActionType.SKIP,
+                        reasoning=reasoning,
+                        metadata={"source": "human"},
+                    )
+                ]
             return [
                 Decision(
                     player.id,
@@ -2146,6 +2417,15 @@ class WerewolfGame:
                 )
             ]
         if pending.request == "DIVINE":
+            if target_id is None:
+                return [
+                    Decision(
+                        player.id,
+                        ActionType.SKIP,
+                        reasoning=reasoning,
+                        metadata={"source": "human"},
+                    )
+                ]
             return [
                 Decision(
                     player.id,
@@ -2156,6 +2436,15 @@ class WerewolfGame:
                 )
             ]
         if pending.request == "GUARD":
+            if target_id is None:
+                return [
+                    Decision(
+                        player.id,
+                        ActionType.SKIP,
+                        reasoning=reasoning,
+                        metadata={"source": "human"},
+                    )
+                ]
             return [
                 Decision(
                     player.id,
@@ -2208,6 +2497,8 @@ class WerewolfGame:
                 )
             ]
         if pending.request == "WITCH":
+            if bool(payload.get("save")) and target_id:
+                raise ValueError("Witch cannot use antidote and poison in the same night.")
             decisions: list[Decision] = []
             if bool(payload.get("save")) and self.state.night_actions.wolf_target_id:
                 decisions.append(
@@ -2442,11 +2733,13 @@ class WerewolfGame:
 
     def _fallback_vote_target(self, voter: Player, target_ids: list[str] | None = None) -> Player:
         allowed = set(target_ids) if target_ids else None
-        return next(
-            player
-            for player in self.state.alive_players
-            if player.id != voter.id and (allowed is None or player.id in allowed)
-        )
+        for player in self.state.alive_players:
+            if player.id == voter.id or (allowed is not None and player.id not in allowed):
+                continue
+            fallback = Decision(voter.id, ActionType.VOTE, target_id=player.id, reasoning="Fallback legal vote.")
+            if self.validator.validate(self.state, fallback):
+                return player
+        raise RuntimeError(f"No legal fallback vote target for {voter.name}")
 
     def _majority_target(self, votes: dict[str, str]) -> str:
         counts = Counter(votes.values())
@@ -2734,6 +3027,15 @@ class WerewolfGame:
             for target in self.state.alive_players
             if target.id != player.id and (allowed_targets is None or target.id in allowed_targets)
         ]
+        if request == "VOTE" and player.role == Role.SEER:
+            option_players = [
+                target
+                for target in option_players
+                if self.validator.validate(
+                    self.state,
+                    Decision(player.id, ActionType.VOTE, target_id=target.id, reasoning="pending option"),
+                )
+            ]
         action_type = "speech"
         prompt = f"{player.name} is expected to act in phase {self.state.phase.value}."
         can_skip = False
@@ -2752,15 +3054,18 @@ class WerewolfGame:
                     if target.id in candidate_ids and target.id != player.id
                 ]
             prompt = f"轮到 {player.name} 选择投票目标。"
-        elif request in {"ATTACK", "WOLF_TEAM_VOTE"}:
+        elif request in {"ATTACK", "WOLF_TEAM_VOTE", "WOLF_CONSENSUS_VOTE"}:
             action_type = "night_action"
+            can_skip = True
             option_players = [target for target in option_players if target.alignment != Alignment.WOLF]
             prompt = f"轮到 {player.name} 选择夜袭目标。"
         elif request == "DIVINE":
             action_type = "night_action"
+            can_skip = True
             prompt = f"轮到 {player.name} 选择查验目标。"
         elif request == "GUARD":
             action_type = "night_action"
+            can_skip = True
             option_players = [
                 target for target in option_players if target.id != self.state.night_actions.last_guard_target_id
             ]
@@ -2774,8 +3079,6 @@ class WerewolfGame:
         elif request == "WITCH":
             action_type = "special"
             can_skip = True
-            victim_id = self.state.night_actions.wolf_target_id
-            option_players = [target for target in option_players if target.id != victim_id]
             prompt = f"轮到 {player.name} 决定是否救人或毒人。"
         options = [{"id": target.id, "name": target.name, "seat": target.seat} for target in option_players]
         return PendingInput(

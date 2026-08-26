@@ -117,8 +117,12 @@ export function EventItem({ event, index = 0, players = [] }: EventItemProps) {
     ) {
       const reasonMap: Record<string, string> = {
         vote: language === "zh" ? "投票放逐" : "voted out",
+        voted_out: language === "zh" ? "投票放逐" : "voted out",
         wolf: language === "zh" ? "狼人击杀" : "killed by wolf",
+        werewolf_killed: language === "zh" ? "狼人击杀" : "killed by wolf",
         poison: language === "zh" ? "女巫毒杀" : "poisoned",
+        witch_killed: language === "zh" ? "女巫毒杀" : "poisoned",
+        guard_witch_conflict: language === "zh" ? "奶穿" : "guard-witch conflict",
         hunter: language === "zh" ? "猎人开枪" : "hunter shot",
         boom: language === "zh" ? "白狼王自爆" : "WWK boom",
       };

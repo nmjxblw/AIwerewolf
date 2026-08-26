@@ -1579,7 +1579,7 @@ def test_agent_loop_decision_schema_restricts_target_to_legal_targets() -> None:
     schema = loop._decision_tool_schema(obs)
 
     target_schema = schema["function"]["parameters"]["properties"]["target"]
-    assert target_schema["enum"] == ["3号", "3号:Bob", "Bob", "P3"]
+    assert target_schema["enum"] == ["3号", "3号:Bob", "Bob", "P3", "跳过"]
     assert "2号" not in target_schema["description"]
     assert "3号:Bob" in target_schema["description"]
 
@@ -1603,7 +1603,7 @@ def test_agent_loop_wolf_night_fallback_excludes_visible_wolf_teammates() -> Non
     schema = loop._decision_tool_schema(obs)
 
     target_schema = schema["function"]["parameters"]["properties"]["target"]
-    assert target_schema["enum"] == ["2号", "2号:Bob", "Bob", "P2"]
+    assert target_schema["enum"] == ["2号", "2号:Bob", "Bob", "P2", "跳过"]
     assert "WolfB" not in target_schema["description"]
 
 
@@ -1967,7 +1967,7 @@ def test_cognitive_agent_empty_speech_raises_in_strict_mode() -> None:
         agent.talk()
 
 
-def test_cognitive_agent_required_night_skip_raises_in_strict_mode() -> None:
+def test_cognitive_agent_guard_may_skip_in_strict_mode() -> None:
     view = PlayerView(
         player_id="P1",
         day=1,
@@ -1997,8 +1997,10 @@ def test_cognitive_agent_required_night_skip_raises_in_strict_mode() -> None:
     agent.initialize(view, {})
     agent.update(view, "GUARD")
 
-    with pytest.raises(RuntimeError, match="skip keyword"):
-        agent.guard()
+    decision = agent.guard()
+
+    assert decision.action_type == ActionType.SKIP
+    assert decision.target_id is None
 
 
 def test_cognitive_agent_repairs_required_night_empty_target_with_llm_target() -> None:
@@ -2457,3 +2459,160 @@ def test_cognitive_agents_complete_offline_game_and_emit_decisions() -> None:
     assert any("【任务：夜晚行动】" in call for call in fake_llm.calls)
     assert state.decision_records
     assert all(record.parsed_action for record in state.decision_records)
+
+
+def test_structured_target_is_not_overridden_by_players_mentioned_in_reasoning() -> None:
+    obs = Observation(
+        player_id="G",
+        player_name="袁汐",
+        player_seat=2,
+        player_role="Guard",
+        day=2,
+        phase="NIGHT_GUARD_ACTION",
+        alive=[
+            PlayerInfo(id="P1", name="霁川", seat=1, alive=True),
+            PlayerInfo(id="G", name="袁汐", seat=2, alive=True),
+            PlayerInfo(id="P5", name="苗信", seat=5, alive=True),
+            PlayerInfo(id="P7", name="夏知白", seat=7, alive=True),
+        ],
+        legal_targets=[
+            PlayerInfo(id="P1", name="霁川", seat=1, alive=True),
+            PlayerInfo(id="P5", name="苗信", seat=5, alive=True),
+            PlayerInfo(id="P7", name="夏知白", seat=7, alive=True),
+        ],
+    )
+    loop = AgentLoop(object(), "system prompt", action_type="night", player_id="G")
+    data = {
+        "target": "5号:苗信",
+        "reasoning": "1号有可疑细节，5号和7号信息较少。综合评估，选择守护5号苗信。",
+    }
+
+    decision = loop._decision_from_data(data, json.dumps(data, ensure_ascii=False), obs)
+
+    assert decision["target"] == "苗信"
+    assert "守护5号苗信" in decision["reasoning"]
+
+
+def test_observation_includes_last_night_summary_and_death_day() -> None:
+    from backend.agents.cognitive.observe import format_observation
+    from backend.agents.cognitive.prompts import build_game_context
+
+    view = PlayerView(
+        player_id="P5",
+        day=2,
+        phase="DAY_SPEECH",
+        self_player={"id": "P5", "name": "苗信", "seat": 5, "alive": True, "role": "Villager"},
+        players=[
+            {"id": "P2", "name": "袁汐", "seat": 2, "alive": False, "role": "unknown"},
+            {"id": "P5", "name": "苗信", "seat": 5, "alive": True, "role": "Villager"},
+        ],
+        public_events=[
+            {
+                "day": 1,
+                "phase": "NIGHT_RESOLVE",
+                "type": "PLAYER_DIED",
+                "visibility": "public",
+                "payload": {"player_id": "P2", "reason": "werewolf_killed"},
+            },
+            {
+                "day": 2,
+                "phase": "NIGHT_RESOLVE",
+                "type": "SYSTEM_MESSAGE",
+                "visibility": "public",
+                "payload": {"message": "昨夜无人死亡。"},
+            },
+        ],
+        private_events=[],
+        known_wolves=[],
+        observations=[],
+    )
+
+    obs = observe(view, "Villager")
+
+    assert obs.last_night_summary == "昨夜无人死亡。"
+    assert obs.deaths[0].day == 1
+    assert "D1 第2号:袁汐" in format_observation(obs)
+    assert "昨夜结算（系统公告）: 昨夜无人死亡。" in build_game_context(obs)
+
+
+def test_observation_includes_complete_seer_and_daily_vote_history() -> None:
+    from backend.agents.cognitive.observe import format_observation
+
+    players = [
+        {"id": "S", "name": "预言家", "seat": 1, "alive": True, "role": "Seer"},
+        {"id": "P2", "name": "二号", "seat": 2, "alive": True},
+        {"id": "P3", "name": "三号", "seat": 3, "alive": True},
+    ]
+    view = PlayerView(
+        player_id="S",
+        day=3,
+        phase="DAY_SPEECH",
+        self_player=players[0],
+        players=players,
+        public_events=[
+            {
+                "id": "vote-d1-s",
+                "day": 1,
+                "phase": "DAY_VOTE",
+                "type": "VOTE_CAST",
+                "visibility": "public",
+                "payload": {"voter_id": "S", "target_id": "P2"},
+            },
+            {
+                "id": "vote-d1-p2",
+                "day": 1,
+                "phase": "DAY_VOTE",
+                "type": "VOTE_CAST",
+                "visibility": "public",
+                "payload": {"voter_id": "P2", "target_id": "P3"},
+            },
+            {
+                "id": "vote-d2-s",
+                "day": 2,
+                "phase": "DAY_VOTE",
+                "type": "VOTE_CAST",
+                "visibility": "public",
+                "payload": {"voter_id": "S", "target_id": "P3"},
+            },
+        ],
+        private_events=[
+            {
+                "day": 1,
+                "phase": "NIGHT_SEER_ACTION",
+                "type": "PRIVATE_INFO",
+                "visibility": "private",
+                "payload": {
+                    "kind": "seer_result",
+                    "target_id": "P2",
+                    "target_name": "二号",
+                    "is_wolf": False,
+                },
+            },
+            {
+                "day": 2,
+                "phase": "NIGHT_SEER_ACTION",
+                "type": "PRIVATE_INFO",
+                "visibility": "private",
+                "payload": {
+                    "kind": "seer_result",
+                    "target_id": "P3",
+                    "target_name": "三号",
+                    "is_wolf": True,
+                },
+            },
+        ],
+        known_wolves=[],
+        observations=[],
+    )
+
+    obs = observe(view, "Seer")
+    prompt = format_observation(obs)
+
+    assert [(check["day"], check["target_id"], check["is_wolf"]) for check in obs.private["seer_checks"]] == [
+        (1, "P2", False),
+        (2, "P3", True),
+    ]
+    assert "D1 二号: 好人" in prompt
+    assert "D2 三号: 狼人" in prompt
+    assert "D1:" in prompt and "预言家 -> 二号" in prompt and "二号 -> 三号" in prompt
+    assert "D2:" in prompt and prompt.count("预言家 -> 三号") == 1

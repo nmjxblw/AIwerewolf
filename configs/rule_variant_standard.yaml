@@ -12,10 +12,10 @@ description: >
 # Voting
 # ============================================================
 vote:
-  tie_policy: no_exile           # no_exile | random_exile | revote
-  revote_after_tie: true         # If tie, enter PK speech + revote
-  second_tie_policy: no_exile    # If PK revote ties again
-  sheriff_vote_weight: 1.5       # Sheriff/badge holder vote multiplier
+  tie_policy: random_exile       # no_exile | random_exile | revote
+  revote_after_tie: false
+  second_tie_policy: random_exile
+  sheriff_vote_weight: 1.0       # No sheriff in the aligned board
   vote_duration_seconds: 60      # Max time for voting phase
 
 # ============================================================
@@ -36,7 +36,7 @@ guard:
   can_guard_same_target_consecutively: false  # Cannot guard same target
   same_guard_and_witch_save_causes_death: true  # Guard + Witch save = death
   guard_blocks_wolf_kill: true                # Guard blocks one wolf attack
-  can_guard_self: true                        # Can guard self (but not consecutively)
+  can_guard_self: false
 
 # ============================================================
 # Hunter
@@ -60,32 +60,31 @@ seer:
 # Death & Game End
 # ============================================================
 death:
-  last_words_enabled: true            # Dead players get last words
+  last_words_enabled: false
   dead_players_can_vote: false        # Dead players cannot vote
   dead_players_receive_private_info: false  # Dead players get no new private info
-  role_revealed_on_death: true        # Role is revealed on death
+  role_revealed_on_death: false
+  death_reason_revealed: true
 
 # ============================================================
 # Night Resolution Order
 # ============================================================
 resolution_order:
-  - guard               # Guard protects target
-  - wolf_kill           # Wolf team attacks target
-  - witch_save          # Witch antidote (if used)
-  - witch_poison        # Witch poison (if used)
-  - death_settlement    # Resolve all deaths
-  - hunter_shot         # Hunter shoots (if died this night)
-  - seer_check          # Seer check result delivered
-  - night_end           # Night phase ends
+  - wolf_kill
+  - seer_check
+  - witch_action
+  - guard
+  - death_settlement
+  - win_check
 
 # ============================================================
 # Badge / Sheriff
 # ============================================================
 badge:
-  election_enabled: true              # Badge election at day start
-  badge_transfer_on_death: true       # Badge transferred on death
-  badge_holder_vote_weight: 1.5       # Badge holder vote weight
-  badgeless_pk_eligible: true         # Players without badge can enter PK
+  election_enabled: false
+  badge_transfer_on_death: false
+  badge_holder_vote_weight: 1.0
+  badgeless_pk_eligible: false
 
 # ============================================================
 # Role Distribution (matches backend.engine.rules.WOLFCHA_ROLE_CONFIGS)
@@ -95,8 +94,8 @@ role_distribution:
     village:    # 5 village
       - Seer
       - Witch
-      - Hunter
       - Guard
+      - Villager
       - Villager
     wolf:       # 2 wolves
       - Werewolf
@@ -172,7 +171,10 @@ role_distribution:
 # ============================================================
 win_conditions:
   village_wins_when: all_wolves_dead
-  wolf_wins_when: wolves_equal_or_exceed_village
+  wolf_wins_when:
+    - wolves_equal_or_exceed_village
+    - all_villagers_dead
+    - all_gods_dead
   max_day_night_cycles: 20           # Draw after 20 full day-night cycles
 
 # ============================================================

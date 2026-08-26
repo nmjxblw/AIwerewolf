@@ -193,15 +193,15 @@ def _build_game(
     seed: int,
     agent_type: str = "llm",
     human_seat: Optional[int] = None,
-    player_count: int = 10,
+    player_count: int = 7,
     rule_pack_id: str = "wolfcha-default",
     custom_roles: dict | None = None,
-    has_badge: bool = True,
+    has_badge: bool = False,
     share_persona: bool = True,
     enable_strategy: bool = True,
     persona_names: list[str] | None = None,
-    has_last_words: bool = True,
-    parallel_speech: bool = True,
+    has_last_words: bool = False,
+    parallel_speech: bool = False,
     phase_delay_ms: float = 0,
 ) -> WerewolfGame:
     init_db()
@@ -243,7 +243,7 @@ def create_game(
     show_private: bool = False,
     agent_type: str = "llm",
     human_seat: Optional[int] = None,
-    player_count: int = 10,
+    player_count: int = 7,
     rule_pack_id: str = "wolfcha-default",
 ):
     try:
@@ -778,18 +778,18 @@ def delete_persona(name: str):
 def create_room(
     name: str = "Demo Room",
     seed: int = 7,
-    player_count: int = 10,
+    player_count: int = 7,
     agent_type: str = "llm",
     human_seat: Optional[int] = None,
     rule_pack_id: str = "wolfcha-default",
     exclude: str = "",
     include: str = "",
-    has_badge: bool = True,
+    has_badge: bool = False,
     share_persona: bool = True,
     enable_strategy: bool = True,
     persona_names: str = "",
-    has_last_words: bool = True,
-    parallel_speech: bool = True,
+    has_last_words: bool = False,
+    parallel_speech: bool = False,
 ):
     custom_roles = None
     if exclude or include:
@@ -1094,11 +1094,11 @@ async def stream_game(
 
     if game is None:
         custom_roles = None
-        has_badge = True
+        has_badge = False
         share_persona = True
         enable_strategy = True
-        has_last_words = True
-        parallel_speech = True
+        has_last_words = False
+        parallel_speech = False
         if room_id:
             try:
                 room = _rooms.get_room(room_id)

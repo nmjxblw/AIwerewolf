@@ -234,12 +234,15 @@ class GuardSkill(_BaseSkill):
     action_type = ActionType.GUARD
     priority = 1
     consumes_resource = None
-    can_target_self = True
-
     def legal_targets(self, state: GameState, actor: Player) -> list[str]:
-        # Cannot guard the same target twice in a row
+        # Cannot guard self or the same target twice in a row.
         last = state.night_actions.last_guard_target_id
-        return [p.id for p in state.alive_players if p.id != last]
+        return [p.id for p in state.alive_players if p.id not in {actor.id, last}]
+
+    def validate(self, decision: Decision, state: GameState) -> bool:
+        if decision.target_id == state.night_actions.last_guard_target_id:
+            return False
+        return super().validate(decision, state)
 
     def apply(self, decision: Decision, state: GameState) -> list[dict[str, Any]]:
         state.night_actions.guard_target_id = decision.target_id
@@ -275,6 +278,8 @@ class WitchSaveSkill(_BaseSkill):
         if state.abilities.witch_heal_used:
             return False
         if decision.target_id != state.night_actions.wolf_target_id:
+            return False
+        if decision.target_id == decision.actor_id and state.day != 1:
             return False
         return super().validate(decision, state)
 
