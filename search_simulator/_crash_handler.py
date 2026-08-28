@@ -27,6 +27,8 @@ from pathlib import Path
 from typing import Any
 from typing import Mapping
 
+from ._i18n import t
+
 _handle = None
 _CRASH_LOG_ENV = "SEARCH_SIMULATOR_CRASH_LOG"
 _CRASH_SESSION_ENV = "SEARCH_SIMULATOR_CRASH_SESSION"
@@ -83,9 +85,7 @@ def previous_unreported_crash_log() -> Path | None:
         (
             path
             for path in directory.glob("crash_*.log")
-            if path.resolve() != current.resolve()
-            and path.is_file()
-            and path.stat().st_size > 0
+            if path.resolve() != current.resolve() and path.is_file() and path.stat().st_size > 0
         ),
         key=lambda path: path.name,
         reverse=True,
@@ -142,13 +142,9 @@ def record_caught_failure(
         return path
 
     values = dict(context or {})
-    context_text = " ".join(
-        f"{str(key)}={str(value)}" for key, value in values.items()
-    )
+    context_text = " ".join(f"{str(key)}={str(value)}" for key, value in values.items())
     try:
-        exception_text = "".join(
-            traceback.format_exception(type(exc), exc, exc.__traceback__)
-        )
+        exception_text = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
     except BaseException:
         exception_text = f"{type(exc).__name__}: {exc}\n"
     record = (
@@ -157,7 +153,7 @@ def record_caught_failure(
         + "\n"
         + f"[{datetime.datetime.now().isoformat()}] pid={os.getpid()} "
         + f"thread={threading.current_thread().name}\n"
-        + f"Caught failure category={category}"
+        + t("crash.caught_failure", category=category)
         + (f" {context_text}" if context_text else "")
         + "\n"
         + exception_text
@@ -174,10 +170,12 @@ def record_caught_failure(
             pass
     except BaseException:
         logging.getLogger(__name__).critical(
-            "CRASH_LOG_WRITE_FAILED pid=%s crash_log=%s original_error_type=%s",
-            os.getpid(),
-            path,
-            type(exc).__name__,
+            t(
+                "log.crash.write_failed",
+                pid=os.getpid(),
+                crash_log=path,
+                error_type=type(exc).__name__,
+            ),
             exc_info=True,
         )
     return path
@@ -189,12 +187,7 @@ def _warn_if_buggy_python() -> None:
     if version not in _BUGGY_PY_VERSIONS:
         return
     version_text = ".".join(str(part) for part in version)
-    warning = (
-        f"[警告] 当前 Python {version_text} 存在崩溃回归（随机 Windows access "
-        f"violation，如 copy/json/sqlalchemy/流网络处的段错误），建议升级到 "
-        f"Python 3.14.2+ 或改用 3.12/3.13。"
-    )
-    print(warning, file=sys.stderr)
+    print(t("warning.python_crash_regression", version=version_text), file=sys.stderr)
 
 
 def install_crash_handlers() -> Path:
@@ -213,41 +206,36 @@ def install_crash_handlers() -> Path:
 
     def _excepthook(exc_type, exc_value, exc_tb) -> None:
         _header()
-        _handle.write("Uncaught exception (sys.excepthook):\n")
+        _handle.write(t("crash.uncaught_main") + "\n")
         traceback.print_exception(exc_type, exc_value, exc_tb, file=_handle)
         _handle.flush()
         logging.getLogger(__name__).critical(
-            "UNCAUGHT_EXCEPTION pid=%s",
-            os.getpid(),
+            t("log.crash.uncaught_main", pid=os.getpid()),
             exc_info=(exc_type, exc_value, exc_tb),
         )
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
     def _thread_excepthook(args) -> None:
         _header()
-        _handle.write("Uncaught exception in thread (threading.excepthook):\n")
-        traceback.print_exception(
-            args.exc_type, args.exc_value, args.exc_traceback, file=_handle
-        )
+        _handle.write(t("crash.uncaught_thread") + "\n")
+        traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback, file=_handle)
         _handle.flush()
         logging.getLogger(__name__).critical(
-            "THREAD_CRASH pid=%s thread=%s",
-            os.getpid(),
-            getattr(args.thread, "name", "unknown"),
+            t(
+                "log.crash.uncaught_thread",
+                pid=os.getpid(),
+                thread=getattr(args.thread, "name", t("common.unknown")),
+            ),
             exc_info=(args.exc_type, args.exc_value, args.exc_traceback),
         )
 
     def _unraisablehook(args) -> None:
         _header()
-        _handle.write("Unraisable exception (sys.unraisablehook):\n")
-        traceback.print_exception(
-            args.exc_type, args.exc_value, args.exc_traceback, file=_handle
-        )
+        _handle.write(t("crash.unraisable") + "\n")
+        traceback.print_exception(args.exc_type, args.exc_value, args.exc_traceback, file=_handle)
         _handle.flush()
         logging.getLogger(__name__).error(
-            "UNRAISABLE_EXCEPTION pid=%s object=%r",
-            os.getpid(),
-            args.object,
+            t("log.crash.unraisable", pid=os.getpid(), object=args.object),
             exc_info=(args.exc_type, args.exc_value, args.exc_traceback),
         )
 

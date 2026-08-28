@@ -37,7 +37,7 @@ class StateTransition:
 
 
 class SearchSimulator:
-    """站位感知、BFS/DFS 全分支迭代的狼人杀模拟器。"""
+    """站位感知的狼人杀完整分支树模拟器。"""
 
     def __init__(self, **kwargs: Any) -> None:
         self._state_index_lock = threading.Lock()
@@ -67,9 +67,7 @@ class SearchSimulator:
         self.include_guard = bool(kwargs.get("include_guard", True))
         self.include_hunter = bool(kwargs.get("include_hunter", False))
         self.include_idiot = bool(kwargs.get("include_idiot", False))
-        self.include_white_werewolf_king = bool(
-            kwargs.get("include_white_werewolf_king", False)
-        )
+        self.include_white_werewolf_king = bool(kwargs.get("include_white_werewolf_king", False))
         self.roster = build_role_roster(
             number_of_players=self.number_of_players,
             number_of_wolves=self.number_of_wolves,
@@ -103,31 +101,17 @@ class SearchSimulator:
             raise ValueError("search_mode 必须是 bfs 或 dfs")
         self.lambda_risk = max(0.0, min(1.0, float(kwargs.get("lambda_risk", 0.5))))
         self.parallel_workers = max(1, int(kwargs.get("parallel_workers", 1)))
-        self.memory_reserve_gib = max(
-            0.0, float(kwargs.get("memory_reserve_gib", 8.0))
-        )
-        self.memory_reserve_ratio = max(
-            0.0, min(1.0, float(kwargs.get("memory_reserve_ratio", 0.15)))
-        )
+        self.memory_reserve_gib = max(0.0, float(kwargs.get("memory_reserve_gib", 8.0)))
+        self.memory_reserve_ratio = max(0.0, min(1.0, float(kwargs.get("memory_reserve_ratio", 0.15))))
         self.all_positions = bool(kwargs.get("all_positions", True))
-        self.results_output_path = Path(
-            kwargs.get("results_output_path", "tree_results.json")
-        )
-        self.signature_cache_db_path = Path(
-            kwargs.get("signature_cache_db_path", "search_simulator_cache.sqlite3")
-        )
-        self.signature_lru_capacity = max(
-            1, int(kwargs.get("signature_lru_capacity", 150_000))
-        )
-        self.signature_commit_interval = max(
-            1, int(kwargs.get("signature_commit_interval", 2_000))
-        )
+        self.results_output_path = Path(kwargs.get("results_output_path", "tree_results.json"))
+        self.signature_cache_db_path = Path(kwargs.get("signature_cache_db_path", "search_simulator_cache.sqlite3"))
+        self.signature_lru_capacity = max(1, int(kwargs.get("signature_lru_capacity", 150_000)))
+        self.signature_commit_interval = max(1, int(kwargs.get("signature_commit_interval", 2_000)))
         self.persistence_enabled = bool(kwargs.get("persistence_enabled", True))
         self.force_recompute = bool(kwargs.get("force_recompute", False))
         callback = kwargs.get("iteration_callback")
-        self.iteration_callback: Callable[[dict[str, Any]], None] | None = (
-            callback if callable(callback) else None
-        )
+        self.iteration_callback: Callable[[dict[str, Any]], None] | None = callback if callable(callback) else None
         self.progress_queue = kwargs.get("progress_queue")
         self.result_queue = kwargs.get("result_queue")
         self.resume_event = kwargs.get("resume_event")
@@ -156,11 +140,7 @@ class SearchSimulator:
         with self._state_index_lock:
             state.state_id = self._next_state_id
             state.parent_state_id = parent_state_id
-            state.depth = (
-                0
-                if parent_state_id is None
-                else self.state_depth_index.get(parent_state_id, -1) + 1
-            )
+            state.depth = 0 if parent_state_id is None else self.state_depth_index.get(parent_state_id, -1) + 1
             state.action_label = action_label
             state.players_snapshot = [
                 f"{index + 1}:{player.role}:{'alive' if player.is_alive else 'dead'}"
@@ -187,9 +167,7 @@ class SearchSimulator:
         return [
             index
             for index, player in enumerate(state.players)
-            if player.is_alive
-            and index not in excluded
-            and (role is None or player.role == role)
+            if player.is_alive and index not in excluded and (role is None or player.role == role)
         ]
 
     @staticmethod
@@ -271,20 +249,13 @@ class SearchSimulator:
         """
 
         if not isinstance(state.players, list):
-            raise TypeError(
-                "GameState.players 必须是 Player 列表，"
-                f"实际容器为 {type(state.players).__name__}"
-            )
+            raise TypeError(f"GameState.players 必须是 Player 列表，实际容器为 {type(state.players).__name__}")
         values: list[Any] = [
             "flat_v2",
             state.phase,
             state.night_count,
             state.day_count,
-            (
-                -1
-                if state.last_guard_target_index is None
-                else state.last_guard_target_index
-            ),
+            (-1 if state.last_guard_target_index is None else state.last_guard_target_index),
             int(state.seer_revealed),
         ]
         seer_checks = sorted((state.seer_check_results or {}).items())
@@ -306,10 +277,7 @@ class SearchSimulator:
         values.append(len(state.players))
         for player_index, player in enumerate(state.players):
             if not isinstance(player, Player):
-                raise TypeError(
-                    "GameState 玩家结构损坏："
-                    f"seat={player_index + 1}, type={type(player).__name__}"
-                )
+                raise TypeError(f"GameState 玩家结构损坏：seat={player_index + 1}, type={type(player).__name__}")
             values.append(int(player.is_alive))
             skills = sorted(player.skills.items())
             values.append(len(skills))
@@ -364,20 +332,12 @@ class SearchSimulator:
             phase=str(phase),
             night_count=int(night_count),
             day_count=int(day_count),
-            last_guard_target_index=(
-                None if int(guard_target) < 0 else int(guard_target)
-            ),
-            seer_check_results=(
-                {int(index): bool(value) for index, value in seer_checks}
-                if seer_checks
-                else None
-            ),
+            last_guard_target_index=(None if int(guard_target) < 0 else int(guard_target)),
+            seer_check_results=({int(index): bool(value) for index, value in seer_checks} if seer_checks else None),
             seer_revealed=bool(seer_revealed),
             revealed_good_indices=tuple(revealed_good_values),
             revealed_wolf_indices=tuple(revealed_wolf_values),
-            public_role_claims={
-                int(index): str(role) for index, role in public_role_claims
-            },
+            public_role_claims={int(index): str(role) for index, role in public_role_claims},
             idiot_revealed_indices=tuple(idiot_revealed_values),
             wolf_priority_targets=tuple(wolf_priority_values),
             position_signature=position_signature_value,
@@ -424,9 +384,7 @@ class SearchSimulator:
             branches = next_branches
         return branches
 
-    def _expand_death_chain(
-        self, state: GameState, death_indices: list[int]
-    ) -> list[GameState]:
+    def _expand_death_chain(self, state: GameState, death_indices: list[int]) -> list[GameState]:
         branches = [state]
         for dead_index in dict.fromkeys(death_indices):
             next_branches: list[GameState] = []
@@ -444,9 +402,7 @@ class SearchSimulator:
 
         if not self.smart_vote:
             return ordinary_targets
-        forced = [
-            index for index in state.wolf_priority_targets if index in ordinary_targets
-        ]
+        forced = [index for index in state.wolf_priority_targets if index in ordinary_targets]
         if forced:
             return forced
 
@@ -459,31 +415,19 @@ class SearchSimulator:
                 break
         priorities: list[tuple[int, list[int]]] = []
         if not has_living_witch_or_guard:
-            priorities.append(
-                (0, [index for index in ordinary_targets if index in revealed_idiots])
-            )
+            priorities.append((0, [index for index in ordinary_targets if index in revealed_idiots]))
         for rank, role in enumerate(("女巫", "守卫", "预言家"), start=1):
             priorities.append(
                 (
                     rank,
-                    [
-                        index
-                        for index in ordinary_targets
-                        if public_claims.get(index) == role
-                    ],
+                    [index for index in ordinary_targets if public_claims.get(index) == role],
                 )
             )
-        priorities.append(
-            (4, [index for index in ordinary_targets if index in revealed_idiots])
-        )
+        priorities.append((4, [index for index in ordinary_targets if index in revealed_idiots]))
         priorities.append(
             (
                 5,
-                [
-                    index
-                    for index in ordinary_targets
-                    if index in state.revealed_good_indices
-                ],
+                [index for index in ordinary_targets if index in state.revealed_good_indices],
             )
         )
         for _rank, candidates in priorities:
@@ -496,11 +440,7 @@ class SearchSimulator:
 
         transitions: list[StateTransition] = []
         alive = self._alive_indices(state)
-        ordinary_targets = [
-            index
-            for index in alive
-            if not self._is_wolf_role(state.players[index].role)
-        ]
+        ordinary_targets = [index for index in alive if not self._is_wolf_role(state.players[index].role)]
         normal_targets = self._smart_wolf_targets(state, ordinary_targets)
 
         guard_indices = self._alive_indices(state, role="守卫")
@@ -517,9 +457,7 @@ class SearchSimulator:
         known = state.seer_check_results or {}
         seer_options: list[int | None] = [None]
         if seer_index is not None:
-            unchecked = [
-                index for index in alive if index != seer_index and index not in known
-            ]
+            unchecked = [index for index in alive if index != seer_index and index not in known]
             if unchecked:
                 seer_options = unchecked
 
@@ -544,9 +482,7 @@ class SearchSimulator:
                     witch_options: list[tuple[str, int | None]] = [("none", None)]
                     if witch_index is not None:
                         witch = base.players[witch_index]
-                        can_self_save = (
-                            wolf_target == witch_index and state.night_count == 0
-                        )
+                        can_self_save = wolf_target == witch_index and state.night_count == 0
                         if (
                             wolf_target is not None
                             and witch.skills.get("解药", 0) > 0
@@ -567,15 +503,11 @@ class SearchSimulator:
                                 self._consume_skill(child.players[witch_index], "毒药")
                             if seer_target is not None:
                                 checks = dict(child.seer_check_results or {})
-                                checks[seer_target] = self._is_wolf_role(
-                                    child.players[seer_target].role
-                                )
+                                checks[seer_target] = self._is_wolf_role(child.players[seer_target].role)
                                 child.seer_check_results = checks
                                 if seer_index is not None:
                                     self._consume_skill(child.players[seer_index], "查验")
-                            guard_saved = (
-                                wolf_target is not None and guard_target == wolf_target
-                            )
+                            guard_saved = wolf_target is not None and guard_target == wolf_target
                             deaths: list[int] = []
                             if wolf_target is not None and not (guard_saved or witch_saved):
                                 deaths.append(wolf_target)
@@ -599,9 +531,7 @@ class SearchSimulator:
                                 transitions.append(StateTransition(action_key, resolved))
         return transitions
 
-    def _apply_profile_information(
-        self, state: GameState, profile: DayTacticProfile
-    ) -> None:
+    def _apply_profile_information(self, state: GameState, profile: DayTacticProfile) -> None:
         claims = dict(state.public_role_claims)
         for decoy_index in profile.decoy_indices:
             claims[decoy_index] = "预言家"
@@ -617,11 +547,7 @@ class SearchSimulator:
                 state.revealed_good_indices = tuple(sorted(good))
                 state.revealed_wolf_indices = tuple(sorted(wolves))
         state.public_role_claims = claims
-        state.wolf_priority_targets = (
-            (profile.next_night_target,)
-            if profile.next_night_target is not None
-            else ()
-        )
+        state.wolf_priority_targets = (profile.next_night_target,) if profile.next_night_target is not None else ()
 
     def _allowed_vote_targets(
         self,
@@ -638,15 +564,8 @@ class SearchSimulator:
         if not targets:
             return []
         if self._is_wolf_role(state.players[voter].role):
-            non_wolf_targets = [
-                index
-                for index in targets
-                if not self._is_wolf_role(state.players[index].role)
-            ]
-            if (
-                profile.wolf_vote_mode == "bloc"
-                and profile.wolf_vote_target in non_wolf_targets
-            ):
+            non_wolf_targets = [index for index in targets if not self._is_wolf_role(state.players[index].role)]
+            if profile.wolf_vote_mode == "bloc" and profile.wolf_vote_target in non_wolf_targets:
                 return [int(profile.wolf_vote_target)]
             return non_wolf_targets or targets
         confirmed_wolves = set(state.revealed_wolf_indices)
@@ -668,12 +587,8 @@ class SearchSimulator:
     ) -> dict[int, int]:
         """精确统计所有票型对应的可放逐目标；平票中的每个目标都是一条分支。"""
 
-        target_offset = {
-            target: offset for offset, target in enumerate(eligible_targets)
-        }
-        vote_distributions: dict[tuple[int, ...], int] = {
-            (0,) * len(eligible_targets): 1
-        }
+        target_offset = {target: offset for offset, target in enumerate(eligible_targets)}
+        vote_distributions: dict[tuple[int, ...], int] = {(0,) * len(eligible_targets): 1}
         for voter in voters:
             next_distributions: dict[tuple[int, ...], int] = {}
             for distribution, ways in vote_distributions.items():
@@ -703,15 +618,8 @@ class SearchSimulator:
             prepared = state.clone()
             self._apply_profile_information(prepared, profile)
             alive = self._alive_indices(prepared)
-            voters = [
-                index
-                for index in alive
-                if index not in set(prepared.idiot_revealed_indices)
-            ]
-            allowed_targets = {
-                voter: self._allowed_vote_targets(prepared, voter, profile, alive)
-                for voter in voters
-            }
+            voters = [index for index in alive if index not in set(prepared.idiot_revealed_indices)]
+            allowed_targets = {voter: self._allowed_vote_targets(prepared, voter, profile, alive) for voter in voters}
             voter_target_shapes: list[tuple[int, tuple[int, ...]]] = []
             for voter in voters:
                 voter_target_shapes.append((voter, tuple(allowed_targets[voter])))
@@ -737,12 +645,8 @@ class SearchSimulator:
                 )
                 if idiot_reveal:
                     self._consume_skill(expelled_player, "身份揭示")
-                    candidate.idiot_revealed_indices = tuple(
-                        sorted({*candidate.idiot_revealed_indices, expelled})
-                    )
-                    candidate.revealed_good_indices = tuple(
-                        sorted({*candidate.revealed_good_indices, expelled})
-                    )
+                    candidate.idiot_revealed_indices = tuple(sorted({*candidate.idiot_revealed_indices, expelled}))
+                    candidate.revealed_good_indices = tuple(sorted({*candidate.revealed_good_indices, expelled}))
                     candidate.public_role_claims[expelled] = "愚者"
                     resolved_branches = [candidate]
                 else:
@@ -842,11 +746,7 @@ class SearchSimulator:
     def expand_state(self, state: GameState) -> list[StateTransition]:
         """展开当前节点全部合法分支；返回显式有限批次且不做数量裁剪。"""
 
-        return (
-            self._expand_night(state)
-            if state.phase == "night"
-            else self._expand_day(state)
-        )
+        return self._expand_night(state) if state.phase == "night" else self._expand_day(state)
 
     def _check_game_over(self, state: GameState) -> tuple[bool, str]:
         alive = [player for player in state.players if player.is_alive]
@@ -861,11 +761,7 @@ class SearchSimulator:
             if player.role in clergy_roles:
                 has_clergies = True
                 break
-        alive_clergies = [
-            player
-            for player in alive
-            if player.role in {"预言家", "女巫", "守卫", "猎人", "愚者"}
-        ]
+        alive_clergies = [player for player in alive if player.role in {"预言家", "女巫", "守卫", "猎人", "愚者"}]
         if has_clergies and not alive_clergies:
             return True, "狼人阵营胜利（神职角色已被消灭）"
         has_living_villager = False
@@ -885,23 +781,21 @@ class SearchSimulator:
         )
 
     def run(self, start_state: GameState | None = None) -> dict[str, Any]:
-        """运行全站位 BFS/DFS，或从传入 GameState 继续构建分支树。"""
+        """运行全站位完整分支树，或从传入 GameState 继续构建分支。"""
 
         from ._tree_search import run_position_batch
         from ._tree_search import search_from_state
 
         self.start_time = time.monotonic()
-        logger.info(t("log.run_start", self.search_mode.upper()))
+        logger.info(t("log.run_start"))
         if start_state is not None:
             self.last_result = search_from_state(self, start_state)
         else:
             self.last_result = run_position_batch(self)
         return self.last_result
 
-    def continue_from_game_state(
-        self, state: GameState | dict[str, Any]
-    ) -> dict[str, Any]:
-        """未来 API 续算入口：传入完整 GameState 后继续 BFS/DFS。"""
+    def continue_from_game_state(self, state: GameState | dict[str, Any]) -> dict[str, Any]:
+        """未来 API 续算入口：传入完整 GameState 后继续构建完整分支树。"""
 
         from ._tree_search import search_from_state
 

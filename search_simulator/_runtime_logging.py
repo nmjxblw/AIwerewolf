@@ -7,12 +7,7 @@ import os
 import sys
 from pathlib import Path
 
-LOG_FORMAT = (
-    "[%(asctime)s.%(msecs)03d][%(pathname)s:%(lineno)d][%(levelname)s]"
-    + os.linesep
-    + "%(message)s"
-    + os.linesep
-)
+LOG_FORMAT = "[%(asctime)s][%(pathname)s:%(lineno)d][%(levelname)s]" + os.linesep + "%(message)s" + os.linesep
 
 
 def runtime_log_path() -> Path:

@@ -1,4 +1,4 @@
-"""BFS/DFS 状态 DAG 构建与 wide/narrow interval 搜索后回传。"""
+"""广度优先/深度优先状态图构建与宽窄区间搜索后回传。"""
 
 from __future__ import annotations
 
@@ -28,6 +28,7 @@ from ._game_state import GameState
 from ._game_state import decode_compact_state_blob
 from ._game_state import encode_compact_state_blob
 from ._game_state import game_state_dict_from_compact
+from ._i18n import t
 from ._interval import UNRESOLVED
 from ._interval import RewardInterval
 from ._interval import RobustIntervals
@@ -49,7 +50,7 @@ POSTPROCESS_PROGRESS_BATCH_SIZE = 1024
 WORKER_PROGRESS_LOG_INTERVAL_SECONDS = 5.0
 # Windows CPython 在该百万对象搜索热循环中会在单进程持续分配约 3 万次后
 # 出现内置对象槽位错位。10k 预算让进程在危险窗口前主动退出；站位状态、
-# frontier 与拓扑均由检查点承接，因此这只是执行隔离边界，不改变 DFS/BFS。
+# 待展开集合与拓扑均由检查点承接，因此执行隔离边界不改变遍历结果。
 WORKER_NODE_BUDGET = 10_000
 WORKER_MIN_NODE_BUDGET = 250
 WORKER_CHUNK_RETRY_LIMIT = 6
@@ -65,7 +66,7 @@ class _CompactSearchNode:
     """worker 内部的紧凑节点；完整字典仅在预览/持久化时重建。"""
 
     state_key: bytes
-    # 为兼容 v2 pickle 保留此槽；新节点不长期缓存哈希字符串，持久化时生成。
+    # 为兼容历史单对象检查点保留此槽；新节点不长期缓存哈希字符串。
     state_signature: str
     round: int
     phase: str
@@ -136,13 +137,13 @@ class _SearchCheckpoint:
 
 
 def _save_search_checkpoint(path: Path, checkpoint: _SearchCheckpoint) -> None:
-    """以分块 pickle 原子写入站位内检查点，崩溃时旧版本仍保持可恢复。
+    """以分块 pickle 原子写入站位内检查点，崩溃时历史检查点仍可恢复。
 
     不能把整个搜索图和 ``node_id_by_key`` 一次性交给 ``pickle.dump``：
     默认 7 人板在恢复点可能已有数十万节点和数百万条边，单次序列化会
     让 pickle memo、临时缓冲和文件缓存同时达到峰值，Windows 下容易触发
-    C 级 access violation。v4 将元数据、节点块、frontier、三条拓扑数组
-    和待落库原因分开写入；去重字典由读取端根据节点状态键重建，避免把
+    C 级 access violation。当前分块格式将元数据、节点块、待展开集合、
+    三条拓扑数组和待落库原因分开写入；去重字典由读取端根据节点状态键重建，避免把
     同一份状态键在检查点里长期保存两份。
     """
 
@@ -219,15 +220,15 @@ def _load_search_checkpoint(
     with path.open("rb") as handle:
         first_record = pickle.load(handle)
         if isinstance(first_record, _SearchCheckpoint):
-            # v2/v3 是旧的单对象格式，保留读取兼容性；下一次 checkpoint
-            # 保存时一定转成 v4 分块格式。
+            # 历史格式是单对象检查点，保留读取兼容性；下一次保存时统一
+            # 转成当前分块格式。
             checkpoint = first_record
             if checkpoint.version not in {2, 3}:
                 raise ValueError(f"不支持的搜索检查点版本: {checkpoint.version}")
             if checkpoint.position_signature != position_signature_value:
                 raise ValueError("搜索检查点站位签名不匹配")
             if checkpoint.version == 2:
-                # v2 为每个节点保留多元素 tuple 和 32 字符哈希。迁移时先清空旧
+                # 历史格式为每个节点保留多元素 tuple 和长哈希。迁移时先清空旧
                 # 去重字典，再逐节点替换，避免新旧两份大型索引同时驻留造成峰值。
                 checkpoint.node_id_by_key.clear()
                 migrated_index: dict[bytes, int] = {}
@@ -242,21 +243,16 @@ def _load_search_checkpoint(
                 checkpoint.node_id_by_key = migrated_index
                 checkpoint.version = 3
                 logger.info(
-                    "WORKER_CHECKPOINT_MIGRATED position_signature=%s nodes=%s v2->v3",
-                    position_signature_value,
-                    len(checkpoint.nodes),
+                    t(
+                        "log.tree.checkpoint_migrated",
+                        position_signature=position_signature_value,
+                        nodes=len(checkpoint.nodes),
+                    )
                 )
             return checkpoint
 
-        if (
-            not isinstance(first_record, tuple)
-            or len(first_record) != 3
-            or first_record[0] != _CHECKPOINT_MAGIC
-        ):
-            raise TypeError(
-                "无效搜索检查点头部: "
-                f"{type(first_record).__name__}"
-            )
+        if not isinstance(first_record, tuple) or len(first_record) != 3 or first_record[0] != _CHECKPOINT_MAGIC:
+            raise TypeError(f"无效搜索检查点头部: {type(first_record).__name__}")
         version = int(first_record[1])
         metadata = first_record[2]
         if version != SEARCH_CHECKPOINT_VERSION or not isinstance(metadata, dict):
@@ -309,7 +305,7 @@ def _load_search_checkpoint(
         if not isinstance(node, _CompactSearchNode):
             raise TypeError("搜索检查点节点类型无效")
         if not isinstance(node.state_key, bytes):
-            raise TypeError("v4 搜索检查点状态键必须是 bytes")
+            raise TypeError("分块搜索检查点状态键必须是 bytes")
         if node.state_key in node_id_by_key:
             raise ValueError("搜索检查点包含重复状态键")
         node_id_by_key[node.state_key] = node_id
@@ -551,16 +547,13 @@ def recompute_graph_intervals(
         if int(node["node_id"]) != index:
             sequential_node_ids = False
             break
-    node_by_id = (
-        None
-        if sequential_node_ids
-        else {int(node["node_id"]): node for node in nodes}
-    )
+    node_by_id = None if sequential_node_ids else {int(node["node_id"]): node for node in nodes}
 
     def node_for(node_id: int) -> dict[str, Any]:
         if node_by_id is None:
             return nodes[node_id]
         return node_by_id[node_id]
+
     children_by_parent: dict[int, dict[int, None]] | None = None
     if outgoing_edge_indices is None:
         children_by_parent = {}
@@ -571,10 +564,7 @@ def recompute_graph_intervals(
             parent_id = int(edge["parent_id"])
             child_id = int(edge["child_id"])
             children_by_parent.setdefault(parent_id, {}).setdefault(child_id, None)
-            if (
-                progress_callback is not None
-                and edge_number % POSTPROCESS_PROGRESS_BATCH_SIZE == 0
-            ):
+            if progress_callback is not None and edge_number % POSTPROCESS_PROGRESS_BATCH_SIZE == 0:
                 progress_callback("prepare_edges", edge_number, edge_total)
         if progress_callback is not None:
             progress_callback("prepare_edges", edge_total, edge_total)
@@ -582,8 +572,7 @@ def recompute_graph_intervals(
         ordered_node_ids: Iterable[int] = [int(node["node_id"]) for node in nodes]
         ordered_node_ids.sort(
             key=lambda item: (
-                int(node_for(item)["day_count"])
-                + int(node_for(item)["night_count"]),
+                int(node_for(item)["day_count"]) + int(node_for(item)["night_count"]),
                 item,
             ),
             reverse=True,
@@ -625,10 +614,7 @@ def recompute_graph_intervals(
                         narrow_interval[1],
                     )
                     node_work_completed += 1
-                    if (
-                        progress_callback is not None
-                        and node_work_completed % POSTPROCESS_PROGRESS_BATCH_SIZE == 0
-                    ):
+                    if progress_callback is not None and node_work_completed % POSTPROCESS_PROGRESS_BATCH_SIZE == 0:
                         progress_callback(
                             "node_intervals",
                             node_work_completed,
@@ -647,10 +633,7 @@ def recompute_graph_intervals(
                         narrow_interval[1],
                     )
                     node_work_completed += 1
-                    if (
-                        progress_callback is not None
-                        and node_work_completed % POSTPROCESS_PROGRESS_BATCH_SIZE == 0
-                    ):
+                    if progress_callback is not None and node_work_completed % POSTPROCESS_PROGRESS_BATCH_SIZE == 0:
                         progress_callback(
                             "node_intervals",
                             node_work_completed,
@@ -662,10 +645,7 @@ def recompute_graph_intervals(
         node["wide_interval"] = [values[0], values[1]]
         node["narrow_interval"] = [values[2], values[3]]
         node_work_completed += 1
-        if (
-            progress_callback is not None
-            and node_work_completed % POSTPROCESS_PROGRESS_BATCH_SIZE == 0
-        ):
+        if progress_callback is not None and node_work_completed % POSTPROCESS_PROGRESS_BATCH_SIZE == 0:
             progress_callback(
                 "node_intervals",
                 node_work_completed,
@@ -681,10 +661,7 @@ def recompute_graph_intervals(
         child = node_for(int(edge["child_id"]))
         edge["wide_interval"] = list(child["wide_interval"])
         edge["narrow_interval"] = list(child["narrow_interval"])
-        if (
-            progress_callback is not None
-            and edge_number % POSTPROCESS_PROGRESS_BATCH_SIZE == 0
-        ):
+        if progress_callback is not None and edge_number % POSTPROCESS_PROGRESS_BATCH_SIZE == 0:
             progress_callback("edge_intervals", edge_number, edge_total)
     if progress_callback is not None:
         progress_callback("edge_intervals", edge_total, edge_total)
@@ -780,20 +757,11 @@ def _search_root(
         getattr(simulator, "progress_queue", None) is not None
         or getattr(simulator, "iteration_callback", None) is not None
     )
-    live_preview_enabled = bool(
-        getattr(simulator, "live_preview_enabled", True)
-    )
+    live_preview_enabled = bool(getattr(simulator, "live_preview_enabled", True))
     has_live_preview_consumer = has_progress_consumer and live_preview_enabled
-    pending_preview_node_ids: deque[int] = deque(
-        maxlen=PREVIEW_NODE_BATCH_LIMIT * 2
-    )
-    pending_preview_edge_indices: deque[int] = deque(
-        maxlen=PREVIEW_EDGE_BATCH_LIMIT * 2
-    )
-    stream_staged_edges = (
-        getattr(simulator, "result_queue", None) is not None
-        and checkpoint_file is not None
-    )
+    pending_preview_node_ids: deque[int] = deque(maxlen=PREVIEW_NODE_BATCH_LIMIT * 2)
+    pending_preview_edge_indices: deque[int] = deque(maxlen=PREVIEW_EDGE_BATCH_LIMIT * 2)
+    stream_staged_edges = getattr(simulator, "result_queue", None) is not None and checkpoint_file is not None
     # 新 worker 会把已有检查点边也重新流式回放给唯一写入者；否则旧版
     # 检查点中的 pending_reasons 会一直留在内存，并在下一次保存时重新
     # 聚合成高峰 pickle。没有恢复数据时从当前边数开始，只发送本轮新增边。
@@ -879,9 +847,7 @@ def _search_root(
     def latest_node_previews() -> list[dict[str, Any]]:
         """只在 0.5 秒发布边界重建最近节点的完整预览。"""
 
-        unique_node_ids = list(dict.fromkeys(pending_preview_node_ids))[
-            -PREVIEW_NODE_BATCH_LIMIT:
-        ]
+        unique_node_ids = list(dict.fromkeys(pending_preview_node_ids))[-PREVIEW_NODE_BATCH_LIMIT:]
         return [node_preview(node_id) for node_id in unique_node_ids]
 
     if has_live_preview_consumer:
@@ -896,16 +862,12 @@ def _search_root(
             return
         next_node_id = None
         if frontier:
-            next_node_id = (
-                frontier[0] if simulator.search_mode == "bfs" else frontier[-1]
-            )
+            next_node_id = frontier[0] if simulator.search_mode == "bfs" else frontier[-1]
         if has_progress_consumer:
             preview_nodes = latest_node_previews() if live_preview_enabled else []
             preview_edges: list[dict[str, Any]] = []
             if live_preview_enabled:
-                recent_edge_indices = list(pending_preview_edge_indices)[
-                    -PREVIEW_EDGE_BATCH_LIMIT:
-                ]
+                recent_edge_indices = list(pending_preview_edge_indices)[-PREVIEW_EDGE_BATCH_LIMIT:]
                 for edge_index in recent_edge_indices:
                     preview_edge = _compact_edge_to_dict(
                         simulator,
@@ -921,40 +883,39 @@ def _search_root(
             _publish_search_progress(
                 simulator,
                 {
-                "kind": kind,
-                "position_index": position_index,
-                "position_signature": position_signature_value,
-                "roles": list(roles),
-                "position_display": position_display_value,
-                "total_positions": total_positions,
-                "processed_states": processed_states,
-                "discovered_states": len(nodes),
-                "frontier_size": len(frontier),
-                "edge_count": len(edges),
-                "terminal_count": terminal_count_live,
-                "phase": nodes[next_node_id].phase
-                if next_node_id is not None
-                else "complete",
-                "focus_node_id": focus_node_id,
-                "preview_nodes": preview_nodes,
-                "preview_edges": preview_edges,
-                "runtime_seconds": accumulated_runtime_seconds + now - started_at,
+                    "kind": kind,
+                    "position_index": position_index,
+                    "position_signature": position_signature_value,
+                    "roles": list(roles),
+                    "position_display": position_display_value,
+                    "total_positions": total_positions,
+                    "processed_states": processed_states,
+                    "discovered_states": len(nodes),
+                    "frontier_size": len(frontier),
+                    "edge_count": len(edges),
+                    "terminal_count": terminal_count_live,
+                    "phase": nodes[next_node_id].phase if next_node_id is not None else "complete",
+                    "focus_node_id": focus_node_id,
+                    "preview_nodes": preview_nodes,
+                    "preview_edges": preview_edges,
+                    "runtime_seconds": accumulated_runtime_seconds + now - started_at,
                 },
             )
         pending_preview_node_ids.clear()
         pending_preview_edge_indices.clear()
         if force or now - last_worker_log_at >= WORKER_PROGRESS_LOG_INTERVAL_SECONDS:
             logger.info(
-                "WORKER_PROGRESS pid=%s position=%s processed=%s discovered=%s "
-                "frontier=%s edges=%s terminals=%s runtime_seconds=%.3f",
-                os.getpid(),
-                position_index,
-                processed_states,
-                len(nodes),
-                len(frontier),
-                len(edges),
-                terminal_count_live,
-                accumulated_runtime_seconds + now - started_at,
+                t(
+                    "log.tree.worker_progress",
+                    pid=os.getpid(),
+                    position=position_index,
+                    processed=processed_states,
+                    discovered=len(nodes),
+                    frontier=len(frontier),
+                    edges=len(edges),
+                    terminals=terminal_count_live,
+                    runtime=accumulated_runtime_seconds + now - started_at,
+                )
             )
             last_worker_log_at = now
         last_progress_at = now
@@ -966,13 +927,10 @@ def _search_root(
         if (
             checkpoint_file is not None
             and node_budget is not None
-            and processed_states - chunk_start_processed_states
-            >= max(1, int(node_budget))
+            and processed_states - chunk_start_processed_states >= max(1, int(node_budget))
         ):
             flush_staged_edges()
-            checkpoint_runtime = (
-                accumulated_runtime_seconds + time.monotonic() - started_at
-            )
+            checkpoint_runtime = accumulated_runtime_seconds + time.monotonic() - started_at
             _save_search_checkpoint(
                 checkpoint_file,
                 _SearchCheckpoint(
@@ -990,15 +948,16 @@ def _search_root(
             )
             publish_progress(kind="worker_checkpoint", force=True)
             logger.info(
-                "WORKER_CHECKPOINT pid=%s position=%s processed=%s "
-                "discovered=%s frontier=%s edges=%s path=%s",
-                os.getpid(),
-                position_index,
-                processed_states,
-                len(nodes),
-                len(frontier),
-                len(edges),
-                checkpoint_file,
+                t(
+                    "log.tree.worker_checkpoint",
+                    pid=os.getpid(),
+                    position=position_index,
+                    processed=processed_states,
+                    discovered=len(nodes),
+                    frontier=len(frontier),
+                    edges=len(edges),
+                    path=checkpoint_file,
+                )
             )
             return {
                 "position_index": position_index,
@@ -1011,9 +970,7 @@ def _search_root(
                 "frontier_size": len(frontier),
                 "runtime_seconds": checkpoint_runtime,
             }
-        node_id = (
-            frontier.popleft() if simulator.search_mode == "bfs" else frontier.pop()
-        )
+        node_id = frontier.popleft() if simulator.search_mode == "bfs" else frontier.pop()
         node = nodes[node_id]
         state = simulator._state_from_key(
             node.state_key,
@@ -1079,14 +1036,11 @@ def _search_root(
                 transition.action_key,
                 0,
             )
-            edge_data["reasons"][transition.action_key] = (
-                reason_multiplicity + int(transition.multiplicity)
-            )
+            edge_data["reasons"][transition.action_key] = reason_multiplicity + int(transition.multiplicity)
 
         if transition_count == 0:
             raise RuntimeError(
-                "非终局状态没有合法分支: "
-                f"position={position_signature_value}, node={node_id}, phase={state.phase}"
+                f"非终局状态没有合法分支: position={position_signature_value}, node={node_id}, phase={state.phase}"
             )
 
         node.outgoing_start = len(edges)
@@ -1112,9 +1066,7 @@ def _search_root(
     pending_preview_edge_indices.clear()
 
     reverse_topological_ids = list(range(len(nodes)))
-    reverse_topological_ids.sort(
-        key=lambda item: (nodes[item].round, item), reverse=True
-    )
+    reverse_topological_ids.sort(key=lambda item: (nodes[item].round, item), reverse=True)
     ensure_search_memory_available(force=True)
     last_postprocess_progress_at = 0.0
 
@@ -1131,11 +1083,7 @@ def _search_root(
         nonlocal last_postprocess_progress_at
         _wait_until_resumed(simulator)
         now = ensure_search_memory_available(force=force)
-        if (
-            not force
-            and now - last_postprocess_progress_at
-            < PREVIEW_EMIT_INTERVAL_SECONDS
-        ):
+        if not force and now - last_postprocess_progress_at < PREVIEW_EMIT_INTERVAL_SECONDS:
             return
         _publish_search_progress(
             simulator,
@@ -1292,9 +1240,7 @@ def _search_root(
         "wide_interval": root_robust.wide.to_list(),
         "narrow_interval": root_robust.narrow.to_list(),
         "camp": interval_camp(root_robust.wide),
-        "runtime_seconds": (
-            accumulated_runtime_seconds + time.monotonic() - started_at
-        ),
+        "runtime_seconds": (accumulated_runtime_seconds + time.monotonic() - started_at),
     }
     if materialize_graph:
         result["nodes"] = [
@@ -1323,7 +1269,7 @@ def _search_root(
 
 
 def search_from_state(simulator: Any, state: GameState) -> dict[str, Any]:
-    """从 API 传入 GameState 继续构建完整 BFS/DFS 分支 DAG。"""
+    """从 API 传入 GameState 继续构建完整分支状态图。"""
 
     return _search_root(simulator, state.clone(), position_index=1, total_positions=1)
 
@@ -1354,23 +1300,16 @@ def _position_task(payload: dict[str, Any]) -> dict[str, Any]:
         configure_runtime_logging()
         worker_crash_path = install_crash_handlers()
     except Exception:
-        logger.exception("WORKER_CRASH_HANDLER_INSTALL_FAILED pid=%s", os.getpid())
+        logger.exception(t("log.tree.crash_handler_failed", pid=os.getpid()))
 
     forbidden_modules = (
         "pygame",
         "sqlalchemy",
         "greenlet",
     )
-    loaded_forbidden = [
-        module_name
-        for module_name in forbidden_modules
-        if module_name in sys.modules
-    ]
+    loaded_forbidden = [module_name for module_name in forbidden_modules if module_name in sys.modules]
     if loaded_forbidden:
-        raise RuntimeError(
-            "计算 worker 加载了禁止的原生/持久化模块: "
-            + ", ".join(loaded_forbidden)
-        )
+        raise RuntimeError("计算 worker 加载了禁止的原生/持久化模块: " + ", ".join(loaded_forbidden))
     if os.name == "nt" and not sys.flags.no_site:
         raise RuntimeError("Windows 计算 worker 必须使用 -S 隔离启动")
     from ._simulator import SearchSimulator
@@ -1408,23 +1347,26 @@ def _position_task(payload: dict[str, Any]) -> dict[str, Any]:
         signature=str(payload["layout"]["signature"]),
     )
     logger.info(
-        "WORKER_STARTED pid=%s position=%s/%s signature=%s mode=%s "
-        "python=%s executable=%s no_site=%s allocator=%s crash_log=%s",
-        os.getpid(),
-        layout.index,
-        payload.get("total_positions", 1),
-        layout.signature,
-        simulator.search_mode,
-        sys.version.split()[0],
-        sys.executable,
-        sys.flags.no_site,
-        os.environ.get("PYTHONMALLOC", "default"),
-        worker_crash_path,
+        t(
+            "log.tree.worker_started",
+            pid=os.getpid(),
+            position=layout.index,
+            total=payload.get("total_positions", 1),
+            signature=layout.signature,
+            mode=simulator.search_mode,
+            python=sys.version.split()[0],
+            executable=sys.executable,
+            no_site=sys.flags.no_site,
+            allocator=os.environ.get("PYTHONMALLOC", "default"),
+            crash_log=worker_crash_path,
+        )
     )
     logger.info(
-        "WORKER_RUNTIME_GUARD pid=%s cyclic_gc_enabled=%s",
-        os.getpid(),
-        gc.isenabled(),
+        t(
+            "log.tree.runtime_guard",
+            pid=os.getpid(),
+            gc_enabled=gc.isenabled(),
+        )
     )
     result_queue = payload.get("result_queue")
     result = _search_root(
@@ -1443,9 +1385,7 @@ def _position_task(payload: dict[str, Any]) -> dict[str, Any]:
         return result
 
     summary = {
-        key: value
-        for key, value in result.items()
-        if key not in {"_compact_nodes", "_compact_edges", "_edges_staged"}
+        key: value for key, value in result.items() if key not in {"_compact_nodes", "_compact_edges", "_edges_staged"}
     }
     position_signature_value = str(summary["position_signature"])
     result_queue.put({"kind": "position_begin", "summary": summary})
@@ -1529,9 +1469,7 @@ def _worker_config(simulator: Any) -> dict[str, Any]:
         "parallel_workers": 1,
         "memory_reserve_gib": simulator.memory_reserve_gib,
         "memory_reserve_ratio": simulator.memory_reserve_ratio,
-        "live_preview_enabled": bool(
-            getattr(simulator, "live_preview_enabled", True)
-        ),
+        "live_preview_enabled": bool(getattr(simulator, "live_preview_enabled", True)),
     }
 
 
@@ -1561,9 +1499,7 @@ def _loaded_solution_summary(
         propagate_intervals(
             position_intervals,
             lambda_risk=(
-                float(loaded["source_lambda"])
-                if loaded.get("source_lambda") is not None
-                else simulator.lambda_risk
+                float(loaded["source_lambda"]) if loaded.get("source_lambda") is not None else simulator.lambda_risk
             ),
         )
         if ordered
@@ -1585,9 +1521,7 @@ def _loaded_solution_summary(
         "camp": interval_camp(aggregate.wide),
         "processed_states": sum([int(item["processed_states"]) for item in ordered]),
         "runtime_seconds": time.monotonic() - started_at,
-        "position_runtime_seconds": sum(
-            [float(item["runtime_seconds"]) for item in ordered]
-        ),
+        "position_runtime_seconds": sum([float(item["runtime_seconds"]) for item in ordered]),
         "resumed_run": False,
         "discarded_incomplete_positions": 0,
         "positions": ordered,
@@ -1644,11 +1578,13 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
             simulator.processed_positions = int(summary["position_count"])
             simulator.processed_states = int(summary["processed_states"])
             logger.info(
-                "SOLUTION_LOADED pid=%s run_id=%s positions=%s/%s",
-                os.getpid(),
-                simulator.run_id,
-                summary["position_count"],
-                summary["total_position_count"],
+                t(
+                    "log.tree.solution_loaded",
+                    pid=os.getpid(),
+                    run_id=simulator.run_id,
+                    positions=summary["position_count"],
+                    total=summary["total_position_count"],
+                )
             )
             return summary
     simulator.run_id, resumed_run = store.start_or_resume_run(
@@ -1658,16 +1594,8 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
     resumed_node_budgets: dict[int, int] = {}
     if resumed_run:
         memory_record = store.get_memory_run(simulator.run_id)
-        memory_summary = (
-            memory_record.get("summary")
-            if memory_record is not None
-            else None
-        )
-        in_position = (
-            memory_summary.get("in_position_checkpoint")
-            if isinstance(memory_summary, dict)
-            else None
-        )
+        memory_summary = memory_record.get("summary") if memory_record is not None else None
+        in_position = memory_summary.get("in_position_checkpoint") if isinstance(memory_summary, dict) else None
         if isinstance(in_position, dict):
             saved_budget = in_position.get("worker_node_budget")
             saved_position = in_position.get("position_index")
@@ -1676,17 +1604,11 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
                     WORKER_MIN_NODE_BUDGET,
                     min(WORKER_NODE_BUDGET, int(saved_budget)),
                 )
-    checkpoint_directory = (
-        Path(simulator.signature_cache_db_path).resolve().parent
-        / ".search_simulator_checkpoints"
-    )
+    checkpoint_directory = Path(simulator.signature_cache_db_path).resolve().parent / ".search_simulator_checkpoints"
     checkpoint_signatures = {
         layout.signature
         for layout in layouts
-        if (
-            checkpoint_directory
-            / f"{simulator.run_id}_position_{layout.index}.pickle"
-        ).exists()
+        if (checkpoint_directory / f"{simulator.run_id}_position_{layout.index}.pickle").exists()
     }
     discarded_incomplete_positions = store.discard_incomplete_position_results(
         simulator.run_id,
@@ -1698,41 +1620,32 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         if item["position_signature"] in expected_signatures
     ]
     summaries.sort(key=lambda item: int(item["position_index"]))
-    completed_signatures = {
-        str(item["position_signature"])
-        for item in summaries
-    }
+    completed_signatures = {str(item["position_signature"]) for item in summaries}
     simulator.processed_positions = len(summaries)
-    simulator.processed_states = sum(
-        [int(item["processed_states"]) for item in summaries]
-    )
-    pending_layouts = [
-        layout
-        for layout in layouts
-        if layout.signature not in completed_signatures
-    ]
+    simulator.processed_states = sum([int(item["processed_states"]) for item in summaries])
+    pending_layouts = [layout for layout in layouts if layout.signature not in completed_signatures]
     logger.info(
-        "RUN_STARTED pid=%s status=running run_id=%s resumed=%s checkpoints=%s/%s "
-        "next_position=%s mode=%s",
-        os.getpid(),
-        simulator.run_id,
-        resumed_run,
-        len(summaries),
-        len(layouts),
-        pending_layouts[0].index if pending_layouts else "none",
-        simulator.search_mode,
+        t(
+            "log.tree.run_started",
+            pid=os.getpid(),
+            run_id=simulator.run_id,
+            resumed=resumed_run,
+            checkpoints=len(summaries),
+            total=len(layouts),
+            next_position=(pending_layouts[0].index if pending_layouts else t("common.none")),
+            mode=simulator.search_mode,
+        )
     )
     owned_result_manager = None
     if simulator.result_queue is None:
         owned_result_manager = multiprocessing.Manager()
         simulator.result_queue = owned_result_manager.Queue(maxsize=8)
     worker_config = _worker_config(simulator)
+
     def payload_for(layout: PositionLayout) -> dict[str, Any]:
         """只为即将执行的一个站位构造任务，禁止批量预取。"""
 
-        checkpoint_path = checkpoint_directory / (
-            f"{simulator.run_id}_position_{layout.index}.pickle"
-        )
+        checkpoint_path = checkpoint_directory / (f"{simulator.run_id}_position_{layout.index}.pickle")
         return {
             "simulator_config": worker_config,
             "progress_queue": simulator.progress_queue,
@@ -1780,10 +1693,7 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
             if ordered
             else UNRESOLVED
         )
-        done_signatures = {
-            str(item["position_signature"])
-            for item in ordered
-        }
+        done_signatures = {str(item["position_signature"]) for item in ordered}
         next_position_index = None
         for layout in layouts:
             if layout.signature not in done_signatures:
@@ -1801,13 +1711,9 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
             "wide_interval": aggregate.wide.to_list(),
             "narrow_interval": aggregate.narrow.to_list(),
             "camp": interval_camp(aggregate.wide),
-            "processed_states": sum(
-                [int(item["processed_states"]) for item in ordered]
-            ),
+            "processed_states": sum([int(item["processed_states"]) for item in ordered]),
             "runtime_seconds": time.monotonic() - started_at,
-            "position_runtime_seconds": sum(
-                [float(item["runtime_seconds"]) for item in ordered]
-            ),
+            "position_runtime_seconds": sum([float(item["runtime_seconds"]) for item in ordered]),
             "resumed_run": resumed_run,
             "discarded_incomplete_positions": discarded_incomplete_positions,
             "positions": ordered,
@@ -1828,16 +1734,17 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         checkpoint = build_run_summary(status="running")
         store.checkpoint_run(simulator.run_id, checkpoint)
         logger.info(
-            "POSITION_CHECKPOINT pid=%s run_id=%s position=%s checkpoints=%s/%s "
-            "next_position=%s states=%s edges=%s",
-            os.getpid(),
-            simulator.run_id,
-            summary["position_index"],
-            checkpoint["position_count"],
-            checkpoint["total_position_count"],
-            checkpoint["next_position_index"] or "none",
-            summary["state_count"],
-            summary["edge_count"],
+            t(
+                "log.tree.position_checkpoint",
+                pid=os.getpid(),
+                run_id=simulator.run_id,
+                position=summary["position_index"],
+                completed=checkpoint["position_count"],
+                total=checkpoint["total_position_count"],
+                next_position=checkpoint["next_position_index"] or t("common.none"),
+                states=summary["state_count"],
+                edges=summary["edge_count"],
+            )
         )
         with persisted_condition:
             persisted_signatures.add(str(summary["position_signature"]))
@@ -1857,13 +1764,7 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         """无跨进程结果队列时的兼容持久化路径。"""
 
         store.save_position_result(simulator.run_id, result)
-        record_summary(
-            {
-                key: value
-                for key, value in result.items()
-                if key not in {"nodes", "edges"}
-            }
-        )
+        record_summary({key: value for key, value in result.items() if key not in {"nodes", "edges"}})
 
     writer_errors: list[BaseException] = []
     active_streams: set[str] = set()
@@ -1965,11 +1866,7 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
     def stop_writer() -> None:
         """排空并停止 SQLite 单写线程，确保状态更新发生在其后。"""
 
-        if (
-            simulator.result_queue is not None
-            and writer_thread is not None
-            and writer_thread.is_alive()
-        ):
+        if simulator.result_queue is not None and writer_thread is not None and writer_thread.is_alive():
             simulator.result_queue.put({"kind": "shutdown"})
             writer_thread.join()
 
@@ -2033,14 +1930,15 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
                         consecutive_worker_failures += 1
                         if consecutive_worker_failures > WORKER_CHUNK_RETRY_LIMIT:
                             logger.critical(
-                                "WORKER_CHUNK_RETRY_EXHAUSTED pid=%s run_id=%s "
-                                "position=%s attempts=%s budget=%s checkpoint=%s",
-                                os.getpid(),
-                                simulator.run_id,
-                                layout.index,
-                                consecutive_worker_failures,
-                                chunk_budget,
-                                checkpoint_path,
+                                t(
+                                    "log.tree.retry_exhausted",
+                                    pid=os.getpid(),
+                                    run_id=simulator.run_id,
+                                    position=layout.index,
+                                    attempts=consecutive_worker_failures,
+                                    budget=chunk_budget,
+                                    checkpoint=checkpoint_path,
+                                ),
                                 exc_info=True,
                             )
                             raise
@@ -2049,18 +1947,18 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
                             chunk_budget // 2,
                         )
                         logger.critical(
-                            "WORKER_CHUNK_RETRY pid=%s run_id=%s position=%s "
-                            "attempt=%s/%s error_type=%s budget=%s->%s "
-                            "checkpoint=%s",
-                            os.getpid(),
-                            simulator.run_id,
-                            layout.index,
-                            consecutive_worker_failures,
-                            WORKER_CHUNK_RETRY_LIMIT,
-                            type(exc).__name__,
-                            chunk_budget,
-                            next_budget,
-                            checkpoint_path,
+                            t(
+                                "log.tree.retry",
+                                pid=os.getpid(),
+                                run_id=simulator.run_id,
+                                position=layout.index,
+                                attempt=consecutive_worker_failures,
+                                limit=WORKER_CHUNK_RETRY_LIMIT,
+                                error_type=type(exc).__name__,
+                                old_budget=chunk_budget,
+                                new_budget=next_budget,
+                                checkpoint=checkpoint_path,
+                            ),
                             exc_info=True,
                         )
                         chunk_budget = next_budget
@@ -2088,17 +1986,18 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
                         status="running",
                     )
                     logger.info(
-                        "RUN_CHUNK_CHECKPOINT pid=%s run_id=%s position=%s "
-                        "processed=%s states=%s edges=%s frontier=%s budget=%s path=%s",
-                        os.getpid(),
-                        simulator.run_id,
-                        layout.index,
-                        result["processed_states"],
-                        result["state_count"],
-                        result["edge_count"],
-                        result["frontier_size"],
-                        chunk_budget,
-                        result["checkpoint_path"],
+                        t(
+                            "log.tree.chunk_checkpoint",
+                            pid=os.getpid(),
+                            run_id=simulator.run_id,
+                            position=layout.index,
+                            processed=result["processed_states"],
+                            states=result["state_count"],
+                            edges=result["edge_count"],
+                            frontier=result["frontier_size"],
+                            budget=chunk_budget,
+                            path=result["checkpoint_path"],
+                        )
                     )
                     ensure_memory_available()
                 if simulator.result_queue is None:
@@ -2119,21 +2018,20 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         summary = build_run_summary(status="complete")
         if summary["position_count"] != summary["total_position_count"]:
             raise RuntimeError(
-                "完整运行终态校验失败："
-                f"checkpoints={summary['position_count']}/"
-                f"{summary['total_position_count']}"
+                f"完整运行终态校验失败：checkpoints={summary['position_count']}/{summary['total_position_count']}"
             )
         simulator.position_results = list(summary["positions"])
         store.finish_run(simulator.run_id, summary, status="complete")
         logger.info(
-            "RUN_TERMINAL pid=%s status=complete run_id=%s checkpoints=%s/%s "
-            "next_position=none states=%s runtime_seconds=%.3f",
-            os.getpid(),
-            simulator.run_id,
-            summary["position_count"],
-            summary["total_position_count"],
-            summary["processed_states"],
-            summary["runtime_seconds"],
+            t(
+                "log.tree.complete",
+                pid=os.getpid(),
+                run_id=simulator.run_id,
+                completed=summary["position_count"],
+                total=summary["total_position_count"],
+                states=summary["processed_states"],
+                runtime=summary["runtime_seconds"],
+            )
         )
         return summary
     except MemoryPressureInterrupt as exc:
@@ -2145,23 +2043,26 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         simulator.position_results = list(summary["positions"])
         simulator.stop_reason = str(exc)
         logger.warning(
-            "RUN_TERMINAL pid=%s status=interrupted reason=memory_guard run_id=%s "
-            "checkpoints=%s/%s next_position=%s detail=%s",
-            os.getpid(),
-            simulator.run_id,
-            summary["position_count"],
-            summary["total_position_count"],
-            summary["next_position_index"] or "none",
-            exc,
+            t(
+                "log.tree.interrupted_memory",
+                pid=os.getpid(),
+                run_id=simulator.run_id,
+                completed=summary["position_count"],
+                total=summary["total_position_count"],
+                next_position=summary["next_position_index"] or t("common.none"),
+                detail=exc,
+            )
         )
         try:
             store.finish_run(simulator.run_id, summary, status="interrupted")
         except Exception:
             logger.critical(
-                "RUN_STATUS_PERSIST_FAILED pid=%s intended_status=interrupted "
-                "run_id=%s",
-                os.getpid(),
-                simulator.run_id,
+                t(
+                    "log.tree.status_persist_failed",
+                    pid=os.getpid(),
+                    status="interrupted",
+                    run_id=simulator.run_id,
+                ),
                 exc_info=True,
             )
             raise
@@ -2174,22 +2075,25 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
         )
         simulator.position_results = list(summary["positions"])
         logger.warning(
-            "RUN_TERMINAL pid=%s status=interrupted reason=user_interrupt run_id=%s "
-            "checkpoints=%s/%s next_position=%s",
-            os.getpid(),
-            simulator.run_id,
-            summary["position_count"],
-            summary["total_position_count"],
-            summary["next_position_index"] or "none",
+            t(
+                "log.tree.interrupted_user",
+                pid=os.getpid(),
+                run_id=simulator.run_id,
+                completed=summary["position_count"],
+                total=summary["total_position_count"],
+                next_position=summary["next_position_index"] or t("common.none"),
+            )
         )
         try:
             store.finish_run(simulator.run_id, summary, status="interrupted")
         except Exception:
             logger.critical(
-                "RUN_STATUS_PERSIST_FAILED pid=%s intended_status=interrupted "
-                "run_id=%s",
-                os.getpid(),
-                simulator.run_id,
+                t(
+                    "log.tree.status_persist_failed",
+                    pid=os.getpid(),
+                    status="interrupted",
+                    run_id=simulator.run_id,
+                ),
                 exc_info=True,
             )
             raise
@@ -2197,9 +2101,7 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
     except Exception as exc:
         stop_writer()
         failed_summary = build_run_summary(status="failed")
-        failed_summary.update(
-            {"error_type": type(exc).__name__, "error": str(exc)}
-        )
+        failed_summary.update({"error_type": type(exc).__name__, "error": str(exc)})
         # 把运行上下文附加到原异常，GUI 后台线程无需访问已失败的模拟器
         # 也能显示 run_id、检查点进度和下一恢复站位。
         for attribute, value in (
@@ -2221,26 +2123,24 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
             category=failure_category,
             context={
                 "run_id": simulator.run_id,
-                "checkpoints": (
-                    f"{failed_summary['position_count']}/"
-                    f"{failed_summary['total_position_count']}"
-                ),
+                "checkpoints": (f"{failed_summary['position_count']}/{failed_summary['total_position_count']}"),
                 "next_position": failed_summary["next_position_index"] or "none",
                 "error_type": type(exc).__name__,
             },
         )
         logger.log(
             logging.CRITICAL if worker_crash else logging.ERROR,
-            "RUN_TERMINAL pid=%s status=failed category=%s run_id=%s checkpoints=%s/%s "
-            "next_position=%s error_type=%s error=%s",
-            os.getpid(),
-            failure_category,
-            simulator.run_id,
-            failed_summary["position_count"],
-            failed_summary["total_position_count"],
-            failed_summary["next_position_index"] or "none",
-            type(exc).__name__,
-            exc,
+            t(
+                "log.tree.failed",
+                pid=os.getpid(),
+                category=failure_category,
+                run_id=simulator.run_id,
+                completed=failed_summary["position_count"],
+                total=failed_summary["total_position_count"],
+                next_position=failed_summary["next_position_index"] or t("common.none"),
+                error_type=type(exc).__name__,
+                error=exc,
+            ),
             exc_info=True,
         )
         try:
@@ -2251,9 +2151,12 @@ def run_position_batch(simulator: Any) -> dict[str, Any]:
             )
         except Exception:
             logger.critical(
-                "RUN_STATUS_PERSIST_FAILED pid=%s intended_status=failed run_id=%s",
-                os.getpid(),
-                simulator.run_id,
+                t(
+                    "log.tree.status_persist_failed",
+                    pid=os.getpid(),
+                    status="failed",
+                    run_id=simulator.run_id,
+                ),
                 exc_info=True,
             )
         raise
