@@ -3062,6 +3062,14 @@ class WerewolfGame:
         elif request == "DIVINE":
             action_type = "night_action"
             can_skip = True
+            checked_ids = {
+                str(event.payload.get("target_id", ""))
+                for event in self.state.events
+                if event.payload.get("kind") == "seer_result"
+                and player.id in event.visible_to
+                and event.payload.get("target_id")
+            }
+            option_players = [target for target in option_players if target.id not in checked_ids]
             prompt = f"轮到 {player.name} 选择查验目标。"
         elif request == "GUARD":
             action_type = "night_action"

@@ -55,6 +55,18 @@ class ActionValidator:
             )
         ):
             return False
+        if (
+            decision.action_type == ActionType.DIVINE
+            and actor.role == Role.SEER
+            and decision.target_id
+            and any(
+                event.payload.get("kind") == "seer_result"
+                and actor.id in event.visible_to
+                and event.payload.get("target_id") == decision.target_id
+                for event in state.events
+            )
+        ):
+            return False
         # 廉价磋商板子：空刀（狼人集体放弃袭击 → 平安夜）为合法选择
         empty_knife_ok = bool(state.board_options.get("wolf_empty_knife")) and decision.action_type == ActionType.ATTACK
         if rule.requires_target:

@@ -161,6 +161,39 @@ def test_seer_day_vote_excludes_all_confirmed_good_targets() -> None:
     assert {option["id"] for option in pending.options} == {"W", "U"}
 
 
+def test_seer_night_legal_targets_exclude_previously_checked_players() -> None:
+    players = [
+        Player(id="S", seat=1, name="Seer", role=Role.SEER, alignment=Alignment.VILLAGE),
+        Player(id="G", seat=2, name="KnownGood", role=Role.VILLAGER, alignment=Alignment.VILLAGE),
+        Player(id="W", seat=3, name="KnownWolf", role=Role.WEREWOLF, alignment=Alignment.WOLF),
+        Player(id="U", seat=4, name="Unknown", role=Role.VILLAGER, alignment=Alignment.VILLAGE),
+    ]
+    game = WerewolfGame(players=players, agents={player.id: object() for player in players}, seed=19)
+    game.state.phase = Phase.NIGHT_SEER_ACTION
+    game._log(
+        EventType.PRIVATE_INFO,
+        "private",
+        {"kind": "seer_result", "target_id": "G", "target_name": "KnownGood", "is_wolf": False},
+        visible_to=["S"],
+    )
+
+    view = Visibility().for_player(game.state, "S")
+    legal_ids = {target["id"] for target in view.legal_targets}
+
+    assert legal_ids == {"W", "U"}
+    assert not game.validator.validate(
+        game.state,
+        Decision("S", ActionType.DIVINE, target_id="G", reasoning="repeat check"),
+    )
+    assert game.validator.validate(
+        game.state,
+        Decision("S", ActionType.DIVINE, target_id="U", reasoning="new check"),
+    )
+    pending = game._build_pending_input(game.state.player("S"), "DIVINE")
+    assert {option["id"] for option in pending.options} == {"W", "U"}
+    assert pending.can_skip is True
+
+
 def test_llm_invalid_day_vote_raises_instead_of_fallback() -> None:
     players = [
         Player(id="P1", seat=1, name="A", role=Role.VILLAGER, alignment=Alignment.VILLAGE),

@@ -46,7 +46,10 @@ class Visibility:
         if player.alignment == Alignment.WOLF:
             known_wolves = [p.private_dict() for p in state.players if p.alignment == Alignment.WOLF]
 
-        role_roster = sorted({p.role.value for p in state.players})
+        # Keep duplicate role entries so prompts can state exact counts
+        # (e.g. 2 Werewolf). A set would collapse that to a single "Werewolf"
+        # and models then invent 3-wolf boards from training priors.
+        role_roster = sorted(p.role.value for p in state.players)
         return PlayerView(
             player_id=player_id,
             day=state.day,
@@ -110,6 +113,16 @@ class Visibility:
 
         if target_ids is None:
             return []
+        if state.phase == Phase.NIGHT_SEER_ACTION and player.role == Role.SEER:
+            # 已有查验结果的目标不再进入合法列表；只剩已查验对象时允许跳过。
+            checked_ids = {
+                str(event.payload.get("target_id", ""))
+                for event in state.events
+                if event.payload.get("kind") == "seer_result"
+                and player.id in event.visible_to
+                and event.payload.get("target_id")
+            }
+            target_ids.difference_update(checked_ids)
         if state.phase == Phase.DAY_VOTE and player.role == Role.SEER:
             confirmed_good_ids = {
                 str(event.payload.get("target_id", ""))

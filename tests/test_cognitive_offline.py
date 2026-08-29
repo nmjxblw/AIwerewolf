@@ -2616,3 +2616,105 @@ def test_observation_includes_complete_seer_and_daily_vote_history() -> None:
     assert "D2 三号: 狼人" in prompt
     assert "D1:" in prompt and "预言家 -> 二号" in prompt and "二号 -> 三号" in prompt
     assert "D2:" in prompt and prompt.count("预言家 -> 三号") == 1
+
+
+def test_role_claim_detection_requires_first_person() -> None:
+    from backend.agents.cognitive.observe import BeliefTracker
+    from backend.agents.cognitive.observe import _detect_role_claim
+    from backend.agents.cognitive.observe import format_observation
+
+    assert _detect_role_claim("我是预言家，昨晚查了3号是好人。") == "预言家"
+    assert _detect_role_claim("我跳女巫") == "女巫"
+    assert _detect_role_claim("我的身份是守卫") == "守卫"
+    assert (
+        _detect_role_claim(
+            "我报一下查验信息。昨晚验了3号，结果是好人。场上3号和5号都跳女巫，所以5号嫌疑更大。"
+        )
+        is None
+    )
+    assert _detect_role_claim("3号和5号都跳女巫") is None
+    assert _detect_role_claim("跳女巫的人有问题") is None
+    assert _detect_role_claim("身份是女巫") is None
+
+    players = [
+        {"id": "P6", "name": "陈小玉", "seat": 6, "alive": True},
+        {"id": "P3", "name": "三号", "seat": 3, "alive": True},
+        {"id": "P5", "name": "五号", "seat": 5, "alive": True},
+        {"id": "P7", "name": "夏知白", "seat": 7, "alive": True},
+    ]
+    view = PlayerView(
+        player_id="P7",
+        day=1,
+        phase="DAY_SPEECH",
+        self_player=players[3],
+        players=players,
+        public_events=[
+            {
+                "day": 1,
+                "phase": "DAY_SPEECH",
+                "type": "CHAT_MESSAGE",
+                "visibility": "public",
+                "payload": {
+                    "actor_id": "P6",
+                    "speech": (
+                        "我报一下查验信息。昨晚验了3号，结果是好人。"
+                        "场上3号和5号都跳女巫，验了3号是好人，所以更倾向质疑5号。"
+                    ),
+                },
+            },
+            {
+                "day": 1,
+                "phase": "DAY_SPEECH",
+                "type": "CHAT_MESSAGE",
+                "visibility": "public",
+                "payload": {"actor_id": "P3", "speech": "我是女巫，昨晚没用解药。"},
+            },
+        ],
+        private_events=[],
+        known_wolves=[],
+        observations=[],
+    )
+    tracker = BeliefTracker()
+    obs = observe(view, "Villager", tracker=tracker)
+    prompt = format_observation(obs)
+
+    assert [c.claimed_role for c in obs.role_claims if c.player_id == "P6"] == []
+    assert any(c.player_id == "P3" and c.claimed_role == "女巫" for c in obs.role_claims)
+    assert "6号:陈小玉 -> 女巫" not in prompt
+    assert "3号:三号 -> 女巫" in prompt
+
+
+def test_build_game_context_injects_exact_two_wolf_board() -> None:
+    from backend.agents.cognitive.prompts import build_game_context
+
+    obs = Observation(
+        player_id="P1",
+        player_name="Alice",
+        player_seat=1,
+        player_role="Villager",
+        day=1,
+        phase="DAY_SPEECH",
+        alive=[
+            PlayerInfo(id="P1", name="Alice", seat=1, alive=True),
+            PlayerInfo(id="P2", name="Bob", seat=2, alive=True),
+        ],
+        role_roster=[
+            "Guard",
+            "Seer",
+            "Villager",
+            "Villager",
+            "Werewolf",
+            "Werewolf",
+            "Witch",
+        ],
+    )
+    context = build_game_context(obs)
+
+    assert "本局配置：7人" in context
+    assert "2狼人" in context
+    assert "2平民" in context
+    assert "1预言家" in context
+    assert "1女巫" in context
+    assert "1守卫" in context
+    assert "本局狼人固定为2名" in context
+    assert "不得假设或声称场上有超过2名狼人" in context

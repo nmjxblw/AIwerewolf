@@ -10,6 +10,7 @@ No LLM calls, no game logic — pure string construction.
 from __future__ import annotations
 
 import os
+from collections import Counter
 from typing import Optional
 
 from backend.agents.cognitive.memory import Memory
@@ -17,6 +18,17 @@ from backend.agents.cognitive.observe import Observation
 from backend.agents.cognitive.observe import format_observation
 from backend.agents.cognitive.profiles import Profile
 from backend.agents.cognitive.profiles import get_profile
+
+_ROLE_NAME_ZH = {
+    "Werewolf": "狼人",
+    "Villager": "平民",
+    "Seer": "预言家",
+    "Witch": "女巫",
+    "Guard": "守卫",
+    "Hunter": "猎人",
+    "Idiot": "白痴",
+    "WhiteWolfKing": "白狼王",
+}
 
 # ============================================================
 # System Prompt
@@ -58,18 +70,35 @@ def build_game_context(obs: Observation) -> str:
     # Rules summary — based on actual game role roster, NOT player claims
     lines.append("")
     lines.append("【规则摘要】")
+    roster = list(obs.role_roster or [])
+    if roster:
+        role_counts = Counter(roster)
+        composition = "、".join(
+            f"{count}{_ROLE_NAME_ZH.get(role, role)}" for role, count in sorted(role_counts.items())
+        )
+        wolf_count = sum(
+            count
+            for role, count in role_counts.items()
+            if role in {"Werewolf", "WhiteWolfKing", "BigBadWolf", "WolfCub"}
+        )
+        lines.append(f"本局配置：{len(roster)}人，{composition}。")
+        if wolf_count:
+            lines.append(
+                f"本局狼人固定为{wolf_count}名；发言与推理必须遵守该配置，"
+                f"不得假设或声称场上有超过{wolf_count}名狼人。"
+            )
     lines.append("投票放逐狼人。")
-    roster = obs.role_roster if obs.role_roster else []
-    if "Seer" in roster:
+    unique_roles = set(roster)
+    if "Seer" in unique_roles:
         lines.append("预言家夜间可查验一名其他玩家并获知好人/狼人，也可跳过。")
-    if "Witch" in roster:
+    if "Witch" in unique_roles:
         lines.append(
             "女巫有解药、毒药各一且每瓶整局限用一次；同夜最多用一瓶。"
             "解药只救当晚刀口且仅首夜可自救；毒药不能毒自己。"
         )
-    if "Hunter" in roster:
+    if "Hunter" in unique_roles:
         lines.append("猎人死亡可开枪。")
-    if "Guard" in roster:
+    if "Guard" in unique_roles:
         lines.append(
             "守卫夜间可守护一名其他玩家或跳过，不能自守、不能连续两夜守同一人；"
             "守救同一刀口会奶穿死亡，守护不能挡毒。"
@@ -390,7 +419,8 @@ _ROLE_ANTI_PATTERNS: dict[str, dict[str, list[str]]] = {
         ],
         "night": [
             "不要重复查验同一个玩家",
-            "查验目标必须来自当前合法目标列表",
+            "查验目标必须来自当前合法目标列表；已查验过的玩家不会出现在合法目标中",
+            "若本夜没有未查验的合法目标，应选择跳过",
         ],
     },
     "Witch": {

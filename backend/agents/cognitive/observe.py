@@ -388,8 +388,8 @@ class Observation:
 
     # ── 游戏配置 ──
     role_roster: List[str] = field(default_factory=list)
-    """本局实际角色清单（来自游戏引擎配置，非玩家声称）。
-    用于 prompt 构建中的规则摘要，例如判断本局是否有预言家/女巫/守卫/猎人。"""
+    """本局实际角色清单（来自游戏引擎配置，可含重复项以保留人数）。
+    例如两名狼人时包含两个 \"Werewolf\"。用于 prompt 中的板子人数与规则摘要。"""
     has_badge: bool = False
     """本局是否有警长/警徽机制（来自前端 toggle）。False 时 prompt 不显示警长相关内容。"""
 
@@ -624,17 +624,19 @@ def _find_player(view: Any, player_id: str) -> dict:
 
 
 def _detect_role_claim(speech: str) -> Optional[str]:
-    """Detect if a speech contains a role claim. Returns role name or None."""
+    """Detect if a speech contains a first-person role claim.
+
+    Only the speaker's own claim is recorded. Mentions such as
+    「3号和5号都跳女巫」or「跳女巫的人有问题」must not be attributed to the speaker,
+    otherwise later agents receive corrupted structured facts.
+    """
     patterns = [
-        (
-            r"(?:我是|我就是|我是真的)\s*(?:一个\s*)?(预言家|女巫|猎人|守卫|村民|白狼王|狼人)",
-            1,
-        ),
-        (r"(?:跳|报)\s*(?:一个\s*)?(预言家|女巫|猎人|守卫)", 1),
-        (r"(?:身份.*?是|底牌.*?是)\s*(预言家|女巫|猎人|守卫|村民|白狼王|狼人)", 1),
+        r"(?:我是|我就是|我是真的)\s*(?:一个\s*)?(预言家|女巫|猎人|守卫|村民|白狼王|狼人)",
+        r"我\s*(?:就)?(?:要)?(?:跳|报)\s*(?:一个\s*)?(预言家|女巫|猎人|守卫)",
+        r"我的?(?:身份|底牌)\s*(?:是|:|：)\s*(预言家|女巫|猎人|守卫|村民|白狼王|狼人)",
     ]
-    for pattern, group in patterns:
+    for pattern in patterns:
         m = re.search(pattern, speech)
         if m:
-            return m.group(group)
+            return m.group(1)
     return None
