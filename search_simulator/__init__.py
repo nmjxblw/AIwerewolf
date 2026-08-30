@@ -19,10 +19,15 @@ _DECISION_MATRIX_EXPORTS = {
     "TreeSearchCompatibilityAdapter": ("._rule_kernel", "TreeSearchCompatibilityAdapter"),
     "DecisionMatrixCalculator": ("._decision_matrix", "DecisionMatrixCalculator"),
     "DecisionMatrixCell": ("._decision_matrix", "DecisionMatrixCell"),
+    "MatrixInterrupted": ("._decision_matrix", "MatrixInterrupted"),
     "DecisionMatrixRequest": ("._decision_matrix", "DecisionMatrixRequest"),
     "DecisionMatrixResult": ("._decision_matrix", "DecisionMatrixResult"),
     "build_default_decision_request": ("._decision_matrix", "build_default_decision_request"),
     "run_default_matrix": ("._decision_matrix", "run_default_matrix"),
+    "DecisionMatrixInputError": ("._matrix_api", "DecisionMatrixInputError"),
+    "build_custom_decision_matrix_request": ("._matrix_api", "build_custom_decision_matrix_request"),
+    "calculate_custom_decision_matrix": ("._matrix_api", "calculate_custom_decision_matrix"),
+    "load_custom_decision_matrix_cell": ("._matrix_api", "load_custom_decision_matrix_cell"),
 }
 
 
@@ -54,8 +59,13 @@ __all__ = [
     "TreeSearchCompatibilityAdapter",
     "DecisionMatrixCalculator",
     "DecisionMatrixCell",
+    "MatrixInterrupted",
     "DecisionMatrixRequest",
     "DecisionMatrixResult",
     "build_default_decision_request",
     "run_default_matrix",
+    "DecisionMatrixInputError",
+    "build_custom_decision_matrix_request",
+    "calculate_custom_decision_matrix",
+    "load_custom_decision_matrix_cell",
 ]
