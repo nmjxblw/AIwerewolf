@@ -23,6 +23,24 @@ def test_default_seven_player_board_matches_alignment_doc() -> None:
     assert set(roles) == {Role.WEREWOLF, Role.VILLAGER, Role.SEER, Role.WITCH, Role.GUARD}
 
 
+def test_day_speech_order_is_fixed_seat_order_skipping_dead() -> None:
+    players = [
+        Player(id="P1", seat=1, name="A", role=Role.VILLAGER, alignment=Alignment.VILLAGE),
+        Player(id="P2", seat=2, name="B", role=Role.WEREWOLF, alignment=Alignment.WOLF),
+        Player(id="P3", seat=3, name="C", role=Role.SEER, alignment=Alignment.VILLAGE),
+        Player(id="P4", seat=4, name="D", role=Role.WITCH, alignment=Alignment.VILLAGE),
+        Player(id="P5", seat=5, name="E", role=Role.GUARD, alignment=Alignment.VILLAGE),
+    ]
+    game = WerewolfGame(players=players, agents={p.id: object() for p in players}, seed=1)
+    game.state.day = 2
+    players[1].alive = False
+    players[1].death_day = 1
+    players[3].alive = False
+    players[3].death_day = 2
+
+    assert [p.id for p in game._day_speech_order()] == ["P1", "P3", "P5"]
+
+
 def test_game_plays_to_winner() -> None:
     game = WerewolfGame(seed=7)
     state = game.play()

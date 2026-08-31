@@ -561,43 +561,10 @@ class WerewolfGame:
     def _day_speech_order(self) -> list[Player]:
         """Order alive players for the daytime speech round.
 
-        Standard table convention:
-          * day 1 — start at the sheriff's left neighbour (or seat 1 if no
-            badge); otherwise plain seat ascending.
-          * day 2+ — start at the player just after the most recent corpse so
-            the table feels like a wake-up walk around the seats.
-        Whatever the entry point, we rotate around the table so the order is
-        still strictly by seat — only the starting offset changes.
+        Always speak in fixed seat order (1, 2, 3, …), skipping eliminated
+        players. Death position and sheriff badge do not change the start.
         """
-        alive = self._seat_sorted(self.state.alive_players)
-        if len(alive) <= 1:
-            return alive
-        anchor_seat = self._speech_anchor_seat()
-        if anchor_seat is None:
-            return alive
-        anchor_index = next(
-            (i for i, p in enumerate(alive) if p.seat >= anchor_seat),
-            0,
-        )
-        return alive[anchor_index:] + alive[:anchor_index]
-
-    def _speech_anchor_seat(self) -> int | None:
-        if self.state.day <= 1:
-            holder_id = self.state.badge.holder_id
-            if holder_id:
-                holder = self.state.player(holder_id)
-                return holder.seat + 1
-            return None
-        # Find the most recent corpse from yesterday or this morning.
-        recent_deaths = [
-            player
-            for player in self.state.players
-            if not player.alive and player.death_day in (self.state.day - 1, self.state.day)
-        ]
-        if not recent_deaths:
-            return None
-        recent_deaths.sort(key=lambda p: (p.death_day or 0, p.seat))
-        return recent_deaths[-1].seat + 1
+        return self._seat_sorted(self.state.alive_players)
 
     def initialize(self) -> None:
         self._log(
