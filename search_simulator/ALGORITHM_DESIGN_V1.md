@@ -1,6 +1,6 @@
 # Search Simulator 算法设计
 
-> 归档版本 V1。该版本保留以完整 BFS/DFS 树分支迭代和固定 DAG 后处理为中心的设计；当前算法真源见 `ALGORITHM_DESIGN_V2.md`。
+> 归档版本 V1。该版本保留以完整 BFS/DFS 树分支迭代和固定 DAG 后处理为中心的设计；当前算法真源见 `ALGORITHM_DESIGN_V3.md`，V2 保留精确信念设计的历史上下文。
 
 > 本文只描述研究目标、博弈模型、状态、信息约束、状态转移、分支语义、区间定义、复杂度、风险与算法不变量。
 > 工程文件、持久化结构、进程边界、界面实现和验证记录不属于本文。
@@ -161,12 +161,12 @@ $$
 
 对行动者构造目标集合时，优先级固定为：
 
-```text
-游戏硬规则
-> 战术硬约束
-> 阵营胜负目标
-> 个人身份启发式
-> 同级目标全部展开
+```mermaid
+flowchart TD
+    hard_rules["游戏硬规则"] -->|优先于| tactic_constraints["战术硬约束"]
+    tactic_constraints -->|优先于| camp_goals["阵营胜负目标"]
+    camp_goals -->|优先于| role_heuristics["个人身份启发式"]
+    role_heuristics -->|优先于| tied_targets["同级目标全部展开"]
 ```
 
 具体规则如下：
@@ -184,11 +184,11 @@ $$
 
 在没有更高优先级战术指定时，狼人按以下阵营目标顺序考虑攻击对象：
 
-```text
-公开身份的好人神职
-> 公开声明为神职的好人（包括挡刀者）
-> 其他已确认好人
-> 未确认的非狼人目标
+```mermaid
+flowchart TD
+    public_god["公开身份的好人神职"] -->|优先于| claimed_god["公开声明为神职的好人（包括挡刀者）"]
+    claimed_god -->|优先于| confirmed_good["其他已确认好人"]
+    confirmed_good -->|优先于| unconfirmed_non_wolf["未确认的非狼人目标"]
 ```
 
 公开神职内部的同级目标全部展开。若多个目标造成的未来转移完全等价，可以共享后继状态，但每个目标和战术原因仍保留在边上。

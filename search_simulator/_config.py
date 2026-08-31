@@ -190,6 +190,42 @@ ARGUMENT_SPECS: tuple[ArgumentSpec, ...] = (
         ("--page_size",),
         {"type": int, "default": 20, "help": t("help.page_size")},
     ),
+    ArgumentSpec(
+        ("--decision_matrix",),
+        {"action": "store_true", "help": t("help.decision_matrix")},
+    ),
+    ArgumentSpec(
+        ("--matrix_db_path",),
+        {
+            "type": str,
+            "default": "search_simulator_cache.sqlite3",
+            "help": t("help.matrix_db_path"),
+        },
+    ),
+    ArgumentSpec(
+        ("--matrix_actor_id",),
+        {"type": int, "default": 0, "help": t("help.matrix_actor_id")},
+    ),
+    ArgumentSpec(
+        ("--matrix_position_index",),
+        {"type": int, "default": 1, "help": t("help.matrix_position_index")},
+    ),
+    ArgumentSpec(
+        ("--matrix_workers",),
+        {"type": int, "default": 2, "help": t("help.matrix_workers")},
+    ),
+    ArgumentSpec(
+        ("--matrix_batch_size",),
+        {"type": int, "default": 10, "help": t("help.matrix_batch_size")},
+    ),
+    ArgumentSpec(
+        ("--matrix_samples",),
+        {"type": int, "default": 100, "help": t("help.matrix_samples")},
+    ),
+    ArgumentSpec(
+        ("--matrix_force_recompute",),
+        {"action": "store_true", "help": t("help.matrix_force_recompute")},
+    ),
     ArgumentSpec(("--gui",), {"action": "store_true", "help": t("help.gui")}),
     ArgumentSpec(("--cli",), {"action": "store_true", "help": t("help.cli")}),
 )

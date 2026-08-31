@@ -1,3 +1,5 @@
+"""狼人杀完整分支树迭代与决策矩阵入口。"""
+
 from __future__ import annotations
 
 import argparse
@@ -6,7 +8,6 @@ import logging
 import os
 import sys
 
-"""基于 BFS/DFS 的狼人杀全树搜索模拟入口（支持 GUI 参数配置）。"""
 logger = logging.getLogger(__name__)
 
 
@@ -72,8 +73,10 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
 
     try:
         from search_simulator._i18n import set_language
+        from search_simulator._i18n import t
     except ImportError:
         from ._i18n import set_language
+        from ._i18n import t
 
     set_language(getattr(args, "lang", "zh-CN"))
     # CLI/GUI 到模拟器的运行参数逐项显式传递。新增参数若未在此列出，
@@ -133,9 +136,11 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
             except (AttributeError, TypeError):
                 pass
         logger.exception(
-            "ARTIFACT_PIPELINE_FAILED iteration_status=%s run_id=%s",
-            result.get("status", "complete"),
-            result.get("run_id", simulator.run_id),
+            t(
+                "log.artifact_pipeline_failed",
+                status=result.get("status", "complete"),
+                run_id=result.get("run_id", simulator.run_id),
+            )
         )
         try:
             from ._crash_handler import record_caught_failure
@@ -147,16 +152,45 @@ def _run_simulation(args: argparse.Namespace, phase_callback=None):
             context={
                 "run_id": result.get("run_id", simulator.run_id),
                 "iteration_status": result.get("status", "complete"),
-                "checkpoints": (
-                    f"{result.get('position_count', 0)}/"
-                    f"{result.get('total_position_count', 0)}"
-                ),
+                "checkpoints": (f"{result.get('position_count', 0)}/{result.get('total_position_count', 0)}"),
                 "next_position": result.get("next_position_index") or "none",
                 "error_type": type(exc).__name__,
             },
         )
         raise
     return simulator
+
+
+def _run_decision_matrix(args: argparse.Namespace) -> None:
+    """运行精确信念 Cheap-talk 决策矩阵并输出结构化结果。"""
+
+    try:
+        from search_simulator._decision_matrix import run_default_matrix
+    except ImportError:
+        from ._decision_matrix import run_default_matrix
+
+    try:
+        from search_simulator._i18n import set_language
+    except ImportError:
+        from ._i18n import set_language
+    set_language(getattr(args, "lang", "zh-CN"))
+
+    result = run_default_matrix(
+        args.matrix_db_path,
+        actor_id=args.matrix_actor_id,
+        position_index=args.matrix_position_index,
+        workers=args.matrix_workers,
+        batch_size=args.matrix_batch_size,
+        samples_per_cell=args.matrix_samples,
+        force_recompute=args.matrix_force_recompute,
+        memory_reserve_gib=getattr(args, "memory_reserve_gib", 8.0),
+        memory_reserve_ratio=getattr(args, "memory_reserve_ratio", 0.15),
+    )
+    # 矩阵是机器可消费的 JSON；Windows 默认代码页可能不是 UTF-8，
+    # 这里显式设置 stdout，避免重定向后的中文 action_json 无法解析。
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
 
 
 def _install_crash_handlers():
@@ -168,7 +202,11 @@ def _install_crash_handlers():
     try:
         return install_crash_handlers()
     except Exception:
-        logger.exception("CRASH_HANDLER_INSTALL_FAILED")
+        try:
+            from ._i18n import t
+        except ImportError:
+            from search_simulator._i18n import t
+        logger.exception(t("log.crash_handler_install_failed"))
         return None
 
 
@@ -177,18 +215,27 @@ def main() -> None:
         from ._runtime_logging import configure_runtime_logging
     except ImportError:
         from search_simulator._runtime_logging import configure_runtime_logging
+    try:
+        from ._i18n import t
+    except ImportError:
+        from search_simulator._i18n import t
 
     runtime_path = configure_runtime_logging()
     crash_path = _install_crash_handlers()
     logger.info(
-        "LOGGING_READY pid=%s runtime_log=%s crash_log=%s",
-        os.getpid(),
-        runtime_path,
-        crash_path or "unavailable",
+        t(
+            "log.logging_ready",
+            pid=os.getpid(),
+            runtime_log=runtime_path,
+            crash_log=crash_path or t("common.unavailable"),
+        )
     )
     _, build_parser, _ = _import_runtime_modules()
     parser = build_parser()
     args: argparse.Namespace = parser.parse_args()
+    if getattr(args, "decision_matrix", False):
+        _run_decision_matrix(args)
+        return
     no_extra_args = len(sys.argv) <= 1
     if args.gui or (no_extra_args and not args.cli):
         _import_gui_launcher()(parser, _run_simulation)

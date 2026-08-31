@@ -19,7 +19,7 @@ def encode_compact_state_blob(compact: tuple[Any, ...] | list[Any]) -> bytes:
     """
 
     if not compact or compact[0] != "flat_v2":
-        raise ValueError("只能编码 flat_v2 GameState 紧凑键")
+        raise ValueError("只能编码当前扁平 GameState 紧凑键")
     encoded = bytearray(_COMPACT_STATE_BLOB_MAGIC)
     encoded.extend(len(compact).to_bytes(4, "big", signed=False))
     for value in compact:
@@ -38,10 +38,7 @@ def encode_compact_state_blob(compact: tuple[Any, ...] | list[Any]) -> bytes:
             encoded.extend(len(payload).to_bytes(4, "big", signed=False))
             encoded.extend(payload)
             continue
-        raise TypeError(
-            "GameState 紧凑键包含不支持的类型: "
-            f"{type(value).__name__}"
-        )
+        raise TypeError(f"GameState 紧凑键包含不支持的类型: {type(value).__name__}")
     return bytes(encoded)
 
 
@@ -118,16 +115,14 @@ class _CompactStateReader:
         for _index in range(count):
             key = self.take()
             value = self.take()
-            values.append(
-                (int(key), bool(value) if boolean_value else value)
-            )
+            values.append((int(key), bool(value) if boolean_value else value))
         return tuple(values)
 
 
 def unpack_compact_state(
     compact: tuple[Any, ...] | list[Any] | bytes,
 ) -> tuple[Any, ...]:
-    """把扁平 v2 或历史嵌套 v1 状态统一解码为结构化字段。"""
+    """把当前扁平状态或历史嵌套状态统一解码为结构化字段。"""
 
     if isinstance(compact, bytes):
         compact = decode_compact_state_blob(compact)
@@ -203,9 +198,7 @@ def game_state_dict_from_compact(
         {
             "role": str(role),
             "is_alive": bool(player_state[0]),
-            "skills": {
-                str(name): int(count) for name, count in dict(player_state[1]).items()
-            },
+            "skills": {str(name): int(count) for name, count in dict(player_state[1]).items()},
         }
         for role, player_state in zip(roles, player_states, strict=True)
     ]
@@ -214,25 +207,15 @@ def game_state_dict_from_compact(
         "phase": str(phase),
         "night_count": int(night_count),
         "day_count": int(day_count),
-        "last_guard_target_index": (
-            None if int(guard_target) < 0 else int(guard_target)
-        ),
-        "seer_check_results": (
-            {str(index): bool(value) for index, value in seer_checks}
-            if seer_checks
-            else None
-        ),
+        "last_guard_target_index": (None if int(guard_target) < 0 else int(guard_target)),
+        "seer_check_results": ({str(index): bool(value) for index, value in seer_checks} if seer_checks else None),
         "seer_revealed": bool(seer_revealed),
         "revealed_good_indices": [int(index) for index in revealed_good],
         "revealed_wolf_indices": [int(index) for index in revealed_wolf],
-        "public_role_claims": {
-            str(index): str(role) for index, role in public_role_claims
-        },
+        "public_role_claims": {str(index): str(role) for index, role in public_role_claims},
         "idiot_revealed_indices": [int(index) for index in idiot_revealed],
         "wolf_priority_targets": [int(index) for index in wolf_priority],
-        "last_day_votes": {
-            str(voter): int(target) for voter, target in last_day_votes
-        },
+        "last_day_votes": {str(voter): int(target) for voter, target in last_day_votes},
         "last_day_strategy": str(last_day_strategy),
         "position_signature": str(position_signature),
         "action_label": str(action_label),
@@ -241,9 +224,7 @@ def game_state_dict_from_compact(
             for index, player in enumerate(players)
         ],
         "state_id": int(state_id),
-        "parent_state_id": (
-            None if parent_state_id is None else int(parent_state_id)
-        ),
+        "parent_state_id": (None if parent_state_id is None else int(parent_state_id)),
         "depth": int(depth),
         "players": players,
     }
@@ -292,9 +273,7 @@ class GameState:
             "seer_revealed": self.seer_revealed,
             "revealed_good_indices": list(self.revealed_good_indices),
             "revealed_wolf_indices": list(self.revealed_wolf_indices),
-            "public_role_claims": {
-                str(index): role for index, role in self.public_role_claims.items()
-            },
+            "public_role_claims": {str(index): role for index, role in self.public_role_claims.items()},
             "idiot_revealed_indices": list(self.idiot_revealed_indices),
             "wolf_priority_targets": list(self.wolf_priority_targets),
             "last_day_votes": {str(voter): target for voter, target in self.last_day_votes.items()},
@@ -356,8 +335,7 @@ class GameState:
             revealed_good_indices=tuple(revealed_good_indices),
             revealed_wolf_indices=tuple(revealed_wolf_indices),
             public_role_claims={
-                int(index): str(role)
-                for index, role in (data.get("public_role_claims") or {}).items()
+                int(index): str(role) for index, role in (data.get("public_role_claims") or {}).items()
             },
             idiot_revealed_indices=tuple(idiot_revealed_indices),
             wolf_priority_targets=tuple(wolf_priority_targets),

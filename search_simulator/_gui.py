@@ -1,4 +1,4 @@
-"""Pygame 研究者视角的 DFS 分页与状态 DAG 可视化界面。"""
+"""Pygame 研究者视角的完整分支树与发言收益展示界面。"""
 
 # ruff: noqa: I001  # pygame 的提示抑制环境变量必须在导入 pygame 前设置。
 
@@ -84,34 +84,33 @@ GRAPH_SAFE_COORDINATE_LIMIT = 8_192
 
 
 def _yes_no(value: Any) -> str:
-    return "是" if bool(value) else "否"
+    return t("common.yes") if bool(value) else t("common.no")
 
 
 def _seat_label(value: Any) -> str:
     if value is None:
-        return "无"
-    return f"{int(value) + 1}号"
+        return t("common.none")
+    return t("gui.state.seat", seat=int(value) + 1)
 
 
 def _seat_list(values: Any) -> str:
     items = list(values or [])
     if not items:
-        return "无"
+        return t("common.none")
     return "、".join(_seat_label(value) for value in items)
 
 
 def _phase_label(value: Any) -> str:
-    return {
-        "night": "黑夜",
-        "day": "白天",
-        "complete": "已完成",
-    }.get(str(value), str(value) or "未知")
+    phase = str(value)
+    if phase in {"night", "day", "complete"}:
+        return t(f"gui.state.phase.{phase}")
+    return phase or t("common.unknown")
 
 
 def _interval_label(value: Any) -> str:
     values = list(value or [-1.0, 1.0])
     if len(values) < 2:
-        return "未计算"
+        return t("gui.state.interval_unavailable")
     return f"[{float(values[0]):.4f}, {float(values[1]):.4f}]"
 
 
@@ -124,64 +123,89 @@ def _format_game_state_hover(
 
     if state.get("unavailable"):
         return [
-            "【节点概览】",
-            f"节点编号：N{node_id}    搜索结果：{node.get('result', '未结束')}",
-            f"Wide 区间：{_interval_label(node.get('wide_interval'))}    "
-            f"Narrow 区间：{_interval_label(node.get('narrow_interval'))}",
-            "【状态详情】",
+            t("gui.state.node_overview"),
+            t(
+                "gui.state.node_line",
+                node=node_id,
+                result=node.get("result", t("common.not_finished")),
+            ),
+            t(
+                "gui.state.interval_line",
+                wide=_interval_label(node.get("wide_interval")),
+                narrow=_interval_label(node.get("narrow_interval")),
+            ),
+            t("gui.state.details"),
             str(state["unavailable"]),
         ]
 
     seer_checks = state.get("seer_check_results") or {}
     check_text = "；".join(
-        f"{_seat_label(index)}＝{'狼人' if bool(value) else '好人'}"
+        f"{_seat_label(index)}＝{t('common.wolf') if bool(value) else t('common.good')}"
         for index, value in sorted(seer_checks.items(), key=lambda item: int(item[0]))
-    ) or "无"
+    ) or t("common.none")
     role_claims = state.get("public_role_claims") or {}
     claim_text = "；".join(
-        f"{_seat_label(index)}声明{role}"
-        for index, role in sorted(role_claims.items(), key=lambda item: int(item[0]))
-    ) or "无"
+        f"{_seat_label(index)} {role}" for index, role in sorted(role_claims.items(), key=lambda item: int(item[0]))
+    ) or t("common.none")
     day_votes = state.get("last_day_votes") or {}
     vote_text = "；".join(
         f"{_seat_label(voter)}→{_seat_label(target)}"
         for voter, target in sorted(day_votes.items(), key=lambda item: int(item[0]))
-    ) or "无"
+    ) or t("common.none")
     snapshot_values = []
     for raw_value in state.get("players_snapshot") or []:
         snapshot_values.append(
-            str(raw_value).replace(":alive", "·存活").replace(":dead", "·死亡")
+            str(raw_value).replace(":alive", f"·{t('common.alive')}").replace(":dead", f"·{t('common.dead')}")
         )
-    snapshot_text = "；".join(snapshot_values) or "无"
+    snapshot_text = "；".join(snapshot_values) or t("common.none")
     lines = [
-        "【节点概览】",
-        f"节点编号：N{node_id}    搜索结果：{node.get('result', '未结束')}",
-        f"Wide 区间：{_interval_label(node.get('wide_interval'))}    "
-        f"Narrow 区间：{_interval_label(node.get('narrow_interval'))}",
-        "【对局进度】",
-        f"当前阶段：{_phase_label(state.get('phase'))}    "
-        f"白天轮次：{int(state.get('day_count', 0))}    "
-        f"黑夜轮次：{int(state.get('night_count', 0))}",
-        f"是否终局：{_yes_no(state.get('is_game_over'))}    "
-        f"搜索深度：{int(state.get('depth', 0))}",
-        f"父节点：{_seat_or_node(state.get('parent_state_id'))}    "
-        f"派生动作：{state.get('action_label') or '根状态'}",
-        "【身份与公共信息】",
-        f"预言家已公开：{_yes_no(state.get('seer_revealed'))}    "
-        f"上夜守护目标：{_seat_label(state.get('last_guard_target_index'))}",
-        f"预言家查验：{check_text}",
-        f"公开确认好人：{_seat_list(state.get('revealed_good_indices'))}",
-        f"公开确认狼人：{_seat_list(state.get('revealed_wolf_indices'))}",
-        f"公开身份声明：{claim_text}",
-        f"已揭示愚者：{_seat_list(state.get('idiot_revealed_indices'))}",
-        f"狼人优先目标：{_seat_list(state.get('wolf_priority_targets'))}",
-        "【投票与战术】",
-        f"上轮白天票型：{vote_text}",
-        f"上轮白天战术：{state.get('last_day_strategy') or '无'}",
-        "【站位与状态标识】",
-        f"站位签名：{state.get('position_signature') or '无'}",
-        f"状态编号：{int(state.get('state_id', -1))}    玩家快照：{snapshot_text}",
-        "【玩家详情】",
+        t("gui.state.node_overview"),
+        t(
+            "gui.state.node_line",
+            node=node_id,
+            result=node.get("result", t("common.not_finished")),
+        ),
+        t(
+            "gui.state.interval_line",
+            wide=_interval_label(node.get("wide_interval")),
+            narrow=_interval_label(node.get("narrow_interval")),
+        ),
+        t("gui.state.progress"),
+        t(
+            "gui.state.rounds",
+            phase=_phase_label(state.get("phase")),
+            day=int(state.get("day_count", 0)),
+            night=int(state.get("night_count", 0)),
+        ),
+        t(
+            "gui.state.terminal_depth",
+            terminal=_yes_no(state.get("is_game_over")),
+            depth=int(state.get("depth", 0)),
+        ),
+        t(
+            "gui.state.parent_action",
+            parent=_seat_or_node(state.get("parent_state_id")),
+            action=state.get("action_label") or t("action.root"),
+        ),
+        t("gui.state.identity"),
+        t(
+            "gui.state.seer_guard",
+            seer=_yes_no(state.get("seer_revealed")),
+            guard=_seat_label(state.get("last_guard_target_index")),
+        ),
+        t("gui.state.seer_checks", value=check_text),
+        t("gui.state.revealed_good", value=_seat_list(state.get("revealed_good_indices"))),
+        t("gui.state.revealed_wolf", value=_seat_list(state.get("revealed_wolf_indices"))),
+        t("gui.state.role_claims", value=claim_text),
+        t("gui.state.idiot", value=_seat_list(state.get("idiot_revealed_indices"))),
+        t("gui.state.wolf_targets", value=_seat_list(state.get("wolf_priority_targets"))),
+        t("gui.state.vote_tactic"),
+        t("gui.state.votes", value=vote_text),
+        t("gui.state.tactic", value=state.get("last_day_strategy") or t("common.none")),
+        t("gui.state.identifiers"),
+        t("gui.state.position_signature", value=state.get("position_signature") or t("common.none")),
+        t("gui.state.snapshot", state_id=int(state.get("state_id", -1)), value=snapshot_text),
+        t("gui.state.players"),
     ]
     players = list(state.get("players") or [])
     for player_index, player in enumerate(players):
@@ -189,29 +213,34 @@ def _format_game_state_hover(
         skill_text = "；".join(
             f"{name}：{_skill_count_label(count)}"
             for name, count in sorted(skills.items(), key=lambda item: str(item[0]))
-        ) or "无"
+        ) or t("common.none")
         lines.append(
-            f"{player_index + 1}号玩家｜角色：{player.get('role', '未知')}｜"
-            f"状态：{'存活' if bool(player.get('is_alive')) else '死亡'}｜技能：{skill_text}"
+            t(
+                "gui.state.player",
+                seat=player_index + 1,
+                role=player.get("role", t("common.unknown")),
+                state=t("common.alive") if bool(player.get("is_alive")) else t("common.dead"),
+                skills=skill_text,
+            )
         )
     if not players:
-        lines.append("无玩家数据")
+        lines.append(t("gui.state.no_players"))
     return lines
 
 
 def _seat_or_node(value: Any) -> str:
     if value is None:
-        return "无（根节点）"
+        return t("gui.state.root")
     return f"N{int(value)}"
 
 
 def _skill_count_label(value: Any) -> str:
     count = int(value)
     if count < 0:
-        return f"无限（{count}）"
+        return t("gui.state.skill.infinite", count=count)
     if count == 0:
-        return "已耗尽（0）"
-    return f"剩余{count}次（{count}）"
+        return t("gui.state.skill.empty")
+    return t("gui.state.skill.remaining", count=count)
 
 
 def _faded_color(
@@ -294,38 +323,128 @@ def _terminal_popup_content(
         弹窗标题与已转义的 HTML 正文。
     """
 
-    run_id = str(result.get("run_id") or "未知")
+    run_id = str(result.get("run_id") or t("common.unknown"))
     completed = int(result.get("position_count", 0))
     total = int(result.get("total_position_count", completed or 1))
     next_position = result.get("next_position_index")
-    next_text = "无" if next_position is None else f"#{int(next_position)}"
+    next_text = t("common.none") if next_position is None else f"#{int(next_position)}"
     runtime_path = str(runtime_log_path())
     crash_path = str(crash_log_path())
     if status == "complete":
-        title = "迭代完成"
-        headline = "全部目标站位均已完成并持久化。"
+        title = t("gui.popup.run.complete.title")
+        headline = t("gui.popup.run.complete.headline")
     elif status == "interrupted":
-        title = "迭代已中断（可恢复）"
-        headline = "本次并非完成；已有检查点已保存，再次开始将自动续算。"
+        title = t("gui.popup.run.interrupted.title")
+        headline = t("gui.popup.run.interrupted.headline")
     else:
         error = error or {}
         error_type = str(error.get("error_type") or "UnknownError")
-        error_message = str(error.get("error") or "未提供异常消息")
+        error_message = str(error.get("error") or t("common.unavailable"))
         if error.get("iteration_status") == "complete":
-            title = "迭代已完成，但输出失败"
-            headline = f"搜索已完成；结果文件或绘图失败：{error_type}: {error_message}"
+            title = t("gui.popup.run.output_failed.title")
+            headline = t("gui.popup.run.output_failed.headline", error_type=error_type, error=error_message)
         else:
-            title = "迭代崩溃/失败（未完成）"
-            headline = f"运行异常停止：{error_type}: {error_message}"
+            title = t("gui.popup.run.failed.title")
+            headline = t("gui.popup.run.failed.headline", error_type=error_type, error=error_message)
     lines = (
         headline,
-        f"运行 ID：{run_id}",
-        f"完整检查点：{completed}/{total}",
-        f"下一恢复站位：{next_text}",
-        f"运行日志：{runtime_path}",
-        f"崩溃日志：{crash_path}",
+        t("gui.popup.field.run_id", value=run_id),
+        t("gui.popup.field.checkpoints", completed=completed, total=total),
+        t("gui.popup.field.next", value=next_text),
+        t("gui.popup.field.runtime_log", path=runtime_path),
+        t("gui.popup.field.crash_log", path=crash_path),
     )
     return title, "<br>".join(html.escape(line) for line in lines)
+
+
+def _matrix_terminal_popup_content(
+    status: str,
+    payload: dict[str, Any],
+) -> tuple[str, str]:
+    """构造矩阵完成、中断和失败三种互斥终态弹窗。"""
+
+    matrix_id = str(payload.get("matrix_id") or t("common.unknown"))
+    committed = int(payload.get("committed_batches", 0))
+    total = int(payload.get("total_batches", committed))
+    runtime_path = str(payload.get("runtime_log") or runtime_log_path())
+    crash_path = str(payload.get("crash_log") or crash_log_path())
+    if status == "complete":
+        title = t("gui.popup.matrix.complete.title")
+        headline = (
+            t("gui.popup.matrix.complete.cached")
+            if payload.get("cache_hit")
+            else t("gui.popup.matrix.complete.headline")
+        )
+    elif status == "interrupted":
+        title = t("gui.popup.matrix.interrupted.title")
+        headline = t("gui.popup.matrix.interrupted.headline")
+    else:
+        title = t("gui.popup.matrix.failed.title")
+        headline = t(
+            "gui.popup.matrix.failed.headline",
+            error_type=payload.get("error_type", "UnknownError"),
+            error=payload.get("error", t("common.unavailable")),
+        )
+    lines = (
+        headline,
+        t("gui.popup.field.matrix_id", value=matrix_id),
+        t("gui.popup.field.units", completed=committed, total=total),
+        t("gui.popup.field.runtime_log", path=runtime_path),
+        t("gui.popup.field.crash_log", path=crash_path),
+    )
+    return title, "<br>".join(html.escape(line) for line in lines)
+
+
+def _matrix_action_label(action: dict[str, Any]) -> str:
+    """把结构化动作转换为紧凑中文行标题，不显示规范键或 JSON。"""
+
+    family = str(action.get("family") or "unknown")
+    target = action.get("target_id")
+    claim_target = action.get("claim_target")
+    claim_result = {"good": t("matrix.result.good"), "wolf": t("matrix.result.wolf")}.get(
+        str(action.get("claim_result")),
+        "",
+    )
+    if family == "baseline":
+        return t("matrix.action.baseline")
+    if family == "silence":
+        return t("matrix.action.silence")
+    if family == "accusation":
+        return t("matrix.action.accusation", target=_seat_label(target))
+    if family == "support":
+        return t("matrix.action.support", target=_seat_label(target))
+    if family == "vote_intent":
+        return t("matrix.action.vote_intent", target=_seat_label(target))
+    if family == "seer_claim":
+        if claim_target is None:
+            return t("matrix.action.seer_claim_weak")
+        return t(
+            "matrix.action.seer_claim",
+            target=_seat_label(claim_target),
+            result=claim_result,
+        )
+    return family
+
+
+def _matrix_row_sort_key(row: dict[str, Any]) -> tuple[Any, ...]:
+    """按一级族和席位稳定排序矩阵行，baseline 固定置顶。"""
+
+    action = dict(row.get("action") or {})
+    family_order = {
+        "baseline": 0,
+        "silence": 1,
+        "accusation": 2,
+        "support": 3,
+        "vote_intent": 4,
+        "seer_claim": 5,
+    }
+    return (
+        family_order.get(str(action.get("family")), 99),
+        -1 if action.get("target_id") is None else int(action["target_id"]),
+        -1 if action.get("claim_target") is None else int(action["claim_target"]),
+        str(action.get("claim_result") or ""),
+        str(row.get("action_key") or ""),
+    )
 
 
 class PygameSimulatorUI:
@@ -347,12 +466,15 @@ class PygameSimulatorUI:
         self.parser = parser
         self.run_simulation = run_simulation
         self.defaults = parser.parse_args([])
+        # 两类计算固定复用同一 SQLite；发言收益页不提供路径修改入口。
+        self.matrix_database_path = str(Path(self.defaults.signature_cache_db_path).expanduser().resolve())
         self.events: queue.Queue[tuple[str, Any]] = queue.Queue()
         self.control_manager = multiprocessing.Manager()
         self.resume_event = self.control_manager.Event()
         self.resume_event.set()
         self.worker_progress_queue = self.control_manager.Queue(maxsize=32)
         self.worker_result_queue = self.control_manager.Queue(maxsize=8)
+        self.active_page = "tree"
         self.running = False
         # solution 命中后首次点击只载入结果；下一次点击才强制创建新批次。
         self.force_recompute_next_run = False
@@ -394,6 +516,28 @@ class PygameSimulatorUI:
         self.active_position = 0
         self.day_expanded = True
         self.night_expanded = True
+        # 矩阵协调器必须是非 daemon 的隔离进程，才能继续创建计算 worker。
+        # Pygame 主进程只保存有界消息队列、停止事件和 JSON-safe 输出。
+        self.matrix_context = multiprocessing.get_context("spawn")
+        self.matrix_process: multiprocessing.Process | None = None
+        self.matrix_output_queue: Any | None = None
+        self.matrix_stop_event: Any | None = None
+        self.matrix_running = False
+        self.matrix_stop_requested = False
+        self.matrix_terminal_seen = False
+        self.matrix_exit_seen_at: float | None = None
+        self.matrix_force_recompute = False
+        self.matrix_rows: list[dict[str, Any]] = []
+        self.matrix_result: dict[str, Any] | None = None
+        self.matrix_page_index = 0
+        self.matrix_selected_row: int | None = None
+        self.matrix_table_row_rects: list[tuple[pygame.Rect, int]] = []
+        self.matrix_force_rect = pygame.Rect(20, 258, 280, 24)
+        self.matrix_id = ""
+        self.matrix_cache_hit = False
+        self.matrix_committed_batches = 0
+        self.matrix_total_batches = 0
+        self.matrix_status = t("gui.matrix.ready")
 
         self.font_path = _system_font_path()
         self.fonts = {
@@ -410,16 +554,12 @@ class PygameSimulatorUI:
             "include_guard": bool(self.defaults.include_guard),
             "include_hunter": bool(self.defaults.include_hunter),
             "include_idiot": bool(self.defaults.include_idiot),
-            "include_white_werewolf_king": bool(
-                self.defaults.include_white_werewolf_king
-            ),
+            "include_white_werewolf_king": bool(self.defaults.include_white_werewolf_king),
             "all_positions": bool(self.defaults.all_positions),
             "smart_vote": bool(self.defaults.smart_vote),
         }
         default_tactics = set(str(self.defaults.tactics).split(","))
-        self.tactics = {
-            key: key in default_tactics for key in (*DAY_TACTICS, *NIGHT_TACTICS)
-        }
+        self.tactics = {key: key in default_tactics for key in (*DAY_TACTICS, *NIGHT_TACTICS)}
         self.toggle_rects: dict[str, pygame.Rect] = {}
         self.tactic_rects: dict[str, pygame.Rect] = {}
         self.header_rects: dict[str, pygame.Rect] = {}
@@ -430,9 +570,22 @@ class PygameSimulatorUI:
         self.hover_tooltip: list[str] = []
 
         self._create_controls()
+        self._switch_page("tree")
         self._show_previous_crash_popup()
 
     def _create_controls(self) -> None:
+        self.tree_page_button = UIButton(
+            pygame.Rect(18, 18, 136, 38),
+            text=t("gui.page.tree_active"),
+            manager=self.manager,
+            object_id="#page_tree",
+        )
+        self.matrix_page_button = UIButton(
+            pygame.Rect(166, 18, 136, 38),
+            text=t("gui.page.matrix"),
+            manager=self.manager,
+            object_id="#page_matrix",
+        )
         self.entries: dict[str, UITextEntryLine] = {}
         entry_specs = (
             ("number_of_players", 18, 102, self.defaults.number_of_players),
@@ -458,7 +611,7 @@ class PygameSimulatorUI:
 
         self.start_button = UIButton(
             pygame.Rect(18, 790, 182, 44),
-            text=t("gui.start") + " · DFS",
+            text=t("gui.start"),
             manager=self.manager,
         )
         self.pause_button = UIButton(
@@ -467,18 +620,10 @@ class PygameSimulatorUI:
             manager=self.manager,
         )
         self.pause_button.disable()
-        self.first_button = UIButton(
-            pygame.Rect(346, 327, 58, 30), text=t("gui.first"), manager=self.manager
-        )
-        self.previous_button = UIButton(
-            pygame.Rect(410, 327, 74, 30), text=t("gui.previous"), manager=self.manager
-        )
-        self.next_button = UIButton(
-            pygame.Rect(490, 327, 74, 30), text=t("gui.next"), manager=self.manager
-        )
-        self.last_button = UIButton(
-            pygame.Rect(570, 327, 58, 30), text=t("gui.last"), manager=self.manager
-        )
+        self.first_button = UIButton(pygame.Rect(346, 327, 58, 30), text=t("gui.first"), manager=self.manager)
+        self.previous_button = UIButton(pygame.Rect(410, 327, 74, 30), text=t("gui.previous"), manager=self.manager)
+        self.next_button = UIButton(pygame.Rect(490, 327, 74, 30), text=t("gui.next"), manager=self.manager)
+        self.last_button = UIButton(pygame.Rect(570, 327, 58, 30), text=t("gui.last"), manager=self.manager)
         self.expand_all_button = UIButton(
             pygame.Rect(1232, 382, 94, 26),
             text=t("gui.expand_all"),
@@ -503,9 +648,132 @@ class PygameSimulatorUI:
                 self.locate_root_button,
             ):
                 button.hide()
-        self.progress_bar = UIProgressBar(
-            pygame.Rect(650, 327, 430, 30), manager=self.manager
+        self.progress_bar = UIProgressBar(pygame.Rect(650, 327, 430, 30), manager=self.manager)
+
+        self.matrix_entries: dict[str, UITextEntryLine] = {}
+        matrix_entry_specs = (
+            ("position_index", 18, 102, self.defaults.matrix_position_index, 135),
+            ("actor_seat", 170, 102, int(self.defaults.matrix_actor_id) + 1, 135),
+            ("samples", 18, 158, self.defaults.matrix_samples, 135),
         )
+        for key, x, y, value, width in matrix_entry_specs:
+            entry = UITextEntryLine(
+                pygame.Rect(x, y, width, 32),
+                manager=self.manager,
+                object_id=f"#matrix_{key}",
+            )
+            entry.set_text(str(value))
+            self.matrix_entries[key] = entry
+        self.matrix_start_button = UIButton(
+            pygame.Rect(18, 790, 182, 44),
+            text=t("gui.matrix.start"),
+            manager=self.manager,
+            object_id="#matrix_start",
+        )
+        self.matrix_stop_button = UIButton(
+            pygame.Rect(206, 790, 98, 44),
+            text=t("gui.matrix.stop"),
+            manager=self.manager,
+            object_id="#matrix_stop",
+        )
+        self.matrix_stop_button.disable()
+        self.matrix_first_button = UIButton(
+            pygame.Rect(346, 327, 58, 30),
+            text=t("gui.first"),
+            manager=self.manager,
+        )
+        self.matrix_previous_button = UIButton(
+            pygame.Rect(410, 327, 74, 30),
+            text=t("gui.previous"),
+            manager=self.manager,
+        )
+        self.matrix_next_button = UIButton(
+            pygame.Rect(490, 327, 74, 30),
+            text=t("gui.next"),
+            manager=self.manager,
+        )
+        self.matrix_last_button = UIButton(
+            pygame.Rect(570, 327, 58, 30),
+            text=t("gui.last"),
+            manager=self.manager,
+        )
+        self.matrix_progress_bar = UIProgressBar(
+            pygame.Rect(650, 327, 430, 30),
+            manager=self.manager,
+        )
+        self.tree_controls = [
+            *self.entries.values(),
+            self.lambda_slider,
+            self.start_button,
+            self.pause_button,
+            self.first_button,
+            self.previous_button,
+            self.next_button,
+            self.last_button,
+            self.progress_bar,
+            self.expand_all_button,
+            self.collapse_all_button,
+            self.locate_root_button,
+        ]
+        self.matrix_controls = [
+            *self.matrix_entries.values(),
+            self.matrix_start_button,
+            self.matrix_stop_button,
+            self.matrix_first_button,
+            self.matrix_previous_button,
+            self.matrix_next_button,
+            self.matrix_last_button,
+            self.matrix_progress_bar,
+        ]
+
+    def _switch_page(self, page: str) -> None:
+        """切换可见页面，不销毁运行任务或修改矩阵/搜索请求。"""
+
+        if page not in {"tree", "matrix"}:
+            raise ValueError(t("gui.error.unknown_page", page=page))
+        self.active_page = page
+        self.tree_page_button.set_text(t("gui.page.tree_active" if page == "tree" else "gui.page.tree"))
+        self.matrix_page_button.set_text(t("gui.page.matrix_active" if page == "matrix" else "gui.page.matrix"))
+        for control in self.tree_controls:
+            if page == "tree":
+                control.show()
+            else:
+                control.hide()
+        for control in self.matrix_controls:
+            if page == "matrix":
+                control.show()
+            else:
+                control.hide()
+        if page == "tree" and not ENABLE_ITERATION_TREE_RENDERING:
+            for control in (
+                self.expand_all_button,
+                self.collapse_all_button,
+                self.locate_root_button,
+            ):
+                control.hide()
+        if page == "tree" and self.matrix_running:
+            self.status = t("gui.conflict.matrix_running")
+        if page == "matrix" and self.running:
+            self.matrix_status = t("gui.conflict.tree_running")
+        self._sync_run_control_states()
+
+    def _sync_run_control_states(self) -> None:
+        """保证树搜索与矩阵计算不会在同一 GUI 会话内并发启动。"""
+
+        if self.running or self.matrix_running:
+            self.start_button.disable()
+            self.matrix_start_button.disable()
+        else:
+            self.start_button.enable()
+            self.matrix_start_button.enable()
+        if self.running:
+            self.pause_button.enable()
+        else:
+            self.pause_button.disable()
+        if self.matrix_running:
+            self.matrix_stop_button.enable()
+        else:
+            self.matrix_stop_button.disable()
 
     def _font(self, size: int) -> pygame.font.Font:
         return self.fonts[min(self.fonts, key=lambda item: abs(item - size))]
@@ -565,12 +833,13 @@ class PygameSimulatorUI:
                 self.tactics[key] = False
 
     def _draw_config(self) -> None:
-        self._panel(pygame.Rect(12, 12, 310, 766), "研究配置 · 固定 DFS")
+        self._panel(pygame.Rect(12, 12, 310, 766), "")
+        self._text(t("gui.tree.subtitle"), (18, 62), size=12, color=MUTED)
         labels = (
-            ("玩家数", 18, 80),
-            ("普通狼", 170, 80),
-            ("每页行数", 18, 136),
-            ("风险 λ", 170, 136),
+            (t("label.number_of_players"), 18, 80),
+            (t("label.number_of_wolves_short"), 170, 80),
+            (t("label.page_size"), 18, 136),
+            (t("label.lambda_risk_short"), 170, 136),
         )
         for label, x, y in labels:
             self._text(label, (x, y), size=12, color=MUTED)
@@ -581,13 +850,13 @@ class PygameSimulatorUI:
             color=TEXT,
         )
         self._text(
-            "站位串行 · 自动检查点续算",
+            t("gui.tree.resume_notice"),
             (18, 204),
             size=12,
             color=MUTED,
         )
 
-        self._text("角色与运行", (18, 260), size=16)
+        self._text(t("gui.tree.roles"), (18, 260), size=16)
         toggle_y = 292
         self.toggle_rects.clear()
         for offset, key in enumerate((*ROLE_KEYS, "smart_vote")):
@@ -603,7 +872,7 @@ class PygameSimulatorUI:
             )
 
         if not self.values["smart_vote"]:
-            self._text("智能投票关闭：战术不参与本次运行", (20, 432), size=12, color=MUTED)
+            self._text(t("gui.tree.tactics_disabled"), (20, 432), size=12, color=MUTED)
             self.tactic_rects.clear()
             return
 
@@ -645,7 +914,274 @@ class PygameSimulatorUI:
                 )
                 y += 27
             if not valid:
-                self._text("需启用女巫或守卫", (34, y), size=12, color=MUTED)
+                self._text(t("gui.tree.night_tactic_requirement"), (34, y), size=12, color=MUTED)
+
+    def _draw_matrix_config(self) -> None:
+        """绘制发言收益页的必要输入和简短阅读说明。"""
+
+        self._panel(pygame.Rect(12, 12, 310, 766), "")
+        self._text(t("gui.matrix.subtitle"), (18, 62), size=12, color=MUTED)
+        labels = (
+            (t("gui.matrix.position"), 18, 80),
+            (t("gui.matrix.actor"), 170, 80),
+            (t("gui.matrix.samples"), 18, 136),
+        )
+        for label, x, y in labels:
+            self._text(label, (x, y), size=12, color=MUTED)
+        self._text(
+            t("gui.matrix.purpose_line_1"),
+            (20, 206),
+            size=12,
+            color=MUTED,
+            max_width=280,
+        )
+        self._text(
+            t("gui.matrix.purpose_line_2"),
+            (20, 230),
+            size=12,
+            color=MUTED,
+            max_width=280,
+        )
+        self._draw_checkbox(
+            self.matrix_force_rect,
+            t("gui.matrix.recompute"),
+            self.matrix_force_recompute,
+            hovered=self.matrix_force_rect.collidepoint(pygame.mouse.get_pos()),
+        )
+        self._text(t("gui.matrix.how_to_read"), (18, 314), size=16)
+        guide_lines = (
+            t("gui.matrix.guide_action"),
+            t("gui.matrix.guide_strength"),
+            t("gui.matrix.guide_delta"),
+        )
+        for offset, line in enumerate(guide_lines):
+            self._text(line, (20, 348 + offset * 28), size=12, color=MUTED)
+        self._text(t("gui.matrix.status_title"), (18, 458), size=16)
+        self._text(
+            t(
+                "gui.matrix.progress",
+                completed=self.matrix_committed_batches,
+                total=self.matrix_total_batches,
+            ),
+            (20, 494),
+            size=12,
+            color=ACCENT if self.matrix_running else MUTED,
+            max_width=280,
+        )
+        self._text(
+            t("gui.matrix.result_rows", rows=len(self.matrix_rows)),
+            (20, 522),
+            size=12,
+            color=MUTED,
+        )
+        self._text(
+            t("gui.matrix.stop_notice"),
+            (20, 564),
+            size=12,
+            color=MUTED,
+            max_width=280,
+        )
+
+    def _matrix_visible_rows(self) -> tuple[list[dict[str, Any]], int]:
+        """返回矩阵当前页的二级动作行，固定每页十行。"""
+
+        pages = max(1, math.ceil(len(self.matrix_rows) / 10))
+        self.matrix_page_index = max(0, min(self.matrix_page_index, pages - 1))
+        start = self.matrix_page_index * 10
+        return self.matrix_rows[start : start + 10], pages
+
+    @staticmethod
+    def _matrix_cell_text(row: dict[str, Any], credibility: float) -> str:
+        """格式化一个可信度单元格的收益均值与配对差。"""
+
+        values = dict(row.get("by_credibility") or {}).get(str(float(credibility)))
+        if not values:
+            return "—"
+        return f"{float(values.get('mean', 0.0)):+.3f} / {float(values.get('baseline_delta', 0.0)):+.3f}"
+
+    def _draw_matrix_table(self) -> None:
+        """绘制二级动作分页主表，三个可信度档位不合并。"""
+
+        rect = pygame.Rect(334, 12, 1114, 352)
+        self._panel(rect, t("gui.matrix.table_title"))
+        visible, pages = self._matrix_visible_rows()
+        columns = (
+            ("#", 346),
+            (t("gui.matrix.action"), 382),
+            (t("gui.matrix.credibility_none"), 676),
+            (t("gui.matrix.credibility_medium"), 890),
+            (t("gui.matrix.credibility_high"), 1104),
+            (t("gui.matrix.sample_short"), 1330),
+        )
+        for label, x in columns:
+            self._text(label, (x, 48), size=12, color=MUTED)
+        self.matrix_table_row_rects.clear()
+        for offset, row in enumerate(visible):
+            row_index = self.matrix_page_index * 10 + offset
+            y = 72 + offset * 24
+            row_rect = pygame.Rect(342, y - 2, 1098, 23)
+            self.matrix_table_row_rects.append((row_rect, row_index))
+            if row_index == self.matrix_selected_row:
+                pygame.draw.rect(self.screen, pygame.Color("#213B61"), row_rect, border_radius=3)
+            elif row_rect.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(self.screen, pygame.Color("#1A2D48"), row_rect, border_radius=3)
+            credibility_values = dict(row.get("by_credibility") or {})
+            sample_count = 0
+            if credibility_values:
+                sample_count = min(int(value.get("sample_count", 0)) for value in credibility_values.values())
+            values = (
+                (str(row_index + 1), 346, 32),
+                (_matrix_action_label(dict(row.get("action") or {})), 382, 282),
+                (self._matrix_cell_text(row, 0.0), 676, 202),
+                (self._matrix_cell_text(row, 0.5), 890, 202),
+                (self._matrix_cell_text(row, 0.8), 1104, 202),
+                (str(sample_count), 1330, 80),
+            )
+            for value, x, width in values:
+                self._text(value, (x, y), size=12, color=TEXT, max_width=width)
+        self._text(
+            t(
+                "gui.matrix.page",
+                page=self.matrix_page_index + 1,
+                pages=pages,
+                rows=len(self.matrix_rows),
+            ),
+            (1090, 343),
+            size=11,
+            color=MUTED,
+            max_width=330,
+        )
+
+    def _draw_matrix_detail(self) -> None:
+        """用简短字段展示所选动作的三档统计和反应情景。"""
+
+        rect = pygame.Rect(334, 374, 1114, 472)
+        self._panel(rect, t("gui.matrix.detail_title"))
+        if not self.matrix_rows:
+            headline = t("gui.matrix.empty_running") if self.matrix_running else t("gui.matrix.empty_ready")
+            self._text(headline, (358, 432), size=16, color=ACCENT)
+            self._text(
+                t("gui.matrix.empty_note"),
+                (358, 470),
+                size=13,
+                color=MUTED,
+            )
+            return
+        selected_index = self.matrix_selected_row
+        if selected_index is None or not 0 <= selected_index < len(self.matrix_rows):
+            selected_index = 0
+            self.matrix_selected_row = 0
+        row = self.matrix_rows[selected_index]
+        action = dict(row.get("action") or {})
+        request = dict((self.matrix_result or {}).get("request") or {})
+        self._text(_matrix_action_label(action), (358, 414), size=20, color=ACCENT, max_width=760)
+        self._text(
+            t(
+                "gui.matrix.actor_summary",
+                seat=int(request.get("actor_id", 0)) + 1,
+                role=request.get("actor_role", t("common.unknown")),
+            ),
+            (358, 450),
+            size=12,
+            color=MUTED,
+            max_width=790,
+        )
+        family_labels = {
+            family: t(f"matrix.family.{family}")
+            for family in ("baseline", "silence", "accusation", "support", "vote_intent", "seer_claim")
+        }
+        tactic_labels = {
+            "villager_decoy": t("matrix.tactic.villager_decoy"),
+            "wolf_jump": t("matrix.tactic.wolf_jump"),
+        }
+        claim_result_label = {"good": t("matrix.result.good"), "wolf": t("matrix.result.wolf")}.get(
+            str(action.get("claim_result")),
+            t("common.none"),
+        )
+        detail_lines = (
+            t(
+                "gui.matrix.detail_family",
+                value=family_labels.get(str(action.get("family")), action.get("family") or t("common.unknown")),
+            ),
+            t("gui.matrix.detail_target", value=_seat_label(action.get("target_id"))),
+            t("gui.matrix.detail_claim", value=action.get("claim_role") or t("common.none")),
+            t("gui.matrix.detail_check", seat=_seat_label(action.get("claim_target")), result=claim_result_label),
+            t("gui.matrix.detail_intensity", value=float(action.get("intensity", 0.0))),
+            t(
+                "gui.matrix.detail_tactic",
+                value=tactic_labels.get(str(action.get("tactic")), action.get("tactic") or t("common.none")),
+            ),
+        )
+        for offset, line in enumerate(detail_lines):
+            column = offset % 3
+            row_offset = offset // 3
+            self._text(
+                line,
+                (358 + column * 300, 484 + row_offset * 28),
+                size=12,
+                color=TEXT,
+                max_width=280,
+            )
+        scenario_labels = {
+            key: t(f"matrix.scenario.{key}")
+            for key in (
+                "backlash",
+                "target_transfer",
+                "claim_accepted",
+                "claim_contested",
+                "ignored",
+                "other",
+            )
+        }
+        credibility_keys = (
+            "gui.matrix.credibility_none",
+            "gui.matrix.credibility_medium",
+            "gui.matrix.credibility_high",
+        )
+        for credibility_index, credibility in enumerate((0.0, 0.5, 0.8)):
+            value = dict(row.get("by_credibility") or {}).get(str(credibility), {})
+            x = 358 + credibility_index * 350
+            self._text(t(credibility_keys[credibility_index]), (x, 558), size=16, color=ACCENT)
+            self._text(
+                t(
+                    "gui.matrix.value_mean",
+                    mean=float(value.get("mean", 0.0)),
+                    error=float(value.get("standard_error", 0.0)),
+                ),
+                (x, 590),
+                size=12,
+                max_width=330,
+            )
+            self._text(
+                t(
+                    "gui.matrix.value_delta",
+                    delta=float(value.get("baseline_delta", 0.0)),
+                    error=float(value.get("baseline_delta_standard_error", 0.0)),
+                ),
+                (x, 616),
+                size=12,
+                max_width=330,
+            )
+            self._text(
+                t("gui.matrix.value_samples", count=int(value.get("sample_count", 0))),
+                (x, 642),
+                size=12,
+                color=MUTED,
+            )
+            scenarios = dict(value.get("scenario_counts") or {})
+            scenario_text = "  ".join(f"{label}{int(scenarios.get(key, 0))}" for key, label in scenario_labels.items())
+            # 六类情景分两行，避免三列详情互相覆盖。
+            first_three = "  ".join(scenario_text.split("  ")[:3])
+            last_three = "  ".join(scenario_text.split("  ")[3:])
+            self._text(first_three, (x, 674), size=11, color=MUTED, max_width=330)
+            self._text(last_three, (x, 698), size=11, color=MUTED, max_width=330)
+        self._text(
+            str((self.matrix_result or {}).get("notice") or t("matrix.notice.model_scope")),
+            (358, 758),
+            size=12,
+            color=MUTED,
+            max_width=1040,
+        )
 
     def _page_size(self) -> int:
         try:
@@ -662,18 +1198,18 @@ class PygameSimulatorUI:
 
     def _draw_table(self) -> None:
         rect = pygame.Rect(334, 12, 1114, 352)
-        self._panel(rect, "站位迭代结果")
+        self._panel(rect, t("gui.tree.results_title"))
         visible, pages = self._visible_rows()
         columns = (
             ("#", 346, 45),
-            ("站位", 392, 335),
-            ("状态", 732, 76),
-            ("边", 812, 68),
-            ("终局", 884, 64),
-            ("wide", 952, 142),
-            ("narrow", 1098, 142),
-            ("占优", 1244, 76),
-            ("耗时", 1324, 100),
+            (t("gui.col.position"), 392, 335),
+            (t("gui.col.states"), 732, 76),
+            (t("gui.col.edges"), 812, 68),
+            (t("gui.col.terminals"), 884, 64),
+            (t("gui.col.wide"), 952, 142),
+            (t("gui.col.narrow"), 1098, 142),
+            (t("gui.col.camp"), 1244, 76),
+            (t("gui.col.runtime"), 1324, 100),
         )
         for label, x, _width in columns:
             self._text(label, (x, 48), size=12, color=MUTED)
@@ -694,9 +1230,7 @@ class PygameSimulatorUI:
             processing_phase = str(item.get("processing_phase", "node_progress"))
             postprocess_total = int(item.get("postprocess_total", 0))
             postprocess_completed = int(item.get("postprocess_completed", 0))
-            postprocess_percent = int(
-                100.0 * postprocess_completed / max(1, postprocess_total)
-            )
+            postprocess_percent = int(100.0 * postprocess_completed / max(1, postprocess_total))
             interval_cell = (
                 t("gui.interval_short", percent=postprocess_percent)
                 if busy and processing_phase == "interval_progress"
@@ -705,20 +1239,16 @@ class PygameSimulatorUI:
                 else t("gui.computing")
             )
             camp = str(item["camp"])
-            camp_color = (
-                ACCENT
-                if busy
-                else GOOD
-                if camp == "good"
-                else WOLF
-                if camp == "wolf"
-                else MUTED
-            )
+            camp_color = ACCENT if busy else GOOD if camp == "good" else WOLF if camp == "wolf" else MUTED
             wide = item["wide_interval"]
             narrow = item["narrow_interval"]
             values = (
                 (("▶" if busy else "") + str(item["position_index"]), 346, 42),
-                (item.get("position_display", " | ".join(f"{i + 1}:{r}" for i, r in enumerate(item["roles"]))), 392, 330),
+                (
+                    item.get("position_display", " | ".join(f"{i + 1}:{r}" for i, r in enumerate(item["roles"]))),
+                    392,
+                    330,
+                ),
                 (f"{int(item['state_count']):,}", 732, 72),
                 (f"{int(item['edge_count']):,}", 812, 64),
                 (f"{int(item['terminal_count']):,}", 884, 60),
@@ -759,17 +1289,13 @@ class PygameSimulatorUI:
             if isinstance(observation, (list, tuple)) and len(observation) > 3:
                 raw_depth = observation[3]
         if raw_depth is None:
-            raw_depth = int(node.get("day_count", 0)) + int(
-                node.get("night_count", 0)
-            )
+            raw_depth = int(node.get("day_count", 0)) + int(node.get("night_count", 0))
         try:
             return max(0, int(raw_depth))
         except (TypeError, ValueError):
             return 0
 
-    def _layout_graph(
-        self, graph: dict[str, Any]
-    ) -> dict[int, tuple[float, float]]:
+    def _layout_graph(self, graph: dict[str, Any]) -> dict[int, tuple[float, float]]:
         """按固定网格生成 DAG 画布坐标。
 
         X 轴严格使用迭代深度，深度每增加一级就前进一个固定网格列；
@@ -989,18 +1515,14 @@ class PygameSimulatorUI:
         axis_color = pygame.Color("#8BA6C7")
 
         # 横向网格线只覆盖当前视口附近的行，避免大 DAG 造成额外绘制开销。
-        visible_row_min = math.floor(
-            (view.top - (view.centery + self.graph_pan[1]))
-            / (GRAPH_GRID_ROW_SPACING * self.graph_zoom)
-        ) - 1
-        visible_row_max = math.ceil(
-            (axis_y - (view.centery + self.graph_pan[1]))
-            / (GRAPH_GRID_ROW_SPACING * self.graph_zoom)
-        ) + 1
+        visible_row_min = (
+            math.floor((view.top - (view.centery + self.graph_pan[1])) / (GRAPH_GRID_ROW_SPACING * self.graph_zoom)) - 1
+        )
+        visible_row_max = (
+            math.ceil((axis_y - (view.centery + self.graph_pan[1])) / (GRAPH_GRID_ROW_SPACING * self.graph_zoom)) + 1
+        )
         for row_index in range(visible_row_min, visible_row_max + 1):
-            row_y = self._screen_graph_point(
-                (0.0, row_index * GRAPH_GRID_ROW_SPACING), rect
-            )[1]
+            row_y = self._screen_graph_point((0.0, row_index * GRAPH_GRID_ROW_SPACING), rect)[1]
             if view.top <= row_y <= axis_y:
                 self._draw_dashed_line(
                     self.screen,
@@ -1011,16 +1533,9 @@ class PygameSimulatorUI:
                     gap_length=8,
                 )
 
-        depths = sorted(
-            {
-                self._graph_depth(node)
-                for node in graph.get("nodes", [])
-            }
-        )
+        depths = sorted({self._graph_depth(node) for node in graph.get("nodes", [])})
         for depth in depths:
-            x = self._screen_graph_point(
-                (depth * GRAPH_GRID_COLUMN_SPACING, 0.0), rect
-            )[0]
+            x = self._screen_graph_point((depth * GRAPH_GRID_COLUMN_SPACING, 0.0), rect)[0]
             if view.left - 12 <= x <= view.right + 12:
                 self._draw_dashed_line(
                     self.screen,
@@ -1058,7 +1573,7 @@ class PygameSimulatorUI:
             ],
         )
         self._text(
-            "迭代深度 X →",
+            t("gui.tree.depth_axis"),
             (view.left + 8, axis_y - 18),
             size=11,
             color=axis_color,
@@ -1127,8 +1642,7 @@ class PygameSimulatorUI:
             0.0,
             min(
                 1.0,
-                ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy)
-                / (dx * dx + dy * dy),
+                ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) / (dx * dx + dy * dy),
             ),
         )
         projection = (start[0] + ratio * dx, start[1] + ratio * dy)
@@ -1143,16 +1657,27 @@ class PygameSimulatorUI:
         if node is None:
             return []
         if node.get("live_preview", False):
-            state_label = "已展开" if node.get("expanded", False) else "frontier"
+            state_label = t("gui.graph.expanded") if node.get("expanded", False) else t("gui.graph.frontier")
             details = [
-                f"实时节点 {target_node} · {node['phase']} · {state_label} · interval 在站位完成后计算"
+                t(
+                    "gui.graph.live_node",
+                    node=target_node,
+                    phase=_phase_label(node["phase"]),
+                    state=state_label,
+                )
             ]
             position_display = str(graph.get("position_display", ""))
             if position_display:
                 details.append(position_display)
         else:
             details = [
-                f"节点 {target_node} · {node['phase']} · wide={node['wide_interval']} · narrow={node['narrow_interval']}"
+                t(
+                    "gui.graph.saved_node",
+                    node=target_node,
+                    phase=_phase_label(node["phase"]),
+                    wide=node["wide_interval"],
+                    narrow=node["narrow_interval"],
+                )
             ]
         if self.selected_row is not None:
             try:
@@ -1172,8 +1697,12 @@ class PygameSimulatorUI:
                 if isinstance(state, dict) and not state.get("unavailable"):
                     players = state.get("players") or []
                     chips = [
-                        f"{index + 1}:{player.get('role', '未知')}"
-                        f"{'·死' if not player.get('is_alive', False) else ''}"
+                        t(
+                            "gui.graph.player_chip",
+                            seat=index + 1,
+                            role=player.get("role", t("common.unknown")),
+                            suffix=(t("gui.graph.dead_suffix") if not player.get("is_alive", False) else ""),
+                        )
                         for index, player in enumerate(players)
                     ]
                     if chips:
@@ -1181,7 +1710,7 @@ class PygameSimulatorUI:
             except (TypeError, ValueError, KeyError, IndexError):
                 # 旧节点快照可能无法按当前角色列表恢复；详情区不能因此
                 # 让主绘制循环抛出异常或中断后续 Pygame 事件处理。
-                details.append("玩家状态：旧快照不可恢复")
+                details.append(t("gui.graph.snapshot_unavailable"))
         structure = self._graph_structure(graph)
         incident = [
             *structure["edges_by_parent"].get(target_node, []),
@@ -1206,10 +1735,10 @@ class PygameSimulatorUI:
             if not roles and self.selected_row is not None:
                 roles = list(self.rows[self.selected_row].get("roles", []))
             try:
-                # v1 的玩家数组位于 compact[11]，v2/v3 为扁平编码；统一
-                # 交给契约解码器校验，GUI 不再猜测内部字段偏移。
+                # 历史嵌套快照与当前扁平快照统一交给契约解码器校验，
+                # GUI 不猜测内部字段偏移。
                 if not compact or not roles:
-                    raise ValueError("缺少站位角色或紧凑状态")
+                    raise ValueError(t("common.unavailable"))
                 state = game_state_dict_from_compact(
                     compact,
                     roles=roles,
@@ -1219,7 +1748,7 @@ class PygameSimulatorUI:
                     observation=node.get("state_observation"),
                 )
             except (TypeError, ValueError):
-                state = {"unavailable": "该旧节点没有可恢复的 GameState 快照"}
+                state = {"unavailable": t("common.unavailable")}
         return _format_game_state_hover(node_id, node, state)
 
     def _draw_graph(self) -> None:
@@ -1228,9 +1757,13 @@ class PygameSimulatorUI:
         graph = self._visible_graph(raw_graph)
         live_preview = self.running and self.preview_position in self.live_graphs
         title = (
-            f"实时局部 DAG · 站位 #{self.preview_position} · 0.5s 刷新 · 观测窗口≤{LIVE_PREVIEW_NODE_LIMIT}"
+            t(
+                "gui.tree.live_preview",
+                position=self.preview_position,
+                limit=LIVE_PREVIEW_NODE_LIMIT,
+            )
             if live_preview
-            else f"选中站位 DAG · 点击展开/收起 · 可见≤{DAG_VISIBLE_NODE_LIMIT} · hover 完整 GameState"
+            else t("gui.tree.saved_preview", limit=DAG_VISIBLE_NODE_LIMIT)
         )
         self._panel(rect, title)
         self._draw_live_stats(rect)
@@ -1248,8 +1781,7 @@ class PygameSimulatorUI:
         self.screen.set_clip(view_rect)
         canvas_positions = self._layout_graph(graph)
         self.node_screen_positions = {
-            node_id: self._screen_graph_point(position, rect)
-            for node_id, position in canvas_positions.items()
+            node_id: self._screen_graph_point(position, rect) for node_id, position in canvas_positions.items()
         }
         self._draw_graph_grid(rect, graph)
         mouse = pygame.mouse.get_pos()
@@ -1279,8 +1811,7 @@ class PygameSimulatorUI:
                 0.12,
                 min(
                     1.0,
-                    (now - float(node.get("_visible_since", now - LIVE_NODE_FADE_SECONDS)))
-                    / LIVE_NODE_FADE_SECONDS,
+                    (now - float(node.get("_visible_since", now - LIVE_NODE_FADE_SECONDS))) / LIVE_NODE_FADE_SECONDS,
                 ),
             )
             for node in graph.get("nodes", [])
@@ -1310,22 +1841,29 @@ class PygameSimulatorUI:
             )
             if is_hovered:
                 edge_summary = (
-                    f"实时分支 {edge['parent_id']}→{edge['child_id']} · interval 待站位完成"
+                    t(
+                        "gui.graph.live_edge",
+                        parent=edge["parent_id"],
+                        child=edge["child_id"],
+                    )
                     if edge.get("live_preview", False)
-                    else f"分支 {edge['parent_id']}→{edge['child_id']} · wide={edge['wide_interval']}"
+                    else t(
+                        "gui.graph.saved_edge",
+                        parent=edge["parent_id"],
+                        child=edge["child_id"],
+                        wide=edge["wide_interval"],
+                    )
                 )
                 self.hover_tooltip = [
                     edge_summary,
-                    "节点扩展原因：",
+                    t("gui.graph.edge_reasons"),
                     *[
-                        str(reason.get("action_label") or reason.get("action_key") or "未命名原因")
+                        str(reason.get("action_label") or reason.get("action_key") or t("gui.graph.unnamed_reason"))
                         for reason in edge.get("reasons", [])
                     ],
                 ]
         node_lookup = {int(node["node_id"]): node for node in graph.get("nodes", [])}
-        nodes_with_children = set(
-            self._graph_structure(raw_graph)["children"]
-        )
+        nodes_with_children = set(self._graph_structure(raw_graph)["children"])
         expanded_nodes = raw_graph.setdefault("_expanded_node_ids", set())
         node_width = max(30, int(42 * self.graph_zoom))
         node_height = max(18, int(24 * self.graph_zoom))
@@ -1360,9 +1898,7 @@ class PygameSimulatorUI:
                 border_radius=6,
             )
             phase_color = _faded_color(
-                pygame.Color("#FBBF24")
-                if node["phase"] == "day"
-                else pygame.Color("#8B5CF6"),
+                pygame.Color("#FBBF24") if node["phase"] == "day" else pygame.Color("#8B5CF6"),
                 alpha,
             )
             pygame.draw.circle(
@@ -1409,12 +1945,15 @@ class PygameSimulatorUI:
             detail_rect = pygame.Rect(rect.x + 8, rect.bottom - 92, rect.width - 16, 84)
             pygame.draw.rect(self.screen, pygame.Color("#0D1727"), detail_rect, border_radius=5)
             for offset, line in enumerate(details[:4]):
-                self._text(line, (detail_rect.x + 8, detail_rect.y + 7 + offset * 18), size=12, max_width=detail_rect.width - 16)
+                self._text(
+                    line,
+                    (detail_rect.x + 8, detail_rect.y + 7 + offset * 18),
+                    size=12,
+                    max_width=detail_rect.width - 16,
+                )
         elif not graph.get("nodes"):
             self._text(
-                "正在等待站位和节点预览…"
-                if self.running
-                else "运行完成后点击站位行查看持久化 DAG",
+                t("gui.tree.waiting_preview") if self.running else t("gui.tree.select_preview"),
                 (rect.x + 24, rect.y + 112),
                 color=MUTED,
             )
@@ -1428,17 +1967,17 @@ class PygameSimulatorUI:
         """
 
         rect = self._graph_rect()
-        self._panel(rect, "迭代树渲染已暂时关闭")
+        self._panel(rect, t("gui.tree.rendering_disabled_title"))
         self._draw_live_stats(rect)
         self._text(
-            "当前仅保留后台 DFS、检查点续算、结果表和运行统计。",
+            t("gui.tree.rendering_disabled_line_1"),
             (rect.x + 24, rect.y + 116),
             size=16,
             color=ACCENT,
             max_width=rect.width - 48,
         )
         self._text(
-            "后台迭代完成后不会加载或绘制 DAG；可继续使用暂停/恢复和结果分页。",
+            t("gui.tree.rendering_disabled_line_2"),
             (rect.x + 24, rect.y + 150),
             size=13,
             color=MUTED,
@@ -1465,19 +2004,17 @@ class PygameSimulatorUI:
                 # 迭代树渲染暂时关闭；后台仍保留计数、阶段进度、检查点和结果。
                 "live_preview_enabled": False,
                 "tactics": ",".join(
-                    key
-                    for key, selected in self.tactics.items()
-                    if selected and self.values["smart_vote"]
+                    key for key, selected in self.tactics.items() if selected and self.values["smart_vote"]
                 ),
             }
         )
         values.update({key: self.values[key] for key in ROLE_KEYS})
         if values["number_of_players"] < 3:
-            raise ValueError("玩家数必须不小于 3")
+            raise ValueError(t("gui.validation.players"))
         if values["number_of_wolves"] < 1:
-            raise ValueError("普通狼人数必须不小于 1")
+            raise ValueError(t("gui.validation.wolves"))
         if not 0.0 <= values["lambda_risk"] <= 1.0:
-            raise ValueError("lambda 必须位于 [0, 1]")
+            raise ValueError(t("gui.validation.lambda"))
         return argparse.Namespace(**values)
 
     def _worker(self, args: argparse.Namespace) -> None:
@@ -1498,21 +2035,20 @@ class PygameSimulatorUI:
                 "traceback": traceback.format_exc(),
                 "iteration_status": getattr(exc, "iteration_status", "failed"),
                 "run_id": getattr(exc, "run_id", ""),
-                "position_count": int(
-                    getattr(exc, "completed_positions", 0)
-                ),
+                "position_count": int(getattr(exc, "completed_positions", 0)),
                 "total_position_count": int(getattr(exc, "total_positions", 0)),
                 "next_position_index": getattr(exc, "next_position_index", None),
             }
             logger.error(
-                "GUI_WORKER_TERMINAL status=failed run_id=%s checkpoints=%s/%s "
-                "next_position=%s error_type=%s error=%s",
-                error_payload["run_id"] or "unknown",
-                error_payload["position_count"],
-                error_payload["total_position_count"],
-                error_payload["next_position_index"] or "none",
-                error_payload["error_type"],
-                error_payload["error"],
+                t(
+                    "log.gui.worker_failed",
+                    run_id=error_payload["run_id"] or t("common.unknown"),
+                    completed=error_payload["position_count"],
+                    total=error_payload["total_position_count"],
+                    next_position=error_payload["next_position_index"] or t("common.none"),
+                    error_type=error_payload["error_type"],
+                    error=error_payload["error"],
+                ),
                 exc_info=(type(exc), exc, exc.__traceback__),
             )
             try:
@@ -1523,20 +2059,17 @@ class PygameSimulatorUI:
                     category="gui_worker",
                     context={
                         "run_id": error_payload["run_id"] or "unknown",
-                        "checkpoints": (
-                            f"{error_payload['position_count']}/"
-                            f"{error_payload['total_position_count']}"
-                        ),
-                        "next_position": (
-                            error_payload["next_position_index"] or "none"
-                        ),
+                        "checkpoints": (f"{error_payload['position_count']}/{error_payload['total_position_count']}"),
+                        "next_position": (error_payload["next_position_index"] or "none"),
                         "error_type": error_payload["error_type"],
                     },
                 )
             except BaseException:
                 logger.critical(
-                    "GUI_CRASH_LOG_FALLBACK_FAILED error_type=%s",
-                    error_payload["error_type"],
+                    t(
+                        "log.gui.crash_log_fallback_failed",
+                        error_type=error_payload["error_type"],
+                    ),
                     exc_info=True,
                 )
             self.events.put(("error", error_payload))
@@ -1580,10 +2113,10 @@ class PygameSimulatorUI:
         message = "<br>".join(
             html.escape(line)
             for line in (
-                "检测到上次运行发生原生崩溃；上次迭代不能视为完成。",
-                "已完成站位仍可由 SQLite 检查点恢复。",
-                f"崩溃日志：{previous}",
-                f"本次运行日志：{runtime_log_path()}",
+                t("gui.popup.previous_crash.line_1"),
+                t("gui.popup.previous_crash.line_2"),
+                t("gui.popup.field.crash_log", path=previous),
+                t("gui.popup.field.runtime_log", path=runtime_log_path()),
             )
         )
         width, height = 650, 300
@@ -1597,11 +2130,11 @@ class PygameSimulatorUI:
             ),
             html_message=message,
             manager=self.manager,
-            window_title="检测到上次运行崩溃",
+            window_title=t("gui.popup.previous_crash.title"),
             object_id="#terminal_previous_crash",
             always_on_top=True,
         )
-        logger.warning("PREVIOUS_NATIVE_CRASH log=%s", previous)
+        logger.warning(t("log.gui.previous_native_crash", path=previous))
 
     def _acknowledge_previous_crash_popup(self) -> None:
         """用户关闭历史崩溃提示后写入一次性通知标记。"""
@@ -1612,13 +2145,17 @@ class PygameSimulatorUI:
             mark_crash_log_reported(self.pending_previous_crash_log)
         except OSError:
             logger.exception(
-                "CRASH_NOTIFICATION_MARK_FAILED log=%s",
-                self.pending_previous_crash_log,
+                t(
+                    "log.gui.crash_notification_mark_failed",
+                    path=self.pending_previous_crash_log,
+                )
             )
         self.pending_previous_crash_log = None
 
     def _start(self) -> None:
-        if self.running:
+        if self.running or self.matrix_running:
+            if self.matrix_running:
+                self.status = t("gui.conflict.matrix_running")
             return
         if self.simulator is not None:
             # 上一次结果的只读连接在新请求前释放，避免新批次与旧连接
@@ -1628,7 +2165,7 @@ class PygameSimulatorUI:
                 try:
                     cache.close()
                 except Exception:
-                    logger.exception("GUI_SOLUTION_CACHE_CLOSE_FAILED")
+                    logger.exception(t("log.gui.solution_cache_close_failed"))
         try:
             args = self._build_args()
         except (TypeError, ValueError) as exc:
@@ -1678,11 +2215,314 @@ class PygameSimulatorUI:
         self.running = True
         self.paused = False
         self.start_button.disable()
-        self.start_button.set_text(t("gui.running_short") + " · DFS")
+        self.start_button.set_text(t("gui.running_short"))
         self.pause_button.set_text(t("gui.pause"))
         self.pause_button.enable()
         self.status = t("gui.starting")
+        self._sync_run_control_states()
         threading.Thread(target=self._worker, args=(args,), daemon=True).start()
+
+    def _build_matrix_process_kwargs(self) -> dict[str, Any]:
+        """校验矩阵页输入，并转换为协调进程使用的具名零基参数。"""
+
+        position_index = int(self.matrix_entries["position_index"].get_text())
+        actor_seat = int(self.matrix_entries["actor_seat"].get_text())
+        samples = int(self.matrix_entries["samples"].get_text())
+        workers = int(self.defaults.matrix_workers)
+        batch_size = int(self.defaults.matrix_batch_size)
+        if not 1 <= position_index <= 1260:
+            raise ValueError(t("gui.validation.position"))
+        if not 1 <= actor_seat <= 7:
+            raise ValueError(t("gui.validation.actor"))
+        if samples <= 0:
+            raise ValueError(t("gui.validation.samples"))
+        if not 1 <= workers <= 16:
+            raise ValueError(t("help.matrix_workers"))
+        if batch_size <= 0:
+            raise ValueError(t("help.matrix_batch_size"))
+        return {
+            "database_path": self.matrix_database_path,
+            "actor_id": actor_seat - 1,
+            "position_index": position_index,
+            "workers": workers,
+            "batch_size": batch_size,
+            "samples_per_cell": samples,
+            "force_recompute": self.matrix_force_recompute,
+            "memory_reserve_gib": float(self.defaults.memory_reserve_gib),
+            "memory_reserve_ratio": float(self.defaults.memory_reserve_ratio),
+        }
+
+    def _start_matrix(self) -> None:
+        """创建独立矩阵协调进程；Pygame 主线程不执行 Monte Carlo。"""
+
+        if self.running or self.matrix_running:
+            self.matrix_status = t("gui.matrix.tree_running") if self.running else t("gui.matrix.already_running")
+            return
+        try:
+            process_kwargs = self._build_matrix_process_kwargs()
+        except (TypeError, ValueError) as exc:
+            self.matrix_status = t("gui.matrix.invalid", error=exc)
+            return
+        if self.matrix_process is not None and not self.matrix_process.is_alive():
+            self.matrix_process.join(timeout=0.1)
+            try:
+                self.matrix_process.close()
+            except (OSError, ValueError):
+                pass
+        try:
+            from ._decision_matrix_gui_runner import run_matrix_gui_process
+
+            self.matrix_output_queue = self.matrix_context.Queue(maxsize=64)
+            self.matrix_stop_event = self.matrix_context.Event()
+            self.matrix_process = self.matrix_context.Process(
+                target=run_matrix_gui_process,
+                kwargs={
+                    "output_queue": self.matrix_output_queue,
+                    "stop_event": self.matrix_stop_event,
+                    **process_kwargs,
+                },
+                name="speech-value-gui-coordinator",
+                daemon=False,
+            )
+            self.matrix_process.start()
+        except BaseException as exc:
+            self.matrix_running = False
+            self.matrix_status = t(
+                "gui.matrix.start_failed",
+                error_type=type(exc).__name__,
+                error=exc,
+            )
+            try:
+                from ._crash_handler import record_caught_failure
+
+                record_caught_failure(
+                    exc,
+                    category="gui_matrix_start",
+                    context={"error_type": type(exc).__name__},
+                )
+            except BaseException:
+                logger.critical(
+                    t("log.gui.matrix_start_crash_log_failed"),
+                    exc_info=True,
+                )
+            return
+        samples = int(process_kwargs["samples_per_cell"])
+        batch_size = int(process_kwargs["batch_size"])
+        self.matrix_total_batches = 3 * math.ceil(samples / batch_size)
+        self.matrix_committed_batches = 0
+        self.matrix_id = ""
+        self.matrix_cache_hit = False
+        self.matrix_rows.clear()
+        self.matrix_result = None
+        self.matrix_page_index = 0
+        self.matrix_selected_row = None
+        self.matrix_running = True
+        self.matrix_stop_requested = False
+        self.matrix_terminal_seen = False
+        self.matrix_exit_seen_at = None
+        self.matrix_progress_bar.set_current_progress(0.0)
+        self.matrix_start_button.set_text(t("gui.matrix.running"))
+        self.matrix_stop_button.set_text(t("gui.matrix.stop"))
+        self.matrix_status = t("gui.matrix.starting")
+        self._sync_run_control_states()
+
+    def _request_matrix_stop(self) -> None:
+        """请求在批次边界停止派发，并保留已经提交的恢复检查点。"""
+
+        if not self.matrix_running or self.matrix_stop_event is None:
+            return
+        self.matrix_stop_event.set()
+        self.matrix_stop_requested = True
+        self.matrix_stop_button.set_text(t("gui.matrix.stopping"))
+        self.matrix_stop_button.disable()
+        self.matrix_status = t("gui.matrix.stop_requested")
+
+    def _show_matrix_terminal_popup(
+        self,
+        status: str,
+        payload: dict[str, Any],
+    ) -> None:
+        """在 Pygame 主进程显示矩阵三种互斥终态。"""
+
+        if self.terminal_popup is not None and self.terminal_popup.alive():
+            self._acknowledge_previous_crash_popup()
+            self.terminal_popup.kill()
+        title, message = _matrix_terminal_popup_content(status, payload)
+        width, height = 650, 320
+        screen_width, screen_height = self.screen.get_size()
+        self.terminal_popup = UIMessageWindow(
+            pygame.Rect(
+                max(20, (screen_width - width) // 2),
+                max(20, (screen_height - height) // 2),
+                width,
+                height,
+            ),
+            html_message=message,
+            manager=self.manager,
+            window_title=title,
+            object_id=f"#matrix_terminal_{status}",
+            always_on_top=True,
+        )
+
+    def _apply_matrix_message(self, payload: dict[str, Any]) -> None:
+        """把协调进程消息归并为 GUI 状态；不读取隐藏世界或轨迹。"""
+
+        kind = str(payload.get("kind") or "")
+        if payload.get("matrix_id"):
+            self.matrix_id = str(payload["matrix_id"])
+        self.matrix_committed_batches = int(payload.get("committed_batches", self.matrix_committed_batches))
+        self.matrix_total_batches = int(payload.get("total_batches", self.matrix_total_batches))
+        self.matrix_cache_hit = bool(payload.get("cache_hit", self.matrix_cache_hit))
+        progress = 100.0 * self.matrix_committed_batches / max(1, self.matrix_total_batches)
+        self.matrix_progress_bar.set_current_progress(progress)
+        if kind == "matrix_starting":
+            self.matrix_status = t("gui.matrix.worker_started")
+            return
+        if kind == "matrix_progress":
+            if payload.get("status") == "complete":
+                self.matrix_status = t("gui.matrix.cache_loading")
+            elif payload.get("resumed"):
+                self.matrix_status = t(
+                    "gui.matrix.resumed",
+                    completed=self.matrix_committed_batches,
+                    total=self.matrix_total_batches,
+                )
+            else:
+                self.matrix_status = t(
+                    "gui.matrix.progress_status",
+                    completed=self.matrix_committed_batches,
+                    total=self.matrix_total_batches,
+                )
+            return
+        if kind == "matrix_done":
+            self.matrix_result = dict(payload.get("result") or {})
+            self.matrix_rows = sorted(
+                [dict(row) for row in self.matrix_result.get("action_rows", [])],
+                key=_matrix_row_sort_key,
+            )
+            self.matrix_selected_row = 0 if self.matrix_rows else None
+            self.matrix_page_index = 0
+            self.matrix_committed_batches = self.matrix_total_batches
+            self.matrix_progress_bar.set_current_progress(100.0)
+            self.matrix_status = (
+                t("gui.matrix.loaded", rows=len(self.matrix_rows))
+                if self.matrix_cache_hit
+                else t("gui.matrix.completed", rows=len(self.matrix_rows))
+            )
+            self.matrix_terminal_seen = True
+            self.matrix_running = False
+            self.matrix_stop_requested = False
+            self.matrix_start_button.set_text(t("gui.matrix.start"))
+            self.matrix_stop_button.set_text(t("gui.matrix.stop"))
+            self._sync_run_control_states()
+            self._show_matrix_terminal_popup("complete", payload)
+            return
+        if kind == "matrix_interrupted":
+            self.matrix_status = t(
+                "gui.matrix.interrupted",
+                completed=self.matrix_committed_batches,
+                total=self.matrix_total_batches,
+            )
+            self.matrix_terminal_seen = True
+            self.matrix_running = False
+            self.matrix_stop_requested = False
+            self.matrix_start_button.set_text(t("gui.matrix.continue"))
+            self.matrix_stop_button.set_text(t("gui.matrix.stop"))
+            self._sync_run_control_states()
+            self._show_matrix_terminal_popup("interrupted", payload)
+            return
+        if kind == "matrix_failed":
+            self.matrix_status = t(
+                "gui.matrix.failed",
+                error_type=payload.get("error_type", "UnknownError"),
+                error=payload.get("error", t("common.unavailable")),
+            )
+            self.matrix_terminal_seen = True
+            self.matrix_running = False
+            self.matrix_stop_requested = False
+            self.matrix_start_button.set_text(t("gui.matrix.restart"))
+            self.matrix_stop_button.set_text(t("gui.matrix.stop"))
+            self._sync_run_control_states()
+            self._show_matrix_terminal_popup("failed", payload)
+
+    def _matrix_process_failed_without_message(self) -> None:
+        """把协调进程无终态退出转换为可见失败并写入 crash 证据。"""
+
+        exitcode = None if self.matrix_process is None else self.matrix_process.exitcode
+        exc = RuntimeError(t("gui.error.matrix_process_exit", exitcode=exitcode))
+        payload = {
+            "kind": "matrix_failed",
+            "status": "failed",
+            "matrix_id": self.matrix_id,
+            "committed_batches": self.matrix_committed_batches,
+            "total_batches": self.matrix_total_batches,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "runtime_log": str(runtime_log_path()),
+            "crash_log": str(crash_log_path()),
+        }
+        try:
+            from ._crash_handler import record_caught_failure
+
+            record_caught_failure(
+                exc,
+                category="gui_matrix_process_exit",
+                context={
+                    "matrix_id": self.matrix_id or "unknown",
+                    "batches": f"{self.matrix_committed_batches}/{self.matrix_total_batches}",
+                    "exitcode": exitcode,
+                },
+            )
+        except BaseException:
+            logger.critical(t("log.gui.matrix_exit_crash_log_failed"), exc_info=True)
+        self._apply_matrix_message(payload)
+
+    def _drain_matrix_messages(self) -> None:
+        """每 0.5 秒批量消费有界队列，并检测无终态的子进程退出。"""
+
+        if self.matrix_output_queue is not None:
+            for _ in range(256):
+                try:
+                    self._apply_matrix_message(self.matrix_output_queue.get_nowait())
+                except queue.Empty:
+                    break
+        process = self.matrix_process
+        if not self.matrix_running or process is None or process.is_alive():
+            return
+        if self.matrix_terminal_seen:
+            return
+        now = time.monotonic()
+        if self.matrix_exit_seen_at is None:
+            self.matrix_exit_seen_at = now
+            return
+        if now - self.matrix_exit_seen_at >= 1.0:
+            self._matrix_process_failed_without_message()
+
+    def _shutdown_matrix_process(self) -> None:
+        """关闭窗口时优先形成可恢复中断，超时才终止孤立协调器。"""
+
+        process = self.matrix_process
+        if process is None:
+            return
+        if process.is_alive():
+            if self.matrix_stop_event is not None:
+                self.matrix_stop_event.set()
+            process.join(timeout=5.0)
+        if process.is_alive():
+            logger.critical(
+                t(
+                    "log.gui.matrix_force_terminate",
+                    matrix_id=self.matrix_id or t("common.unknown"),
+                    completed=self.matrix_committed_batches,
+                    total=self.matrix_total_batches,
+                )
+            )
+            process.terminate()
+            process.join(timeout=5.0)
+        try:
+            process.close()
+        except (OSError, ValueError):
+            pass
 
     def _load_selected_graph(self) -> None:
         if not ENABLE_ITERATION_TREE_RENDERING:
@@ -1699,9 +2539,7 @@ class PygameSimulatorUI:
         )
         self.graph["roles"] = list(row["roles"])
         self.graph["position_signature"] = str(row["position_signature"])
-        self.graph["position_display"] = " | ".join(
-            f"{index + 1}:{role}" for index, role in enumerate(row["roles"])
-        )
+        self.graph["position_display"] = " | ".join(f"{index + 1}:{role}" for index, role in enumerate(row["roles"]))
         self.graph["_expanded_node_ids"] = set()
         persisted_lambda = float(
             row.get(
@@ -1729,11 +2567,7 @@ class PygameSimulatorUI:
 
         graph = self.graph
         graph_identity = id(graph)
-        selected_position = (
-            int(self.rows[self.selected_row]["position_index"])
-            if self.selected_row is not None
-            else 0
-        )
+        selected_position = int(self.rows[self.selected_row]["position_index"]) if self.selected_row is not None else 0
         self.interval_recompute_requested_lambda = None
         self.interval_recompute_running = True
 
@@ -1743,10 +2577,7 @@ class PygameSimulatorUI:
             def publish(stage: str, completed: int, total: int) -> None:
                 nonlocal last_emitted_at
                 now = time.monotonic()
-                if (
-                    completed not in {0, total}
-                    and now - last_emitted_at < UI_DATA_REFRESH_SECONDS
-                ):
+                if completed not in {0, total} and now - last_emitted_at < UI_DATA_REFRESH_SECONDS:
                     return
                 self.events.put(
                     (
@@ -1784,12 +2615,13 @@ class PygameSimulatorUI:
                 )
             except BaseException as exc:
                 logger.error(
-                    "LOCAL_INTERVAL_RECOMPUTE_FAILED position=%s lambda=%.2f "
-                    "error_type=%s error=%s",
-                    selected_position,
-                    current_lambda,
-                    type(exc).__name__,
-                    exc,
+                    t(
+                        "log.gui.local_interval_failed",
+                        position=selected_position,
+                        lambda_value=current_lambda,
+                        error_type=type(exc).__name__,
+                        error=exc,
+                    ),
                     exc_info=(type(exc), exc, exc.__traceback__),
                 )
                 self.events.put(
@@ -1841,9 +2673,7 @@ class PygameSimulatorUI:
             edges_by_parent.setdefault(parent_id, []).append(edge)
             edges_by_child.setdefault(child_id, []).append(edge)
             incoming[child_id] += 1
-        entry_nodes = sorted(
-            node_id for node_id, incoming_count in incoming.items() if incoming_count == 0
-        )
+        entry_nodes = sorted(node_id for node_id, incoming_count in incoming.items() if incoming_count == 0)
         if not entry_nodes and node_by_id:
             entry_nodes = [min(node_by_id)]
         cached = {
@@ -1879,15 +2709,11 @@ class PygameSimulatorUI:
         visible_edges = []
         for parent_id in visible_ids:
             visible_edges.extend(
-                edge
-                for edge in structure["edges_by_parent"].get(parent_id, [])
-                if int(edge["child_id"]) in visible_ids
+                edge for edge in structure["edges_by_parent"].get(parent_id, []) if int(edge["child_id"]) in visible_ids
             )
         return {
             **graph,
-            "nodes": [
-                node_by_id[node_id] for node_id in sorted(visible_ids)
-            ],
+            "nodes": [node_by_id[node_id] for node_id in sorted(visible_ids)],
             "edges": visible_edges,
         }
 
@@ -1897,20 +2723,14 @@ class PygameSimulatorUI:
         previous_ids: set[int],
     ) -> None:
         now = time.monotonic()
-        visible_ids = {
-            int(node["node_id"])
-            for node in PygameSimulatorUI._visible_graph(graph).get("nodes", [])
-        }
+        visible_ids = {int(node["node_id"]) for node in PygameSimulatorUI._visible_graph(graph).get("nodes", [])}
         for node in graph.get("nodes", []):
             if int(node["node_id"]) in visible_ids - previous_ids:
                 node["_visible_since"] = now
 
     def _toggle_node_children(self, node_id: int) -> None:
         graph = self._display_graph()
-        previous_ids = {
-            int(node["node_id"])
-            for node in self._visible_graph(graph).get("nodes", [])
-        }
+        previous_ids = {int(node["node_id"]) for node in self._visible_graph(graph).get("nodes", [])}
         expanded = graph.setdefault("_expanded_node_ids", set())
         if node_id in expanded:
             expanded.remove(node_id)
@@ -1921,10 +2741,7 @@ class PygameSimulatorUI:
 
     def _set_all_nodes_expanded(self, *, expanded: bool) -> None:
         graph = self._display_graph()
-        previous_ids = {
-            int(node["node_id"])
-            for node in self._visible_graph(graph).get("nodes", [])
-        }
+        previous_ids = {int(node["node_id"]) for node in self._visible_graph(graph).get("nodes", [])}
         expanded_nodes = graph.setdefault("_expanded_node_ids", set())
         if expanded:
             structure = self._graph_structure(graph)
@@ -1933,9 +2750,7 @@ class PygameSimulatorUI:
             while pending and len(reachable) < DAG_VISIBLE_NODE_LIMIT:
                 parent_id = pending.pop(0)
                 expanded_nodes.add(parent_id)
-                for child_id in sorted(
-                    structure["children"].get(parent_id, set())
-                ):
+                for child_id in sorted(structure["children"].get(parent_id, set())):
                     if child_id not in reachable:
                         reachable.add(child_id)
                         pending.append(child_id)
@@ -1945,9 +2760,7 @@ class PygameSimulatorUI:
             expanded_nodes.clear()
         self._mark_newly_visible_nodes(graph, previous_ids)
         visible_nodes = self._visible_graph(graph).get("nodes", [])
-        self.selected_node = (
-            int(visible_nodes[0]["node_id"]) if visible_nodes else None
-        )
+        self.selected_node = int(visible_nodes[0]["node_id"]) if visible_nodes else None
 
     def _locate_root(self) -> None:
         """把当前 DAG 的根节点移回缩略图左侧可视区域。
@@ -1960,7 +2773,7 @@ class PygameSimulatorUI:
         graph = self._display_graph()
         entry_nodes = self._graph_structure(graph)["entry_nodes"]
         if not entry_nodes:
-            self.status = "当前站位没有可定位的根节点"
+            self.status = t("gui.tree.no_root")
             self.selected_node = None
             return
         root_id = int(entry_nodes[0])
@@ -1974,11 +2787,7 @@ class PygameSimulatorUI:
     def _upsert_progress_row(self, payload: dict[str, Any]) -> None:
         position_index = int(payload["position_index"])
         current_row = next(
-            (
-                row
-                for row in self.rows
-                if int(row["position_index"]) == position_index
-            ),
+            (row for row in self.rows if int(row["position_index"]) == position_index),
             None,
         )
         if current_row is not None and not current_row.get("processing", False):
@@ -2001,9 +2810,7 @@ class PygameSimulatorUI:
             terminal_count=int(payload.get("terminal_count", 0)),
             processed_states=int(payload.get("processed_states", 0)),
             runtime_seconds=float(payload.get("runtime_seconds", 0.0)),
-            processing_phase=str(
-                payload.get("kind", row.get("processing_phase", "node_progress"))
-            ),
+            processing_phase=str(payload.get("kind", row.get("processing_phase", "node_progress"))),
             postprocess_stage=str(
                 payload.get(
                     "postprocess_stage",
@@ -2049,17 +2856,10 @@ class PygameSimulatorUI:
                 "_expanded_node_ids": set(),
             },
         )
-        previous_visible_ids = {
-            int(node["node_id"])
-            for node in self._visible_graph(graph).get("nodes", [])
-        }
+        previous_visible_ids = {int(node["node_id"]) for node in self._visible_graph(graph).get("nodes", [])}
         graph["roles"] = list(payload.get("roles", graph.get("roles", [])))
-        graph["position_display"] = str(
-            payload.get("position_display", graph.get("position_display", ""))
-        )
-        graph["focus_node_id"] = int(
-            payload.get("focus_node_id", graph.get("focus_node_id", 0))
-        )
+        graph["position_display"] = str(payload.get("position_display", graph.get("position_display", "")))
+        graph["focus_node_id"] = int(payload.get("focus_node_id", graph.get("focus_node_id", 0)))
 
         incoming_nodes = [dict(node) for node in payload.get("preview_nodes", [])]
         incoming_edges = [dict(edge) for edge in payload.get("preview_edges", [])]
@@ -2071,10 +2871,7 @@ class PygameSimulatorUI:
                 node["_visible_since"] = existing["_visible_since"]
             node_by_id[node_id] = node
 
-        edge_by_key = {
-            (int(edge["parent_id"]), int(edge["child_id"])): edge
-            for edge in graph["edges"]
-        }
+        edge_by_key = {(int(edge["parent_id"]), int(edge["child_id"])): edge for edge in graph["edges"]}
         for edge in incoming_edges:
             edge_by_key[(int(edge["parent_id"]), int(edge["child_id"]))] = edge
 
@@ -2117,8 +2914,7 @@ class PygameSimulatorUI:
         active_positions = sorted(
             position_index
             for position_index, snapshot in self.position_progress.items()
-            if not snapshot.get("completed", False)
-            and position_index in self.live_graphs
+            if not snapshot.get("completed", False) and position_index in self.live_graphs
         )
         if self.preview_position not in active_positions and active_positions:
             self.preview_position = active_positions[0]
@@ -2127,21 +2923,11 @@ class PygameSimulatorUI:
 
     def _sync_live_node_totals(self) -> None:
         snapshots = tuple(self.position_progress.values())
-        self.live_stats["expanded_nodes"] = sum(
-            int(item.get("processed_states", 0)) for item in snapshots
-        )
-        self.live_stats["discovered_nodes"] = sum(
-            int(item.get("discovered_states", 0)) for item in snapshots
-        )
-        self.live_stats["frontier_size"] = sum(
-            int(item.get("frontier_size", 0)) for item in snapshots
-        )
-        self.live_stats["edge_count"] = sum(
-            int(item.get("edge_count", 0)) for item in snapshots
-        )
-        self.live_stats["terminal_count"] = sum(
-            int(item.get("terminal_count", 0)) for item in snapshots
-        )
+        self.live_stats["expanded_nodes"] = sum(int(item.get("processed_states", 0)) for item in snapshots)
+        self.live_stats["discovered_nodes"] = sum(int(item.get("discovered_states", 0)) for item in snapshots)
+        self.live_stats["frontier_size"] = sum(int(item.get("frontier_size", 0)) for item in snapshots)
+        self.live_stats["edge_count"] = sum(int(item.get("edge_count", 0)) for item in snapshots)
+        self.live_stats["terminal_count"] = sum(int(item.get("terminal_count", 0)) for item in snapshots)
 
     def _apply_iteration_event(self, payload: dict[str, Any]) -> None:
         event_kind = str(payload.get("kind", ""))
@@ -2155,9 +2941,7 @@ class PygameSimulatorUI:
             current = self.position_progress.get(position_index, {})
             if current.get("completed"):
                 return
-            if int(payload.get("processed_states", 0)) < int(
-                current.get("processed_states", 0)
-            ):
+            if int(payload.get("processed_states", 0)) < int(current.get("processed_states", 0)):
                 return
             self.position_progress[position_index] = {
                 **current,
@@ -2173,27 +2957,19 @@ class PygameSimulatorUI:
             if ENABLE_ITERATION_TREE_RENDERING:
                 self._choose_preview_position()
             self.active_position = position_index
-            self.live_stats["total_positions"] = int(
-                payload.get("total_positions", self.live_stats["total_positions"])
-            )
+            self.live_stats["total_positions"] = int(payload.get("total_positions", self.live_stats["total_positions"]))
             self._sync_live_node_totals()
             if self.paused:
                 self.status = t(
                     "gui.paused",
-                    expanded=_compact_integer(
-                        int(self.live_stats["expanded_nodes"])
-                    ),
+                    expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
                 )
             elif event_kind == "path_progress":
                 self.status = t(
                     "gui.path_progress",
                     position=position_index,
-                    completed=_compact_integer(
-                        int(payload.get("postprocess_completed", 0))
-                    ),
-                    total=_compact_integer(
-                        int(payload.get("postprocess_total", 0))
-                    ),
+                    completed=_compact_integer(int(payload.get("postprocess_completed", 0))),
+                    total=_compact_integer(int(payload.get("postprocess_total", 0))),
                 )
             elif event_kind == "interval_progress":
                 stage = str(payload.get("postprocess_stage", "node_intervals"))
@@ -2201,21 +2977,15 @@ class PygameSimulatorUI:
                     "gui.interval_progress",
                     position=position_index,
                     stage=t(f"postprocess.{stage}"),
-                    completed=_compact_integer(
-                        int(payload.get("postprocess_completed", 0))
-                    ),
-                    total=_compact_integer(
-                        int(payload.get("postprocess_total", 0))
-                    ),
+                    completed=_compact_integer(int(payload.get("postprocess_completed", 0))),
+                    total=_compact_integer(int(payload.get("postprocess_total", 0))),
                 )
             else:
                 self.status = t(
                     "gui.node_progress",
                     position=position_index,
                     expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
-                    discovered=_compact_integer(
-                        int(self.live_stats["discovered_nodes"])
-                    ),
+                    discovered=_compact_integer(int(self.live_stats["discovered_nodes"])),
                 )
             return
         if event_kind != "position_result":
@@ -2239,12 +3009,8 @@ class PygameSimulatorUI:
         self.progress_bar.set_current_progress(self.progress)
         if not self.paused:
             self.status = t("gui.running", done=done, total=total)
-        self.live_stats["good_paths"] = sum(
-            int(row["good_paths"]) for row in self.rows
-        )
-        self.live_stats["wolf_paths"] = sum(
-            int(row["wolf_paths"]) for row in self.rows
-        )
+        self.live_stats["good_paths"] = sum(int(row["good_paths"]) for row in self.rows)
+        self.live_stats["wolf_paths"] = sum(int(row["wolf_paths"]) for row in self.rows)
         self.live_stats["completed_positions"] = done
         self.live_stats["total_positions"] = total
 
@@ -2255,16 +3021,14 @@ class PygameSimulatorUI:
             self.resume_event.set()
             self.paused = False
             self.pause_button.set_text(t("gui.pause"))
-            self.start_button.set_text(t("gui.running_short") + " · DFS")
+            self.start_button.set_text(t("gui.running_short"))
             active = self.position_progress.get(self.active_position, {})
             active_kind = str(active.get("kind", "node_progress"))
             if active_kind == "path_progress":
                 self.status = t(
                     "gui.path_progress",
                     position=self.active_position or "?",
-                    completed=_compact_integer(
-                        int(active.get("postprocess_completed", 0))
-                    ),
+                    completed=_compact_integer(int(active.get("postprocess_completed", 0))),
                     total=_compact_integer(int(active.get("postprocess_total", 0))),
                 )
             elif active_kind == "interval_progress":
@@ -2273,9 +3037,7 @@ class PygameSimulatorUI:
                     "gui.interval_progress",
                     position=self.active_position or "?",
                     stage=t(f"postprocess.{stage}"),
-                    completed=_compact_integer(
-                        int(active.get("postprocess_completed", 0))
-                    ),
+                    completed=_compact_integer(int(active.get("postprocess_completed", 0))),
                     total=_compact_integer(int(active.get("postprocess_total", 0))),
                 )
             else:
@@ -2283,15 +3045,13 @@ class PygameSimulatorUI:
                     "gui.node_progress",
                     position=self.active_position or "?",
                     expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
-                    discovered=_compact_integer(
-                        int(self.live_stats["discovered_nodes"])
-                    ),
+                    discovered=_compact_integer(int(self.live_stats["discovered_nodes"])),
                 )
             return
         self.resume_event.clear()
         self.paused = True
         self.pause_button.set_text(t("gui.resume"))
-        self.start_button.set_text(t("gui.paused_short") + " · DFS")
+        self.start_button.set_text(t("gui.paused_short"))
         self.status = t(
             "gui.paused",
             expanded=_compact_integer(int(self.live_stats["expanded_nodes"])),
@@ -2302,11 +3062,10 @@ class PygameSimulatorUI:
         if now - self.last_data_refresh_at >= UI_DATA_REFRESH_SECONDS:
             for _ in range(512):
                 try:
-                    self._apply_iteration_event(
-                        self.worker_progress_queue.get_nowait()
-                    )
+                    self._apply_iteration_event(self.worker_progress_queue.get_nowait())
                 except queue.Empty:
                     break
+            self._drain_matrix_messages()
             self.last_data_refresh_at = now
         try:
             while True:
@@ -2350,19 +3109,16 @@ class PygameSimulatorUI:
                             row["interval_lambda"] = completed_lambda
                             row["interval_recomputing"] = False
                             break
-                        self.status = (
-                            f"λ={completed_lambda:.2f}：已动态回传选中 DAG"
-                            "（未重新搜索）"
+                        self.status = t(
+                            "gui.tree.interval_updated",
+                            value=completed_lambda,
                         )
                     requested_lambda = self.interval_recompute_requested_lambda
                     self.interval_recompute_requested_lambda = None
                     self.interval_recompute_running = False
                     if self.graph.get("nodes") and (
                         not graph_matches
-                        or (
-                            requested_lambda is not None
-                            and round(float(requested_lambda), 2) != completed_lambda
-                        )
+                        or (requested_lambda is not None and round(float(requested_lambda), 2) != completed_lambda)
                     ):
                         self._recompute_loaded_graph()
                 elif kind == "local_interval_error":
@@ -2376,9 +3132,10 @@ class PygameSimulatorUI:
                             float(self.lambda_slider.get_current_value()),
                             2,
                         )
-                        self.status = (
-                            "动态 interval 回传失败："
-                            f"{payload['error_type']}: {payload['error']}"
+                        self.status = t(
+                            "gui.tree.interval_failed",
+                            error_type=payload["error_type"],
+                            error=payload["error"],
                         )
                     self.interval_recompute_requested_lambda = None
                     self.interval_recompute_running = False
@@ -2398,12 +3155,8 @@ class PygameSimulatorUI:
                             "completed": True,
                         }
                     self._sync_live_node_totals()
-                    self.live_stats["good_paths"] = sum(
-                        int(row["good_paths"]) for row in self.rows
-                    )
-                    self.live_stats["wolf_paths"] = sum(
-                        int(row["wolf_paths"]) for row in self.rows
-                    )
+                    self.live_stats["good_paths"] = sum(int(row["good_paths"]) for row in self.rows)
+                    self.live_stats["wolf_paths"] = sum(int(row["wolf_paths"]) for row in self.rows)
                     completed = int(result.get("position_count", 0))
                     total = int(result.get("total_position_count", completed or 1))
                     self.progress = completed * 100.0 / max(1, total)
@@ -2416,7 +3169,7 @@ class PygameSimulatorUI:
                         )
                         self.force_recompute_next_run = True
                         self.start_button.enable()
-                        self.start_button.set_text(t("gui.recompute") + " · DFS")
+                        self.start_button.set_text(t("gui.recompute"))
                     elif result.get("status") == "interrupted":
                         self.status = t(
                             "gui.interrupted",
@@ -2439,26 +3192,37 @@ class PygameSimulatorUI:
                     self.resume_event.set()
                     self.start_button.enable()
                     if not result.get("loaded_solution"):
-                        self.start_button.set_text(t("gui.start") + " · DFS")
+                        self.start_button.set_text(t("gui.start"))
                     self.pause_button.set_text(t("gui.pause"))
                     self.pause_button.disable()
+                    self._sync_run_control_states()
                 elif kind == "error":
                     self.running = False
                     self.paused = False
                     self.resume_event.set()
                     self.start_button.enable()
-                    self.start_button.set_text(t("gui.start") + " · DFS")
+                    self.start_button.set_text(t("gui.start"))
                     self.pause_button.set_text(t("gui.pause"))
                     self.pause_button.disable()
                     self.status = t(
                         "gui.failed",
                         error=f"{payload['error_type']}: {payload['error']}",
                     )
+                    self._sync_run_control_states()
                     self._show_terminal_popup("failed", payload, error=payload)
         except queue.Empty:
             pass
 
     def _handle_custom_click(self, position: tuple[int, int]) -> None:
+        if self.active_page == "matrix":
+            if self.matrix_force_rect.collidepoint(position) and not self.matrix_running:
+                self.matrix_force_recompute = not self.matrix_force_recompute
+                return
+            for rect, row_index in self.matrix_table_row_rects:
+                if rect.collidepoint(position):
+                    self.matrix_selected_row = row_index
+                    return
+            return
         for key, rect in self.toggle_rects.items():
             if rect.collidepoint(position):
                 self.values[key] = not self.values[key]
@@ -2474,9 +3238,7 @@ class PygameSimulatorUI:
                 return
             for key, rect in self.tactic_rects.items():
                 if rect.collidepoint(position):
-                    if key in NIGHT_TACTICS and not (
-                        self.values["include_witch"] or self.values["include_guard"]
-                    ):
+                    if key in NIGHT_TACTICS and not (self.values["include_witch"] or self.values["include_guard"]):
                         return
                     self.tactics[key] = not self.tactics[key]
                     return
@@ -2507,13 +3269,31 @@ class PygameSimulatorUI:
     def _handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.QUIT:
             self.resume_event.set()
+            if self.matrix_stop_event is not None:
+                self.matrix_stop_event.set()
             self.keep_running = False
         elif event.type == pygame_gui.UI_WINDOW_CLOSE:
             if event.ui_element == self.terminal_popup:
                 self._acknowledge_previous_crash_popup()
                 self.terminal_popup = None
         elif event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == self.start_button:
+            if event.ui_element == self.tree_page_button:
+                self._switch_page("tree")
+            elif event.ui_element == self.matrix_page_button:
+                self._switch_page("matrix")
+            elif event.ui_element == self.matrix_start_button:
+                self._start_matrix()
+            elif event.ui_element == self.matrix_stop_button:
+                self._request_matrix_stop()
+            elif event.ui_element == self.matrix_first_button:
+                self.matrix_page_index = 0
+            elif event.ui_element == self.matrix_previous_button:
+                self.matrix_page_index = max(0, self.matrix_page_index - 1)
+            elif event.ui_element == self.matrix_next_button:
+                self.matrix_page_index += 1
+            elif event.ui_element == self.matrix_last_button:
+                self.matrix_page_index = max(0, math.ceil(len(self.matrix_rows) / 10) - 1)
+            elif event.ui_element == self.start_button:
                 self._start()
             elif event.ui_element == self.pause_button:
                 self._toggle_pause()
@@ -2534,13 +3314,15 @@ class PygameSimulatorUI:
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             graph_node = (
                 self._node_at(event.pos)
-                if ENABLE_ITERATION_TREE_RENDERING
+                if self.active_page == "tree"
+                and ENABLE_ITERATION_TREE_RENDERING
                 and self._graph_rect().collidepoint(event.pos)
                 else None
             )
             self._handle_custom_click(event.pos)
             graph_control_clicked = (
                 ENABLE_ITERATION_TREE_RENDERING
+                and self.active_page == "tree"
                 and (
                     self.expand_all_button.rect.collidepoint(event.pos)
                     or self.collapse_all_button.rect.collidepoint(event.pos)
@@ -2549,8 +3331,8 @@ class PygameSimulatorUI:
             )
             if (
                 ENABLE_ITERATION_TREE_RENDERING
-                and
-                self._graph_rect().collidepoint(event.pos)
+                and self.active_page == "tree"
+                and self._graph_rect().collidepoint(event.pos)
                 and graph_node is None
                 and not graph_control_clicked
             ):
@@ -2563,10 +3345,12 @@ class PygameSimulatorUI:
             self.graph_pan[0] = self.pan_origin[0] + event.pos[0] - self.drag_origin[0]
             self.graph_pan[1] = self.pan_origin[1] + event.pos[1] - self.drag_origin[1]
         elif event.type == pygame.MOUSEWHEEL:
-            if ENABLE_ITERATION_TREE_RENDERING and self._graph_rect().collidepoint(
-                pygame.mouse.get_pos()
+            if (
+                self.active_page == "tree"
+                and ENABLE_ITERATION_TREE_RENDERING
+                and self._graph_rect().collidepoint(pygame.mouse.get_pos())
             ):
-                self.graph_zoom = max(0.25, min(2.4, self.graph_zoom * (1.12 ** event.y)))
+                self.graph_zoom = max(0.25, min(2.4, self.graph_zoom * (1.12**event.y)))
         self.manager.process_events(event)
 
     def _draw_hover_tooltip(self) -> None:
@@ -2646,43 +3430,45 @@ class PygameSimulatorUI:
             )
 
     def _update_input_hover_tooltip(self) -> None:
+        if self.active_page != "tree":
+            return
         mouse = pygame.mouse.get_pos()
         extra = {
-            "number_of_players": "整数且不小于 3；默认测试板子为 7 人",
-            "number_of_wolves": "整数且不小于 1；白狼王单独计数",
-            "page_size": "范围 [1,10]；只影响 GUI 分页，不影响迭代结果",
+            "number_of_players": t("gui.hover.players"),
+            "number_of_wolves": t("gui.hover.wolves"),
+            "page_size": t("gui.hover.page_size"),
         }
         if self.lambda_slider.rect.collidepoint(mouse):
             self.hover_tooltip = [
                 t("label.lambda_risk"),
-                "范围 [0,1]、步进 0.01、默认 0.5；拖动时右侧实时显示数值",
-                "只放缩 wide/narrow 观测区间，不参与搜索或分支选择",
+                t("gui.hover.lambda.range"),
+                t("gui.hover.lambda.effect"),
             ]
             return
         if self.pause_button.rect.collidepoint(mouse):
             self.hover_tooltip = [
                 t("gui.resume" if self.paused else "gui.pause"),
-                "暂停会保留当前 frontier、DAG 和节点计数；恢复后从原位置继续",
-                "worker 会在展开下一节点前响应，正在生成的单个节点会先完成",
+                t("gui.hover.pause.line_1"),
+                t("gui.hover.pause.line_2"),
             ]
             return
         if self.expand_all_button.rect.collidepoint(mouse):
             self.hover_tooltip = [
                 t("gui.expand_all"),
-                "展开当前站位观测窗口内的全部节点；不读取完整 SQLite DAG",
+                t("gui.hover.expand"),
             ]
             return
         if self.collapse_all_button.rect.collidepoint(mouse):
             self.hover_tooltip = [
                 t("gui.collapse_all"),
-                "收起当前站位的全部子树，只保留局部入口节点",
+                t("gui.hover.collapse"),
             ]
             return
         if self.locate_root_button.rect.collidepoint(mouse):
             self.hover_tooltip = [
                 t("gui.locate_root"),
-                "将当前站位的根节点定位到 DAG 缩略图左侧，并选中该节点",
-                "只调整本地画布位置，不改变搜索、展开状态或持久化图",
+                t("gui.hover.locate.line_1"),
+                t("gui.hover.locate.line_2"),
             ]
             return
         for key, entry in self.entries.items():
@@ -2695,73 +3481,127 @@ class PygameSimulatorUI:
                 return
 
     def _update_option_hover_tooltip(self) -> None:
+        if self.active_page != "tree":
+            return
         mouse = pygame.mouse.get_pos()
         option_help = {
             "include_seer": t("help.include_seer"),
             "include_witch": t("help.include_witch"),
             "include_guard": t("help.include_guard"),
             "include_hunter": t("help.include_hunter"),
-            "include_idiot": "启用后替换一名村民；愚者放逐免死、公开身份并永久失去投票权",
+            "include_idiot": t("gui.hover.idiot"),
             "include_white_werewolf_king": t("help.include_white_werewolf_king"),
             "all_positions": t("help.all_positions"),
-            "smart_vote": "默认开启；战术优先于阵营筛选，关闭时战术不显示且提交空集合",
+            "smart_vote": t("gui.hover.smart_vote"),
         }
         for key, rect in self.toggle_rects.items():
             if rect.collidepoint(mouse):
                 self.hover_tooltip = [t(f"label.{key}"), option_help[key]]
                 return
-        tactic_help = {
-            "seer_hide": "在预言家公开身份的基线之外，增加预言家保持隐藏的白天分支",
-            "villager_decoy": "枚举存活村民声明预言家的组合，并分别形成次夜指定刀口",
-            "wolf_bloc": "所有存活狼人集中投给同一合法非狼目标；同级目标全部展开",
-            "wolf_self_kill": "需女巫或守卫存在且存活狼不少于 2；枚举每名存活狼作为自刀目标",
-            "wolf_no_kill": "需女巫或守卫存在；增加无狼刀目标的平安夜分支，其他夜间行动仍结算",
-        }
+        tactic_help = {key: t(f"gui.hover.tactic.{key}") for key in (*DAY_TACTICS, *NIGHT_TACTICS)}
         for key, rect in self.tactic_rects.items():
             if rect.collidepoint(mouse):
                 lines = [t(f"tactic.{key}"), tactic_help[key]]
-                if key in NIGHT_TACTICS and not (
-                    self.values["include_witch"] or self.values["include_guard"]
-                ):
-                    lines.append("当前禁用：需要先勾选女巫或守卫")
+                if key in NIGHT_TACTICS and not (self.values["include_witch"] or self.values["include_guard"]):
+                    lines.append(t("gui.hover.tactic.disabled"))
                 self.hover_tooltip = lines
                 return
         for group, rect in self.header_rects.items():
             if rect.collidepoint(mouse):
                 self.hover_tooltip = [
                     t("tactic.day" if group == "day" else "tactic.night"),
-                    "点击展开或折叠；勾选战术会在正常基线之外增加对应分支",
+                    t("gui.hover.tactic.group"),
+                ]
+                return
+
+    def _update_matrix_hover_tooltip(self) -> None:
+        """为矩阵页参数、停止操作和结果行提供可见 hover 说明。"""
+
+        if self.active_page != "matrix":
+            return
+        mouse = pygame.mouse.get_pos()
+        entry_help = {
+            "position_index": t("gui.matrix.hover.position"),
+            "actor_seat": t("gui.matrix.hover.actor"),
+            "samples": t("gui.matrix.hover.samples"),
+        }
+        for key, entry in self.matrix_entries.items():
+            if entry.rect.collidepoint(mouse):
+                self.hover_tooltip = [entry_help[key]]
+                return
+        if self.matrix_force_rect.collidepoint(mouse):
+            self.hover_tooltip = [
+                t("gui.matrix.hover.recompute_title"),
+                t("gui.matrix.hover.recompute_body"),
+            ]
+            return
+        if self.matrix_stop_button.rect.collidepoint(mouse):
+            self.hover_tooltip = [
+                t("gui.matrix.hover.stop_title"),
+                t("gui.matrix.hover.stop_body"),
+            ]
+            return
+        for rect, row_index in self.matrix_table_row_rects:
+            if rect.collidepoint(mouse) and 0 <= row_index < len(self.matrix_rows):
+                row = self.matrix_rows[row_index]
+                self.hover_tooltip = [
+                    _matrix_action_label(dict(row.get("action") or {})),
+                    t("gui.matrix.hover.row"),
                 ]
                 return
 
     def draw(self) -> None:
         current_lambda = round(float(self.lambda_slider.get_current_value()), 2)
         if (
-            ENABLE_ITERATION_TREE_RENDERING
-            and
-            not self.running
+            self.active_page == "tree"
+            and ENABLE_ITERATION_TREE_RENDERING
+            and not self.running
             and not self.paused
             and self.graph.get("nodes")
             and current_lambda != self.last_interval_lambda
         ):
             self._recompute_loaded_graph()
         self.screen.fill(BACKGROUND)
-        self._draw_config()
-        self._draw_table()
-        if ENABLE_ITERATION_TREE_RENDERING:
-            self._draw_graph()
+        self.hover_tooltip = []
+        if self.active_page == "tree":
+            self._draw_config()
+            self._draw_table()
+            if ENABLE_ITERATION_TREE_RENDERING:
+                self._draw_graph()
+            else:
+                self._draw_iteration_tree_disabled()
+            self._update_option_hover_tooltip()
+            self._update_input_hover_tooltip()
+            self._text(self.status, (18, 752), size=12, color=MUTED, max_width=285)
+            self._text(
+                t(
+                    "gui.tree.footer",
+                    states=_compact_integer(sum(int(row.get("state_count", 0)) for row in self.rows)),
+                ),
+                (1090, 325),
+                size=11,
+                color=MUTED,
+                max_width=330,
+            )
         else:
-            self._draw_iteration_tree_disabled()
-        self._update_option_hover_tooltip()
-        self._update_input_hover_tooltip()
-        self._text(self.status, (18, 752), size=12, color=MUTED, max_width=285)
-        self._text(
-            f"缓存/图数据：{_compact_integer(sum(int(row.get('state_count', 0)) for row in self.rows))} 状态",
-            (1090, 325),
-            size=11,
-            color=MUTED,
-            max_width=330,
-        )
+            self._draw_matrix_config()
+            self._draw_matrix_table()
+            self._draw_matrix_detail()
+            self._update_matrix_hover_tooltip()
+            self._text(
+                self.matrix_status,
+                (18, 752),
+                size=12,
+                color=MUTED,
+                max_width=285,
+            )
+            self._text(
+                t("gui.matrix.footer", rows=len(self.matrix_rows)),
+                (1090, 325),
+                size=11,
+                color=MUTED,
+                max_width=330,
+            )
         self.manager.draw_ui(self.screen)
         self._draw_hover_tooltip()
         pygame.display.flip()
@@ -2778,6 +3618,11 @@ class PygameSimulatorUI:
             frames += 1
             if max_frames is not None and frames >= max_frames:
                 break
+        self._shutdown_matrix_process()
+        try:
+            self.control_manager.shutdown()
+        except (AttributeError, EOFError, OSError):
+            pass
         pygame.quit()
 
 
@@ -2787,6 +3632,6 @@ def launch_gui(
     *,
     max_frames: int | None = None,
 ) -> None:
-    """启动默认中文、固定 DFS 的 Pygame 可视化界面。"""
+    """启动默认中文的 Pygame 策略展示界面。"""
 
     PygameSimulatorUI(parser, run_simulation).run(max_frames=max_frames)

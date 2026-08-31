@@ -282,9 +282,7 @@ def test_idiot_roster_and_day_reveal_rule() -> None:
     roles = ("狼人", "愚者", "村民")
     state = GameState(players=players_for_layout(roles), phase="day")
     reveal = next(
-        transition
-        for transition in simulator.expand_state(state)
-        if transition.action_key[-1] == "idiot_reveal"
+        transition for transition in simulator.expand_state(state) if transition.action_key[-1] == "idiot_reveal"
     )
     assert reveal.state.players[1].is_alive
     assert reveal.state.idiot_revealed_indices == (1,)
@@ -423,9 +421,7 @@ def test_node_progress_pause_and_resume_preserve_search_frontier() -> None:
     result_holder: dict[str, dict] = {}
 
     worker = threading.Thread(
-        target=lambda: result_holder.setdefault(
-            "result", simulator.run(start_state=simulator.initial_state)
-        )
+        target=lambda: result_holder.setdefault("result", simulator.run(start_state=simulator.initial_state))
     )
     worker.start()
     started = progress_events.get(timeout=1.0)
@@ -448,9 +444,7 @@ def test_node_progress_pause_and_resume_preserve_search_frontier() -> None:
     while not progress_events.empty():
         remaining_events.append(progress_events.get_nowait())
     search_events = [
-        event
-        for event in [started, *remaining_events]
-        if event["kind"] in {"position_started", "node_progress"}
+        event for event in [started, *remaining_events] if event["kind"] in {"position_started", "node_progress"}
     ]
     final_search_progress = search_events[-1]
     final_progress = remaining_events[-1]
@@ -479,10 +473,7 @@ def test_progress_and_ui_data_refresh_are_batched_every_half_second() -> None:
 
 def test_visible_dag_expands_one_parent_at_a_time_and_preserves_shared_paths() -> None:
     graph = {
-        "nodes": [
-            {"node_id": node_id}
-            for node_id in range(4)
-        ],
+        "nodes": [{"node_id": node_id} for node_id in range(4)],
         "edges": [
             {"parent_id": 0, "child_id": 1},
             {"parent_id": 0, "child_id": 2},
@@ -537,9 +528,7 @@ def test_locate_root_resets_local_pan_without_changing_expansion() -> None:
 
     assert ui.selected_node == 0
     assert ui.graph_pan[0] == 0.0
-    assert ui.graph_pan[1] == pytest.approx(
-        GRAPH_GRID_ROW_SPACING / 2 * ui.graph_zoom
-    )
+    assert ui.graph_pan[1] == pytest.approx(GRAPH_GRID_ROW_SPACING / 2 * ui.graph_zoom)
     assert graph["_expanded_node_ids"] == {0}
 
 
@@ -590,9 +579,33 @@ def test_reward_interval_and_plot_color_follow_sign_then_absolute_bound_rule() -
 def test_lambda_recomputes_fixed_graph_without_using_edge_multiplicity() -> None:
     graph = {
         "nodes": [
-            {"node_id": 0, "day_count": 0, "night_count": 0, "is_terminal": False, "result": "未结束", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
-            {"node_id": 1, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "好人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
-            {"node_id": 2, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "狼人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+            {
+                "node_id": 0,
+                "day_count": 0,
+                "night_count": 0,
+                "is_terminal": False,
+                "result": "未结束",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
+            {
+                "node_id": 1,
+                "day_count": 1,
+                "night_count": 0,
+                "is_terminal": True,
+                "result": "好人阵营胜利",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
+            {
+                "node_id": 2,
+                "day_count": 1,
+                "night_count": 0,
+                "is_terminal": True,
+                "result": "狼人阵营胜利",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
         ],
         "edges": [
             {"parent_id": 0, "child_id": 1, "multiplicity": 999},
@@ -608,9 +621,33 @@ def test_lambda_recomputes_fixed_graph_without_using_edge_multiplicity() -> None
 def test_interval_recompute_reports_prepare_node_and_edge_progress() -> None:
     graph = {
         "nodes": [
-            {"node_id": 0, "day_count": 0, "night_count": 0, "is_terminal": False, "result": "未结束", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
-            {"node_id": 1, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "好人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
-            {"node_id": 2, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "狼人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+            {
+                "node_id": 0,
+                "day_count": 0,
+                "night_count": 0,
+                "is_terminal": False,
+                "result": "未结束",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
+            {
+                "node_id": 1,
+                "day_count": 1,
+                "night_count": 0,
+                "is_terminal": True,
+                "result": "好人阵营胜利",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
+            {
+                "node_id": 2,
+                "day_count": 1,
+                "night_count": 0,
+                "is_terminal": True,
+                "result": "狼人阵营胜利",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
         ],
         "edges": [
             {"parent_id": 0, "child_id": 1},
@@ -621,9 +658,7 @@ def test_interval_recompute_reports_prepare_node_and_edge_progress() -> None:
     recompute_graph_intervals(
         graph,
         lambda_risk=0.5,
-        progress_callback=lambda stage, completed, total: progress.append(
-            (stage, completed, total)
-        ),
+        progress_callback=lambda stage, completed, total: progress.append((stage, completed, total)),
     )
     assert {stage for stage, _completed, _total in progress} == {
         "prepare_edges",
@@ -645,8 +680,24 @@ def test_dynamic_lambda_interval_recompute_runs_in_background() -> None:
     ui = PygameSimulatorUI.__new__(PygameSimulatorUI)
     ui.graph = {
         "nodes": [
-            {"node_id": 0, "day_count": 0, "night_count": 0, "is_terminal": False, "result": "未结束", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
-            {"node_id": 1, "day_count": 1, "night_count": 0, "is_terminal": True, "result": "好人阵营胜利", "wide_interval": [-1, 1], "narrow_interval": [-1, 1]},
+            {
+                "node_id": 0,
+                "day_count": 0,
+                "night_count": 0,
+                "is_terminal": False,
+                "result": "未结束",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
+            {
+                "node_id": 1,
+                "day_count": 1,
+                "night_count": 0,
+                "is_terminal": True,
+                "result": "好人阵营胜利",
+                "wide_interval": [-1, 1],
+                "narrow_interval": [-1, 1],
+            },
         ],
         "edges": [{"parent_id": 0, "child_id": 1}],
     }
@@ -752,17 +803,10 @@ def test_interval_aggregation_consumes_high_fanout_as_a_stream() -> None:
 
 
 def test_graph_interval_rollup_uses_explicit_loops_without_generator_frames() -> None:
-    source_path = (
-        Path(__file__).parents[1]
-        / "search_simulator"
-        / "_tree_search.py"
-    )
+    source_path = Path(__file__).parents[1] / "search_simulator" / "_tree_search.py"
     syntax = ast.parse(source_path.read_text(encoding="utf-8"))
     function = next(
-        node
-        for node in syntax.body
-        if isinstance(node, ast.FunctionDef)
-        and node.name == "recompute_graph_intervals"
+        node for node in syntax.body if isinstance(node, ast.FunctionDef) and node.name == "recompute_graph_intervals"
     )
     assert not any(isinstance(node, ast.GeneratorExp) for node in ast.walk(function))
 
@@ -848,9 +892,7 @@ def test_windows_memory_guard_uses_one_static_type_and_explicit_abi() -> None:
 
     assert _GLOBAL_MEMORY_STATUS_EX is not None
     assert _GLOBAL_MEMORY_STATUS_EX.restype is ctypes.c_int
-    assert _GLOBAL_MEMORY_STATUS_EX.argtypes == (
-        ctypes.POINTER(_WindowsMemoryStatusEx),
-    )
+    assert _GLOBAL_MEMORY_STATUS_EX.argtypes == (ctypes.POINTER(_WindowsMemoryStatusEx),)
     assert ctypes.sizeof(_WindowsMemoryStatusEx) == 64
 
     # 多次调用必须复用模块级结构体类型和函数代理；旧实现没有这两个
@@ -1195,9 +1237,9 @@ def test_terminal_popup_distinguishes_complete_interrupted_and_failed(
         base,
         error={"error_type": "BrokenProcessPool", "error": "worker exited"},
     )
-    assert complete_title == "迭代完成"
-    assert "全部目标站位均已完成" in complete_body
-    assert "并非完成" in interrupted_body
+    assert complete_title == "计算完成"
+    assert "全部目标站位均已完成并保存" in complete_body
+    assert "尚未完成" in interrupted_body
     assert "#4" in interrupted_body
     assert "未完成" in failed_title
     assert "BrokenProcessPool" in failed_body
@@ -1224,31 +1266,18 @@ def test_interrupted_summary_is_never_logged_as_complete(caplog) -> None:
 
 
 def test_position_scheduler_is_fixed_to_one_isolated_worker() -> None:
-    source_path = (
-        Path(__file__).parents[1]
-        / "search_simulator"
-        / "_tree_search.py"
-    )
+    source_path = Path(__file__).parents[1] / "search_simulator" / "_tree_search.py"
     syntax = ast.parse(source_path.read_text(encoding="utf-8"))
     function = next(
-        node
-        for node in syntax.body
-        if isinstance(node, ast.FunctionDef)
-        and node.name == "run_position_batch"
+        node for node in syntax.body if isinstance(node, ast.FunctionDef) and node.name == "run_position_batch"
     )
     pool_calls = [
         node
         for node in ast.walk(function)
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Name)
-        and node.func.id == "ProcessPoolExecutor"
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "ProcessPoolExecutor"
     ]
     assert len(pool_calls) == 1
-    max_workers = next(
-        keyword.value
-        for keyword in pool_calls[0].keywords
-        if keyword.arg == "max_workers"
-    )
+    max_workers = next(keyword.value for keyword in pool_calls[0].keywords if keyword.arg == "max_workers")
     assert isinstance(max_workers, ast.Constant)
     assert max_workers.value == 1
 
@@ -1297,8 +1326,8 @@ def test_broken_worker_pool_logs_critical_failed_terminal(
     )
     with caplog.at_level(logging.INFO), pytest.raises(BrokenProcessPool) as raised:
         simulator.run()
-    assert "status=failed" in caplog.text
-    assert "category=worker_crash" in caplog.text
+    assert "运行失败" in caplog.text
+    assert "类别=worker_crash" in caplog.text
     assert "simulated native worker crash" in caplog.text
     assert raised.value.run_id == simulator.run_id
     assert raised.value.next_position_index == 1
@@ -1326,17 +1355,12 @@ def test_cli_and_worker_boundaries_pass_simulator_parameters_by_name() -> None:
     for source_path, function_name in boundaries:
         syntax = ast.parse(source_path.read_text(encoding="utf-8"))
         function = next(
-            node
-            for node in syntax.body
-            if isinstance(node, ast.FunctionDef)
-            and node.name == function_name
+            node for node in syntax.body if isinstance(node, ast.FunctionDef) and node.name == function_name
         )
         constructor = next(
             node
             for node in ast.walk(function)
-            if isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Name)
-            and node.func.id == "SearchSimulator"
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "SearchSimulator"
         )
         keyword_names = {keyword.arg for keyword in constructor.keywords}
         assert None not in keyword_names
@@ -1535,11 +1559,7 @@ def test_bounded_result_queue_streams_batches_into_sqlite(tmp_path) -> None:
 
 
 def test_sqlite_store_contains_no_plaintext_statements() -> None:
-    source_path = (
-        Path(__file__).parents[1]
-        / "search_simulator"
-        / "_sqlite_lru_signature_store.py"
-    )
+    source_path = Path(__file__).parents[1] / "search_simulator" / "_sqlite_lru_signature_store.py"
     syntax = ast.parse(source_path.read_text(encoding="utf-8"))
     forbidden = re.compile(
         r"\b(?:PRAGMA|CREATE\s+TABLE|CREATE\s+INDEX|ALTER\s+TABLE|"
@@ -1548,9 +1568,7 @@ def test_sqlite_store_contains_no_plaintext_statements() -> None:
         re.IGNORECASE | re.DOTALL,
     )
     string_literals = (
-        node.value
-        for node in ast.walk(syntax)
-        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+        node.value for node in ast.walk(syntax) if isinstance(node, ast.Constant) and isinstance(node.value, str)
     )
     assert not any(forbidden.search(value) for value in string_literals)
 
