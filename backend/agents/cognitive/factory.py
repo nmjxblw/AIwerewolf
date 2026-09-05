@@ -245,7 +245,9 @@ class _ToolCallingRunnable(Runnable):
                     try:
                         fn_args = json.loads(fn_args)
                     except json.JSONDecodeError:
-                        fn_args = {}
+                        # Keep the raw fragment so structured_decision can salvage
+                        # truncated JSON instead of treating it as an empty object.
+                        pass
                 tool_calls.append(
                     {
                         "id": tc_id,

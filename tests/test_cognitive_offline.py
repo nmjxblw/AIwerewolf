@@ -5,6 +5,7 @@ import re
 import sys
 from dataclasses import replace
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 from langchain_core.messages import AIMessage
@@ -52,6 +53,9 @@ class DeterministicCognitiveLLM:
         text = "\n".join(str(getattr(message, "content", message)) for message in messages)
         self.calls.append(text)
         target = self._target_from_prompt(text)
+
+        if "【本回合可选操作" in text:
+            return AIMessage(content=json.dumps(self._catalog_decision(text, target), ensure_ascii=False))
 
         if "输出 JSON" in text:
             return AIMessage(
@@ -104,6 +108,44 @@ class DeterministicCognitiveLLM:
             if name and name != self_name:
                 return name
         return names[0] if names else "P1"
+
+    @classmethod
+    def _catalog_decision(cls, text: str, target: str) -> dict[str, Any]:
+        seat = cls._seat_for_name(text, target)
+        if "- baseline" in text:
+            return {
+                "action": "baseline",
+                "speech": f"我先按公开信息发言，重点观察 {target} 的站边和票型。",
+                "reasoning": "offline cognitive speech",
+            }
+        if "- day_vote" in text:
+            return {"action": "day_vote", "target_seat": seat or 2, "reasoning": "offline cognitive target"}
+        if "- save" in text and "解药" in text:
+            return {"action": "save", "reasoning": "offline witch save"}
+        if "- poison" in text and "- skip" in text:
+            return {"action": "skip", "reasoning": "offline witch skip"}
+        if "- attack" in text:
+            return {"action": "attack", "target_seat": seat or 2, "reasoning": "offline cognitive target"}
+        if "- divine" in text:
+            return {"action": "divine", "target_seat": seat or 2, "reasoning": "offline cognitive target"}
+        if "- guard" in text:
+            return {"action": "guard", "target_seat": seat or 2, "reasoning": "offline cognitive target"}
+        if "- skip" in text:
+            return {"action": "skip", "reasoning": "offline skip"}
+        return {"action": "skip", "reasoning": "offline catalog fallback"}
+
+    @staticmethod
+    def _seat_for_name(text: str, name: str) -> int | None:
+        if name:
+            match = re.search(rf"(\d+)号:{re.escape(name)}", text)
+            if match:
+                return int(match.group(1))
+        seats = re.findall(r"target_seat 合法：([0-9,]+)", text)
+        if seats:
+            first = seats[-1].split(",")[0]
+            if first.isdigit():
+                return int(first)
+        return None
 
 
 class _FakeProfileCursor:
@@ -271,6 +313,26 @@ class NativeDecisionLLM:
                 "text": text,
             }
         )
+
+        if kwargs.get("force_tool_name") == "choose_action" or tool_names == ["choose_action"]:
+            if "- baseline" in text:
+                args = {
+                    "action": "baseline",
+                    "speech": "我先按公开信息发言，重点观察2号的站边。",
+                    "reasoning": "native final speech",
+                }
+            elif "- day_vote" in text:
+                args = {"action": "day_vote", "target_seat": 2, "reasoning": "native final target"}
+            elif "- guard" in text:
+                args = {"action": "skip", "reasoning": "native final target"}
+            elif "- attack" in text:
+                args = {"action": "attack", "target_seat": 3, "reasoning": "native final target"}
+            else:
+                args = {"action": "skip", "reasoning": "native final target"}
+            return AIMessage(
+                content="",
+                tool_calls=[{"id": "call_decision", "name": "choose_action", "args": args}],
+            )
 
         if kwargs.get("force_tool_name") == "submit_decision" or tool_names == ["submit_decision"]:
             if "【任务：发言】" in text:
@@ -1900,10 +1962,9 @@ def test_cognitive_agent_prefers_per_decision_loop_trace_over_global_compat_trac
     decision = agent.talk()
 
     assert decision.action_type == ActionType.TALK
-    assert decision.metadata[trace_keys.TOOL_TRACE][0]["tool"] == "recall_memory"
-    assert decision.metadata[trace_keys.TOOL_TRACE][0]["tool"] != "stale_global_trace"
+    assert decision.metadata.get(trace_keys.TOOL_TRACE) == []
+    assert "stale-doc" not in (decision.metadata.get(trace_keys.DECISION_RETRIEVED_KNOWLEDGE_IDS) or [])
     assert decision.metadata.get("usage") != {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2}
-    assert agent_loop.get_last_loop_trace("P1") == {}
 
 
 def test_agent_loop_injects_tool_retrieved_ids_into_current_decision() -> None:
@@ -2113,12 +2174,10 @@ def test_cognitive_agent_repairs_required_night_target_after_multiple_llm_attemp
     agent.initialize(view, {})
     agent.update(view, "GUARD")
 
-    decision = agent.guard()
+    with pytest.raises(RuntimeError, match="structured decision failed after repair"):
+        agent.guard()
 
-    assert decision.action_type == ActionType.GUARD
-    assert decision.target_id == "P2"
-    assert decision.reasoning == "delayed repair selects legal target"
-    assert llm.calls == 4
+    assert llm.calls == 2
 
 
 def test_cognitive_agent_required_night_illegal_target_raises_in_strict_mode() -> None:
@@ -2259,7 +2318,7 @@ def test_cognitive_agent_witch_invalid_json_raises_in_strict_mode() -> None:
     agent.initialize(view, {})
     agent.update(view, "WITCH")
 
-    with pytest.raises(ValueError, match="did not contain JSON"):
+    with pytest.raises(RuntimeError, match="structured decision failed after repair"):
         agent.witch_act("P2")
 
 
@@ -2454,9 +2513,12 @@ def test_cognitive_agents_complete_offline_game_and_emit_decisions() -> None:
     assert any(event.type == EventType.VOTE_CAST for event in state.events)
     assert any(event.type == EventType.NIGHT_ACTION for event in state.events)
     assert fake_llm.calls
-    assert any("【任务：发言】" in call for call in fake_llm.calls)
-    assert any("【任务：投票】" in call for call in fake_llm.calls)
-    assert any("【任务：夜晚行动】" in call for call in fake_llm.calls)
+    assert any("【本回合可选操作" in call and "- baseline" in call for call in fake_llm.calls)
+    assert any("【本回合可选操作" in call and "- day_vote" in call for call in fake_llm.calls)
+    assert any(
+        "【本回合可选操作" in call and ("- attack" in call or "- divine" in call or "- guard" in call)
+        for call in fake_llm.calls
+    )
     assert state.decision_records
     assert all(record.parsed_action for record in state.decision_records)
 

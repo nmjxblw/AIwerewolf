@@ -33,6 +33,8 @@ class FakeLLMClient:
         forced_tool = self._forced_tool_name(tool_choice)
         tool_names = [str((tool.get("function") or {}).get("name") or "") for tool in tools if isinstance(tool, dict)]
 
+        if forced_tool == "choose_action" or ("choose_action" in tool_names and tool_names == ["choose_action"]):
+            return self._tool_call_response("choose_action", self._catalog_decision(text, target))
         if forced_tool == "submit_decision" or ("submit_decision" in tool_names and tool_names == ["submit_decision"]):
             return self._tool_call_response("submit_decision", self._decision_args(text, target))
         if tools and "submit_decision" in tool_names and "recall_memory" in tool_names and "【任务：发言】" in text:
@@ -50,6 +52,8 @@ class FakeLLMClient:
                 },
                 ensure_ascii=False,
             )
+        elif "【本回合可选操作" in text:
+            content = json.dumps(self._catalog_decision(text, target), ensure_ascii=False)
         elif self._is_witch_decision_prompt(text):
             content = json.dumps(self._witch_decision(text, target), ensure_ascii=False)
         elif "输出 JSON" in text:
@@ -113,6 +117,62 @@ class FakeLLMClient:
             "_latency_ms": 0,
             "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
         }
+
+    @staticmethod
+    def _catalog_decision(text: str, target: str) -> dict[str, Any]:
+        seat = FakeLLMClient._seat_for_name(text, target)
+        if "- baseline" in text:
+            seer_target = FakeLLMClient._seer_strategy_target(text)
+            speech = FakeLLMClient._speech_decision(text, target, seer_target)
+            return {
+                "action": "baseline",
+                "speech": speech,
+                "reasoning": FakeLLMClient._reasoning(text, target, "catalog speech"),
+            }
+        if "- day_vote" in text:
+            return {
+                "action": "day_vote",
+                "target_seat": seat or 2,
+                "reasoning": FakeLLMClient._reasoning(text, target, "catalog vote"),
+            }
+        if "- save" in text and "解药" in text:
+            return {"action": "save", "reasoning": FakeLLMClient._reasoning(text, target, "catalog witch save")}
+        if "- poison" in text and "- skip" in text:
+            return {"action": "skip", "reasoning": FakeLLMClient._reasoning(text, target, "catalog witch skip")}
+        if "- attack" in text:
+            return {
+                "action": "attack",
+                "target_seat": seat or 2,
+                "reasoning": FakeLLMClient._reasoning(text, target, "catalog attack"),
+            }
+        if "- divine" in text:
+            return {
+                "action": "divine",
+                "target_seat": seat or 2,
+                "reasoning": FakeLLMClient._reasoning(text, target, "catalog divine"),
+            }
+        if "- guard" in text:
+            return {
+                "action": "guard",
+                "target_seat": seat or 2,
+                "reasoning": FakeLLMClient._reasoning(text, target, "catalog guard"),
+            }
+        if "- skip" in text:
+            return {"action": "skip", "reasoning": FakeLLMClient._reasoning(text, target, "catalog skip")}
+        return {"action": "skip", "reasoning": FakeLLMClient._reasoning(text, target, "catalog fallback")}
+
+    @staticmethod
+    def _seat_for_name(text: str, name: str) -> int | None:
+        if name:
+            match = re.search(rf"(\d+)号[:：]{re.escape(name)}", text)
+            if match:
+                return int(match.group(1))
+        seats = re.findall(r"target_seat 合法：([0-9,]+)", text)
+        if seats:
+            first = seats[-1].split(",")[0]
+            if first.isdigit():
+                return int(first)
+        return None
 
     @staticmethod
     def _decision_args(text: str, target: str) -> dict[str, str]:

@@ -37,6 +37,7 @@ Key design principles:
     - LLMAgent independent: LLMAgent unchanged during integration
 """
 
+from backend.agents.cognitive.action_catalog import ActionCatalog
 from backend.agents.cognitive.agent import CognitiveAgent
 from backend.agents.cognitive.factory import create_cognitive_agent
 from backend.agents.cognitive.factory import create_cognitive_agent_with_character
@@ -74,6 +75,7 @@ from backend.agents.cognitive.retrieval import retrieve_strategies
 __all__ = [
     # Agent
     "CognitiveAgent",
+    "ActionCatalog",
     # Factory
     "create_cognitive_agent",
     "create_cognitive_agent_with_character",

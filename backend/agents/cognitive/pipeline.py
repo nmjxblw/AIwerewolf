@@ -22,10 +22,12 @@ from langchain_core.messages import SystemMessage
 from langchain_core.runnables import Runnable
 
 from backend.agents.cognitive import trace_keys
+from backend.agents.cognitive.action_catalog import ActionCatalog
 from backend.agents.cognitive.agent_loop import AgentLoop
 from backend.agents.cognitive.memory import Memory
 from backend.agents.cognitive.observe import Observation
 from backend.agents.cognitive.prompts import build_night_prompt
+from backend.agents.cognitive.structured_decision import run_structured_decision
 from backend.agents.cognitive.prompts import build_observe_prompt
 from backend.agents.cognitive.prompts import build_speech_prompt
 from backend.agents.cognitive.prompts import build_strategy_bias_block
@@ -118,6 +120,35 @@ class Pipeline:
         if self._use_agent_loop:
             return self._run_loop_night(obs, memory, extra)
         return self._run_legacy_night(obs, memory, extra)
+
+    def run_structured(
+        self,
+        obs: Observation,
+        catalog: ActionCatalog,
+        extra: str = "",
+        bias_action: str = "talk",
+        temperature: float | None = None,
+    ) -> dict[str, Any]:
+        """One-shot catalog decision (native FC, then text JSON; one repair)."""
+        max_tokens = 1536 if catalog.require_speech else 384
+        result = run_structured_decision(
+            self._llm,
+            self._system_prompt,
+            obs,
+            catalog,
+            extra=extra,
+            strategy_bias=self._strategy_bias,
+            bias_action=bias_action,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+        if result.get("action") == "vote_intent" and result.get("target_seat"):
+            self._tentative_vote = {"raw": f"{result['target_seat']}号"}
+        elif catalog.require_speech:
+            self._tentative_vote = {}
+        if catalog.require_speech:
+            self._cached_analysis = str(result.get("reasoning") or "")
+        return result
 
     def direct_call(self, user_prompt: str, max_tokens: int = 500) -> str:
         """Single LLM call for special actions (shoot, boom, badge transfer)."""

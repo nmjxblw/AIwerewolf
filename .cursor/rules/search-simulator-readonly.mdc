@@ -1,0 +1,13 @@
+---
+description: search_simulator 只读，禁止 Agent 修改
+globs: search_simulator/**
+alwaysApply: true
+---
+
+# search_simulator 只读
+
+`search_simulator/` 是其他人的工作区。
+
+- **允许**：阅读、搜索、引用、向用户解释接口与行为。
+- **禁止**：创建、编辑、删除、重命名该目录下任何文件；禁止为修改它而改其测试或文档；禁止提交其中的改动。
+- 用户若明确要求改这里，先拒绝并说明这是他人模块。

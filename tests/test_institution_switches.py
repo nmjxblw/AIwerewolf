@@ -133,23 +133,24 @@ def test_honesty_rule_rejects_fake_claim_and_accepts_retry() -> None:
     game = _make_game(honesty_rule=True)
     game.state.day = 1
 
+    retries: dict[str, int] = {}
+
+    def _first_speech(player):
+        if player.role == Role.WEREWOLF:
+            return _speech_decision(player.id, "我是预言家，昨晚查验了1号，1号是狼人。")
+        if player.role == Role.SEER:
+            return _speech_decision(player.id, "我是预言家，昨晚查验了2号，2号是狼人。")
+        return _speech_decision(player.id, "我觉得2号的发言有点奇怪，先观察一天。")
+
     def fake_batch(players, request, call_fn):
         assert request == "TALK"
-        out = []
-        for p in players:
-            if p.role == Role.WEREWOLF:
-                out.append(_speech_decision(p.id, "我是预言家，昨晚查验了1号，1号是狼人。"))
-            elif p.role == Role.SEER:
-                out.append(_speech_decision(p.id, "我是预言家，昨晚查验了2号，2号是狼人。"))
-            else:
-                out.append(_speech_decision(p.id, "我觉得2号的发言有点奇怪，先观察一天。"))
-        return out
-
-    retries: dict[str, int] = {}
+        return [_first_speech(p) for p in players]
 
     def fake_ask(player, request, call):
         assert request == "TALK"
         retries[player.id] = retries.get(player.id, 0) + 1
+        if retries[player.id] == 1:
+            return _first_speech(player)
         return _speech_decision(player.id, "好，不谈查验了。2号的发言确实可疑，我保留怀疑。")
 
     game._batch_ask = fake_batch  # type: ignore[assignment]
@@ -168,8 +169,12 @@ def test_honesty_rule_rejects_fake_claim_and_accepts_retry() -> None:
     # The real seer's claim passes untouched (exempt from the filter).
     assert "我是预言家" in speeches["P3"]
     assert "先观察一天" in speeches["P1"]
-    # Only the wolf needed a retry.
-    assert retries == {"P2": 1}
+    # Sequential seat-order speech calls _ask once per player; the wolf is
+    # asked again after the honesty filter rejects the fake seer claim.
+    assert retries["P2"] == 2
+    assert retries["P1"] == 1
+    assert retries["P3"] == 1
+    assert retries["P4"] == 1
 
     messages = [
         str(e.to_dict().get("payload", {}).get("message", ""))
@@ -211,6 +216,9 @@ def test_honesty_rule_off_by_default() -> None:
     game._batch_ask = lambda players, request, call_fn: [  # type: ignore[assignment]
         _speech_decision(p.id, "我是预言家，昨晚查验了3号。") for p in players
     ]
+    game._ask = lambda player, request, call: _speech_decision(  # type: ignore[assignment]
+        player.id, "我是预言家，昨晚查验了3号。"
+    )
     game._speech_phase()
     chats = [e.to_dict()["payload"]["actor_id"] for e in game.state.events if e.to_dict().get("type") == "CHAT_MESSAGE"]
     # Without the switch every claim is broadcast (cheap-talk baseline).

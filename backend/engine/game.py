@@ -46,6 +46,9 @@ from backend.engine.models import Phase
 from backend.engine.models import Player
 from backend.engine.models import Role
 from backend.engine.phase_manager import PhaseManager
+from backend.engine.rule_presets import UNSET as _RULE_FLAG_UNSET
+from backend.engine.rule_presets import resolve_ability_flags
+from backend.engine.rule_presets import wolf_night_option_tokens
 from backend.engine.rules import build_custom_role_config
 from backend.engine.rules import build_players
 from backend.engine.rules import get_role_configuration
@@ -275,14 +278,16 @@ class WerewolfGame:
         disable_badge: bool = False,
         disable_last_words: bool = False,
         random_vote_device: bool = False,
-        honesty_rule: bool = False,
+        rule_preset: str | None = None,
+        honesty_rule: bool | object = _RULE_FLAG_UNSET,
         # 廉价磋商研究板子（w.txt）夜规则开关：
         # wolf_self_knife  — 允许狼人自刀（骗解药战术）
         # wolf_empty_knife — 允许狼人空刀（平安夜假象战术）
         # wolf_night_chat  — 夜晚狼队文本私聊（归票）轮
-        wolf_self_knife: bool = False,
-        wolf_empty_knife: bool = True,
-        wolf_night_chat: bool = True,
+        # 不传时跟 rule_preset（baseline / cheap_talk）；无预设则保持旧默认。
+        wolf_self_knife: bool | object = _RULE_FLAG_UNSET,
+        wolf_empty_knife: bool | object = _RULE_FLAG_UNSET,
+        wolf_night_chat: bool | object = _RULE_FLAG_UNSET,
         observer: Callable[[GameState], None] | None = None,
         strategy_version: str | None = None,
         strategy_bias: dict[str, list[str]] | None = None,
@@ -353,18 +358,29 @@ class WerewolfGame:
         # players may not claim to be the seer or report check results; a
         # violating speech is rejected and regenerated (bounded retries).
         self.random_vote_device = random_vote_device
-        self.honesty_rule = honesty_rule
+        ability_flags = resolve_ability_flags(
+            rule_preset,
+            honesty_rule=honesty_rule,
+            wolf_self_knife=wolf_self_knife,
+            wolf_empty_knife=wolf_empty_knife,
+            wolf_night_chat=wolf_night_chat,
+        )
+        self.rule_preset = ability_flags["rule_preset"]
+        # honesty_rule — paper §4.1：非预言家不得跳预言家 / 报查验。
+        self.honesty_rule = bool(ability_flags["honesty_rule"])
         # 廉价磋商板子夜规则：写入 GameState 供 validator/visibility 读取，
         # 并同步到环境变量供 prompt 层（cognitive agent attack()）读取。
-        self.wolf_self_knife = wolf_self_knife
-        self.wolf_empty_knife = wolf_empty_knife
-        self.wolf_night_chat = wolf_night_chat
+        self.wolf_self_knife = bool(ability_flags["wolf_self_knife"])
+        self.wolf_empty_knife = bool(ability_flags["wolf_empty_knife"])
+        self.wolf_night_chat = bool(ability_flags["wolf_night_chat"])
         self.state.board_options = {
-            "wolf_self_knife": wolf_self_knife,
-            "wolf_empty_knife": wolf_empty_knife,
-            "wolf_night_chat": wolf_night_chat,
+            "rule_preset": self.rule_preset,
+            "honesty_rule": self.honesty_rule,
+            "wolf_self_knife": self.wolf_self_knife,
+            "wolf_empty_knife": self.wolf_empty_knife,
+            "wolf_night_chat": self.wolf_night_chat,
         }
-        _wolf_opts = [opt for opt, on in (("self", wolf_self_knife), ("empty", wolf_empty_knife)) if on]
+        _wolf_opts = sorted(wolf_night_option_tokens(ability_flags))
         os.environ["AIWEREWOLF_WOLF_NIGHT_OPTIONS"] = ",".join(_wolf_opts)
         # Dedicated device stream: build_players' role shuffle and self.rng
         # both seed Random(seed) — identical MT streams — so a pristine
@@ -596,7 +612,12 @@ class WerewolfGame:
             view = self.visibility.for_player(self.state, player.id)
             self.agents[player.id].initialize(
                 view,
-                {"max_days": self.state.max_days, "game_id": self.state.id},
+                {
+                    "max_days": self.state.max_days,
+                    "game_id": self.state.id,
+                    "honesty_rule": self.honesty_rule,
+                    "rule_preset": self.rule_preset,
+                },
             )
             self._log(
                 EventType.PRIVATE_INFO,
@@ -2000,6 +2021,14 @@ class WerewolfGame:
                 "agent_fallback": (bool(decision.metadata.get("fallback", False)) if i == 0 else False),
                 **extra_fields,
             }
+            if i == 0:
+                speech_action = decision.metadata.get("speech_action")
+                if speech_action:
+                    payload["speech_action"] = speech_action
+                    for key in ("target_seat", "claim_seat", "claim_result", "claim_mode"):
+                        value = decision.metadata.get(key)
+                        if value is not None and value != "":
+                            payload[key] = value
             self._log(EventType.CHAT_MESSAGE, "public", payload)
 
     def _valid_talk_decision(self, decision: Decision) -> bool:
