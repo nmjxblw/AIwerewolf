@@ -17,6 +17,8 @@ from backend.agents.factory import create_agents
 from backend.db.database import init_db
 from backend.engine.game import WerewolfGame
 from backend.engine.models import GameState
+from backend.engine.rule_presets import env_ability_overrides
+from backend.engine.rule_presets import resolve_web_rule_preset
 from backend.protocols import RoomCreateRequest
 from backend.protocols import RoomManager
 
@@ -195,6 +197,7 @@ def _build_game(
     human_seat: Optional[int] = None,
     player_count: int = 7,
     rule_pack_id: str = "wolfcha-default",
+    rule_preset: str | None = None,
     custom_roles: dict | None = None,
     has_badge: bool = False,
     share_persona: bool = True,
@@ -208,6 +211,8 @@ def _build_game(
     game = WerewolfGame(
         seed=seed,
         player_count=player_count,
+        rule_preset=resolve_web_rule_preset(rule_preset, rule_pack_id),
+        **env_ability_overrides(),
         custom_roles=custom_roles,
         has_badge=has_badge,
         share_persona=share_persona,
@@ -245,6 +250,7 @@ def create_game(
     human_seat: Optional[int] = None,
     player_count: int = 7,
     rule_pack_id: str = "wolfcha-default",
+    rule_preset: Optional[str] = None,
 ):
     try:
         game = _build_game(
@@ -253,6 +259,7 @@ def create_game(
             human_seat=human_seat,
             player_count=player_count,
             rule_pack_id=rule_pack_id,
+            rule_preset=rule_preset,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

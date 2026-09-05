@@ -27,6 +27,7 @@ from typing import Any
 from langchain_core.runnables import Runnable
 
 from backend.agents.cognitive import trace_keys
+from backend.agents.cognitive.action_catalog import ActionCatalog
 from backend.agents.cognitive.agent_loop import _EMPTY_KNIFE_TOKENS
 from backend.agents.cognitive.agent_loop import get_last_loop_trace
 from backend.agents.cognitive.humanization import build_humanization_profile
@@ -164,6 +165,7 @@ class CognitiveAgent:
         # Honesty-rule rejection note set by the engine between talk() calls
         # (report §8.4): consumed and cleared at the start of the next talk().
         self._speech_rejection_note: str = ""
+        self._honesty_rule = False
 
         # Game tracking (for post-game reflection)
         self._game_id = ""
@@ -185,6 +187,7 @@ class CognitiveAgent:
         # Track game_id for post-game reflection
         self._game_id = getattr(view, "game_id", "") or str(game_setting.get("game_id", ""))
         self._pipeline._game_id = self._game_id  # sync to pipeline for prompt snapshots
+        self._honesty_rule = bool(game_setting.get("honesty_rule"))
         self._tracker = BeliefTracker()
 
         # Wolf team view is built on-demand in attack() from current PlayerView
@@ -230,46 +233,75 @@ class CognitiveAgent:
 
         rejection_note = self._speech_rejection_note
         self._speech_rejection_note = ""
-        result = self._pipeline.run_speech(obs, self.memory, is_first, is_last_words, rejection_note=rejection_note)
-        raw = result.get("speech", "")
-        reasoning = result.get("reasoning", "")
-
-        # Parse multi-bubble speech. LLM-only mode must not synthesize a
-        # replacement utterance locally; an empty or unusable model response is
-        # an acceptance failure.
-        segments = parse_json_array(raw)
-        if not segments or (len(segments) == 1 and len(segments[0]) < 3):
-            import logging
-
-            _logger = logging.getLogger(__name__)
-            _logger.warning(
-                "LLM speech unusable for %s(%s): raw_len=%s, segments_parsed=%s",
-                self.player_name,
-                self._profile.role,
-                len(raw),
-                len(segments) if segments else 0,
+        extra_parts = []
+        if is_first:
+            extra_parts.append("你是本阶段第一个发言的人。")
+        if is_last_words:
+            extra_parts.append("这是你的遗言。")
+        if rejection_note:
+            extra_parts.append(
+                "【系统驳回提示】你刚才的发言因违反本局诚实规则被系统驳回"
+                f"（原因：{rejection_note}）。重新发言时严禁自称预言家/先知、"
+                "严禁声称自己查验过任何玩家、严禁给任何人金水或查杀；"
+                "请用不涉及预言家身份与查验信息的方式重新表达你的观点。"
             )
+        catalog = self._catalog_for_obs(obs)
+        try:
+            parsed = self._pipeline.run_structured(
+                obs, catalog, extra="\n".join(extra_parts), bias_action="talk"
+            )
+        except Exception as exc:
+            import logging as _logging
+
+            _logging.getLogger(__name__).warning(
+                "structured talk failed for %s; falling back to silence: %s",
+                self.player_name,
+                exc,
+            )
+            if "缺少 speech" in str(exc) or "发言过短" in str(exc) or "silence 也需要" in str(exc):
+                raise RuntimeError(f"LLM speech response is empty or too short for {self.player_name}") from exc
+            parsed = {
+                "action": "silence",
+                "speech": "过。",
+                "reasoning": f"structured-talk-fallback: {exc}",
+                "target_seat": None,
+                "claim_seat": None,
+                "claim_result": None,
+                "claim_mode": "",
+            }
+
+        raw = str(parsed.get("speech") or "")
+        reasoning = str(parsed.get("reasoning") or "")
+        action = str(parsed.get("action") or "")
+        segments = parse_json_array(raw) if raw.lstrip().startswith("[") else [raw.strip()]
+        segments = [seg for seg in segments if str(seg).strip()]
+        min_len = 1 if action == "silence" else 3
+        if not segments or (len(segments) == 1 and len(segments[0]) < min_len):
             raise RuntimeError(f"LLM speech response is empty or too short for {self.player_name}")
-        if not str(reasoning or "").strip():
+        if not reasoning:
             raise RuntimeError(f"LLM speech decision missing reasoning for {self.player_name}")
 
         self.memory.add_action("speech", None, segments[0], reasoning)
         self.memory.remember_opening(segments)
         self._today_speech_count += len(segments)
-
-        # Record speech content for social model mismatch detection
         self._last_speech_targets = segments
-
-        # Mark strategic intent as executed if this was the target phase
         self._mark_active_intent_executed_if_target_phase_contains("SPEECH")
 
+        extra_meta = {
+            "segments": segments,
+            "segment_count": len(segments),
+            "speech_action": action,
+            "target_seat": parsed.get("target_seat"),
+            "claim_seat": parsed.get("claim_seat"),
+            "claim_result": parsed.get("claim_result"),
+            "claim_mode": parsed.get("claim_mode") or None,
+            trace_keys.TOOL_TRACE: [],
+        }
         return self._decision(
             ActionType.TALK,
             speech="\n".join(segments),
             reasoning=reasoning,
-            metadata=trace_keys.loop_metadata_from_result(
-                result, {"segments": segments, "segment_count": len(segments)}
-            ),
+            metadata=extra_meta,
         )
 
     # ---- Vote ----
@@ -312,6 +344,23 @@ class CognitiveAgent:
                             reasoning=reasoning,
                         )
 
+        phase = str(getattr(self._view, "phase", "") or "")
+        if "VOTE" in phase.upper() and "BADGE" not in phase.upper():
+            catalog = self._catalog_for_obs(obs)
+            parsed = self._pipeline.run_structured(
+                obs,
+                catalog,
+                extra="白天投票不能弃票，必须选择一名存活他人。",
+                bias_action="vote",
+                temperature=self._humanization.vote_temperature,
+            )
+            target_id = self._id_for_seat(parsed.get("target_seat"))
+            if not target_id or (legal_target_ids and target_id not in legal_target_ids):
+                raise RuntimeError(f"LLM vote target is illegal for {self.player_name}: {parsed.get('target_seat')!r}")
+            reasoning = str(parsed.get("reasoning") or "")
+            self._record_vote_followups(target_id, target_id, reasoning)
+            return self._decision(ActionType.VOTE, target_id=target_id, reasoning=reasoning)
+
         result = self._pipeline.run_vote(
             obs,
             self.memory,
@@ -320,7 +369,6 @@ class CognitiveAgent:
         target_id = self._resolve_target(result["target"])
         if legal_target_ids and target_id not in legal_target_ids:
             target_id = None
-        # Abstention: return empty vote as Decision (not dict)
         if not target_id:
             return self._decision(
                 ActionType.VOTE,
@@ -329,7 +377,6 @@ class CognitiveAgent:
                 metadata=trace_keys.loop_metadata_from_result(result),
             )
         self._record_vote_followups(result["target"], result["target"], result["reasoning"])
-
         return self._decision(
             ActionType.VOTE,
             target_id=target_id,
@@ -371,33 +418,26 @@ class CognitiveAgent:
                     self._wolf_team_view = None
 
         obs = self._observe()
+        catalog = self._catalog_for_obs(obs)
 
-        # ── Optimisation: skip LLM when there is only one legal target ──
+        # ── Optimisation: skip LLM only when the catalog has a single targeting act ──
         only_target = self._single_legal_target(obs)
-        if self._skip_optimisations_enabled() and only_target:
+        if (
+            self._skip_optimisations_enabled()
+            and only_target
+            and "skip" not in catalog.ids()
+            and "self_attack" not in catalog.ids()
+        ):
             reasoning = f"唯一合法击杀目标 {only_target.seat}号:{only_target.name}，无需LLM决策"
             return self._night_decision({"target": only_target.id, "reasoning": reasoning}, ActionType.ATTACK)
 
-        extra = self._build_wolf_extra()
-        extra += self._wolf_night_options_text()
-        result = self._pipeline.run_night(obs, self.memory, extra)
-
-        # Mark strategic intent as executed if this was the target phase
+        extra = self._build_wolf_extra() + self._wolf_night_options_text()
+        try:
+            parsed = self._pipeline.run_structured(obs, catalog, extra=extra, bias_action="attack")
+        except RuntimeError as exc:
+            raise RuntimeError(f"LLM returned illegal attack target for {self.player_name}") from exc
         self._mark_active_intent_executed_if_target_phase_contains("NIGHT", "WOLF")
-
-        # 空刀（廉价磋商板子）：选项开启时，空 target / 空刀 token 是模型
-        # 主动选择的合法决策，直接透传 target_id=None，不走必选目标修复。
-        raw_target = str(result.get("target") or "").strip()
-        if "empty" in self._wolf_night_options() and (not raw_target or raw_target in _EMPTY_KNIFE_TOKENS):
-            reasoning = str(result.get("reasoning") or "").strip() or "选择空刀，制造平安夜假象"
-            return self._decision(
-                ActionType.ATTACK,
-                target_id=None,
-                reasoning=reasoning,
-                metadata=trace_keys.loop_metadata_from_result(result),
-            )
-
-        return self._night_decision(result, ActionType.ATTACK)
+        return self._decision_from_catalog(parsed, default_type=ActionType.ATTACK)
 
     @staticmethod
     def _wolf_night_options() -> set[str]:
@@ -493,8 +533,9 @@ class CognitiveAgent:
 
     def divine(self) -> Decision:
         obs = self._observe()
-        result = self._pipeline.run_night(obs, self.memory)
-        return self._night_decision(result, ActionType.DIVINE)
+        catalog = self._catalog_for_obs(obs)
+        parsed = self._pipeline.run_structured(obs, catalog, bias_action="divine")
+        return self._decision_from_catalog(parsed, default_type=ActionType.DIVINE)
 
     def guard(self) -> Decision:
         extra = ""
@@ -503,8 +544,9 @@ class CognitiveAgent:
         else:
             extra = "第一晚守护，没有历史限制。"
         obs = self._observe()
-        result = self._pipeline.run_night(obs, self.memory, extra)
-        decision = self._night_decision(result, ActionType.GUARD)
+        catalog = self._catalog_for_obs(obs)
+        parsed = self._pipeline.run_structured(obs, catalog, extra=extra, bias_action="guard")
+        decision = self._decision_from_catalog(parsed, default_type=ActionType.GUARD)
         if decision.target_id:
             self._record_guard_protection(decision.target_id)
         return decision
@@ -519,60 +561,26 @@ class CognitiveAgent:
             return [self._decision(ActionType.SKIP, reasoning="双药已用，无需LLM决策")]
 
         lines = self._witch_status_lines(victim_id)
-
         obs = self._observe()
-        targets = [self._player_label(p) for p in obs.alive if p.id != self.player_id]
-        prompt = (
-            format_observation(obs)
-            + "\n\n"
-            + self._strategy_bias_text("witch_act")
-            + "\n\n"
-            + "\n".join(lines)
-            + "\n\n你是女巫，请决定本晚是否用药。"
-            + "\n规则：一晚最多使用一瓶药；如果 save=true，poison_target 必须为 null。"
-            + "\n如果不用药，输出 save=false 且 poison_target=null。"
-            + f"\n可毒目标: {', '.join(targets) if targets else '无'}"
-            + '\n只输出 JSON 对象：{"reasoning": "理由", "save": false, "poison_target": null}'
-        )
-        raw = self._pipeline.direct_call(prompt, max_tokens=360)
-        try:
-            data = self._parse_witch_json(raw)
-        except ValueError:
-            if self._strict_no_fallback:
-                raise
-            return [self._decision(ActionType.SKIP, reasoning="女巫输出解析失败")]
-
-        data = self._repair_witch_decision_if_needed(data, obs, victim_id, targets)
-
-        reasoning = str(data.get("reasoning") or "").strip()
-        if not reasoning:
-            raise RuntimeError("LLM witch decision missing reasoning")
-        save, poison_text, no_poison = self._witch_decision_flags(data)
-
-        if save and not victim_id:
-            raise RuntimeError("LLM witch decision requested save without wolf victim")
-        if save and self._witch_save_used:
-            raise RuntimeError("LLM witch decision requested already-used antidote")
-        if poison_text and not no_poison and self._witch_poison_used:
-            raise RuntimeError("LLM witch decision requested already-used poison")
-        if save and poison_text and not no_poison:
-            raise RuntimeError("LLM witch decision attempted to use antidote and poison in one night")
-
-        decisions: list[Decision] = []
-        if save and victim_id:
+        catalog = self._catalog_for_obs(obs, witch_victim_id=victim_id)
+        extra = "\n".join(lines) + "\n规则：一晚最多使用一瓶药；已用的药不能再用。"
+        parsed = self._pipeline.run_structured(obs, catalog, extra=extra, bias_action="witch_act")
+        decision = self._decision_from_catalog(parsed, default_type=ActionType.SKIP)
+        if decision.action_type == ActionType.WITCH_SAVE:
+            if not victim_id:
+                raise RuntimeError("LLM witch decision requested save without wolf victim")
+            if self._witch_save_used:
+                raise RuntimeError("LLM witch decision requested already-used antidote")
             self._witch_save_used = True
             self.memory.role_state["save_used"] = True
-            decisions.append(self._decision(ActionType.WITCH_SAVE, target_id=victim_id, reasoning=reasoning))
-        elif poison_text and not no_poison:
-            poison_id = self._resolve_target(poison_text)
-            if not poison_id:
-                raise RuntimeError(f"LLM returned unresolved poison target: {poison_text!r}")
+            decision = self._decision(ActionType.WITCH_SAVE, target_id=victim_id, reasoning=decision.reasoning)
+        elif decision.action_type == ActionType.WITCH_POISON:
+            if self._witch_poison_used:
+                raise RuntimeError("LLM witch decision requested already-used poison")
+            if not decision.target_id:
+                raise RuntimeError(f"LLM returned unresolved poison target: {parsed.get('target_seat')!r}")
             self._witch_poison_used = True
-            decisions.append(self._decision(ActionType.WITCH_POISON, target_id=poison_id, reasoning=reasoning))
-        else:
-            decisions.append(self._decision(ActionType.SKIP, reasoning=reasoning))
-
-        return decisions
+        return [decision]
 
     def _repair_witch_decision_if_needed(
         self,
@@ -796,6 +804,68 @@ class CognitiveAgent:
         self._reflect_on_game(winner)
 
     # === Internal Helpers ===
+
+    def _catalog_for_obs(self, obs: Observation, witch_victim_id: str | None = None) -> ActionCatalog:
+        return ActionCatalog.for_turn(
+            obs,
+            honesty_rule=self._honesty_rule_enabled(),
+            wolf_night_options=self._wolf_night_options(),
+            witch_save_used=self._witch_save_used,
+            witch_poison_used=self._witch_poison_used,
+            witch_victim_id=witch_victim_id,
+            last_guard_target_id=self._guard_history[-1] if self._guard_history else None,
+        )
+
+    def _honesty_rule_enabled(self) -> bool:
+        if self._honesty_rule or bool(self._feature_flags.get("honesty_rule")):
+            return True
+        env = _os.getenv("AIWEREWOLF_HONESTY_RULE", "").strip().lower()
+        if env in {"1", "true", "yes", "on"}:
+            return True
+        if not self._view:
+            return False
+        for event in getattr(self._view, "public_events", []) or []:
+            message = str((event.get("payload") or {}).get("message", ""))
+            if "诚实规则" in message:
+                return True
+        return False
+
+    def _id_for_seat(self, seat: Any) -> str | None:
+        if seat is None or seat == "":
+            return None
+        try:
+            seat_n = int(seat)
+        except (TypeError, ValueError):
+            return None
+        if not self._view:
+            return None
+        for player in list(getattr(self._view, "players", []) or []) + list(
+            getattr(self._view, "legal_targets", []) or []
+        ):
+            if int(player.get("seat") or 0) == seat_n:
+                return str(player.get("id") or "") or None
+        return None
+
+    def _decision_from_catalog(self, parsed: dict[str, Any], default_type: ActionType) -> Decision:
+        mapped = str(parsed.get("mapped_action") or parsed.get("action") or "")
+        reasoning = str(parsed.get("reasoning") or "")
+        if parsed.get("action") == "self_attack":
+            return self._decision(ActionType.ATTACK, target_id=self.player_id, reasoning=reasoning)
+        if mapped == "attack_empty":
+            return self._decision(ActionType.ATTACK, target_id=None, reasoning=reasoning)
+        action_map = {
+            "attack": ActionType.ATTACK,
+            "divine": ActionType.DIVINE,
+            "guard": ActionType.GUARD,
+            "witch_save": ActionType.WITCH_SAVE,
+            "witch_poison": ActionType.WITCH_POISON,
+            "skip": ActionType.SKIP,
+            "vote": ActionType.VOTE,
+            "day_vote": ActionType.VOTE,
+        }
+        action_type = action_map.get(mapped, default_type)
+        target_id = self._id_for_seat(parsed.get("target_seat"))
+        return self._decision(action_type, target_id=target_id, reasoning=reasoning)
 
     def _observe(self) -> Observation:
         """Build observation from current view with belief tracking.
