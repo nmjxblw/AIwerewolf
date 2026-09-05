@@ -1,0 +1,514 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Consolas}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+
+\hypersetup{
+  pdftitle={The Application of Cheap Talk in the Werewolf Game},
+  pdfauthor={Zhuo Chen; Jiaju Yang; Ruozhou Du}
+}
+
+\setlength{\parindent}{1.5em}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.15em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=0.15em,topsep=0.25em}
+\renewcommand{\arraystretch}{1.12}
+\captionsetup{font=small,labelfont=bf}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\term}[1]{\textbf{#1}}
+
+\title{\bfseries The Application of Cheap Talk in the Werewolf Game\\[0.4em]
+\large Exact Belief, Structured Communication, and Model-Conditioned Terminal Payoffs}
+\author{%
+Zhuo Chen \quad Jiaju Yang \quad Ruozhou Du\\
+\small The University of Hong Kong\\
+\footnotesize\href{mailto:u3657972@connect.hku.hk}{u3657972@connect.hku.hk} \quad
+\href{mailto:u3656084@connect.hku.hk}{u3656084@connect.hku.hk} \quad
+\href{mailto:u3651313@connect.hku.hk}{u3651313@connect.hku.hk}\\[0.35em]
+\small Supervisor: Professor Jiayang Li
+(\href{mailto:jiayangl@hku.hk}{jiayangl@hku.hk})}
+\date{5 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This interim study examines how cheap talk changes the first-day public vote in Werewolf and how that change propagates into an action-level payoff matrix. Its theoretical baseline is Shitong Wang's \emph{Optimal Strategy in the Werewolf Game: A Theoretical Study}, which analyses simpler role configurations and honesty-constrained Seer disclosure. The team extends that setting to a fixed seven-player game with two Werewolves, two Villagers, a Witch, a Seer, and a Guard in order to study the evolution of strategic communication under sequential speech and interacting role abilities. Two contributions are reported. First, the game engine was redesigned to support the target rules, ordered agent speech, role-scoped dynamic context, and treatment-consistent prompts. Second, an exact-belief cheap-talk decision matrix was developed: legal hidden-role assignments are conditioned exactly, and future play is projected to terminal outcomes by Monte Carlo simulation under a fixed utility-ranked policy. A production request evaluates 22 Seer actions at three evidence strengths with 100 trajectories per cell; a separate 16-game language-model corpus provides exploratory evidence about first-day vote mechanisms. The results establish a reproducible measurement instrument, not an equilibrium, a universal strategy, or a calibrated behavioural model.
+\end{abstract}
+
+\section{Overview}
+
+\subsection{Research purpose and scope}
+
+Cheap talk is costless, non-binding communication whose literal content does not directly alter the formal rules of a game, yet whose reception may change beliefs and actions. Werewolf provides a controlled environment for this mechanism because hidden roles and asymmetric information place public speech immediately before collective voting. The primary interim objective is to identify how structured speech changes the first-day public vote pattern and then to quantify the corresponding change in terminal camp utility through a payoff matrix.
+
+The report covers two linked research outputs. The first is the redesign of the experimental game engine. Rules, prompts, speaking order, and dynamic context were aligned so that the observed first-day vote follows only from information available before each action. The second is an \term{exact-belief Cheap-talk decision matrix}. Its belief layer conditions the finite set of legal hidden-role assignments on the current actor's lawful information; its decision layer samples from that complete posterior and projects each candidate statement to terminal utility under an explicit utility-ranked policy. Natural-language models generate the exploratory full-game records but do not generate simulated future actions or determine matrix rankings.
+
+The fixed board contains two Werewolves, two Villagers, one Witch, one Seer, and one Guard. Relative to Wang's simpler theoretical baseline, this composition deliberately introduces a coordinated informed minority, uninformed speakers, verified private information, and two additional night-time abilities. It remains small enough for exact enumeration of current hidden roles while making speech consequences depend on more than a single disclosure decision. The board is therefore an experimental bridge between tractable theory and more complex social-deduction play, designed to study how cheap talk evolves when sequential context, deception, protection, and limited resources interact.
+
+The first-day interventions are a Villager falsely claiming to be the Seer to divert risk, a true Seer withholding public information, and a Werewolf falsely claiming to be the Seer. Accusation, support, voting intention, a neutral reference action, and deliberate silence are also represented. The matrix preserves the target and claimed inspection result of each concrete statement. First-day vote concentration, the identity category of the exiled seat, claim competition, and Seer survival provide observable mechanisms linking speech to the terminal payoff; they are not substituted for the payoff itself.
+
+Two evidence sources remain separate. A production-budget Seer request supplies model-conditioned payoffs for 22 actions at three evidence strengths using 100 trajectories per cell. An earlier corpus contains 16 analytic language-model games and one smoke run. It shows whether tactics appeared and how first-day votes changed in those runs, but it neither calibrates the matrix nor supports population-level claims.
+
+\subsection{Research objectives}
+
+The study has four operational objectives:
+
+\begin{enumerate}
+  \item Extend Wang's honesty-constrained disclosure model to sequential, potentially deceptive communication without transferring its equilibrium conclusion to a different game.
+  \item Preserve exact inference over current hidden roles while evaluating the combinatorial future at manageable cost.
+  \item Estimate how each candidate speech changes the first-day vote mechanism and terminal utility relative to a neutral reference under matched random conditions.
+  \item Separate reproducible matrix evidence from the limited mechanism evidence supplied by exploratory language-model games.
+\end{enumerate}
+
+\subsection{Core terminology}
+
+An \term{actor view} is the public state plus private facts that the rules lawfully reveal to the acting player. Every player knows their own role; Werewolves know their teammate; the Seer knows the camp result of completed inspections; no ordinary death automatically reveals a role. A \term{hidden world} is one complete role assignment compatible with the fixed role multiset. A \term{posterior} is the probability distribution over such worlds after conditioning on the actor's lawful information and structured public evidence. A \term{terminal trajectory} is one simulated continuation from the current speech decision to a good-team or Werewolf-team victory.
+
+The phrase \term{matrix baseline} means a neutral structured speaking-turn event with zero communication intensity and no accusation, support, intended vote, identity claim, inspection result, or tactic label. It is not the same object as \term{explicit silence}, which is a deliberate candidate action included in the ranking. Neither is equivalent to the \term{full-game experimental control}, which disables false Seer-claim treatments while requiring the true Seer to provide an effective statement. Maintaining these distinctions is necessary for interpretable comparisons.
+
+\section{Problem Identification: Evolution Beyond Wang's Theoretical Baseline}
+
+\subsection{Results established by the baseline study}
+
+Shitong Wang's \emph{Optimal Strategy in the Werewolf Game: A Theoretical Study} is the theoretical baseline for this project \cite{wang2025}. For games without a Seer, called a prophet in that study, Wang challenges the conventional random-voting assumption and proposes ``random strategy+'', which adds a coordinated all-in response when the informed minority can force a tie. Under the stated rules, the strategy weakly dominates the conventional random strategy for the Werewolf group, and night-time self-elimination is shown to be strictly dominated. For games with a Seer and an honesty rule, the study models concealment versus revelation as a recursive Bayesian decision over the Seer's information set and derives a strategy profile that induces a Perfect Bayesian Equilibrium.
+
+Wang also identifies removal of the honesty rule, sequential speaking order, and additional roles such as a Guard as open directions. These extensions alter the game materially. False public claims remove the rule-based credibility of a Seer statement; sequential speech makes early statements part of later speakers' information; and the Witch and Guard make survival depend on private abilities and limited resources. Wang's recursive disclosure result motivates the present extension but does not transfer unchanged to this richer setting.
+
+The relationship between the two studies is summarised below.
+
+\begin{table}[htbp]
+\centering
+\caption{Separation of inherited theory and the team's extension}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.19\textwidth}YYY}
+\toprule
+Dimension & Wang's baseline study & Inherited assumption & Team extension at the interim stage \\
+\midrule
+Information & Hidden camps and Seer inspections & Decisions must respect asymmetric information & Exact actor-specific conditioning over complete legal role assignments \\
+Communication & Simultaneous announcements; honesty rule in the Seer analysis & Public messages may affect later action & Sequential structured statements, including truthful and false claims \\
+Strategic object & Seer's hide-or-reveal choice & Revelation timing has terminal consequences & Concrete action-by-target payoff matrix for every speaking actor \\
+Roles & Villager, Werewolf, Seer & Two opposing camps and camp-consistent terminal utility & Adds Witch and Guard under a fixed seven-player rule set \\
+Solution concept & Recursive optimal action and PBE under stated constraints & Beliefs and continuation values require explicit modelling & Model-conditioned Monte Carlo values; no equilibrium claim \\
+Open direction & Dishonesty, order, and additional roles & These gaps are theoretically material & Makes all three elements explicit and empirically inspectable \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Why unrestricted cheap talk changes the problem}
+
+Under the honesty rule, an announced Seer identity and inspection can be treated as credible by construction. Without that rule, the same semantic form can originate from three strategically different sources: a true Seer revealing lawful private information, a Villager attempting to divert the night attack, or a Werewolf manufacturing a claim. Recipients must update beliefs over both the target and the speaker. A false statement can help the speaker's camp by redirecting votes or attacks, but it can also create backlash, crowd out truthful information, or produce inconsistent future claims. The value of speech is therefore conditional on who speaks, what the actor knows, where the actor speaks in the sequence, which target is named, and how strongly later players treat the statement as evidence.
+
+The first-day focus provides a clean intervention point. Every living player has one scheduled public speaking opportunity in fixed order; later speakers observe earlier structured events; all eligible players then vote publicly. In the target rule set, a highest-vote tie is resolved by uniformly selecting one of the tied players. Death reveals the seat but not the role. These rules preserve the social-deduction problem: a speech event changes public evidence without mechanically changing the speaker's true role.
+
+The hidden-world space is finite but non-trivial. With seven labelled seats and the role multiset consisting of two Werewolves, two Villagers, one Witch, one Seer, and one Guard, the number of complete role assignments is
+
+\[
+|\Omega|=\frac{7!}{2!\,2!}=1260.
+\]
+
+\begin{description}[style=nextline,leftmargin=2.9cm,labelwidth=2.5cm]
+  \item[$\Omega$] The finite set of all complete legal role assignments for the seven labelled seats.
+  \item[$|\Omega|$] The number of assignments in that set; 1,260 when the two Werewolves and two Villagers are exchangeable within role type.
+  \item[$7!$] The number of permutations of seven distinct role tokens before repeated roles are removed.
+  \item[$2!\,2!$] The correction for the two indistinguishable Werewolves and two indistinguishable Villagers.
+\end{description}
+
+Exact enumeration is feasible at the current decision point. Exhaustively expanding every future combination is not. Sequential statements, individual votes, ties, night attacks, inspections, potions, protections, deaths, and later rounds multiply the number of continuations. Moreover, a count of syntactically legal branches is not a probability of behaviour. Assigning equal probability to every branch would confuse combinatorial structure with a model of action choice.
+
+\subsection{Falsifiable research gap}
+
+The research gap is a stable estimand for deceptive or withholding speech under role-scoped information. The required counterfactual contrast holds the actor's state and random conditions fixed, replaces the current neutral event with one structured statement, and measures the resulting change in terminal camp utility. The estimator must also separate finite-sampling error from model uncertainty.
+
+Four shortcuts are excluded: observer-only role assignments cannot enter an actor query; language models do not supply future-play probabilities; full-tree path counts do not represent behaviour; and target-specific false Seer claims are not collapsed into one score. These restrictions preserve reproducibility and interpretation.
+
+The corresponding hypotheses are deliberately conditional. Under the fixed model, non-zero speech evidence should change some action values relative to the matrix baseline; target-specific statements should exhibit heterogeneous payoffs; exact actor views that are observationally identical should produce identical requests; and paired random streams should make candidate-minus-baseline estimates reproducible across execution orders. Empirical language-model games provide a separate mechanism check: enabled tactics should appear in transcripts and may alter first-day votes, but the small groups are not powered for general win-rate inference.
+
+\section{Proposed Solution}
+
+\subsection{A two-layer decision model}
+
+The proposed solution separates exact inference about the present from stochastic projection of the future. At decision time, the belief layer enumerates every hidden world compatible with the fixed board and the actor's hard knowledge. It then incorporates structured public evidence and normalises the surviving weights. The actor-specific posterior is
+
+\[
+B_t^{(i)}(\theta)=
+\frac{B_{t-1}^{(i)}(\theta)L_t^{(i)}(\theta)}
+{\sum_{\theta'}B_{t-1}^{(i)}(\theta')L_t^{(i)}(\theta')}.
+\]
+
+\begin{description}[style=nextline,leftmargin=3.4cm,labelwidth=3.0cm]
+  \item[$B_t^{(i)}(\theta)$] Posterior probability assigned by actor $i$ at decision time $t$ to hidden assignment $\theta$.
+  \item[$B_{t-1}^{(i)}(\theta)$] The actor's probability for the same assignment before the current evidence is incorporated.
+  \item[$L_t^{(i)}(\theta)$] Likelihood of the new structured evidence under assignment $\theta$, evaluated from actor $i$'s lawful information perspective.
+  \item[$\theta$] One complete legal hidden-role assignment; $\theta'$ is the summation index over all compatible assignments.
+  \item[$i,t$] The acting player and the sequential evidence-update index, respectively.
+\end{description}
+
+No Monte Carlo approximation or top-$k$ truncation is used in this layer. If the evidence gives every compatible world zero weight, the state is reported as model-inconsistent rather than silently reset to a uniform distribution. Hard knowledge is also narrowly defined. A player's own role, a Werewolf's lawful teammate information, a Seer's completed camp checks, and an explicitly revealed role event are admissible. A public claim, an unrevealed death, suspicion, or a high posterior probability is not promoted to certain identity knowledge.
+
+The decision layer intervenes on the current speech event and continues the game to a terminal state. The theoretical value of concrete action $a$ at evidence strength $c$ is
+
+\[
+V^{(i)}(a,c)=
+\mathbb{E}_{\Theta\sim B_t^{(i)},\;
+\tau\sim P_{\rho,c}(\cdot\mid \operatorname{do}(a),\Theta,I_t^{(i)})}
+\left[u_i(\tau)\right].
+\]
+
+\begin{description}[style=nextline,leftmargin=3.4cm,labelwidth=3.0cm]
+  \item[$V^{(i)}(a,c)$] The theoretical, model-conditioned expected terminal utility of action $a$ for actor $i$ at evidence strength $c$; this is the estimand.
+  \item[$\mathbb{E}$] Expectation over hidden-world uncertainty and stochastic continuation trajectories.
+  \item[$\Theta$] Random hidden assignment drawn directly from the actor's complete posterior.
+  \item[$\tau$] Random continuation from the current intervention to a terminal game outcome.
+  \item[$P_{\rho,c}$] Trajectory distribution induced by future policy $\rho$, evidence strength $c$, and explicit rule randomness.
+  \item[$\operatorname{do}(a)$] Intervention that replaces the actor's current neutral speech event with action $a$ while retaining the same initial state.
+  \item[$I_t^{(i)}$] Public and private information lawfully available to actor $i$ at time $t$.
+  \item[$u_i(\tau)$] Camp-consistent terminal utility: $+1$ if the actor's camp wins and $-1$ otherwise.
+\end{description}
+
+This formulation makes the evidence boundary explicit. A research observer may retain the complete role assignment for later audit, but that assignment is not an input to the actor's payoff query or target ordering. The matrix therefore remains an ex ante decision instrument rather than a retrospective omniscient score.
+
+\subsection{Structured actions and three different controls}
+
+Natural-language wording is intentionally excluded from the action key. The primary action families are matrix baseline, accusation, support, voting intention, Seer claim, and explicit silence. Evaluation occurs at the second level, where a row fixes the relevant target, claimed role, claimed inspection target and camp result, communication intensity, and experimental tactic label. A complete false Seer claim must name another living seat and state that the target is good or Werewolf. A weak claim with no inspection is a distinct row. A real Seer may disclose only an actual private inspection. Deliberate silence advances the speaking position with empty content.
+
+\begin{table}[htbp]
+\centering
+\caption{Control concepts that must not be conflated}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.22\textwidth}YY}
+\toprule
+Concept & Operational definition & Statistical or experimental purpose \\
+\midrule
+Matrix baseline & Scheduled speaking turn with no tactical content and zero communication intensity & Within-state reference for the paired action difference \\
+Explicit silence & Deliberate candidate action that supplies no public content & Ranks withholding as an active strategy; may currently be numerically equal to the matrix baseline \\
+Full-game experimental control & Repeated-game condition without Villager or Werewolf false-Seer treatments; the true Seer must communicate effectively & Between-group treatment comparison across complete games \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The distinction matters even if two actions currently share a number. The matrix baseline represents the absence of the intervention being evaluated; explicit silence represents a chosen omission. The full-game control changes which tactics are enabled throughout an entire game and is not a substitute for either action-level object.
+
+\subsection{Evidence strength and future behaviour}
+
+Recipients' sensitivity to a structured statement is represented by an evidence-strength parameter. The study evaluates three fixed anchors: 0, 0.5, and 0.8. These values are not probabilities that a claim is true. They interpolate between a neutral unit likelihood and the specified speech likelihood:
+
+\[
+L_c(e\mid\theta)=(1-c)+cL_{\mathrm{speech}}(e\mid\theta),
+\qquad c\in\{0,0.5,0.8\}.
+\]
+
+\begin{description}[style=nextline,leftmargin=3.4cm,labelwidth=3.0cm]
+  \item[$e$] The structured speech event being incorporated as public evidence.
+  \item[$L_{\mathrm{speech}}(e\mid\theta)$] Base speech likelihood under hidden assignment $\theta$.
+  \item[$L_c(e\mid\theta)$] Interpolated evidence likelihood at strength $c$.
+  \item[$c$] Sensitivity-analysis parameter in $[0,1]$; the present report keeps 0, 0.5, and 0.8 separate.
+  \item[$1-c$] Weight on the neutral likelihood; when $c=0$, the statement contributes no identity evidence.
+\end{description}
+
+Future simulated players act through a fixed utility-ranked policy. Hard rules take precedence over experimental tactic constraints, which take precedence over camp objectives, role-ability priorities, and equal treatment of actions within the same rank. Five normalised scores---1, 0.75, 0.5, 0.25, and 0---are converted into a probability distribution by a softmax function:
+
+\[
+\pi_{\rho}(a\mid s,i)=
+\frac{\exp(Q_i(s,a)/\tau_{\mathrm{policy}})}
+{\sum_{a'\in\mathcal A_i(s)}\exp(Q_i(s,a')/\tau_{\mathrm{policy}})},
+\qquad \tau_{\mathrm{policy}}=0.25.
+\]
+
+\begin{description}[style=nextline,leftmargin=3.4cm,labelwidth=3.0cm]
+  \item[$\pi_{\rho}(a\mid s,i)$] Probability with which policy $\rho$ selects legal action $a$ for actor $i$ in simulated state $s$.
+  \item[$Q_i(s,a)$] Normalised utility-rank score assigned to the action; only the five stated levels are used.
+  \item[$\mathcal A_i(s)$] Complete legal action set for actor $i$ in state $s$; $a'$ indexes this set.
+  \item[$\tau_{\mathrm{policy}}$] Softmax temperature fixed at 0.25; it controls dispersion across action ranks and is independent of evidence strength $c$.
+  \item[$\exp$] Exponential function used to obtain positive, normalised action weights.
+\end{description}
+
+The policy is transparent and reproducible, but it is a modelling assumption. It is not estimated from game history, not supplied by a language model, and not asserted to be optimal or equilibrium play. Future simulated actors do not recursively construct their own matrices. This non-recursion keeps the target distribution fixed and prevents an uncontrolled expansion of nested decision problems.
+
+\subsection{Terminal payoff estimation and paired comparison}
+
+For each concrete action and each evidence-strength column, the production specification uses $N=100$ terminal trajectories. The ordinary Monte Carlo estimate and its standard error are
+
+\[
+\widehat V_N^{(i)}(a,c)=\frac{1}{N}\sum_{n=1}^{N}u_i(\tau_n^{a,c}),
+\qquad
+\operatorname{SE}_N(a,c)=\frac{s_N(a,c)}{\sqrt N}.
+\]
+
+\begin{description}[style=nextline,leftmargin=3.4cm,labelwidth=3.0cm]
+  \item[$N$] Number of terminal trajectories for one action--evidence cell; production uses 100, whereas the exploratory matrix cases use 10.
+  \item[$n$] Sample index from 1 through $N$.
+  \item[$\tau_n^{a,c}$] Terminal trajectory for action $a$, evidence strength $c$, and sample index $n$.
+  \item[$\widehat V_N^{(i)}(a,c)$] Sample mean estimating the theoretical value $V^{(i)}(a,c)$.
+  \item[$s_N(a,c)$] Sample standard deviation of the realised terminal utilities.
+  \item[$\operatorname{SE}_N(a,c)$] Monte Carlo standard error caused by the finite number of simulated trajectories.
+\end{description}
+
+All candidates at a fixed evidence strength and sample index reuse the same hidden-world draw, future-action random stream, tie-break number, and other rule randomness. Let $a_0$ denote the matrix baseline. The paired difference and its standard error are
+
+\[
+\widehat\Delta_N^{(i)}(a,c)
+=\frac{1}{N}\sum_{n=1}^{N}
+\left[u_i(\tau_n^{a,c})-u_i(\tau_n^{a_0,c})\right],
+\]
+
+\[
+d_n(a,c)=u_i(\tau_n^{a,c})-u_i(\tau_n^{a_0,c}),
+\qquad
+\operatorname{SE}_{\Delta,N}(a,c)
+=\frac{1}{\sqrt N}
+\sqrt{\frac{1}{N-1}\sum_{n=1}^{N}
+\left[d_n(a,c)-\widehat\Delta_N^{(i)}(a,c)\right]^2}.
+\]
+
+\begin{description}[style=nextline,leftmargin=3.4cm,labelwidth=3.0cm]
+  \item[$a_0$] Neutral matrix-baseline action under the same actor, state, evidence strength, and policy condition.
+  \item[$\widehat\Delta_N^{(i)}(a,c)$] Mean within-sample candidate-minus-baseline terminal-utility difference.
+  \item[$d_n(a,c)$] Paired difference for sample index $n$.
+  \item[$\tau_n^{a_0,c}$] Baseline trajectory sharing the hidden world and named random streams with the candidate trajectory.
+  \item[$\operatorname{SE}_{\Delta,N}(a,c)$] Standard error of the paired-difference mean, calculated from the sample variance with $N-1$ degrees of freedom.
+\end{description}
+
+Common random numbers reduce irrelevant between-action variation and make the intervention contrast easier to interpret. They do not remove model misspecification, and they do not turn a conditional simulation contrast into a real-world causal effect.
+
+Each cell is reported as a vector rather than a single strategy score:
+
+\[
+\mathcal M^{(i)}_{a,c}=
+\left(\widehat V_N^{(i)},\operatorname{SE}_N,
+\widehat\Delta_N^{(i)},\operatorname{SE}_{\Delta,N},
+N,\mathbf n_{\mathrm{scenario}}\right)_{a,c}.
+\]
+
+\begin{description}[style=nextline,leftmargin=3.4cm,labelwidth=3.0cm]
+  \item[$\mathcal M^{(i)}_{a,c}$] Complete reported cell for actor $i$, action $a$, and evidence strength $c$.
+  \item[$\mathbf n_{\mathrm{scenario}}$] Six-component count vector for mutually exclusive reaction scenarios: actor backlash, successful target shift, statement accepted, statement contested, speech ignored, and other.
+  \item[Other components] The estimators, standard errors, and sample count defined immediately above; the subscript $a,c$ indicates that all components refer to the same cell.
+\end{description}
+
+The scenario label is assigned after a trajectory is generated, following the stated priority order and a default belief-change threshold of 0.05. It explains a mechanism observed in simulation; it does not feed back into the payoff or policy.
+
+\section{Actions and Hypothesis Validation}
+
+The team pursued two linked workstreams: redesigning the experimental game engine and constructing the payoff-matrix estimator. The engine work made controlled first-day vote experiments possible; the matrix work converted the resulting research question into a reproducible action-level quantity.
+
+\subsection{Game-engine redesign}
+
+The engine was reconfigured around the fixed seven-player board and an explicit chronology. At night, Werewolves privately coordinate and vote on an attack before the Seer, Witch, and Guard act and the effects are jointly resolved. During the day, living agents speak once in a fixed sequence and then submit public exile votes; ties are resolved uniformly, while badges, last words, and role revelation on death are excluded. Witch resources, Guard restrictions, private Werewolf coordination, and optional special attacks are represented by explicit rules rather than prompt-only conventions. This work prevents unrecorded house rules from changing the first-day vote mechanism.
+
+Prompt construction was revised at both the stable-rule and treatment levels. Each agent receives its lawful role, ability, remaining resources, current legal actions, and the tactic enabled for the experimental condition. Treatment instructions are placed at the system level and applied consistently to speech, voting, and night actions. The full-game control removes false-Seer treatments and requires the true Seer to communicate a lawful inspection, so a lower-priority conversational instruction cannot silently override treatment separation.
+
+Dynamic context was corrected to follow event time and information visibility. A speaker receives only earlier public statements, disclosed vote histories, public deaths, and lawful private facts. Later statements cannot enter an earlier prompt; Werewolf coordination remains private to that team; Seer inspections remain private until disclosed. Complete transcripts, votes, private reasons, and outcomes were retained for audit. The redesign coordinated rules, phase order, validation, visibility, prompt assembly, and transcript generation. The earlier engine suite reported 133 passing tests, while targeted smoke checks covered night order, private coordination, action legality, transcript rendering, and complete-game execution. These checks document the engineering effort rather than the principal scientific result.
+
+\subsection{Payoff-matrix construction}
+
+The actor-view boundary was made testable. A matrix request identifies the actor, the actor's self-known role, lawful teammate or inspection facts, the public state, the exact posterior summary, the complete candidate set, the evidence levels, the sample target, and the seed scheme. Full hidden assignments belonging to the research observer are rejected from the decision channel. Observationally equivalent worlds therefore map to the same actor-visible request even if the observer knows that their unseen role labels differ.
+
+Speech was converted into auditable interventions. Each candidate is generated before simulation and has a stable semantic identity. All equally ranked targets remain explicit. True Seer claims are constrained by actual private checks; false complete claims must include a target and camp result; deliberate silence remains distinct from a neutral reference. This representation allows the same action vocabulary to describe both the simulated matrix and coded natural-language game records.
+
+The forward estimator uses matched sampling. A batch evaluates every candidate for the same evidence level and sample-index range, retaining only aggregate moments, paired differences, and scenario counts. Completed batches are committed idempotently; interrupted runs resume the missing indices with the same seeds; and failed runs are not presented as complete rankings. Within each trajectory, the first-day vote is the immediate observable mechanism, whereas camp victory supplies the terminal utility. The matrix therefore propagates vote changes through the remaining game instead of treating a first-day exile as the payoff itself.
+
+\subsection{Hypotheses and validation criteria}
+
+The current validation addresses five hypotheses. They are implementation and model-behaviour hypotheses, not claims about an unknown human population.
+
+\begin{table}[htbp]
+\centering
+\caption{Interim hypotheses and falsification criteria}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.08\textwidth}YY}
+\toprule
+ID & Conditional hypothesis & Evidence that would falsify or weaken it \\
+\midrule
+H1 & Role-scoped conditioning prevents observer information from affecting an actor's matrix. & Changing an actor-invisible role while preserving the actor view changes the request or payoff calculation. \\
+H2 & Common random numbers produce execution-order-independent paired estimates. & Identical requests differ across one, two, or four workers, candidate order, or completion order. \\
+H3 & Structured cheap talk has target- and evidence-dependent value under the specified model. & All non-baseline actions remain identical across targets and all three evidence levels in states where speech changes belief. \\
+H4 & Matrix completeness can be audited mechanically. & A result is marked complete despite a missing action, evidence column, sample, paired baseline, or scenario count. \\
+H5 & Enabled tactics can be made visible in full language-model games and can alter the first-day vote mechanism. & Treatment transcripts contain no intended tactic, or public actions contradict the configured treatment without being recorded as deviations. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+H1 was assessed by role-view isolation checks and input rejection. H2 was assessed by repeating identical small requests with one, two, and four workers and comparing every reported value. H3 was inspected through a production-budget matrix and ten exploratory actor-visible cases. H4 was assessed through sample-count closure, reaction-count closure, deterministic terminal cases, persistence, lookup, interruption, and resumption checks. H5 was examined in the legacy language-model corpus through complete transcripts and first-day vote outcomes.
+
+\subsection{Matrix evaluation protocol}
+
+The production reference uses three evidence levels and 100 trajectories per concrete action--evidence cell. It is distinct from an exploratory ten-perspective study that uses 10 trajectories per cell to inspect varied roles and targets at lower computational cost. The latter contains 308 action rows and 924 cells. Its maximum reported standard error is approximately 0.33, so its numerical examples illustrate matrix reading and sensitivity rather than establish stable action rankings.
+
+Reliability checks compare results at the granularity of complete cells. The deterministic terminal oracle requires a value of $+1$ and a standard error of zero in a state where the actor's camp has already won under every continuation. Reproducibility requires identical results for the same request regardless of worker count. Completeness requires all three evidence columns for every action, the specified sample count in each cell, and six scenario counts summing exactly to that count. Input isolation requires rejection of omniscient assignments, inconsistent private facts, and illegal actions. At the interim checkpoint, 65 module-level tests covering these properties passed.
+
+The test count is evidence about the instrument's internal implementation, not the behavioural adequacy of the policy. A perfectly reproducible misspecified model remains misspecified. For this reason, numerical validation, rules validation, information isolation, and external behavioural validation are reported as separate categories.
+
+\subsection{Exploratory language-model protocol}
+
+The earlier cheap-talk experiment used a language model as the game-playing mechanism under a homogeneous, rational, utility-oriented persona configuration. It produced 17 complete runs: ten analytic full-game controls, one additional control smoke run, and two runs for each of three treatment groups. The principal analysis excludes the smoke run and therefore contains 16 games. The control disabled Villager and Werewolf false-Seer tactics and required truthful Seer communication. The treatment groups enabled Werewolf counterclaims, Villager decoy claims, or Seer non-disclosure. The Werewolf counterclaim condition also made two night tactics available, although the model did not select them in the observed runs.
+
+The corpus is valuable for mechanism tracing because full public speech, voting, private reasoning, and outcomes were recorded. Its statistical limitations are equally important. Each main treatment contains only two games; role assignment, speaking order, and language-model sampling can dominate a group mean; and the corpus was generated under the experimental engine configuration documented at collection time. It is not numerically pooled with the present exact-belief matrix, whose frozen rule set and behavioural policy define a different estimand. The comparison is therefore qualitative: whether the matrix's mechanisms---belief distortion, vote redirection, backlash, and loss of truthful information---also appear in observed machine-play narratives.
+
+\section{Observed Results}
+
+\subsection{First-day vote-pattern observations}
+
+The principal 16-game analysis consists of ten control games and six treatment games. The observed outcomes are reproduced to support mechanism discussion, not inferential testing.
+
+\begin{table}[htbp]
+\centering
+\caption{Exploratory language-model game outcomes}
+{\small\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{>{\bfseries\raggedright\arraybackslash}p{0.15\textwidth}*{5}{>{\centering\arraybackslash}p{0.075\textwidth}}Y}
+\toprule
+Group & Games & Good wins & Good win rate & Mean days & D1 Werewolf exile & Main observation \\
+\midrule
+Control & 10 & 4 & 40\% & 2.3 & 50\% & No false Seer claim; true Seers reported checks. \\
+Werewolf counterclaim & 2 & 1 & 50\% & 2.5 & 50\% & Counterclaims appeared in both games; one produced a three-claim contest. \\
+Villager decoy claim & 2 & 0 & 0\% & 2.0 & 0\% & The true Seer was exiled on day one in both games. \\
+Seer non-disclosure & 2 & 0 & 0\% & 2.0 & 0\% & No Seer identity was claimed; both first-day exiles were Villagers. \\
+\bottomrule
+\end{tabularx}
+}
+\end{table}
+
+In the control group, no non-Seer claimed the role in the ten analytic games, indicating that the treatment separation was visible at the transcript level. The true Seer communicated on the first day as required. The good team won four games, and the first-day exile was a Werewolf in five. These proportions describe the observed sample only.
+
+Both Werewolf-treatment games contained false Seer claims. In one run, the true Seer reported a good inspection, an early Werewolf gave a good result to the Werewolf teammate, and the teammate later accused the true Seer through a false hostile inspection. The resulting three-claim contest displayed coordinated protection and narrative competition. The good team lost that run but won the second after both Werewolves were eventually exiled. The contrast shows tactical visibility and target-sensitive interaction, not a stable 50\% treatment rate.
+
+The two Villager-decoy runs produced the clearest adverse mechanism. In each, a Villager claimed to be the Seer while the true Seer also spoke. The first-day vote exiled the true Seer in both games. The false claim did not demonstrably attract a night attack; instead, multiple identity claims polluted the public signal and redirected suspicion toward the genuine information source. This pattern is consistent with the matrix's actor-backlash and contested-statement scenarios, but two cases cannot establish the frequency or expected payoff of that mechanism.
+
+In the two Seer non-disclosure runs, the Seer successfully avoided making a role claim, yet the good team lost its principal public information source. Both first-day votes exiled Villagers, and the Werewolf team reached parity quickly. The observation illustrates a survival--information trade-off: concealment may preserve the role in the short term while reducing the team's ability to coordinate. One Seer survived to the terminal state, so physical survival alone was not a sufficient utility measure.
+
+Night-time empty attacks and self-attacks were available in the two Werewolf counterclaim games but were never chosen across the four observed nights. That fact indicates non-selection under the particular language-model prompts and states. It does not show that either action is dominated under the current extended rule set, because Wang's self-elimination result applies to the simpler assumptions of the theoretical baseline.
+
+\subsection{Payoff-matrix results}
+
+One production-budget seven-player Seer request evaluated 22 concrete actions at three evidence strengths, yielding 66 cells with 100 terminal trajectories per cell. Estimated terminal utilities ranged from $-0.58$ to $-0.34$. This range describes one actor-visible state and one policy specification; it is not a range of universal Seer win rates. The negative values indicate that the actor's camp lost more often than it won under the simulated distribution for this particular request.
+
+The exploratory ten-perspective report provides the more varied action examples shown below. All entries in this table use 10 trajectories per cell rather than the production budget. Standard errors reach approximately 0.33, and discrete $\pm1$ terminal utilities make the estimates coarse at this sample size.
+
+\begin{table}[htbp]
+\centering
+\caption{Illustrative matrix observations from the exploratory budget}
+\begin{tabularx}{\textwidth}{>{\bfseries}p{0.24\textwidth}p{0.23\textwidth}Y}
+\toprule
+Condition & Recorded values & Permitted interpretation \\
+\midrule
+Zero evidence & Most actions matched their own neutral reference & When speech is ignored as identity evidence, the belief channel contributes little in these cases. \\
+Villager false-Seer claim, high evidence & Baseline $-0.4$; selected claim $+0.4$; paired difference $+0.8$ & Replacing the neutral event with this target and claimed result reverses the model-conditioned estimate in this state. \\
+Werewolf counterclaim, high evidence & Baseline $+0.6$; selected claim $+1.0$; paired difference $+0.4$ & Target identity matters; other claims, including some involving a known teammate, may have lower utility. \\
+Seer holding a Werewolf check & Paired difference $+0.4$ at medium and high evidence & Truthful disclosure has a positive paired estimate in this information state; a corresponding good-check case does not show the same difference. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Three facts follow directly from the output. First, the evidence columns cannot be collapsed without an additional, justified weighting distribution. Second, a tactic family is too coarse to be assigned a single payoff because target and claimed camp change the estimate. Third, increasing evidence strength does not monotonically improve the speaker's utility. A more credible statement can reinforce a beneficial redirection, but it can also intensify backlash or make a harmful deception more consequential.
+
+The model permits a conditional interpretation: structured speech can alter expected terminal utility through belief and subsequent action channels under the specified rules and policy. It does not permit the claim that the best row is a general strategy, that the speaker has found a dominant action, or that observed differences are equilibrium payoffs. The exploratory values are especially sensitive to the ten-trajectory budget.
+
+\subsection{Synthesis of model and observed mechanisms}
+
+The matrix and language-model corpus agree at the level of possible mechanisms. Both indicate that the semantic target of a claim matters, that stronger uptake is not uniformly beneficial, and that withholding or fabricating information can impose a negative externality on the speaker's own camp. The matrix adds counterfactual control: it compares multiple actions under matched hidden worlds and random streams. The language-model corpus adds narrative realism: it shows that competing claims, suspicion, and vote redirection can actually emerge when natural-language agents play complete games.
+
+They do not yet agree at the level of calibrated magnitude. The matrix uses a hand-specified future policy and three sensitivity anchors; the corpus uses one model configuration and very small treatment groups. The matrix outputs action-level expected utility conditional on a decision state, whereas the game table reports realised outcomes under full-game treatment assignments. A paired matrix difference of $+0.8$ and a treatment-group win rate of 0\% are not contradictory because they refer to different states, units, sampling schemes, and estimands.
+
+The current results therefore validate the research instrument more strongly than any substantive tactic. Exact role-view conditioning, deterministic replay across process counts, terminal-oracle agreement, complete cell accounting, and mechanism-visible transcripts support continued study. The data do not validate a population behavioural model or a universal recommendation to reveal, deceive, or remain silent.
+
+\section{Conclusion}
+
+Wang's \emph{Optimal Strategy in the Werewolf Game: A Theoretical Study} demonstrates that information structure and disclosure timing can be modelled rigorously under explicit assumptions. The present study advances that agenda through deceptive communication, sequential speaking, and additional roles. The team first redesigned the game engine so that prompts, context visibility, action order, and rules support controlled first-day vote observations. It then preserved exact inference over current hidden worlds while replacing exhaustive future expansion with controlled, non-recursive terminal simulation. The resulting matrix evaluates concrete speech actions from the actor's lawful perspective and reports terminal utility, Monte Carlo uncertainty, a paired neutral-reference difference, and explanatory reaction counts.
+
+At the interim stage, the main achievement is methodological and evidentially bounded. A production request has demonstrated the specified 100-trajectory-per-cell workflow; exploratory matrices reveal target- and evidence-dependent heterogeneity; and small language-model games show that information pollution, claim contests, vote redirection, and concealment costs can appear in complete play. Reliability checks show reproducibility and information isolation within the implemented instrument.
+
+The study does not establish an equilibrium of the extended game. The utility-ranked policy is an explicit projection model, not a solved best response for every player. The evidence-strength settings are sensitivity parameters, not calibrated truth probabilities. The language-model games are exploratory observations rather than a representative behavioural dataset. The appropriate conclusion is therefore conditional: under the stated rules, actor view, likelihood model, future policy, and random mechanism, cheap-talk actions can have materially different estimated terminal values, and those differences can be measured in a reproducible matrix.
+
+The next objective is empirical calibration. Pre-registered games should record the decision-time public state, lawful actor view, structured action, ensuing vote pattern, and terminal outcome. These data can estimate belief responses, compare ex ante matrix values with matched outcomes, and separately estimate full-game treatment effects before the matrix is assessed as a predictor or decision aid.
+
+\section{Boundaries and Risks}
+
+\subsection{Inference boundaries}
+
+The strongest boundary concerns the meaning of Monte Carlo unbiasedness. If trajectories are independently generated from the declared posterior, rule randomness, and fixed utility-ranked policy without outcome-dependent deletion, the sample mean is unbiased for that declared simulation distribution. It is not unbiased for human play, a language model, an unknown population, or a different rule set. Monte Carlo standard error measures finite simulation noise only; it does not include uncertainty from the likelihood model, policy scores, role abstraction, or behavioural misspecification.
+
+The second boundary concerns causality. The within-matrix paired difference has a clear intervention meaning inside the model because candidate and reference share the same state and random streams. The exploratory full-game groups do not provide the same control. With two games per tactic, the observed win-rate differences cannot be separated from assignments, order, and model sampling. They should be described as mechanism observations. A future causal design requires pre-specified randomisation, adequate repetition, treatment compliance checks, and treatment-specific uncertainty intervals.
+
+The third boundary concerns compatibility across evidence sources. Wang's theoretical baseline, the current matrix, and the earlier language-model corpus do not use identical games. Wang studies a smaller role set and proves results under particular communication constraints. The current matrix includes Witch and Guard and freezes its own resolution rules, while the earlier corpus follows the engine configuration documented at collection time. The findings can motivate one another, but their numerical estimates cannot be pooled without a common protocol.
+
+\subsection{Technical and modelling risks}
+
+\begin{longtable}{>{\bfseries\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.35\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}}
+\caption{Principal risks and planned controls}\\
+\toprule
+Risk & Consequence & Control or next test \\
+\midrule
+\endfirsthead
+\toprule
+Risk & Consequence & Control or next test \\
+\midrule
+\endhead
+Observer leakage & An actor benefits from information that the role could not know, invalidating the payoff query. & Maintain separate observer and actor channels; test observationally equivalent hidden worlds and reject complete assignments at the decision boundary. \\
+Policy misspecification & Reproducible estimates may describe an implausible continuation model. & Compare alternative pre-declared policies; calibrate action frequencies on held-out games without retroactively changing the reported request identity. \\
+Evidence calibration & Values 0, 0.5, and 0.8 may not match how people or models update beliefs. & Treat them as sensitivity anchors; estimate response likelihoods from repeated belief-elicitation data. \\
+Small-sample ranking & Ten-trajectory examples can reverse order because terminal utility is discrete. & Use the 100-trajectory production budget for reported decisions; show both payoff and paired-difference standard errors. \\
+Multiple comparison & Many targets and evidence columns create opportunities to over-emphasise an extreme row. & Retain all rows, pre-specify focal contrasts, and validate promising actions on independent seeds and games. \\
+Treatment non-compliance & A language model may fail to express an enabled tactic or may express a prohibited one. & Audit structured actions and transcripts; report deviations rather than silently reclassifying games. \\
+Rule drift & A change in tie-breaking, role abilities, or victory priority changes the estimand. & Attach a stable rule identity to every matrix and rerun rather than silently reuse incompatible results. \\
+Action abstraction & Removing natural-language wording may omit persuasion style, ambiguity, or pragmatic context. & Preserve the structured core for comparability, then add controlled linguistic variants as a separate experimental layer. \\
+Recursive decision inflation & Simulated future players constructing new matrices would change the target policy and cause computational growth. & Keep future policy fixed and non-recursive; treat strategic recursion as a separate later model. \\
+Equilibrium overclaim & A highest estimated row may be described as globally optimal or a PBE. & Use model-conditioned language and reserve equilibrium claims for a separately solved game with verified beliefs and sequential rationality. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Next-stage evidence plan}
+
+The next stage should pre-register the board, speaking-order assignment, treatment factors, language-model version, temperature, seed policy, retry rule, and primary outcomes. The first empirical priority is to expand the full-game control and Villager-decoy groups because the two observed decoy runs exhibit a concrete, falsifiable backlash mechanism. Primary vote outcomes should include first-day Seer exile, first-day Werewolf exile, vote concentration, claim contest frequency, and Seer survival; terminal camp victory remains the delayed outcome. Night tactics should be isolated as separate factors rather than mixed into a first-day speech effect.
+
+For matrix calibration, each speaking decision should be logged before the action occurs. The record must include the public state, role-scoped private facts, actor position in the speaking order, structured action, subsequent public votes, and terminal outcome. Observer truth may be retained for evaluation but must remain outside the action query. Belief response can be measured by eliciting post-speech role probabilities from later actors or by fitting a pre-declared likelihood model on a training split and evaluating it on held-out games.
+
+Finally, substantive claims should be promoted in stages. A stable matrix result requires production-budget replication and uncertainty reporting. A model-general result requires replication across pre-declared policies or language-model configurations. A behavioural claim requires held-out observed games. A causal treatment claim requires randomised full-game assignment with adequate power. An equilibrium claim requires an explicit solution concept and proof or verified computation for the extended game. This ladder preserves the distinction between what the team has built, what the current simulations suggest, and what future evidence may support.
+
+\begin{thebibliography}{9}
+
+\bibitem{wang2025}
+S. Wang,
+\emph{Optimal Strategy in the Werewolf Game: A Theoretical Study},
+arXiv:2408.17177v2, 2025.
+
+\bibitem{braverman2008}
+M. Braverman, O. Etesami, and E. Mossel,
+``Mafia: A theoretical study of players and coalitions in a partial information environment,''
+in \emph{Proceedings of the 3rd International Conference on Algorithmic Game Theory}, 2008, pp. 825--846.
+
+\bibitem{yao2008}
+E. Yao,
+\emph{A Theoretical Study of Mafia Games},
+arXiv:0804.0071, 2008.
+
+\bibitem{migdal2010}
+P. Migdal,
+\emph{A Mathematical Model of the Mafia Game},
+arXiv:1009.1031, 2010.
+
+\bibitem{team2026midterm}
+The research team,
+\emph{Midterm Report: An Exact-Belief Payoff Matrix for Cheap Talk in the Werewolf Game},
+internal research report, 2026.
+
+\bibitem{team2026experiment}
+The research team,
+\emph{Cheap Talk Research Report: Effects of First-Day Tactics on Voting Patterns and Win Rates},
+internal exploratory experiment report, 23 August 2026.
+
+\end{thebibliography}
+
+\end{document}
