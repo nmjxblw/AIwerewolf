@@ -6,42 +6,42 @@
   "errors": 0,
   "village_win_rate": "0/2",
   "avg_days": 2.0,
-  "total_llm_calls": 62,
-  "total_tokens": 161914,
+  "total_llm_calls": 63,
+  "total_tokens": 0,
   "quota_aborted": false,
   "games": [
     {
       "label": "VJ",
-      "seed": 301,
+      "seed": 9331,
       "winner": "wolf",
       "end_reason": "wolves_reached_parity",
       "days": 2,
-      "elapsed": 48.9,
+      "elapsed": 33.6,
       "day1_vote_pattern": {
-        "1号:陈衡": 2,
-        "4号:沈度": 4,
-        "7号:魏一": 1
+        "2号:齐慕白": 1,
+        "3号:穆冬青": 1,
+        "6号:甘骁": 3,
+        "7号:大壮": 1
       },
       "day1_pattern_detail": {
-        "4号:沈度": [
-          "1号:陈衡",
-          "3号:林笃",
-          "6号:苏正",
-          "7号:魏一"
+        "7号:大壮": [
+          "1号:夜未央"
         ],
-        "1号:陈衡": [
-          "2号:周慎",
-          "4号:沈度"
+        "6号:甘骁": [
+          "2号:齐慕白",
+          "3号:穆冬青",
+          "4号:夏知白"
         ],
-        "7号:魏一": [
-          "5号:韩朴"
+        "3号:穆冬青": [
+          "6号:甘骁"
+        ],
+        "2号:齐慕白": [
+          "7号:大壮"
         ]
       },
       "day1_seer_claims": [
-        "3号:林笃(平民)",
-        "4号:沈度(真预言家)",
-        "4号:沈度(真预言家)",
-        "7号:魏一(平民)"
+        "6号:甘骁(平民)",
+        "7号:大壮(平民)"
       ],
       "day1_nonseer_claims": 2,
       "empty_knife_nights": 0,
@@ -49,50 +49,54 @@
       "witch_save_used": 0,
       "witch_poison_used": 0,
       "wolf_chat_messages": 4,
-      "llm_calls": 37,
-      "prompt_tokens": 99001,
-      "completion_tokens": 6344,
+      "llm_calls": 25,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
       "seer_alive": false
     },
     {
       "label": "VJ",
-      "seed": 302,
+      "seed": 9332,
       "winner": "wolf",
       "end_reason": "wolves_reached_parity",
       "days": 2,
-      "elapsed": 30.4,
+      "elapsed": 58.2,
       "day1_vote_pattern": {
-        "3号:林笃": 2,
-        "7号:魏一": 4
+        "1号:李默": 6,
+        "4号:云锦": 1
       },
       "day1_pattern_detail": {
-        "7号:魏一": [
-          "1号:陈衡",
-          "2号:周慎",
-          "3号:林笃",
-          "6号:苏正"
+        "4号:云锦": [
+          "1号:李默"
         ],
-        "3号:林笃": [
-          "5号:韩朴",
-          "7号:魏一"
+        "1号:李默": [
+          "2号:甘骁",
+          "3号:司南",
+          "4号:云锦",
+          "5号:袁汐",
+          "6号:莫离",
+          "7号:宋知野"
         ]
       },
       "day1_seer_claims": [
-        "1号:陈衡(平民)",
-        "7号:魏一(真预言家)",
-        "7号:魏一(真预言家)",
-        "7号:魏一(真预言家)",
-        "7号:魏一(真预言家)"
+        "1号:李默(平民)",
+        "2号:甘骁(女巫)",
+        "3号:司南(狼人)",
+        "4号:云锦(真预言家)",
+        "5号:袁汐(狼人)",
+        "6号:莫离(守卫)",
+        "7号:宋知野(平民)",
+        "7号:宋知野(平民)"
       ],
-      "day1_nonseer_claims": 1,
+      "day1_nonseer_claims": 7,
       "empty_knife_nights": 0,
       "self_knife_nights": 0,
       "witch_save_used": 1,
       "witch_poison_used": 0,
       "wolf_chat_messages": 4,
-      "llm_calls": 25,
-      "prompt_tokens": 53334,
-      "completion_tokens": 3235,
+      "llm_calls": 38,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
       "seer_alive": false
     }
   ]

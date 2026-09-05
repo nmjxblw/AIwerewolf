@@ -1042,49 +1042,6 @@ def test_cognitive_agent_speech_from_other_accuses_self_preserves_public_trust_g
     )
 
 
-def test_cognitive_agent_role_claim_requires_vote_rethink_preserves_seer_only_gate() -> None:
-    agent = CognitiveAgent("P1", "Villager", DeterministicCognitiveLLM(), player_name="Alice")
-
-    assert (
-        agent._role_claim_requires_vote_rethink(
-            RoleClaim(
-                player_name="Bob",
-                player_id="P2",
-                seat=2,
-                claimed_role="预言家",
-                day=1,
-                context="day_speech",
-            )
-        )
-        is True
-    )
-    assert (
-        agent._role_claim_requires_vote_rethink(
-            RoleClaim(
-                player_name="Alice",
-                player_id="P1",
-                seat=1,
-                claimed_role="预言家",
-                day=1,
-                context="day_speech",
-            )
-        )
-        is False
-    )
-    assert (
-        agent._role_claim_requires_vote_rethink(
-            RoleClaim(
-                player_name="Bob",
-                player_id="P2",
-                seat=2,
-                claimed_role="女巫",
-                day=1,
-                context="day_speech",
-            )
-        )
-        is False
-    )
-
 
 def test_cognitive_agent_public_event_description_preserves_reflection_formats() -> None:
     assert (
@@ -1137,19 +1094,6 @@ def test_cognitive_agent_private_event_reflection_entry_preserves_reflection_for
     }
     assert CognitiveAgent._private_event_reflection_entry({"day": 1, "payload": {"kind": "ignored"}}) is None
 
-
-def test_cognitive_agent_contradiction_reflection_entry_preserves_reflection_format() -> None:
-    contradiction = Contradiction(
-        role="预言家",
-        claimants=["Alice", "Bob"],
-        description="Alice, Bob 冲突声称是预言家",
-    )
-
-    assert CognitiveAgent._contradiction_reflection_entry(contradiction, 2) == {
-        "type": "CONTRADICTION",
-        "day": 2,
-        "description": "Alice, Bob 冲突声称是预言家",
-    }
 
 
 def test_cognitive_agent_decision_reflection_entry_preserves_action_record_fields() -> None:
@@ -2514,7 +2458,8 @@ def test_cognitive_agents_complete_offline_game_and_emit_decisions() -> None:
     assert any(event.type == EventType.NIGHT_ACTION for event in state.events)
     assert fake_llm.calls
     assert any("【本回合可选操作" in call and "- baseline" in call for call in fake_llm.calls)
-    assert any("【本回合可选操作" in call and "- day_vote" in call for call in fake_llm.calls)
+    # 对局日志审计 P0-3：白天投票改走严格单行文本，不再经过 catalog
+    assert any("【投票输出格式（必须严格遵守）】" in call for call in fake_llm.calls)
     assert any(
         "【本回合可选操作" in call and ("- attack" in call or "- divine" in call or "- guard" in call)
         for call in fake_llm.calls
@@ -2742,8 +2687,9 @@ def test_role_claim_detection_requires_first_person() -> None:
 
     assert [c.claimed_role for c in obs.role_claims if c.player_id == "P6"] == []
     assert any(c.player_id == "P3" and c.claimed_role == "女巫" for c in obs.role_claims)
+    # 对局日志审计 P1-6：声称不再注入 prompt（提取层保留，注入层下线）
     assert "6号:陈小玉 -> 女巫" not in prompt
-    assert "3号:三号 -> 女巫" in prompt
+    assert "3号:三号 -> 女巫" not in prompt
 
 
 def test_build_game_context_injects_exact_two_wolf_board() -> None:

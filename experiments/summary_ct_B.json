@@ -1,53 +1,53 @@
 {
   "label": "B",
   "n_games": 1,
-  "village_wins": 0,
-  "wolf_wins": 1,
+  "village_wins": 1,
+  "wolf_wins": 0,
   "errors": 0,
-  "village_win_rate": "0/1",
-  "avg_days": 3.0,
-  "total_llm_calls": 38,
-  "total_tokens": 107159,
+  "village_win_rate": "1/1",
+  "avg_days": 2.0,
+  "total_llm_calls": 37,
+  "total_tokens": 0,
   "quota_aborted": false,
   "games": [
     {
       "label": "B",
-      "seed": 111,
-      "winner": "wolf",
-      "end_reason": "all_villagers_dead",
-      "days": 3,
-      "elapsed": 44.5,
+      "seed": 9321,
+      "winner": "village",
+      "end_reason": "all_wolves_dead",
+      "days": 2,
+      "elapsed": 55.4,
       "day1_vote_pattern": {
-        "1号:陈衡": 3,
-        "3号:林笃": 1,
-        "6号:苏正": 3
+        "1号:顾景行": 5,
+        "5号:韩书研": 2
       },
       "day1_pattern_detail": {
-        "3号:林笃": [
-          "1号:陈衡"
+        "5号:韩书研": [
+          "1号:顾景行",
+          "6号:齐慕白"
         ],
-        "6号:苏正": [
-          "2号:周慎",
-          "4号:沈度",
-          "5号:韩朴"
-        ],
-        "1号:陈衡": [
-          "3号:林笃",
-          "6号:苏正",
-          "7号:魏一"
+        "1号:顾景行": [
+          "2号:莱昂",
+          "3号:夏知白",
+          "4号:南柯辞",
+          "5号:韩书研",
+          "7号:王雅文"
         ]
       },
-      "day1_seer_claims": [],
+      "day1_seer_claims": [
+        "5号:韩书研(真预言家)",
+        "5号:韩书研(真预言家)"
+      ],
       "day1_nonseer_claims": 0,
       "empty_knife_nights": 0,
       "self_knife_nights": 0,
       "witch_save_used": 1,
       "witch_poison_used": 0,
       "wolf_chat_messages": 2,
-      "llm_calls": 38,
-      "prompt_tokens": 101085,
-      "completion_tokens": 6074,
-      "seer_alive": false
+      "llm_calls": 37,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seer_alive": true
     }
   ]
 }

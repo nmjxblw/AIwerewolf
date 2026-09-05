@@ -197,7 +197,7 @@ class _ToolCallingRunnable(Runnable):
             api_messages.append(entry)
 
         # Build call parameters explicitly (avoid **payload issues with httpx serialization)
-        max_tokens = kwargs.get("max_tokens", 768)
+        max_tokens = kwargs.get("max_tokens", 4096)
         # Reasoning-style models (e.g. hy3-free on OpenCode Zen) spend hidden
         # chain-of-thought tokens from the same budget; small per-call budgets
         # truncate content to null. AIWEREWOLF_MAX_TOKENS_FLOOR raises every

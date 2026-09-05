@@ -31,8 +31,15 @@ def build_structured_user_prompt(
     extra: str = "",
     strategy_bias: dict[str, list[str]] | None = None,
     bias_action: str = "talk",
+    memory: Any = None,
 ) -> str:
     parts = [build_game_context(obs), "", format_observation(obs)]
+    # 对局日志审计 P0-1：不注入 memory 会导致玩家对自己的行动失忆
+    # （女巫救人后白天声称"未用药"）。角色状态/判断/行动记录必须进入决策上下文。
+    if memory is not None:
+        memory_text = memory.format_for_prompt()
+        if memory_text:
+            parts.extend(["", memory_text])
     bias = build_strategy_bias_block(strategy_bias or {}, bias_action)
     if bias:
         parts.extend(["", bias])
@@ -50,12 +57,15 @@ def build_repair_prompt(
     extra: str = "",
     strategy_bias: dict[str, list[str]] | None = None,
     bias_action: str = "talk",
+    memory: Any = None,
 ) -> str:
     previous_text = previous if isinstance(previous, str) else json.dumps(previous, ensure_ascii=False)
     extra_block = extra.strip() + "\n\n" if extra.strip() else ""
     return "\n".join(
         [
-            build_structured_user_prompt(obs, catalog, extra="", strategy_bias=strategy_bias, bias_action=bias_action),
+            build_structured_user_prompt(
+                obs, catalog, extra="", strategy_bias=strategy_bias, bias_action=bias_action, memory=memory
+            ),
             "",
             extra_block.rstrip(),
             f"上一次输出无法执行，原因: {error}",
@@ -145,7 +155,7 @@ def invoke_structured(
     user_prompt: str,
     catalog: ActionCatalog,
     *,
-    max_tokens: int = 768,
+    max_tokens: int = 4096,
     temperature: float | None = None,
 ) -> Any:
     messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
@@ -185,14 +195,15 @@ def run_structured_decision(
     extra: str = "",
     strategy_bias: dict[str, list[str]] | None = None,
     bias_action: str = "talk",
-    max_tokens: int = 768,
+    max_tokens: int = 4096,
     temperature: float | None = None,
+    memory: Any = None,
 ) -> dict[str, Any]:
     """One native/text call plus at most one repair. Raises on persistent failure."""
     if not catalog.actions:
         raise RuntimeError(f"no catalog actions for phase={obs.phase} role={obs.player_role}")
     user = build_structured_user_prompt(
-        obs, catalog, extra=extra, strategy_bias=strategy_bias, bias_action=bias_action
+        obs, catalog, extra=extra, strategy_bias=strategy_bias, bias_action=bias_action, memory=memory
     )
     response = invoke_structured(
         llm, system_prompt, user, catalog, max_tokens=max_tokens, temperature=temperature
@@ -208,6 +219,7 @@ def run_structured_decision(
             extra=extra,
             strategy_bias=strategy_bias,
             bias_action=bias_action,
+            memory=memory,
         )
         response = invoke_structured(
             llm, system_prompt, repair_user, catalog, max_tokens=max_tokens, temperature=temperature

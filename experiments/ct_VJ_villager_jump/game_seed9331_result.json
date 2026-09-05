@@ -1,0 +1,44 @@
+{
+  "label": "VJ",
+  "seed": 9331,
+  "winner": "wolf",
+  "end_reason": "wolves_reached_parity",
+  "days": 2,
+  "elapsed": 33.6,
+  "day1_vote_pattern": {
+    "2号:齐慕白": 1,
+    "3号:穆冬青": 1,
+    "6号:甘骁": 3,
+    "7号:大壮": 1
+  },
+  "day1_pattern_detail": {
+    "7号:大壮": [
+      "1号:夜未央"
+    ],
+    "6号:甘骁": [
+      "2号:齐慕白",
+      "3号:穆冬青",
+      "4号:夏知白"
+    ],
+    "3号:穆冬青": [
+      "6号:甘骁"
+    ],
+    "2号:齐慕白": [
+      "7号:大壮"
+    ]
+  },
+  "day1_seer_claims": [
+    "6号:甘骁(平民)",
+    "7号:大壮(平民)"
+  ],
+  "day1_nonseer_claims": 2,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 0,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 4,
+  "llm_calls": 25,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": false
+}

@@ -96,15 +96,20 @@ GROUPS: dict[str, dict] = {
         "engine_kwargs": {"rule_preset": "baseline"},
         "rule_addendum": (
             "本局为基线对局：所有玩家按标准方式打牌。"
-            "|禁止使用任何特殊战术：不得跳预言家、不得悍跳、不得挡刀、不得空刀、不得自刀。"
-            "|发言只基于自己真实可见的信息表态；非预言家玩家不得声称自己是预言家或公布查验结果。"
+            "|禁止使用任何特殊战术：非预言家不得跳预言家、不得悍跳、不得挡刀（即不得冒充预言家身份）；"
+            "狼队不得空刀、不得自刀。"
+            "|发言只基于自己真实可见的信息表态；真预言家应如实公布身份与查验结果，"
+            "非预言家玩家不得声称自己是预言家或公布查验结果。"
+            "|在诚实规则下，任何声称预言家的发言若未被系统驳回，声明者就是真预言家"
+            "（非预言家的声称会被系统当场驳回，不存在未被识破的假声称），"
+            "其公布的查验结果应作为可信信息使用。"
         ),
         "tactics": {"SEER": _BASE_SEER_HONEST},
     },
     "WJ": {
         "dir": "ct_WJ_wolf_jump",
         "engine_kwargs": {"rule_preset": "cheap_talk"},
-        "rule_addendum": ("本局为战术实验局（狼人悍跳条件）：其他玩家按标准方式打牌。"),
+        "rule_addendum": ("本局为普通对局，所有玩家按标准方式打牌。"),
         "tactics": {
             "WEREWOLF": (
                 "本局启用狼人悍跳预言家战术。"
@@ -119,7 +124,7 @@ GROUPS: dict[str, dict] = {
     "VJ": {
         "dir": "ct_VJ_villager_jump",
         "engine_kwargs": {"rule_preset": "cheap_talk"},
-        "rule_addendum": ("本局为战术实验局（平民挡刀条件）：其他玩家按标准方式打牌。"),
+        "rule_addendum": ("本局为普通对局，所有玩家按标准方式打牌。"),
         "tactics": {
             "VILLAGER": (
                 "本局启用平民跳预言家挡刀战术。"
@@ -133,7 +138,7 @@ GROUPS: dict[str, dict] = {
     "SQ": {
         "dir": "ct_SQ_seer_quiet",
         "engine_kwargs": {"rule_preset": "cheap_talk"},
-        "rule_addendum": ("本局为战术实验局（预言家隐藏条件）：其他玩家按标准方式打牌。"),
+        "rule_addendum": ("本局为普通对局，所有玩家按标准方式打牌。"),
         "tactics": {
             "SEER": (
                 "本局启用预言家不发言战术。"

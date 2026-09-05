@@ -1,0 +1,1902 @@
+{
+  "id": "12c06dea-edea-4b08-bbbc-d861c9727169",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-3cf91333cb29",
+      "seat": 1,
+      "name": "卓砚",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "卓砚",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P2-2aef41ee7ce7",
+      "seat": 2,
+      "name": "莫离",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "莫离",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-27cf9511e142",
+      "seat": 3,
+      "name": "大壮",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "大壮",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-4c3fcebefd31",
+      "seat": 4,
+      "name": "王雅文",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "王雅文",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P5-5282fd0277f1",
+      "seat": 5,
+      "name": "周星野",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "周星野",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P6-a593440191b7",
+      "seat": 6,
+      "name": "云锦",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "云锦",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P7-e74ca4c4cf29",
+      "seat": 7,
+      "name": "南柯辞",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "南柯辞",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    }
+  ],
+  "events": [
+    {
+      "id": "ff162534-8fe0-439e-8e99-13a1ad33e77e",
+      "ts": 1788605528.297473,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "12c06dea-edea-4b08-bbbc-d861c9727169",
+        "players": [
+          {
+            "id": "P1-3cf91333cb29",
+            "seat": 1,
+            "name": "卓砚",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-2aef41ee7ce7",
+            "seat": 2,
+            "name": "莫离",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-27cf9511e142",
+            "seat": 3,
+            "name": "大壮",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-4c3fcebefd31",
+            "seat": 4,
+            "name": "王雅文",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-5282fd0277f1",
+            "seat": 5,
+            "name": "周星野",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-a593440191b7",
+            "seat": 6,
+            "name": "云锦",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-e74ca4c4cf29",
+            "seat": 7,
+            "name": "南柯辞",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "d5747210-6175-4423-bec2-02d1c9df3dd8",
+      "ts": 1788605528.297693,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-3cf91333cb29"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 卓砚, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "bf29d7f4-231e-403e-8c9b-4a58cf370f1e",
+      "ts": 1788605528.2978399,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-2aef41ee7ce7"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 莫离, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "4e2695a9-bcd7-48b1-9503-9595e16e0fe7",
+      "ts": 1788605528.297978,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-27cf9511e142"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 大壮, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "85a57f23-3843-40eb-ad15-93c7031f0545",
+      "ts": 1788605528.2981086,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 王雅文, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "bbc37583-e6f1-4459-a602-44f27d96afdc",
+      "ts": 1788605528.2982419,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 周星野, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "7f0b3e45-848c-40ab-9e3f-881f07fedb18",
+      "ts": 1788605528.2983477,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-a593440191b7"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 云锦, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "bf26a23b-ceae-4727-8280-5b88e371f81e",
+      "ts": 1788605528.2984495,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-e74ca4c4cf29"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 南柯辞, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "01ae75a0-add9-43d6-833d-5d22b19e3f59",
+      "ts": 1788605528.2987885,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "453a36f6-7c22-4dac-ba6f-e42b0c0b059d",
+      "ts": 1788605528.2988634,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "d0c85b14-1550-42dc-bb02-19497406ca63",
+      "ts": 1788605528.3796306,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "93055fb5-c56b-467c-ae67-709f8ebd8efd",
+      "ts": 1788605528.3796673,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P4-4c3fcebefd31",
+          "P5-5282fd0277f1"
+        ],
+        "wolf_names": [
+          "王雅文",
+          "周星野"
+        ]
+      }
+    },
+    {
+      "id": "13546bfb-266c-4ed1-bb0f-cfb7266e0723",
+      "ts": 1788605530.784244,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "message": "王雅文（私聊）：今晚刀3号大壮，避开边缘位置，减少被女巫救下的概率。",
+        "speech": "今晚刀3号大壮，避开边缘位置，减少被女巫救下的概率。",
+        "proposed_target_id": "P3-27cf9511e142",
+        "proposed_target_name": "大壮"
+      }
+    },
+    {
+      "id": "528a7996-dfe5-4759-b73b-eca9d4ae6b7c",
+      "ts": 1788605531.841227,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-5282fd0277f1",
+        "actor_name": "周星野",
+        "message": "周星野（私聊）：刀3号大壮，避开边缘位，按计划行动。",
+        "speech": "刀3号大壮，避开边缘位，按计划行动。",
+        "proposed_target_id": "P3-27cf9511e142",
+        "proposed_target_name": "大壮"
+      }
+    },
+    {
+      "id": "58c3313d-6097-43d5-8233-fb146c76b1c0",
+      "ts": 1788605531.8412707,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "6c065fd6-58f4-4c68-b129-8aaa7caf2580",
+      "ts": 1788605531.841282,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "message": "王雅文 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "ea914131-a1d2-4d6d-8971-24c016750b72",
+      "ts": 1788605532.7149508,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "action_type": "attack",
+        "target": {
+          "id": "P3-27cf9511e142",
+          "seat": 3,
+          "name": "大壮",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "按狼队共识刀3号大壮，避开边缘位置减少被女巫救下的概率。队友已确认同一目标。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P3-27cf9511e142",
+        "target_name": "大壮"
+      }
+    },
+    {
+      "id": "f7e7af51-1dd0-412d-b48e-69950c64b3c1",
+      "ts": 1788605532.714963,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P5-5282fd0277f1",
+        "actor_name": "周星野",
+        "message": "周星野 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P4-4c3fcebefd31",
+            "wolf_name": "王雅文",
+            "target_id": "P3-27cf9511e142",
+            "target_name": "大壮"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bfa1e5fa-c99e-4be6-8675-fa5ecf919ae2",
+      "ts": 1788605533.831588,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "actor_id": "P5-5282fd0277f1",
+        "actor_name": "周星野",
+        "action_type": "attack",
+        "target": {
+          "id": "P3-27cf9511e142",
+          "seat": 3,
+          "name": "大壮",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友王雅文达成一致，刀3号大壮，避开边缘位，减少被女巫救下的概率。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P3-27cf9511e142",
+        "target_name": "大壮"
+      }
+    },
+    {
+      "id": "c31f92f1-feea-4dff-bf19-47ff90773a23",
+      "ts": 1788605533.831615,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为大壮。",
+        "target_id": "P3-27cf9511e142",
+        "target_name": "大壮",
+        "votes": {
+          "P4-4c3fcebefd31": "P3-27cf9511e142",
+          "P5-5282fd0277f1": "P3-27cf9511e142"
+        }
+      }
+    },
+    {
+      "id": "c5e11a77-c979-4d71-82de-1f0b1b494abb",
+      "ts": 1788605533.8316402,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "4a12409e-dc01-4f26-b495-fca537ac4748",
+      "ts": 1788605533.8316808,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "5edac486-3ff0-4698-a04e-7c648cd97538",
+      "ts": 1788605535.0781543,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-3cf91333cb29"
+      ],
+      "payload": {
+        "actor_id": "P1-3cf91333cb29",
+        "actor_name": "卓砚",
+        "action_type": "divine",
+        "target": {
+          "id": "P5-5282fd0277f1",
+          "seat": 5,
+          "name": "周星野",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "作为预言家，首夜应查验一名玩家获取信息。选择查验5号周星野，位于中间位置，查验结果可为后续判断提供参考。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P5-5282fd0277f1"
+      }
+    },
+    {
+      "id": "78c4d3a1-4635-4bb9-8a92-de1eb71f8623",
+      "ts": 1788605535.078161,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-3cf91333cb29"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P5-5282fd0277f1",
+        "target_name": "周星野",
+        "is_wolf": true,
+        "message": "Seer check: 周星野 is wolf."
+      }
+    },
+    {
+      "id": "08c11ff9-a5d9-46fd-8562-5a031c3886a9",
+      "ts": 1788605535.0781732,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "5acbfc16-a658-4759-b391-0f55f6f1b70c",
+      "ts": 1788605535.158614,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "758a7fba-fa36-4a48-9412-7347941c755c",
+      "ts": 1788605536.5664692,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-27cf9511e142"
+      ],
+      "payload": {
+        "actor_id": "P3-27cf9511e142",
+        "actor_name": "大壮",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P3-27cf9511e142",
+          "seat": 3,
+          "name": "大壮",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "今晚刀口是我自己，作为女巫首夜必须自救。虽然规则说明解药只救当晚刀口且仅首夜可自救，但我不能确定守卫是否守我，若不救则必死，女巫出局对好人损失巨大。选择自救。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P3-27cf9511e142"
+      }
+    },
+    {
+      "id": "a64bad25-32f8-43e0-83b9-9f74a246488a",
+      "ts": 1788605536.5664916,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "aadb0ead-2555-4792-a663-2a0599c47c97",
+      "ts": 1788605536.6470485,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "dee97605-fa64-4bef-92ed-5dcd18b26f14",
+      "ts": 1788605537.6305487,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-a593440191b7"
+      ],
+      "payload": {
+        "actor_id": "P6-a593440191b7",
+        "actor_name": "云锦",
+        "action_type": "guard",
+        "target": {
+          "id": "P3-27cf9511e142",
+          "seat": 3,
+          "name": "大壮",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜无信息，选择守护一个中间位置玩家以增加挡刀概率，避免狼人首刀边缘位置。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P3-27cf9511e142"
+      }
+    },
+    {
+      "id": "4e5057ee-41f9-4d7b-a333-b833cd112a2e",
+      "ts": 1788605537.6305892,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "481d5fe7-24ca-4b71-b663-24edfbc7152e",
+      "ts": 1788605537.7112114,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "36d3ae00-757f-4e38-92a6-0b229675ad55",
+      "ts": 1788605537.7112403,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P3-27cf9511e142",
+        "player_name": "大壮",
+        "reason": "guard_witch_conflict"
+      }
+    },
+    {
+      "id": "2465ee94-e799-49e3-b991-9dd1b0337414",
+      "ts": 1788605537.7112508,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜死亡：大壮（奶穿）。"
+      }
+    },
+    {
+      "id": "32741816-1f61-458b-af92-a3d8d8508b79",
+      "ts": 1788605537.7113073,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "78eb6dad-c2a5-4b8b-897e-851a20272a9e",
+      "ts": 1788605537.7113206,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "ee499aea-b500-491f-8308-6638cff941a0",
+      "ts": 1788605538.0330107,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "7a0258fa-5ff6-4882-88a1-cec3e350d709",
+      "ts": 1788605539.5477066,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-3cf91333cb29",
+        "actor_name": "卓砚",
+        "speech": "我是1号预言家。昨夜查验5号周星野，结果为狼人。这是我的真实查验，请各位好人今天跟我一起投出5号周星野。场上还剩一名狼人，后续我会继续查验推进。",
+        "reasoning": "我是预言家，战术指令要求白天必须如实公布身份与查验结果。我查验了5号周星野为狼人，必须公开跳预言家并报出查验结果。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 5,
+        "claim_result": "wolf",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "2491d46e-4d40-492b-95bd-363e4665f1ac",
+      "ts": 1788605542.376542,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-2aef41ee7ce7",
+        "actor_name": "莫离",
+        "speech": "1号首日跳预言家报5号查杀，信息量很大但需要时间消化。大壮是奶穿出局，说明守卫和女巫的操作撞了，这本身不指向具体阵营。我暂时不急于站边，想先听听5号如何回应这个查杀，以及其他人的看法。如果5号发言无法自证，我倾向于跟1号的查验走。",
+        "reasoning": "1号首夜跳预言家报查杀5号。作为村民我需要谨慎评估跳预言家的可信度，但首夜直接对跳在没有更多信息前不宜过早站边。先保持观察，发言中表达对1号查验的关注但不急于全盘接受。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "d51b0b9b-79b3-4743-a9d9-0ef5d1c63c52",
+      "ts": 1788605545.2371771,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "speech": "我才是真正的预言家。1号卓砚在悍跳，他报5号查杀完全是无稽之谈。我昨夜查验的是1号卓砚，结果为狼人。1号这么急着跳出来发查杀，就是想先声夺人、带崩好人节奏。大家想想，1号首日跳预言家直接给查杀，节奏带得太快了，这本身就是狼人悍跳的典型打法。我建议今天先出1号，他是铁狼。",
+        "reasoning": "我是前置位（4号），战术指令要求我悍跳预言家。1号已经跳了预言家并查杀5号（我的狼队友）。我需要与1号对跳，并编造查验来搅乱局面。我选择跳预言家查杀1号，既否定1号的可信度，又保护队友5号。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 1,
+        "claim_result": "wolf",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "bbf0a0b9-965a-45e7-9015-8773da06cd65",
+      "ts": 1788605545.2372036,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "speech": "我后续会继续查验推进，帮好人锁定最后一只狼。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "d5fe0a1e-29e1-495c-9efe-96bed5030a7e",
+      "ts": 1788605548.4922445,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-5282fd0277f1",
+        "actor_name": "周星野",
+        "speech": "1号说我被查杀是狼？这显然是悍跳栽赃。我仔细听了4号的话，她逻辑很清晰：1号首日就急着跳预言家发查杀，节奏太快，正是狼人悍跳的典型打法。反观4号，她的发言更沉稳，查验逻辑也合理。我支持4号是真正的预言家，今天应该先出1号这个悍跳狼。场上还剩一只狼，出掉1号后局面就明朗了。",
+        "reasoning": "我是后置位（5号），1号和4号都已跳预言家。4号是我的狼队友，她跳预言家报1号查杀。我需要与她们对跳或支持队友。既然4号已经悍跳并报1号查杀，我作为狼队友应支持4号，同时为自己辩解1号对我的查杀是假的。最合理的是支持4号，指出1号在悍跳。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "support",
+        "target_seat": 4
+      }
+    },
+    {
+      "id": "907c0eff-2083-47ac-a0da-f40cb1dffa18",
+      "ts": 1788605550.642785,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-a593440191b7",
+        "actor_name": "云锦",
+        "speech": "两个预言家对跳，1号查5号狼，4号查1号狼。目前信息量不足，我不急于站边。大壮奶穿出局说明守卫和女巫撞了，但这不指向阵营。我需要更多信息来判断谁是真预言家，先听大家后续表态。",
+        "reasoning": "两个预言家对跳，分别发5号和1号查杀。作为守卫，我需要基于事实判断。4号指责1号悍跳，但4号查验1号为狼，两者逻辑上互相矛盾。目前信息不足，先保持中立，让局势继续展开，观察后续发言和投票。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "62097805-be8e-41af-a868-de603618022d",
+      "ts": 1788605553.8127058,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-e74ca4c4cf29",
+        "actor_name": "南柯辞",
+        "speech": "两个预言家对跳，信息量确实很大。我注意到一个细节：5号被1号查杀后，立刻全力支持4号，逻辑上他作为被查杀对象天然倾向反对1号，这个站边有利益驱动成分，不能作为4号为真的依据。目前我不急于站边，想听1号和4号后续能否提供更多可验证的信息，也需要观察其他人的表态倾向。",
+        "reasoning": "两个预言家对跳，1号查5号狼，4号查1号狼。作为村民，我无法直接分辨谁真谁假，但1号首日跳预言家直接发查杀，节奏确实偏快；而5号作为被查杀者立刻站边4号，存在明显的利益关联。我需要更多信息来判断，先保持中立观察，不急于站边。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "153ed3ec-6628-4bf6-86c7-eb73ea1d7210",
+      "ts": 1788605553.9734418,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "74fd7648-80f6-4160-b555-2bd86267153f",
+      "ts": 1788605555.648965,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-3cf91333cb29",
+        "voter_name": "卓砚",
+        "target_id": "P5-5282fd0277f1",
+        "target_name": "周星野",
+        "reasoning": "4号悍跳保狼，5号被查杀后立即倒向4号，利益绑定明显，先出铁狼。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "22780d95-c4b8-4a99-a149-a5f711ad48ce",
+      "ts": 1788605555.648992,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-2aef41ee7ce7",
+        "voter_name": "莫离",
+        "target_id": "P1-3cf91333cb29",
+        "target_name": "卓砚",
+        "reasoning": "4号查验逻辑更完整，1号首日急发查杀节奏过快，且5号站边有利益驱动不能作为依据。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e2b94f1a-911e-4014-bb63-49d6b8b61124",
+      "ts": 1788605555.649009,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-4c3fcebefd31",
+        "voter_name": "王雅文",
+        "target_id": "P1-3cf91333cb29",
+        "target_name": "卓砚",
+        "reasoning": "1号首日悍跳发查杀节奏过快，且我查验其为狼人，铁狼应优先出局。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "d8dc267f-9af8-4d64-8802-4e31e87213ad",
+      "ts": 1788605555.6490228,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-5282fd0277f1",
+        "voter_name": "周星野",
+        "target_id": "P1-3cf91333cb29",
+        "target_name": "卓砚",
+        "reasoning": "1号首日悍跳预言家发查杀，节奏过快，4号逻辑更清晰可信。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "a332e48a-5887-4d00-ab38-640d5f6f6d4e",
+      "ts": 1788605555.649039,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-a593440191b7",
+        "voter_name": "云锦",
+        "target_id": "P5-5282fd0277f1",
+        "target_name": "周星野",
+        "reasoning": "1号首日查验目标明确，5号被查杀后急于站边4号，利益驱动过强且无有效反驳。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "3ab9e86b-9430-4d13-a69a-fa7efa252d34",
+      "ts": 1788605555.649053,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-e74ca4c4cf29",
+        "voter_name": "南柯辞",
+        "target_id": "P5-5282fd0277f1",
+        "target_name": "周星野",
+        "reasoning": "他是被1号查杀后立即站边4号的利益驱动者，且发言缺乏独立判断，狼面较大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "ba277dc1-1a9f-4570-926f-7a0169c1941b",
+      "ts": 1788605555.729214,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "7d18ecad-cfb7-4d90-ad1e-c47b42b52978",
+      "ts": 1788605555.7292697,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Vote tied among 卓砚, 周星野. Random tie-break eliminates 卓砚."
+      }
+    },
+    {
+      "id": "9081a14b-c971-4023-bc43-dd9d976bf163",
+      "ts": 1788605555.729279,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "卓砚 was voted out."
+      }
+    },
+    {
+      "id": "b5ebe1ed-f55a-424f-b4d5-8b39d9f3954f",
+      "ts": 1788605555.729289,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P1-3cf91333cb29",
+        "player_name": "卓砚",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "e8c435b6-07a4-4f77-a9eb-f9140c44a59e",
+      "ts": 1788605555.7293565,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "61d20297-5ceb-4e85-b8a7-8e13a1ddd3a4",
+      "ts": 1788605555.729425,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "a22d8e43-35fc-464b-8522-01bb374d6860",
+      "ts": 1788605555.7294326,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "90f61d37-ff07-4aac-b16d-497f522a1881",
+      "ts": 1788605555.809796,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "ef41bf42-f032-4b81-b8a4-abe9f8f9ebe6",
+      "ts": 1788605555.809827,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P4-4c3fcebefd31",
+          "P5-5282fd0277f1"
+        ],
+        "wolf_names": [
+          "王雅文",
+          "周星野"
+        ]
+      }
+    },
+    {
+      "id": "d6201579-3d6a-4f3e-b92d-b52147bcf389",
+      "ts": 1788605557.0173743,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "message": "王雅文（私聊）：今晚刀6号云锦，她票型清晰且存活价值高，优先处理。明天白天我建议带节奏投7号南柯辞，她跟票行为明显，容易推。",
+        "speech": "今晚刀6号云锦，她票型清晰且存活价值高，优先处理。明天白天我建议带节奏投7号南柯辞，她跟票行为明显，容易推。",
+        "proposed_target_id": "P6-a593440191b7",
+        "proposed_target_name": "云锦"
+      }
+    },
+    {
+      "id": "5927728e-3106-469b-89eb-fe6f3e6f97e9",
+      "ts": 1788605558.1825664,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-5282fd0277f1",
+        "actor_name": "周星野",
+        "message": "周星野（私聊）：刀6号云锦，她的逻辑线太干净，留到白天必成焦点。明天白天我配合你推7号南柯辞，她跟票痕迹明显，节奏好带。",
+        "speech": "刀6号云锦，她的逻辑线太干净，留到白天必成焦点。明天白天我配合你推7号南柯辞，她跟票痕迹明显，节奏好带。",
+        "proposed_target_id": "P6-a593440191b7",
+        "proposed_target_name": "云锦"
+      }
+    },
+    {
+      "id": "cdd0ed8c-6aed-4b8f-a4f3-bb92d495d68d",
+      "ts": 1788605558.1826088,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "963ff90f-e562-46e6-83e5-929d469c8988",
+      "ts": 1788605558.1826196,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "message": "王雅文 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "0d31de7f-8e26-452b-8441-7844c1797bb9",
+      "ts": 1788605559.5922477,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "actor_id": "P4-4c3fcebefd31",
+        "actor_name": "王雅文",
+        "action_type": "attack",
+        "target": {
+          "id": "P6-a593440191b7",
+          "seat": 6,
+          "name": "云锦",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队共识已明确刀6号云锦，与队友周星野目标一致。她逻辑线清晰，留到白天必成焦点，优先处理。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P6-a593440191b7",
+        "target_name": "云锦"
+      }
+    },
+    {
+      "id": "2639d92e-ac5d-420d-a348-c1bde23c27a2",
+      "ts": 1788605559.5922694,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P5-5282fd0277f1",
+        "actor_name": "周星野",
+        "message": "周星野 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P4-4c3fcebefd31",
+            "wolf_name": "王雅文",
+            "target_id": "P6-a593440191b7",
+            "target_name": "云锦"
+          }
+        ]
+      }
+    },
+    {
+      "id": "902043be-235b-4830-98d8-a1adc54d43e9",
+      "ts": 1788605560.8177764,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "actor_id": "P5-5282fd0277f1",
+        "actor_name": "周星野",
+        "action_type": "attack",
+        "target": {
+          "id": "P6-a593440191b7",
+          "seat": 6,
+          "name": "云锦",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "队友王雅文已提交刀6号云锦，我们共识一致。云锦逻辑清晰且存活价值高，优先处理是正确的选择。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P6-a593440191b7",
+        "target_name": "云锦"
+      }
+    },
+    {
+      "id": "e8046e21-1910-4be9-8394-26e1cddeac9c",
+      "ts": 1788605560.8177936,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-4c3fcebefd31",
+        "P5-5282fd0277f1"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为云锦。",
+        "target_id": "P6-a593440191b7",
+        "target_name": "云锦",
+        "votes": {
+          "P4-4c3fcebefd31": "P6-a593440191b7",
+          "P5-5282fd0277f1": "P6-a593440191b7"
+        }
+      }
+    },
+    {
+      "id": "d2c42d4e-9493-45f6-8c5f-f88b220dd5ed",
+      "ts": 1788605560.8178287,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "b0960bf6-155d-46d2-bbe2-845b854e4484",
+      "ts": 1788605560.817833,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "private",
+      "visible_to": [],
+      "payload": {
+        "message": "预言家已出局，无法行动。"
+      }
+    },
+    {
+      "id": "420242c8-99ac-4c41-8646-6af8aaf744c3",
+      "ts": 1788605560.8982606,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "2d34a56d-5aab-47dd-bbde-ee8575507795",
+      "ts": 1788605560.8982716,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "private",
+      "visible_to": [],
+      "payload": {
+        "message": "女巫已出局，无法行动。"
+      }
+    },
+    {
+      "id": "fc4b50b9-7f36-4e86-aff3-cfc55a82c2ab",
+      "ts": 1788605560.9785807,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "002540c3-39a4-4997-90e5-5ad320852313",
+      "ts": 1788605562.6920013,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-a593440191b7"
+      ],
+      "payload": {
+        "actor_id": "P6-a593440191b7",
+        "actor_name": "云锦",
+        "action_type": "guard",
+        "target": {
+          "id": "P2-2aef41ee7ce7",
+          "seat": 2,
+          "name": "莫离",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "昨晚我守了3号大壮，女巫也救了他导致奶穿。今夜不能连守3号（已死）。现在存活5人，我需要选择守护对象。信息有限，考虑守护可能的预言家或关键位置。D1我投了5号周星野，1号卓砚被放逐。目前场上局势不明，我选择守护2号莫离以防狼刀。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-2aef41ee7ce7"
+      }
+    },
+    {
+      "id": "5275b47f-4df4-40e4-a990-d0ffb0e0ef23",
+      "ts": 1788605562.7723749,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "865572fe-0e20-4741-b762-3854bfcb7028",
+      "ts": 1788605562.772442,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P6-a593440191b7",
+        "player_name": "云锦",
+        "reason": "werewolf_killed"
+      }
+    },
+    {
+      "id": "2d44e7aa-d195-48a0-a49b-32ea73ecc1c0",
+      "ts": 1788605562.7724726,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜死亡：云锦（狼刀）。"
+      }
+    },
+    {
+      "id": "fde754d7-0a23-49dd-bf19-843f92431582",
+      "ts": 1788605562.7725086,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    },
+    {
+      "id": "6a03e842-8600-4737-a123-035952675cc3",
+      "ts": 1788605562.772581,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {},
+  "vote_history": {
+    "1": {
+      "P1-3cf91333cb29": "P5-5282fd0277f1",
+      "P2-2aef41ee7ce7": "P1-3cf91333cb29",
+      "P4-4c3fcebefd31": "P1-3cf91333cb29",
+      "P5-5282fd0277f1": "P1-3cf91333cb29",
+      "P6-a593440191b7": "P5-5282fd0277f1",
+      "P7-e74ca4c4cf29": "P5-5282fd0277f1"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P1-3cf91333cb29",
+        "seat": 1,
+        "votes": 3.0
+      }
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "大壮 died by guard_witch_conflict",
+      "卓砚: 我是1号预言家。昨夜查验5号周星野，结果为狼人。这是我的真实查验，请各位好人今天跟我一起投出5号周星野。场上还剩一名狼人，后续我会继续查验推进。",
+      "莫离: 1号首日跳预言家报5号查杀，信息量很大但需要时间消化。大壮是奶穿出局，说明守卫和女巫的操作撞了，这本身不指向具体阵营。我暂时不急于站边，想先听听5号如何回应这个查杀，以及其他人的看法。如果5号发言无法自证，我倾向于跟1号的查验走。",
+      "王雅文: 我才是真正的预言家。1号卓砚在悍跳，他报5号查杀完全是无稽之谈。我昨夜查验的是1号卓砚，结果为狼人。1号这么急着跳出来发查杀，就是想先声夺人、带崩好人节奏。大家想想，1号首日跳预言家直接给查杀，节奏带得太快了，这本身就是狼人悍跳的典型打法。我建议今天先出1号，他是铁狼。",
+      "王雅文: 我后续会继续查验推进，帮好人锁定最后一只狼。",
+      "周星野: 1号说我被查杀是狼？这显然是悍跳栽赃。我仔细听了4号的话，她逻辑很清晰：1号首日就急着跳预言家发查杀，节奏太快，正是狼人悍跳的典型打法。反观4号，她的发言更沉稳，查验逻辑也合理。我支持4号是真正的预言家，今天应该先出1号这个悍跳狼。场上还剩一只狼，出掉1号后局面就明朗了。",
+      "云锦: 两个预言家对跳，1号查5号狼，4号查1号狼。目前信息量不足，我不急于站边。大壮奶穿出局说明守卫和女巫撞了，但这不指向阵营。我需要更多信息来判断谁是真预言家，先听大家后续表态。",
+      "南柯辞: 两个预言家对跳，信息量确实很大。我注意到一个细节：5号被1号查杀后，立刻全力支持4号，逻辑上他作为被查杀对象天然倾向反对1号，这个站边有利益驱动成分，不能作为4号为真的依据。目前我不急于站边，想听1号和4号后续能否提供更多可验证的信息，也需要观察其他人的表态倾向。",
+      "卓砚 voted for 周星野 (4号悍跳保狼，5号被查杀后立即倒向4号，利益绑定明显，先出铁狼。)",
+      "莫离 voted for 卓砚 (4号查验逻辑更完整，1号首日急发查杀节奏过快，且5号站边有利益驱动不能作为依据。)",
+      "王雅文 voted for 卓砚 (1号首日悍跳发查杀节奏过快，且我查验其为狼人，铁狼应优先出局。)",
+      "周星野 voted for 卓砚 (1号首日悍跳预言家发查杀，节奏过快，4号逻辑更清晰可信。)",
+      "云锦 voted for 周星野 (1号首日查验目标明确，5号被查杀后急于站边4号，利益驱动过强且无有效反驳。)",
+      "南柯辞 voted for 周星野 (他是被1号查杀后立即站边4号的利益驱动者，且发言缺乏独立判断，狼面较大。)",
+      "卓砚 died by voted_out"
+    ],
+    "2": [
+      "云锦 died by werewolf_killed",
+      "Game ended: wolf (wolves_reached_parity)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "大壮",
+        "player_id": "P3-27cf9511e142",
+        "reason": "guard_witch_conflict"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "卓砚",
+        "speaker_id": "P1-3cf91333cb29",
+        "content": "我是1号预言家。昨夜查验5号周星野，结果为狼人。这是我的真实查验，请各位好人今天跟我一起投出5号周星野。场上还剩一名狼人，后续我会继续查验推进。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "莫离",
+        "speaker_id": "P2-2aef41ee7ce7",
+        "content": "1号首日跳预言家报5号查杀，信息量很大但需要时间消化。大壮是奶穿出局，说明守卫和女巫的操作撞了，这本身不指向具体阵营。我暂时不急于站边，想先听听5号如何回应这个查杀，以及其他人的看法。如果5号发言无法自证，我倾向于跟1号的查验走。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "王雅文",
+        "speaker_id": "P4-4c3fcebefd31",
+        "content": "我才是真正的预言家。1号卓砚在悍跳，他报5号查杀完全是无稽之谈。我昨夜查验的是1号卓砚，结果为狼人。1号这么急着跳出来发查杀，就是想先声夺人、带崩好人节奏。大家想想，1号首日跳预言家直接给查杀，节奏带得太快了，这本身就是狼人悍跳的典型打法。我建议今天先出1号，他是铁狼。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "王雅文",
+        "speaker_id": "P4-4c3fcebefd31",
+        "content": "我后续会继续查验推进，帮好人锁定最后一只狼。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "周星野",
+        "speaker_id": "P5-5282fd0277f1",
+        "content": "1号说我被查杀是狼？这显然是悍跳栽赃。我仔细听了4号的话，她逻辑很清晰：1号首日就急着跳预言家发查杀，节奏太快，正是狼人悍跳的典型打法。反观4号，她的发言更沉稳，查验逻辑也合理。我支持4号是真正的预言家，今天应该先出1号这个悍跳狼。场上还剩一只狼，出掉1号后局面就明朗了。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "云锦",
+        "speaker_id": "P6-a593440191b7",
+        "content": "两个预言家对跳，1号查5号狼，4号查1号狼。目前信息量不足，我不急于站边。大壮奶穿出局说明守卫和女巫撞了，但这不指向阵营。我需要更多信息来判断谁是真预言家，先听大家后续表态。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-e74ca4c4cf29",
+        "content": "两个预言家对跳，信息量确实很大。我注意到一个细节：5号被1号查杀后，立刻全力支持4号，逻辑上他作为被查杀对象天然倾向反对1号，这个站边有利益驱动成分，不能作为4号为真的依据。目前我不急于站边，想听1号和4号后续能否提供更多可验证的信息，也需要观察其他人的表态倾向。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "卓砚",
+        "voter_id": "P1-3cf91333cb29",
+        "target_name": "周星野",
+        "target_id": "P5-5282fd0277f1",
+        "reasoning": "4号悍跳保狼，5号被查杀后立即倒向4号，利益绑定明显，先出铁狼。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "莫离",
+        "voter_id": "P2-2aef41ee7ce7",
+        "target_name": "卓砚",
+        "target_id": "P1-3cf91333cb29",
+        "reasoning": "4号查验逻辑更完整，1号首日急发查杀节奏过快，且5号站边有利益驱动不能作为依据。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "王雅文",
+        "voter_id": "P4-4c3fcebefd31",
+        "target_name": "卓砚",
+        "target_id": "P1-3cf91333cb29",
+        "reasoning": "1号首日悍跳发查杀节奏过快，且我查验其为狼人，铁狼应优先出局。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "周星野",
+        "voter_id": "P5-5282fd0277f1",
+        "target_name": "卓砚",
+        "target_id": "P1-3cf91333cb29",
+        "reasoning": "1号首日悍跳预言家发查杀，节奏过快，4号逻辑更清晰可信。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "云锦",
+        "voter_id": "P6-a593440191b7",
+        "target_name": "周星野",
+        "target_id": "P5-5282fd0277f1",
+        "reasoning": "1号首日查验目标明确，5号被查杀后急于站边4号，利益驱动过强且无有效反驳。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "南柯辞",
+        "voter_id": "P7-e74ca4c4cf29",
+        "target_name": "周星野",
+        "target_id": "P5-5282fd0277f1",
+        "reasoning": "他是被1号查杀后立即站边4号的利益驱动者，且发言缺乏独立判断，狼面较大。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "卓砚",
+        "player_id": "P1-3cf91333cb29",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "云锦",
+        "player_id": "P6-a593440191b7",
+        "reason": "werewolf_killed"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "wolf",
+  "night_actions": {
+    "guard_target_id": "P2-2aef41ee7ce7",
+    "last_guard_target_id": "P2-2aef41ee7ce7",
+    "wolf_votes": {
+      "P4-4c3fcebefd31": "P6-a593440191b7",
+      "P5-5282fd0277f1": "P6-a593440191b7"
+    },
+    "wolf_target_id": "P6-a593440191b7",
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": null,
+    "seer_result": null,
+    "deaths": [
+      {
+        "player_id": "P6-a593440191b7",
+        "reason": "werewolf_killed"
+      }
+    ]
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

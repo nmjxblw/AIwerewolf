@@ -1,0 +1,45 @@
+{
+  "label": "VJ",
+  "seed": 9332,
+  "winner": "wolf",
+  "end_reason": "wolves_reached_parity",
+  "days": 2,
+  "elapsed": 58.2,
+  "day1_vote_pattern": {
+    "1号:李默": 6,
+    "4号:云锦": 1
+  },
+  "day1_pattern_detail": {
+    "4号:云锦": [
+      "1号:李默"
+    ],
+    "1号:李默": [
+      "2号:甘骁",
+      "3号:司南",
+      "4号:云锦",
+      "5号:袁汐",
+      "6号:莫离",
+      "7号:宋知野"
+    ]
+  },
+  "day1_seer_claims": [
+    "1号:李默(平民)",
+    "2号:甘骁(女巫)",
+    "3号:司南(狼人)",
+    "4号:云锦(真预言家)",
+    "5号:袁汐(狼人)",
+    "6号:莫离(守卫)",
+    "7号:宋知野(平民)",
+    "7号:宋知野(平民)"
+  ],
+  "day1_nonseer_claims": 7,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 4,
+  "llm_calls": 38,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": false
+}

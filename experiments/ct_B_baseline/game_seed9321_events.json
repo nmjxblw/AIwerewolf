@@ -1,0 +1,2526 @@
+{
+  "id": "3e501927-a923-4086-bfeb-99205015e847",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-14be22e6d138",
+      "seat": 1,
+      "name": "顾景行",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "顾景行",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P2-5145f3d096f6",
+      "seat": 2,
+      "name": "莱昂",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "莱昂",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-79ec97a89c06",
+      "seat": 3,
+      "name": "夏知白",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "夏知白",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-ccf7e4dd11ac",
+      "seat": 4,
+      "name": "南柯辞",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "南柯辞",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P5-e78a7a34c598",
+      "seat": 5,
+      "name": "韩书研",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "韩书研",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P6-25776e0c376f",
+      "seat": 6,
+      "name": "齐慕白",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "齐慕白",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P7-14c155efd880",
+      "seat": 7,
+      "name": "王雅文",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "王雅文",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    }
+  ],
+  "events": [
+    {
+      "id": "c8674938-5aaf-4485-a6a2-8cf319260747",
+      "ts": 1788607343.0501933,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "3e501927-a923-4086-bfeb-99205015e847",
+        "players": [
+          {
+            "id": "P1-14be22e6d138",
+            "seat": 1,
+            "name": "顾景行",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-5145f3d096f6",
+            "seat": 2,
+            "name": "莱昂",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-79ec97a89c06",
+            "seat": 3,
+            "name": "夏知白",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-ccf7e4dd11ac",
+            "seat": 4,
+            "name": "南柯辞",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-e78a7a34c598",
+            "seat": 5,
+            "name": "韩书研",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-25776e0c376f",
+            "seat": 6,
+            "name": "齐慕白",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-14c155efd880",
+            "seat": 7,
+            "name": "王雅文",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "56bcfa7b-4c52-4706-9597-e7664bb48d76",
+      "ts": 1788607343.0502167,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "【规则公告】本局启用诚实规则：只有真正的预言家可以在发言中声称预言家身份、公布查验结果或发放金水/查杀；其他玩家发言中不得自称或暗示自己是预言家/先知、不得声称自己查验过任何玩家、不得给任何人金水或查杀。违反诚实规则的发言将被系统当场驳回。"
+      }
+    },
+    {
+      "id": "13a1ce4c-b703-4ff7-9b0a-ebe2f3af101b",
+      "ts": 1788607343.0503304,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 顾景行, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "ae15cb14-3566-4680-86bd-2469390b34f2",
+      "ts": 1788607343.0503912,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-5145f3d096f6"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 莱昂, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "ba554456-9d19-4b51-993b-310d1074f75d",
+      "ts": 1788607343.0504358,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-79ec97a89c06"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 夏知白, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "d25b7970-f7eb-4e31-ba79-f281c29eec08",
+      "ts": 1788607343.0504797,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-ccf7e4dd11ac"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 南柯辞, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "0b222e9e-f804-484e-84ce-21b571e6e74b",
+      "ts": 1788607343.050522,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-e78a7a34c598"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 韩书研, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "5a331b1a-80c2-4066-946f-ae33c602b0ce",
+      "ts": 1788607343.0505702,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 齐慕白, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "07423883-5548-4728-89fa-3a122708649c",
+      "ts": 1788607343.0506094,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-14c155efd880"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 王雅文, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "fe2c64f5-11f7-4b08-9365-ae9db69ac483",
+      "ts": 1788607343.050669,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "95254491-42f0-4bfc-8616-ebccc3c87734",
+      "ts": 1788607343.0506802,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "f4d9a4dc-9853-4405-bd65-3e6a413e4e03",
+      "ts": 1788607343.131507,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "8270be07-d139-4d36-9a82-709810c24d3e",
+      "ts": 1788607343.1315317,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P1-14be22e6d138",
+          "P6-25776e0c376f"
+        ],
+        "wolf_names": [
+          "顾景行",
+          "齐慕白"
+        ]
+      }
+    },
+    {
+      "id": "b17c99ba-027a-4f10-a4a0-105086464120",
+      "ts": 1788607345.5830784,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P1-14be22e6d138",
+        "actor_name": "顾景行",
+        "message": "顾景行（私聊）：今晚刀4号南柯辞，先清中间位置，避免首夜被女巫救到边缘位。你那边按计划行动。",
+        "speech": "今晚刀4号南柯辞，先清中间位置，避免首夜被女巫救到边缘位。你那边按计划行动。",
+        "proposed_target_id": "P4-ccf7e4dd11ac",
+        "proposed_target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "8f0924b8-d439-4fb3-80e7-ca5207e971cc",
+      "ts": 1788607347.3633351,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "message": "齐慕白（私聊）：刀4号南柯辞。首夜无信息，清中间位稳妥，避免撞上女巫的救援目标。",
+        "speech": "刀4号南柯辞。首夜无信息，清中间位稳妥，避免撞上女巫的救援目标。",
+        "proposed_target_id": "P4-ccf7e4dd11ac",
+        "proposed_target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "b253cf9a-0d21-4d5d-b209-f7ec814ce6d2",
+      "ts": 1788607347.363366,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "cebb082b-fa40-44a0-8ddd-4b027dac66d0",
+      "ts": 1788607347.3633733,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P1-14be22e6d138",
+        "actor_name": "顾景行",
+        "message": "顾景行 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "573c1664-8489-44a7-8995-492635e48edb",
+      "ts": 1788607348.3268735,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "actor_id": "P1-14be22e6d138",
+        "actor_name": "顾景行",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-ccf7e4dd11ac",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友齐慕白已达成共识，首夜刀4号南柯辞，清中间位置，避免撞上女巫救援目标。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-ccf7e4dd11ac",
+        "target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "acef9cb2-28f6-4b70-a2cf-dc1babbe8be1",
+      "ts": 1788607348.3268895,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "message": "齐慕白 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P1-14be22e6d138",
+            "wolf_name": "顾景行",
+            "target_id": "P4-ccf7e4dd11ac",
+            "target_name": "南柯辞"
+          }
+        ]
+      }
+    },
+    {
+      "id": "d74e21a5-f3ff-449c-85c2-208524d7066c",
+      "ts": 1788607349.2448578,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-ccf7e4dd11ac",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友顾景行达成一致，确认刀4号南柯辞，保持狼队统一行动。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-ccf7e4dd11ac",
+        "target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "f863f962-ad56-4bdb-891e-107132ada056",
+      "ts": 1788607349.2448869,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-14be22e6d138",
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为南柯辞。",
+        "target_id": "P4-ccf7e4dd11ac",
+        "target_name": "南柯辞",
+        "votes": {
+          "P1-14be22e6d138": "P4-ccf7e4dd11ac",
+          "P6-25776e0c376f": "P4-ccf7e4dd11ac"
+        }
+      }
+    },
+    {
+      "id": "32a5d8e1-c177-4740-8472-4ccc13ffc60b",
+      "ts": 1788607349.244912,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "3279e349-6eb1-40e9-8b94-42b822c05bb2",
+      "ts": 1788607349.2449548,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "06370012-0949-4a14-914d-f5278dde98b5",
+      "ts": 1788607350.4923964,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-e78a7a34c598"
+      ],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "action_type": "divine",
+        "target": {
+          "id": "P1-14be22e6d138",
+          "seat": 1,
+          "name": "顾景行",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜查验应获取信息，选择1号顾景行进行查验。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-14be22e6d138"
+      }
+    },
+    {
+      "id": "8fad133d-c3d7-4d50-81b7-e5676e26decf",
+      "ts": 1788607350.4924097,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-e78a7a34c598"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P1-14be22e6d138",
+        "target_name": "顾景行",
+        "is_wolf": true,
+        "message": "Seer check: 顾景行 is wolf."
+      }
+    },
+    {
+      "id": "686d52ac-a629-4d04-8f72-daaebeb26294",
+      "ts": 1788607350.4924307,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "1d564b6f-ceb9-4de0-871b-72db3437703a",
+      "ts": 1788607350.5730798,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "ed9c767b-2b86-4538-8e13-18795ee5348f",
+      "ts": 1788607351.7354095,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P7-14c155efd880"
+      ],
+      "payload": {
+        "actor_id": "P7-14c155efd880",
+        "actor_name": "王雅文",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P4-ccf7e4dd11ac",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜被刀4号，解药可救。作为女巫，首夜救人是最稳妥的选择，能确保好人阵营不减员，同时保留毒药以备后续使用。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-ccf7e4dd11ac"
+      }
+    },
+    {
+      "id": "ec98f871-85ed-4a40-bc49-e6e273fa4389",
+      "ts": 1788607351.735448,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "6eec6358-22ae-4360-9a2f-d52185abe0cc",
+      "ts": 1788607351.8160226,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "533934e2-d392-4eae-9d2e-8cb09dce5f27",
+      "ts": 1788607353.3323426,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-ccf7e4dd11ac"
+      ],
+      "payload": {
+        "actor_id": "P4-ccf7e4dd11ac",
+        "actor_name": "南柯辞",
+        "action_type": "guard",
+        "target": {
+          "id": "P1-14be22e6d138",
+          "seat": 1,
+          "name": "顾景行",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "第一晚没有信息，守卫应随机守护一名玩家以最大化挡刀概率，选择守护1号。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-14be22e6d138"
+      }
+    },
+    {
+      "id": "739942a5-ce04-4957-91dc-cf522e46fd15",
+      "ts": 1788607353.3323727,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "1429251d-5345-462e-8e8e-1b2774e35f6a",
+      "ts": 1788607353.412799,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "75cae8e4-3e57-457c-ad0a-4acb66314373",
+      "ts": 1788607353.41283,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "6435e1c1-2d48-4dd1-8a37-b01f05318592",
+      "ts": 1788607353.4129374,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "bf559557-5425-4d8a-ba09-4f1fea794243",
+      "ts": 1788607353.4129581,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "378d6d24-0565-4dfc-9d2e-a191ce4c6bad",
+      "ts": 1788607353.7346323,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "df014c27-6172-4b57-b828-621d1c452a39",
+      "ts": 1788607355.487967,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-14be22e6d138",
+        "actor_name": "顾景行",
+        "speech": "首夜平安，说明守卫或女巫可能发挥了作用，也可能是狼队选择了观望。现在信息很少，先听听各位的发言和看法，再判断方向。",
+        "reasoning": "首日白天，作为狼人不宜过早暴露立场或带节奏。昨夜平安夜，信息量有限，先做平铺陈述，观察场上反应，保持低调。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "079d22e6-408d-423d-b8bc-4774c06291e5",
+      "ts": 1788607357.3844516,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-5145f3d096f6",
+        "actor_name": "莱昂",
+        "speech": "首夜平安，信息确实很少。1号说得对，平安夜可能是守卫或女巫发挥了作用，也可能是狼队观望。现在没有实质线索，我不急着下判断，先听听后面几位的发言再作分析。建议大家多聊聊，任何细节都可能是后续推理的切入点。",
+        "reasoning": "首夜平安且信息极少，没有具体的怀疑对象，适合平铺陈述当前判断，引导大家发言获取更多信息。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "b0da3724-4afe-4b30-ac82-4fdc044bb1a3",
+      "ts": 1788607359.6077285,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-79ec97a89c06",
+        "actor_name": "夏知白",
+        "speech": "首夜平安，目前信息量确实很少。1号和2号的发言都比较理性，没有明显破绽。平安夜本身有多种解释，不能据此锁定任何方向。我倾向于先观察大家后续的发言和投票倾向，暂不下结论。在信息不足的阶段，过早站边反而容易给狼队提供误导空间。",
+        "reasoning": "首夜平安，信息极少。作为村民没有额外信息，应该先平铺陈述观察，不急于站边或点人，保持开放多假设的分析态度。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "1030e307-9aab-40ba-80f8-c38113f79445",
+      "ts": 1788607361.28539,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-ccf7e4dd11ac",
+        "actor_name": "南柯辞",
+        "speech": "首夜平安，信息有限。前面几位发言都比较平稳，没有明显异常。平安夜有多种可能解释，目前不宜仓促下结论。我想先听听5、6、7号的看法，再结合后续发言和投票倾向做判断。",
+        "reasoning": "首夜平安，信息极少。作为守卫我昨晚守了1号，平安夜可能是我守到了刀口，也可能是女巫用药或狼队观望。当前阶段信息不足，不宜过早站边或点名，平铺陈述即可。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "23c74800-a352-49d6-baf2-62f68a3e15d0",
+      "ts": 1788607364.2083883,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "speech": "各位，我是5号韩书研，本局真正的预言家。昨夜我查验了1号顾景行，结果是——狼人。这是确凿的查验信息，不是猜测。",
+        "reasoning": "作为预言家，按战术指令必须如实公布身份和查验结果。我查验到1号顾景行是狼人，应立即跳预言家并公布这一关键信息，引导好人阵营投票放逐狼人。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 1,
+        "claim_result": "wolf",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "8e6ca4d5-1901-438e-b4e2-c6d94f3119e1",
+      "ts": 1788607364.2084103,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "speech": "我注意到前面1号、2号、3号、4号的发言都相当平稳，没有任何实质信息输出，这在首夜平安的情况下是正常的。但我的查验结果已经给出了明确方向：1号顾景行是狼。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "ee716a50-90d1-47c2-89da-44cf43cb5872",
+      "ts": 1788607364.2084258,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "speech": "在诚实规则下，我的预言家身份和查验结果都是可信的。我建议今天集中票型放逐1号顾景行。后续我会继续查验，为好人阵营提供更多信息。请各位基于这个确凿线索做出判断。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "af749626-e726-493d-978b-d2e27effbb10",
+      "ts": 1788607366.808359,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "speech": "首夜平安，信息确实有限。5号声称查验了1号是狼，这个信息需要重视，但我也想提醒大家不要仅凭一段发言就急于下结论。1号的发言目前来看比较克制理性，没有明显破绽。我建议再听听1号本人的回应，以及其他人的看法，综合判断后再决定投票方向。现阶段贸然放逐可能误伤好人。",
+        "reasoning": "5号跳预言家并查杀1号（我的狼队友）。在诚实规则下她可能是真预言家，这会威胁到狼队。我需要谨慎应对——既不能暴露自己是狼，也要为可能的局面做铺垫。先保持观察姿态，不急于表态站边，引导大家理性分析。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "28335179-5464-45f9-b04c-ea404a6a612d",
+      "ts": 1788607368.5338247,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-14c155efd880",
+        "actor_name": "王雅文",
+        "speech": "5号若真是预言家，查验结果可信。在诚实规则下，未被系统驳回的预言家声明即为真，其查验1号为狼应作为可信信息。我支持今天放逐1号顾景行。",
+        "reasoning": "5号跳预言家并查验1号为狼。在诚实规则下，5号未被系统驳回，说明其确为真预言家，查验结果可信。作为女巫，我应支持真预言家的查验结果，表态投票放逐1号。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "vote_intent",
+        "target_seat": 1
+      }
+    },
+    {
+      "id": "8fa0f405-9b0d-4c32-9c96-047412ec0c55",
+      "ts": 1788607368.6948748,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "c440727a-8423-4667-8bb2-85512ad0ead3",
+      "ts": 1788607370.5963762,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-14be22e6d138",
+        "voter_name": "顾景行",
+        "target_id": "P5-e78a7a34c598",
+        "target_name": "韩书研",
+        "reasoning": "她的查验结论来得过于突兀且缺乏验证，在信息不足时急于引导放逐，动机可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "48720eae-eed9-48a7-8e94-5a5d3184dce0",
+      "ts": 1788607370.5963995,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-5145f3d096f6",
+        "voter_name": "莱昂",
+        "target_id": "P1-14be22e6d138",
+        "target_name": "顾景行",
+        "reasoning": "5号预言家查验结果在诚实规则下可信，且目前无其他反证。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "a3fd9382-8499-4e70-a25a-a1a777441cc1",
+      "ts": 1788607370.5964136,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-79ec97a89c06",
+        "voter_name": "夏知白",
+        "target_id": "P1-14be22e6d138",
+        "target_name": "顾景行",
+        "reasoning": "5号预言家查验结果为狼，在诚实规则下该信息可信，优先跟随查验放逐。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "f0bffbb7-9965-4adb-bfe4-85414edc279d",
+      "ts": 1788607370.5964267,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-ccf7e4dd11ac",
+        "voter_name": "南柯辞",
+        "target_id": "P1-14be22e6d138",
+        "target_name": "顾景行",
+        "reasoning": "5号预言家查验结果为狼，此信息可信且目前无反驳依据。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "6df37d87-a8bd-4368-9d11-824e5ca61e85",
+      "ts": 1788607370.596468,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-e78a7a34c598",
+        "voter_name": "韩书研",
+        "target_id": "P1-14be22e6d138",
+        "target_name": "顾景行",
+        "reasoning": "昨夜查验确凿显示顾景行为狼人，这是可信的预言家信息，应优先放逐。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e1eaabb6-0491-425f-9c0e-6f9449723cd1",
+      "ts": 1788607370.5964851,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-25776e0c376f",
+        "voter_name": "齐慕白",
+        "target_id": "P5-e78a7a34c598",
+        "target_name": "韩书研",
+        "reasoning": "她的预言家身份来得突兀且急于引导票型，有狼队冲锋嫌疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "482da481-dd2f-43d0-a683-b08f18129e0d",
+      "ts": 1788607370.5964985,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-14c155efd880",
+        "voter_name": "王雅文",
+        "target_id": "P1-14be22e6d138",
+        "target_name": "顾景行",
+        "reasoning": "5号预言家未被驳回的查验结果明确指出1号为狼，事实证据清晰。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "8893710f-7f40-488a-8c0c-69318fbe40de",
+      "ts": 1788607370.677098,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "36f852b1-0f61-4f0e-88fa-e9f0018bf52b",
+      "ts": 1788607370.677157,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "顾景行 was voted out."
+      }
+    },
+    {
+      "id": "423c3377-8801-4c2c-8aea-304bb65beca6",
+      "ts": 1788607370.6771748,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P1-14be22e6d138",
+        "player_name": "顾景行",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "00961783-d391-4a10-83be-229711543987",
+      "ts": 1788607370.67728,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "48a1728f-a6b3-47ab-a736-b2deaee3b8a8",
+      "ts": 1788607370.6773427,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "8132eadd-7ad6-4405-baaa-2999c5bc689d",
+      "ts": 1788607370.677354,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "510e2814-cb32-43fe-bbe6-5920693cfaf3",
+      "ts": 1788607370.7581382,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "f17baf38-1580-45c2-9fe3-ca7133260630",
+      "ts": 1788607370.7581503,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P6-25776e0c376f"
+        ],
+        "wolf_names": [
+          "齐慕白"
+        ]
+      }
+    },
+    {
+      "id": "fd6f4d3f-46c8-4785-b7e2-2b4da7eefeea",
+      "ts": 1788607370.7581801,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_discussion_turn",
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "message": "齐慕白 is choosing a proposed kill target for the wolf team.",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "8806cf25-2e8a-4fd6-a589-fb148f7b7adf",
+      "ts": 1788607372.686688,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "action_type": "attack",
+        "target": {
+          "id": "P5-e78a7a34c598",
+          "seat": 5,
+          "name": "韩书研",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队友顾景行已被放逐，我独自行动。首夜刀4号平安夜，可能被守卫守或女巫救。现在需选择击杀目标。场上存活6人，我需要谨慎选择。5号韩书研声称查验1号是狼，这可能是真预言家发言也可能是狼人混淆视听。考虑到1号顾景行已死且是我的狼队友，5号可能是真预言家，优先击杀预言家5号是合理选择。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_attack_vote",
+        "target_id": "P5-e78a7a34c598",
+        "target_name": "韩书研",
+        "current_votes": {
+          "P6-25776e0c376f": "P5-e78a7a34c598"
+        }
+      }
+    },
+    {
+      "id": "51994815-b573-44db-8e6c-5f0d6f02a710",
+      "ts": 1788607372.686798,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-25776e0c376f"
+      ],
+      "payload": {
+        "kind": "wolf_attack_tally",
+        "message": "Wolf team final attack target is 韩书研.",
+        "target_id": "P5-e78a7a34c598",
+        "target_name": "韩书研",
+        "votes": {
+          "P6-25776e0c376f": "P5-e78a7a34c598"
+        }
+      }
+    },
+    {
+      "id": "c5467c3c-84eb-4825-88b4-466b2b7af542",
+      "ts": 1788607372.686834,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "543f3825-3fb7-4bf9-a08c-2a3037a89635",
+      "ts": 1788607374.2527158,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-e78a7a34c598"
+      ],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "action_type": "divine",
+        "target": {
+          "id": "P6-25776e0c376f",
+          "seat": 6,
+          "name": "齐慕白",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜查验1号顾景行为狼，已被放逐。昨夜无人死亡，说明守卫或女巫发挥了作用，或狼人空刀（但规则禁止空刀）。需要继续查验来锁定第二只狼。优先查验6号齐慕白，因为D1他投给了我和顾景行同票，行为可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P6-25776e0c376f"
+      }
+    },
+    {
+      "id": "0b9c2647-e401-4dbc-be9d-ea62fb7b0364",
+      "ts": 1788607374.2527237,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-e78a7a34c598"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P6-25776e0c376f",
+        "target_name": "齐慕白",
+        "is_wolf": true,
+        "message": "Seer check: 齐慕白 is wolf."
+      }
+    },
+    {
+      "id": "ce67ccf8-7eb8-4e80-b883-5ff6395aa8f6",
+      "ts": 1788607374.3329132,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "fdd34f5a-0a1f-4dac-a6a2-4a90c0aea61e",
+      "ts": 1788607375.982132,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P7-14c155efd880"
+      ],
+      "payload": {
+        "actor_id": "P7-14c155efd880",
+        "actor_name": "王雅文",
+        "action_type": "skip",
+        "target": null,
+        "reasoning": "今晚被刀的是5号韩书研，但解药已用，无法救人。场上存活6人，1号顾景行已被投出（5号称其为狼）。目前已确认1狼出局，还需找另一狼。毒药需要谨慎使用，目前信息不足，贸然毒杀可能误伤好人。我选择保留毒药，等白天更多发言和查验信息后再决策。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "skipped": true
+      }
+    },
+    {
+      "id": "214c714a-8f64-4204-8e9c-aa74183e2e1b",
+      "ts": 1788607376.0625904,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "5be6369a-ce41-4cbe-a6a9-9cf03810218d",
+      "ts": 1788607377.7512832,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-ccf7e4dd11ac"
+      ],
+      "payload": {
+        "actor_id": "P4-ccf7e4dd11ac",
+        "actor_name": "南柯辞",
+        "action_type": "guard",
+        "target": {
+          "id": "P5-e78a7a34c598",
+          "seat": 5,
+          "name": "韩书研",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜平安夜，可能是守卫挡刀、女巫救人或狼人空刀。我D1守护了1号，但1号被投票出局，所以我的守护没有实际生效。昨夜无人死亡，说明可能有狼刀被女巫救或守卫挡下。我不能连守同一人，需要选择一个有潜在价值的目标。5号韩书研在D1被1号顾景行和6号齐慕白投过票，可能是焦点人物，值得守护。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P5-e78a7a34c598"
+      }
+    },
+    {
+      "id": "064874f7-0b2f-4c7b-ada7-d63570d2c4b3",
+      "ts": 1788607377.8316483,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "9c64bcca-35de-4e64-a74a-d9b37fd15d29",
+      "ts": 1788607377.8316753,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "e19144b1-16d9-425b-9e99-947fce75fee8",
+      "ts": 1788607377.831772,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "f5eb8b7e-95ef-4ea6-acbf-e80e0e5a15b6",
+      "ts": 1788607377.8317912,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "46f7f3c5-c0ee-4c76-b0f0-79ee5d9daf3b",
+      "ts": 1788607378.1540449,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "494b0fe6-0c51-4a0b-98c4-cbc1b15df9cb",
+      "ts": 1788607380.9974751,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-5145f3d096f6",
+        "actor_name": "莱昂",
+        "speech": "第二天平安夜，信息仍然有限。回顾昨天票型：1号顾景行被放逐，投他的有4人，而他投了5号。同时5号韩书研也被1号和6号投过。这个分歧点值得留意——1号临死前指向5号，6号也投了5号，但最终1号出局。昨夜无人死亡，可能是守卫守中或女巫用药，也可能是狼队策略性选择。",
+        "reasoning": "首夜平安且无人死亡，信息量很少。作为村民，我需要先梳理已有信息，不宜过早点名。但我注意到D1票型中5号韩书研被两人投票（顾景行、齐慕白），而顾景行被多数票放逐。昨夜平安夜说明狼刀可能被守卫或女巫挡住。先做基线陈述，观察后续发言。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "a574dbec-1e71-40bb-9fdf-b98e42129968",
+      "ts": 1788607380.9974995,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-5145f3d096f6",
+        "actor_name": "莱昂",
+        "speech": "目前我倾向于先观察发言，暂时不锁定目标。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "3e0bfc1a-8fd2-45d6-bae6-148f8ba62f51",
+      "ts": 1788607383.1816883,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-79ec97a89c06",
+        "actor_name": "夏知白",
+        "speech": "第二天平安夜，信息增量有限。回顾昨天票型，1号顾景行和6号齐慕白都投了5号韩书研，而1号最终被放逐。这个交集值得注意，但目前不能据此定论。1号被多人投出，说明当时多数人认为他有狼面。平安夜可能是守卫或女巫作用，也可能是狼队策略。我倾向继续观察，听各位发言后再判断。",
+        "reasoning": "信息仍然有限，平安夜有多种解释。昨天票型中1号顾景行和6号齐慕白都投了5号韩书研，这个交集值得关注，但需要更多发言信息才能判断。先保持观察，不急于锁定目标。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "44a03bc2-e3ea-4858-bff7-c03a43ed04e3",
+      "ts": 1788607385.217465,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-ccf7e4dd11ac",
+        "actor_name": "南柯辞",
+        "speech": "第二天平安夜。回顾票型：1号顾景行和6号齐慕白都投了5号韩书研，但1号被放逐。目前2、3号发言都倾向继续观察。我注意到1号临死前的投票指向5号，这个信息需要留意。平安夜可能是守卫或女巫守住，也可能是狼队策略。目前信息不够，我暂时不锁定目标，想听听5、6、7号的发言。",
+        "reasoning": "作为守卫，我在分析票型。昨天1号顾景行和6号齐慕白都投了5号韩书研，而1号被投出。这个交集值得关注。但信息仍有限，我先保持观察，听更多发言再判断。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "eb0e0f36-b403-475e-a241-fe9ce4f190ed",
+      "ts": 1788607387.6910226,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "speech": "各位，我是5号韩书研，本局真正的预言家。我连续两夜查验，信息确凿：第一夜查1号顾景行——狼人，已被放逐；第二夜查6号齐慕白——狼人。",
+        "reasoning": "我作为预言家，D1查验顾景行为狼人并已将其放逐，D2查验齐慕白为狼人。根据战术指令必须如实公布身份与查验结果。我已查验齐慕白是狼人，这是确凿信息，应公开跳预言家并指出齐慕白。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 6,
+        "claim_result": "wolf",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "40334330-cee4-4f35-b85d-0a241a401cf2",
+      "ts": 1788607387.6910372,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "speech": "回看票型完全吻合：昨天1号和6号同时投我，正是狼人抱团针对真预言家的典型信号。现在场上只剩2狼，1号已出局，6号齐慕白就是场上确定的第二只狼。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "6a8cc757-b624-4a06-851e-9505cdbe09ea",
+      "ts": 1788607387.6910453,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-e78a7a34c598",
+        "actor_name": "韩书研",
+        "speech": "我建议本轮直接放逐6号齐慕白。请大家基于确凿的查验信息投票，不要被\"继续观察\"的模糊发言带偏节奏。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "3f9f806a-2725-4b66-ba29-459a9a0ea612",
+      "ts": 1788607394.665972,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "speech": "5号，你声称自己是预言家，但我注意到一个关键矛盾。你说第一夜查验1号是狼，可如果真是如此，为何昨天白天你没有公布这个查验结果，而是任由1号被投票放逐？如果你当时就指出1号是狼，大家完全可以更早锁定目标。",
+        "reasoning": "5号跳预言家并声称查到我为狼，这对我极其致命。我需要冷静应对。我无法悍跳（规则禁止），但我可以质疑5号查验的可信度——1号已被放逐，死因是投票而非查验，5号声称第一夜查1号为狼但1号是被投票放逐而非被查验放逐，这本身缺乏验证。且场上还有守卫/女巫/预言家配置。我需要引导大家质疑5号的身份，同时不暴露自己。\n\n实际上，由于规则明确\"非预言家的声称会被系统当场驳回\"，5号没有被驳回说明她确实是真预言家。这对我极其不利。我必须想办法转移焦点或制造混乱。\n\n但仔细想，作为狼人，我应当试图让5号看起来可疑，或者引导大家认为她在编造。不过既然系统未驳回，她的查验是可信的。场上6人，2狼（我+1号已死），现在只剩我一只狼。如果5号的查验被采信，我必死。\n\n我需要尝试合理化：质疑为何1号被放逐而非查验出局，暗示5号的信息可能不完整或存在其他解释。同时拉拢其他玩家，看是否有机会让投票分散。\n\n策略：质疑5号的查验逻辑，指出1号是被投票放逐而非被查验淘汰，说明5号\"第一夜查1号是狼\"的说法与1号实际被放逐的事实矛盾——如果预言家首夜就查出狼，为何不直接公布而非等到1号被放逐后才说？这暗示5号可能是狼在编造查验结果来引导票型。虽然系统会驳回假声称，但我不能承认这点，只能从逻辑角度质疑。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "accusation",
+        "target_seat": 5
+      }
+    },
+    {
+      "id": "537220fe-3c79-417f-9ded-a1916e7433df",
+      "ts": 1788607394.6659932,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "speech": "再看你昨天投的是1号，今天才跳出来说自己连续两夜查验，这个时机很微妙——正好在1号出局后、我成为众矢之的时。你的\"第二夜查6号是狼\"没有任何独立验证手段，完全是你单方面陈述。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "bf9d7b9c-8004-49cf-8bb0-e5c6a1199b88",
+      "ts": 1788607394.6660101,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-25776e0c376f",
+        "actor_name": "齐慕白",
+        "speech": "我承认昨天我确实投了5号，因为当时1号也投她，我基于票型做出了判断。但这不代表我就是狼。请各位不要被一段无法验证的\"查验\"牵着走，仔细想想5号发言中的逻辑漏洞。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "dc1d4ab5-61ba-41d2-8787-c58b4baf05f9",
+      "ts": 1788607396.8354483,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-14c155efd880",
+        "actor_name": "王雅文",
+        "speech": "我支持5号的预言家声明。在诚实规则下，未被驳回的预言家声明即为真，其查验1号为狼、6号为狼应采信。昨夜平安夜，我这边有信息印证狼人确实出了刀。6号昨天的发言逻辑上确有矛盾——若1号真是狼，为何昨天白天5号不公布？",
+        "reasoning": "5号是未被系统驳回的预言家声明，其查验6号为狼应作为可信信息。作为女巫，我昨夜使用了解药救下刀口（所以平安夜），这也侧面印证了狼人确实出刀。支持放逐6号。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "vote_intent",
+        "target_seat": 6
+      }
+    },
+    {
+      "id": "ee55b1c7-5817-4de9-91c0-b7132f8a71bc",
+      "ts": 1788607396.835458,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-14c155efd880",
+        "actor_name": "王雅文",
+        "speech": "但事实是5号昨天白天已经投了1号，且1号确实是狼被放逐，这与5号的查验一致。我本轮投6号。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "1e327330-1691-4213-9de0-3db6e11f8b44",
+      "ts": 1788607396.996253,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "245b733d-5522-400f-ada5-43646f3f04f5",
+      "ts": 1788607398.3737664,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-5145f3d096f6",
+        "voter_name": "莱昂",
+        "target_id": "P6-25776e0c376f",
+        "target_name": "齐慕白",
+        "reasoning": "5号的预言家声明未被驳回且查验逻辑与票型吻合，6号的反驳缺乏独立佐证。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "c9a4fa6f-0352-4839-9f04-9eda43b74bb4",
+      "ts": 1788607398.373779,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-79ec97a89c06",
+        "voter_name": "夏知白",
+        "target_id": "P6-25776e0c376f",
+        "target_name": "齐慕白",
+        "reasoning": "5号的预言家声明未被系统驳回，其查验结果可信，且6号昨天的投票行为与狼人抱团特征吻合。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "dc11ab75-f7e1-44f7-9429-5a19c0d2cd09",
+      "ts": 1788607398.373787,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-ccf7e4dd11ac",
+        "voter_name": "南柯辞",
+        "target_id": "P6-25776e0c376f",
+        "target_name": "齐慕白",
+        "reasoning": "5号的预言家声明未被驳回且查验信息明确，6号票型与逻辑均与其狼人身份吻合。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "463143d2-1997-4258-ab1d-9c7f785bf132",
+      "ts": 1788607398.3738317,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-e78a7a34c598",
+        "voter_name": "韩书研",
+        "target_id": "P6-25776e0c376f",
+        "target_name": "齐慕白",
+        "reasoning": "查验确凿且票型印证，齐慕白是场上确定的第二只狼。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "c77b9356-e1bd-4265-b91d-653a4a732b7f",
+      "ts": 1788607398.3738391,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-25776e0c376f",
+        "voter_name": "齐慕白",
+        "target_id": "P5-e78a7a34c598",
+        "target_name": "韩书研",
+        "reasoning": "她的预言家声明时机可疑且查验无法独立验证，逻辑漏洞明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "bca85f96-95ea-45b0-b2c9-330aabaee847",
+      "ts": 1788607398.3738468,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-14c155efd880",
+        "voter_name": "王雅文",
+        "target_id": "P6-25776e0c376f",
+        "target_name": "齐慕白",
+        "reasoning": "5号查验可信且你昨天行为与票型矛盾明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "992e4d4b-11c5-4e83-ac9c-49dc054a2e6f",
+      "ts": 1788607398.4542341,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "bfcbb70f-8a82-4dcd-848a-e8b48affa912",
+      "ts": 1788607398.4542758,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "齐慕白 was voted out."
+      }
+    },
+    {
+      "id": "86a06061-0034-4e29-860f-6de30fb08ee3",
+      "ts": 1788607398.4542863,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P6-25776e0c376f",
+        "player_name": "齐慕白",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "1e2131bf-2d54-4358-bb54-54999728d206",
+      "ts": 1788607398.4543,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "village",
+        "reason": "all_wolves_dead"
+      }
+    },
+    {
+      "id": "f9efe9ff-359f-41a5-b31c-df99162c5c01",
+      "ts": 1788607398.4543564,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P2-5145f3d096f6": "P6-25776e0c376f",
+    "P3-79ec97a89c06": "P6-25776e0c376f",
+    "P4-ccf7e4dd11ac": "P6-25776e0c376f",
+    "P5-e78a7a34c598": "P6-25776e0c376f",
+    "P6-25776e0c376f": "P5-e78a7a34c598",
+    "P7-14c155efd880": "P6-25776e0c376f"
+  },
+  "vote_history": {
+    "1": {
+      "P1-14be22e6d138": "P5-e78a7a34c598",
+      "P2-5145f3d096f6": "P1-14be22e6d138",
+      "P3-79ec97a89c06": "P1-14be22e6d138",
+      "P4-ccf7e4dd11ac": "P1-14be22e6d138",
+      "P5-e78a7a34c598": "P1-14be22e6d138",
+      "P6-25776e0c376f": "P5-e78a7a34c598",
+      "P7-14c155efd880": "P1-14be22e6d138"
+    },
+    "2": {
+      "P2-5145f3d096f6": "P6-25776e0c376f",
+      "P3-79ec97a89c06": "P6-25776e0c376f",
+      "P4-ccf7e4dd11ac": "P6-25776e0c376f",
+      "P5-e78a7a34c598": "P6-25776e0c376f",
+      "P6-25776e0c376f": "P5-e78a7a34c598",
+      "P7-14c155efd880": "P6-25776e0c376f"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P1-14be22e6d138",
+        "seat": 1,
+        "votes": 5.0
+      }
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "顾景行: 首夜平安，说明守卫或女巫可能发挥了作用，也可能是狼队选择了观望。现在信息很少，先听听各位的发言和看法，再判断方向。",
+      "莱昂: 首夜平安，信息确实很少。1号说得对，平安夜可能是守卫或女巫发挥了作用，也可能是狼队观望。现在没有实质线索，我不急着下判断，先听听后面几位的发言再作分析。建议大家多聊聊，任何细节都可能是后续推理的切入点。",
+      "夏知白: 首夜平安，目前信息量确实很少。1号和2号的发言都比较理性，没有明显破绽。平安夜本身有多种解释，不能据此锁定任何方向。我倾向于先观察大家后续的发言和投票倾向，暂不下结论。在信息不足的阶段，过早站边反而容易给狼队提供误导空间。",
+      "南柯辞: 首夜平安，信息有限。前面几位发言都比较平稳，没有明显异常。平安夜有多种可能解释，目前不宜仓促下结论。我想先听听5、6、7号的看法，再结合后续发言和投票倾向做判断。",
+      "韩书研: 各位，我是5号韩书研，本局真正的预言家。昨夜我查验了1号顾景行，结果是——狼人。这是确凿的查验信息，不是猜测。",
+      "韩书研: 我注意到前面1号、2号、3号、4号的发言都相当平稳，没有任何实质信息输出，这在首夜平安的情况下是正常的。但我的查验结果已经给出了明确方向：1号顾景行是狼。",
+      "韩书研: 在诚实规则下，我的预言家身份和查验结果都是可信的。我建议今天集中票型放逐1号顾景行。后续我会继续查验，为好人阵营提供更多信息。请各位基于这个确凿线索做出判断。",
+      "齐慕白: 首夜平安，信息确实有限。5号声称查验了1号是狼，这个信息需要重视，但我也想提醒大家不要仅凭一段发言就急于下结论。1号的发言目前来看比较克制理性，没有明显破绽。我建议再听听1号本人的回应，以及其他人的看法，综合判断后再决定投票方向。现阶段贸然放逐可能误伤好人。",
+      "王雅文: 5号若真是预言家，查验结果可信。在诚实规则下，未被系统驳回的预言家声明即为真，其查验1号为狼应作为可信信息。我支持今天放逐1号顾景行。",
+      "顾景行 voted for 韩书研 (她的查验结论来得过于突兀且缺乏验证，在信息不足时急于引导放逐，动机可疑。)",
+      "莱昂 voted for 顾景行 (5号预言家查验结果在诚实规则下可信，且目前无其他反证。)",
+      "夏知白 voted for 顾景行 (5号预言家查验结果为狼，在诚实规则下该信息可信，优先跟随查验放逐。)",
+      "南柯辞 voted for 顾景行 (5号预言家查验结果为狼，此信息可信且目前无反驳依据。)",
+      "韩书研 voted for 顾景行 (昨夜查验确凿显示顾景行为狼人，这是可信的预言家信息，应优先放逐。)",
+      "齐慕白 voted for 韩书研 (她的预言家身份来得突兀且急于引导票型，有狼队冲锋嫌疑。)",
+      "王雅文 voted for 顾景行 (5号预言家未被驳回的查验结果明确指出1号为狼，事实证据清晰。)",
+      "顾景行 died by voted_out"
+    ],
+    "2": [
+      "莱昂: 第二天平安夜，信息仍然有限。回顾昨天票型：1号顾景行被放逐，投他的有4人，而他投了5号。同时5号韩书研也被1号和6号投过。这个分歧点值得留意——1号临死前指向5号，6号也投了5号，但最终1号出局。昨夜无人死亡，可能是守卫守中或女巫用药，也可能是狼队策略性选择。",
+      "莱昂: 目前我倾向于先观察发言，暂时不锁定目标。",
+      "夏知白: 第二天平安夜，信息增量有限。回顾昨天票型，1号顾景行和6号齐慕白都投了5号韩书研，而1号最终被放逐。这个交集值得注意，但目前不能据此定论。1号被多人投出，说明当时多数人认为他有狼面。平安夜可能是守卫或女巫作用，也可能是狼队策略。我倾向继续观察，听各位发言后再判断。",
+      "南柯辞: 第二天平安夜。回顾票型：1号顾景行和6号齐慕白都投了5号韩书研，但1号被放逐。目前2、3号发言都倾向继续观察。我注意到1号临死前的投票指向5号，这个信息需要留意。平安夜可能是守卫或女巫守住，也可能是狼队策略。目前信息不够，我暂时不锁定目标，想听听5、6、7号的发言。",
+      "韩书研: 各位，我是5号韩书研，本局真正的预言家。我连续两夜查验，信息确凿：第一夜查1号顾景行——狼人，已被放逐；第二夜查6号齐慕白——狼人。",
+      "韩书研: 回看票型完全吻合：昨天1号和6号同时投我，正是狼人抱团针对真预言家的典型信号。现在场上只剩2狼，1号已出局，6号齐慕白就是场上确定的第二只狼。",
+      "韩书研: 我建议本轮直接放逐6号齐慕白。请大家基于确凿的查验信息投票，不要被\"继续观察\"的模糊发言带偏节奏。",
+      "齐慕白: 5号，你声称自己是预言家，但我注意到一个关键矛盾。你说第一夜查验1号是狼，可如果真是如此，为何昨天白天你没有公布这个查验结果，而是任由1号被投票放逐？如果你当时就指出1号是狼，大家完全可以更早锁定目标。",
+      "齐慕白: 再看你昨天投的是1号，今天才跳出来说自己连续两夜查验，这个时机很微妙——正好在1号出局后、我成为众矢之的时。你的\"第二夜查6号是狼\"没有任何独立验证手段，完全是你单方面陈述。",
+      "齐慕白: 我承认昨天我确实投了5号，因为当时1号也投她，我基于票型做出了判断。但这不代表我就是狼。请各位不要被一段无法验证的\"查验\"牵着走，仔细想想5号发言中的逻辑漏洞。",
+      "王雅文: 我支持5号的预言家声明。在诚实规则下，未被驳回的预言家声明即为真，其查验1号为狼、6号为狼应采信。昨夜平安夜，我这边有信息印证狼人确实出了刀。6号昨天的发言逻辑上确有矛盾——若1号真是狼，为何昨天白天5号不公布？",
+      "王雅文: 但事实是5号昨天白天已经投了1号，且1号确实是狼被放逐，这与5号的查验一致。我本轮投6号。",
+      "莱昂 voted for 齐慕白 (5号的预言家声明未被驳回且查验逻辑与票型吻合，6号的反驳缺乏独立佐证。)",
+      "夏知白 voted for 齐慕白 (5号的预言家声明未被系统驳回，其查验结果可信，且6号昨天的投票行为与狼人抱团特征吻合。)",
+      "南柯辞 voted for 齐慕白 (5号的预言家声明未被驳回且查验信息明确，6号票型与逻辑均与其狼人身份吻合。)",
+      "韩书研 voted for 齐慕白 (查验确凿且票型印证，齐慕白是场上确定的第二只狼。)",
+      "齐慕白 voted for 韩书研 (她的预言家声明时机可疑且查验无法独立验证，逻辑漏洞明显。)",
+      "王雅文 voted for 齐慕白 (5号查验可信且你昨天行为与票型矛盾明显。)",
+      "齐慕白 died by voted_out",
+      "Game ended: village (all_wolves_dead)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "顾景行",
+        "speaker_id": "P1-14be22e6d138",
+        "content": "首夜平安，说明守卫或女巫可能发挥了作用，也可能是狼队选择了观望。现在信息很少，先听听各位的发言和看法，再判断方向。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "莱昂",
+        "speaker_id": "P2-5145f3d096f6",
+        "content": "首夜平安，信息确实很少。1号说得对，平安夜可能是守卫或女巫发挥了作用，也可能是狼队观望。现在没有实质线索，我不急着下判断，先听听后面几位的发言再作分析。建议大家多聊聊，任何细节都可能是后续推理的切入点。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "夏知白",
+        "speaker_id": "P3-79ec97a89c06",
+        "content": "首夜平安，目前信息量确实很少。1号和2号的发言都比较理性，没有明显破绽。平安夜本身有多种解释，不能据此锁定任何方向。我倾向于先观察大家后续的发言和投票倾向，暂不下结论。在信息不足的阶段，过早站边反而容易给狼队提供误导空间。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P4-ccf7e4dd11ac",
+        "content": "首夜平安，信息有限。前面几位发言都比较平稳，没有明显异常。平安夜有多种可能解释，目前不宜仓促下结论。我想先听听5、6、7号的看法，再结合后续发言和投票倾向做判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "韩书研",
+        "speaker_id": "P5-e78a7a34c598",
+        "content": "各位，我是5号韩书研，本局真正的预言家。昨夜我查验了1号顾景行，结果是——狼人。这是确凿的查验信息，不是猜测。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "韩书研",
+        "speaker_id": "P5-e78a7a34c598",
+        "content": "我注意到前面1号、2号、3号、4号的发言都相当平稳，没有任何实质信息输出，这在首夜平安的情况下是正常的。但我的查验结果已经给出了明确方向：1号顾景行是狼。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "韩书研",
+        "speaker_id": "P5-e78a7a34c598",
+        "content": "在诚实规则下，我的预言家身份和查验结果都是可信的。我建议今天集中票型放逐1号顾景行。后续我会继续查验，为好人阵营提供更多信息。请各位基于这个确凿线索做出判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "齐慕白",
+        "speaker_id": "P6-25776e0c376f",
+        "content": "首夜平安，信息确实有限。5号声称查验了1号是狼，这个信息需要重视，但我也想提醒大家不要仅凭一段发言就急于下结论。1号的发言目前来看比较克制理性，没有明显破绽。我建议再听听1号本人的回应，以及其他人的看法，综合判断后再决定投票方向。现阶段贸然放逐可能误伤好人。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "王雅文",
+        "speaker_id": "P7-14c155efd880",
+        "content": "5号若真是预言家，查验结果可信。在诚实规则下，未被系统驳回的预言家声明即为真，其查验1号为狼应作为可信信息。我支持今天放逐1号顾景行。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "顾景行",
+        "voter_id": "P1-14be22e6d138",
+        "target_name": "韩书研",
+        "target_id": "P5-e78a7a34c598",
+        "reasoning": "她的查验结论来得过于突兀且缺乏验证，在信息不足时急于引导放逐，动机可疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "莱昂",
+        "voter_id": "P2-5145f3d096f6",
+        "target_name": "顾景行",
+        "target_id": "P1-14be22e6d138",
+        "reasoning": "5号预言家查验结果在诚实规则下可信，且目前无其他反证。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "夏知白",
+        "voter_id": "P3-79ec97a89c06",
+        "target_name": "顾景行",
+        "target_id": "P1-14be22e6d138",
+        "reasoning": "5号预言家查验结果为狼，在诚实规则下该信息可信，优先跟随查验放逐。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "南柯辞",
+        "voter_id": "P4-ccf7e4dd11ac",
+        "target_name": "顾景行",
+        "target_id": "P1-14be22e6d138",
+        "reasoning": "5号预言家查验结果为狼，此信息可信且目前无反驳依据。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "韩书研",
+        "voter_id": "P5-e78a7a34c598",
+        "target_name": "顾景行",
+        "target_id": "P1-14be22e6d138",
+        "reasoning": "昨夜查验确凿显示顾景行为狼人，这是可信的预言家信息，应优先放逐。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "齐慕白",
+        "voter_id": "P6-25776e0c376f",
+        "target_name": "韩书研",
+        "target_id": "P5-e78a7a34c598",
+        "reasoning": "她的预言家身份来得突兀且急于引导票型，有狼队冲锋嫌疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "王雅文",
+        "voter_id": "P7-14c155efd880",
+        "target_name": "顾景行",
+        "target_id": "P1-14be22e6d138",
+        "reasoning": "5号预言家未被驳回的查验结果明确指出1号为狼，事实证据清晰。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "顾景行",
+        "player_id": "P1-14be22e6d138",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "莱昂",
+        "speaker_id": "P2-5145f3d096f6",
+        "content": "第二天平安夜，信息仍然有限。回顾昨天票型：1号顾景行被放逐，投他的有4人，而他投了5号。同时5号韩书研也被1号和6号投过。这个分歧点值得留意——1号临死前指向5号，6号也投了5号，但最终1号出局。昨夜无人死亡，可能是守卫守中或女巫用药，也可能是狼队策略性选择。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "莱昂",
+        "speaker_id": "P2-5145f3d096f6",
+        "content": "目前我倾向于先观察发言，暂时不锁定目标。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "夏知白",
+        "speaker_id": "P3-79ec97a89c06",
+        "content": "第二天平安夜，信息增量有限。回顾昨天票型，1号顾景行和6号齐慕白都投了5号韩书研，而1号最终被放逐。这个交集值得注意，但目前不能据此定论。1号被多人投出，说明当时多数人认为他有狼面。平安夜可能是守卫或女巫作用，也可能是狼队策略。我倾向继续观察，听各位发言后再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P4-ccf7e4dd11ac",
+        "content": "第二天平安夜。回顾票型：1号顾景行和6号齐慕白都投了5号韩书研，但1号被放逐。目前2、3号发言都倾向继续观察。我注意到1号临死前的投票指向5号，这个信息需要留意。平安夜可能是守卫或女巫守住，也可能是狼队策略。目前信息不够，我暂时不锁定目标，想听听5、6、7号的发言。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "韩书研",
+        "speaker_id": "P5-e78a7a34c598",
+        "content": "各位，我是5号韩书研，本局真正的预言家。我连续两夜查验，信息确凿：第一夜查1号顾景行——狼人，已被放逐；第二夜查6号齐慕白——狼人。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "韩书研",
+        "speaker_id": "P5-e78a7a34c598",
+        "content": "回看票型完全吻合：昨天1号和6号同时投我，正是狼人抱团针对真预言家的典型信号。现在场上只剩2狼，1号已出局，6号齐慕白就是场上确定的第二只狼。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "韩书研",
+        "speaker_id": "P5-e78a7a34c598",
+        "content": "我建议本轮直接放逐6号齐慕白。请大家基于确凿的查验信息投票，不要被\"继续观察\"的模糊发言带偏节奏。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "齐慕白",
+        "speaker_id": "P6-25776e0c376f",
+        "content": "5号，你声称自己是预言家，但我注意到一个关键矛盾。你说第一夜查验1号是狼，可如果真是如此，为何昨天白天你没有公布这个查验结果，而是任由1号被投票放逐？如果你当时就指出1号是狼，大家完全可以更早锁定目标。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "齐慕白",
+        "speaker_id": "P6-25776e0c376f",
+        "content": "再看你昨天投的是1号，今天才跳出来说自己连续两夜查验，这个时机很微妙——正好在1号出局后、我成为众矢之的时。你的\"第二夜查6号是狼\"没有任何独立验证手段，完全是你单方面陈述。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "齐慕白",
+        "speaker_id": "P6-25776e0c376f",
+        "content": "我承认昨天我确实投了5号，因为当时1号也投她，我基于票型做出了判断。但这不代表我就是狼。请各位不要被一段无法验证的\"查验\"牵着走，仔细想想5号发言中的逻辑漏洞。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "王雅文",
+        "speaker_id": "P7-14c155efd880",
+        "content": "我支持5号的预言家声明。在诚实规则下，未被驳回的预言家声明即为真，其查验1号为狼、6号为狼应采信。昨夜平安夜，我这边有信息印证狼人确实出了刀。6号昨天的发言逻辑上确有矛盾——若1号真是狼，为何昨天白天5号不公布？"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "王雅文",
+        "speaker_id": "P7-14c155efd880",
+        "content": "但事实是5号昨天白天已经投了1号，且1号确实是狼被放逐，这与5号的查验一致。我本轮投6号。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "莱昂",
+        "voter_id": "P2-5145f3d096f6",
+        "target_name": "齐慕白",
+        "target_id": "P6-25776e0c376f",
+        "reasoning": "5号的预言家声明未被驳回且查验逻辑与票型吻合，6号的反驳缺乏独立佐证。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "夏知白",
+        "voter_id": "P3-79ec97a89c06",
+        "target_name": "齐慕白",
+        "target_id": "P6-25776e0c376f",
+        "reasoning": "5号的预言家声明未被系统驳回，其查验结果可信，且6号昨天的投票行为与狼人抱团特征吻合。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "南柯辞",
+        "voter_id": "P4-ccf7e4dd11ac",
+        "target_name": "齐慕白",
+        "target_id": "P6-25776e0c376f",
+        "reasoning": "5号的预言家声明未被驳回且查验信息明确，6号票型与逻辑均与其狼人身份吻合。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "韩书研",
+        "voter_id": "P5-e78a7a34c598",
+        "target_name": "齐慕白",
+        "target_id": "P6-25776e0c376f",
+        "reasoning": "查验确凿且票型印证，齐慕白是场上确定的第二只狼。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "齐慕白",
+        "voter_id": "P6-25776e0c376f",
+        "target_name": "韩书研",
+        "target_id": "P5-e78a7a34c598",
+        "reasoning": "她的预言家声明时机可疑且查验无法独立验证，逻辑漏洞明显。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "王雅文",
+        "voter_id": "P7-14c155efd880",
+        "target_name": "齐慕白",
+        "target_id": "P6-25776e0c376f",
+        "reasoning": "5号查验可信且你昨天行为与票型矛盾明显。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "齐慕白",
+        "player_id": "P6-25776e0c376f",
+        "reason": "voted_out"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "village",
+        "reason": "all_wolves_dead"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "village",
+  "night_actions": {
+    "guard_target_id": "P5-e78a7a34c598",
+    "last_guard_target_id": "P5-e78a7a34c598",
+    "wolf_votes": {
+      "P6-25776e0c376f": "P5-e78a7a34c598"
+    },
+    "wolf_target_id": "P5-e78a7a34c598",
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": "P6-25776e0c376f",
+    "seer_result": {
+      "kind": "seer_result",
+      "target_id": "P6-25776e0c376f",
+      "target_name": "齐慕白",
+      "is_wolf": true,
+      "message": "Seer check: 齐慕白 is wolf."
+    },
+    "deaths": []
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

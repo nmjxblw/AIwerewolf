@@ -1,0 +1,2789 @@
+{
+  "id": "41c90c72-f20c-446f-9ff4-ce30cb0b2f0d",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-aaf1ac681afd",
+      "seat": 1,
+      "name": "凌战",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "凌战",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P2-5a152ef1453f",
+      "seat": 2,
+      "name": "于川",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "于川",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-9b96c987091d",
+      "seat": 3,
+      "name": "蓝知怀",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "蓝知怀",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-7d1be844e6f2",
+      "seat": 4,
+      "name": "雷昊",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "雷昊",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P5-ca9cdcee665a",
+      "seat": 5,
+      "name": "夜未央",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "夜未央",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    },
+    {
+      "id": "P6-3c6f38ff5135",
+      "seat": 6,
+      "name": "大壮",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "大壮",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P7-6dfea9dc8994",
+      "seat": 7,
+      "name": "南柯辞",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "南柯辞",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    }
+  ],
+  "events": [
+    {
+      "id": "91c410fc-e373-40e5-9904-140f6bbd56b7",
+      "ts": 1788606547.2304647,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "41c90c72-f20c-446f-9ff4-ce30cb0b2f0d",
+        "players": [
+          {
+            "id": "P1-aaf1ac681afd",
+            "seat": 1,
+            "name": "凌战",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-5a152ef1453f",
+            "seat": 2,
+            "name": "于川",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-9b96c987091d",
+            "seat": 3,
+            "name": "蓝知怀",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-7d1be844e6f2",
+            "seat": 4,
+            "name": "雷昊",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-ca9cdcee665a",
+            "seat": 5,
+            "name": "夜未央",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-3c6f38ff5135",
+            "seat": 6,
+            "name": "大壮",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-6dfea9dc8994",
+            "seat": 7,
+            "name": "南柯辞",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "5122f532-437c-49ec-ba87-377a0b308998",
+      "ts": 1788606547.2305353,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 凌战, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "98ad3236-e8a0-4cc8-9b93-308d50685165",
+      "ts": 1788606547.2305741,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-5a152ef1453f"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 于川, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "408c399e-0375-4c0d-9a63-4caddf3e16d7",
+      "ts": 1788606547.2306035,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9b96c987091d"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 蓝知怀, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "2b651607-4661-4884-9a57-a09052c28b78",
+      "ts": 1788606547.2306352,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 雷昊, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "311cd9d9-7b23-4823-90db-f2093354db67",
+      "ts": 1788606547.230661,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-ca9cdcee665a"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 夜未央, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "94d7e194-9b73-42af-b28c-a5f5b02f1954",
+      "ts": 1788606547.2306852,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-3c6f38ff5135"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 大壮, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "f176dad0-eacc-46b3-b1e0-5f51d6f8f627",
+      "ts": 1788606547.230708,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-6dfea9dc8994"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 南柯辞, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "02283106-8e19-456c-bdbf-eebd2d962752",
+      "ts": 1788606547.2307448,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "57e23404-f85f-4634-9b06-5125ed277dd2",
+      "ts": 1788606547.2307518,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "d4285779-7628-4404-9566-691f18933eb3",
+      "ts": 1788606547.3113923,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "839f7239-9e86-4794-8f8d-27187ed30f65",
+      "ts": 1788606547.3114164,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P1-aaf1ac681afd",
+          "P4-7d1be844e6f2"
+        ],
+        "wolf_names": [
+          "凌战",
+          "雷昊"
+        ]
+      }
+    },
+    {
+      "id": "b568fc60-0081-46f7-8c93-70495da9a779",
+      "ts": 1788606549.0842054,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P1-aaf1ac681afd",
+        "actor_name": "凌战",
+        "message": "凌战（私聊）：刀5号夜未央，位置居中威胁大，首夜没发言信息，选个大概率好人且不易被救的。",
+        "speech": "刀5号夜未央，位置居中威胁大，首夜没发言信息，选个大概率好人且不易被救的。",
+        "proposed_target_id": "P5-ca9cdcee665a",
+        "proposed_target_name": "夜未央"
+      }
+    },
+    {
+      "id": "6d9df1a7-df76-4760-a94c-1b73db5decde",
+      "ts": 1788606550.6276574,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "message": "雷昊（私聊）：刀5号夜未央，位置居中且无首夜保护价值，降低被救风险。",
+        "speech": "刀5号夜未央，位置居中且无首夜保护价值，降低被救风险。",
+        "proposed_target_id": "P5-ca9cdcee665a",
+        "proposed_target_name": "夜未央"
+      }
+    },
+    {
+      "id": "26d641a6-20a0-4f2b-9eb5-9645e7033fa8",
+      "ts": 1788606550.6276836,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "8a17f075-626e-4efe-bab3-93c7ed56bca9",
+      "ts": 1788606550.6276891,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P1-aaf1ac681afd",
+        "actor_name": "凌战",
+        "message": "凌战 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "dad28f14-1f31-43f9-a3b7-beb4c084be35",
+      "ts": 1788606551.5422606,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "actor_id": "P1-aaf1ac681afd",
+        "actor_name": "凌战",
+        "action_type": "attack",
+        "target": {
+          "id": "P5-ca9cdcee665a",
+          "seat": 5,
+          "name": "夜未央",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "按狼队共识，刀5号夜未央。位置居中，首夜无保护价值，降低被女巫救的风险。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P5-ca9cdcee665a",
+        "target_name": "夜未央"
+      }
+    },
+    {
+      "id": "01271189-8c71-48d5-beaa-e2024360e247",
+      "ts": 1788606551.5422843,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "message": "雷昊 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P1-aaf1ac681afd",
+            "wolf_name": "凌战",
+            "target_id": "P5-ca9cdcee665a",
+            "target_name": "夜未央"
+          }
+        ]
+      }
+    },
+    {
+      "id": "e1bbc85f-e713-48ea-b518-89c99c9726a1",
+      "ts": 1788606552.6634703,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "action_type": "attack",
+        "target": {
+          "id": "P5-ca9cdcee665a",
+          "seat": 5,
+          "name": "夜未央",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友凌战已达成共识，刀5号夜未央，位置居中威胁大且不易被救。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P5-ca9cdcee665a",
+        "target_name": "夜未央"
+      }
+    },
+    {
+      "id": "789ca7bc-f99d-47c3-80f1-73546c16be2d",
+      "ts": 1788606552.6634858,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-aaf1ac681afd",
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为夜未央。",
+        "target_id": "P5-ca9cdcee665a",
+        "target_name": "夜未央",
+        "votes": {
+          "P1-aaf1ac681afd": "P5-ca9cdcee665a",
+          "P4-7d1be844e6f2": "P5-ca9cdcee665a"
+        }
+      }
+    },
+    {
+      "id": "cf5ac6d5-592f-483b-aeaa-9c7189601e7e",
+      "ts": 1788606552.6635,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "f3929fb9-82cd-4d44-b50e-46ebe9aec926",
+      "ts": 1788606552.6635253,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "39897de0-aee4-4e12-b7c3-3b3d0d635a79",
+      "ts": 1788606555.196382,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9b96c987091d"
+      ],
+      "payload": {
+        "actor_id": "P3-9b96c987091d",
+        "actor_name": "蓝知怀",
+        "action_type": "divine",
+        "target": {
+          "id": "P2-5a152ef1453f",
+          "seat": 2,
+          "name": "于川",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "作为预言家，首夜应当查验一名玩家以获取信息。选择查验2号于川，建立首轮信息基础。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-5a152ef1453f"
+      }
+    },
+    {
+      "id": "cef6a402-4c7f-4676-8533-47001df31e45",
+      "ts": 1788606555.1963892,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9b96c987091d"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P2-5a152ef1453f",
+        "target_name": "于川",
+        "is_wolf": false,
+        "message": "Seer check: 于川 is not wolf."
+      }
+    },
+    {
+      "id": "5248b56d-d618-45b1-9a63-8609d52146ce",
+      "ts": 1788606555.1964011,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "971bb5fa-fbeb-4c68-8390-03f353282a7e",
+      "ts": 1788606555.2770357,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "c815774b-85a6-4849-8479-45592476fc7b",
+      "ts": 1788606556.232063,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-ca9cdcee665a"
+      ],
+      "payload": {
+        "actor_id": "P5-ca9cdcee665a",
+        "actor_name": "夜未央",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P5-ca9cdcee665a",
+          "seat": 5,
+          "name": "夜未央",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜被刀，作为女巫有解药且首夜可自救。7人局中女巫存活对好人阵营至关重要，使用解药自救是标准且稳妥的选择。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P5-ca9cdcee665a"
+      }
+    },
+    {
+      "id": "4f857ab1-9e4b-4fa7-a411-a3dc1a208ad7",
+      "ts": 1788606556.2320862,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "486b4cb3-d89a-4b43-9769-3ba13becc2ca",
+      "ts": 1788606556.3125348,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "d2397dbf-6692-4ece-a587-1ee8c8594607",
+      "ts": 1788606557.3323033,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-5a152ef1453f"
+      ],
+      "payload": {
+        "actor_id": "P2-5a152ef1453f",
+        "actor_name": "于川",
+        "action_type": "skip",
+        "target": null,
+        "reasoning": "第一晚没有信息，守卫空守比盲守更有价值，避免与女巫解药造成奶穿，也保留后续守人灵活性。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "skipped": true
+      }
+    },
+    {
+      "id": "892d273d-1759-4b60-a642-58403be9db0c",
+      "ts": 1788606557.3323212,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "181b9d46-4a92-443b-80af-cfe23b342307",
+      "ts": 1788606557.4125023,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "99b22410-a0c2-475c-ba1d-267da930b02e",
+      "ts": 1788606557.4125197,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "951554cb-7d02-46f6-be6b-a799562e7146",
+      "ts": 1788606557.4125853,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "de8422f8-6f13-476d-ad52-98b2c9836db6",
+      "ts": 1788606557.4125984,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "ede314c7-adb2-48e1-9456-ed82ebe6c3ec",
+      "ts": 1788606557.7342393,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "69faee04-3afc-4dd4-a28b-19eea40c8dad",
+      "ts": 1788606560.8852367,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-aaf1ac681afd",
+        "actor_name": "凌战",
+        "speech": "我是预言家。昨晚查了5号夜未央，查杀，狼人。我首夜选择查5号是有原因的，居中位置通常信息量大，值得优先确认。这个查验结果我确认无误，今天建议直接放逐5号。后面如果有对跳，我会用我的查验逻辑来分辨。夜未央，你有什么要说的吗？",
+        "reasoning": "作为前置位狼人，执行悍跳预言家战术。我是1号首发，直接起跳报查杀，给出一个可信的查验结果来搅乱好人信息。选择给5号夜未央发查杀，因为昨夜我们刀的就是5号，如果女巫救了他，查杀+平安夜会让他非常被动；即使没救，这个查杀也与我们夜间行动形成呼应。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 5,
+        "claim_result": "wolf",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "a258c706-d8b2-4e6c-9213-adf82a3ce089",
+      "ts": 1788606562.6720393,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-5a152ef1453f",
+        "actor_name": "于川",
+        "speech": "首夜无人死亡。1号直接跳预言家查杀5号，这个信息分量很重。但第一天就出查杀，我需要听听5号怎么回应，也想看看后面有没有对跳。先不急着站边，听完整场再说。",
+        "reasoning": "1号首夜直接跳预言家发查杀，信息量大但需观察。目前信息不足，先保持谨慎，不急于站边或表态，等待更多发言。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "499ad85b-5abd-4edc-b2a1-6c2b6b3341b9",
+      "ts": 1788606565.222775,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9b96c987091d",
+        "actor_name": "蓝知怀",
+        "speech": "我是3号蓝知怀，真预言家。昨晚查验了2号于川，结果是好人。1号凌战跳预言家查杀5号，这是悍跳。场上只有两名狼人，1号作为狼人跳预言家试图带节奏放逐好人。我的查验信息是真实的：2号于川是金水。请大家理性站边——真预言家第一天就出查杀的概率和收益都不合理，而我的查验结果清晰可验证。",
+        "reasoning": "我是预言家，按战术指令必须如实公布身份与查验结果。1号跳预言家查杀5号，但我是真预言家，查验了2号于川为好人。必须跳身份澄清，指出1号是悍跳狼。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 2,
+        "claim_result": "good",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "6a247142-1204-4ce2-a981-8c81d438f90a",
+      "ts": 1788606565.2227871,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9b96c987091d",
+        "actor_name": "蓝知怀",
+        "speech": "建议今天先听5号发言，但核心是分辨谁才是真预言家。我投1号凌战。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "d13a0586-4cb6-458d-be12-d9a770941919",
+      "ts": 1788606568.1779923,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "speech": "我是4号雷昊，真预言家。昨晚查验了1号凌战，结果是好人。我不清楚1号为什么跳预言家，但我的查验结果不会错——1号是金水。这意味着1号不是狼。那么场上的狼就在其他人中。3号蓝知怀跳预言家说查了2号是金水，如果1号是真预言家或者另有身份，那3号的身份就很可疑。",
+        "reasoning": "我是4号前置位，战术指令要求悍跳预言家。1号和3号已对跳，我需要加入对跳局面，编造查验搅乱信息。选择给队友1号发金水，同时质疑3号假预言家。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 1,
+        "claim_result": "good",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "a3dec3ae-bbe8-4417-a30c-00196e90e5c3",
+      "ts": 1788606568.1780002,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "speech": "现在场上已经有三个人在跳预言家——1号、3号和我。真预言家只有一个。我的查验是1号金水，如果1号是真预言家，那他的查杀5号可信；如果我是真预言家，那3号大概率是狼。无论哪条线，3号蓝知怀的嫌疑都很大。建议今天先放逐3号。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "1b1d2afb-ee37-491f-9082-eaa3b04185b5",
+      "ts": 1788606572.0241024,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-ca9cdcee665a",
+        "actor_name": "夜未央",
+        "speech": "1号说我被查杀，但我明确说：我不是狼。我没有任何理由第一天就被查杀，这个查验本身就是问题。场上三个人跳预言家，1号查杀我、3号查2号金水、4号查1号金水——三个人互相矛盾，真预言家只有一个。我的判断是：先不要急着放逐任何人，把三人的发言和逻辑摊开来看。",
+        "reasoning": "1号查杀我，但我不是狼。场上1、3、4三人跳预言家，信息混乱。我作为女巫知道昨夜无人死亡，且我的解药已用但昨夜无刀口需要救——实际是狼人可能刀了守卫守的人或狼人空刀。我需要冷静回应1号的查杀，指出其逻辑漏洞，不急于站边。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "fd21cea0-0c59-4acc-a0fb-a668728a7b37",
+      "ts": 1788606572.0241098,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-ca9cdcee665a",
+        "actor_name": "夜未央",
+        "speech": "1号查杀一个居中人，动机可疑；3号和4号互相矛盾。我建议今天先听清所有人的完整发言再投票。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "f8c7911d-40c8-474e-8ccc-f4724d30b046",
+      "ts": 1788606577.5820754,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-3c6f38ff5135",
+        "actor_name": "大壮",
+        "speech": "场上三人跳预言家：1号查杀5号，3号查2号金水，4号查1号金水。这三人必有一真，也可能有狼悍跳。",
+        "reasoning": "第一天三人跳预言家，信息混乱。作为平民，我应该先梳理逻辑而非急于表态。三个预言家互相矛盾，需要更多信息来判断，先做中立分析。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "aa29628e-0f8c-4c94-9424-6ec92104257c",
+      "ts": 1788606577.5820823,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-3c6f38ff5135",
+        "actor_name": "大壮",
+        "speech": "先看矛盾点：1号说5号是狼，4号说1号是金水（好人）。如果4号是真预言家，那么1号就是好人，1号的查杀就存疑，3号说2号金水则可能是狼跳。如果1号是真预言家，5号是查杀，那3号和4号中至少一个悍跳。如果3号是真预言家，2号金水，那1号查杀5号就是悍跳。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "721caa04-4822-40bb-92ec-df9ee476694e",
+      "ts": 1788606577.5820858,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-3c6f38ff5135",
+        "actor_name": "大壮",
+        "speech": "三条线里，关键不在查谁，而在于狼人悍跳的动机。狼人跳预言家通常是为了带节奏放逐好人或保护狼队友。1号首日直接查杀5号，如果他是狼，那5号大概率是好人；如果他是真预言家，5号就是狼。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "75e9a36d-7b60-464d-b2ee-56cceca67bd4",
+      "ts": 1788606577.5820897,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-3c6f38ff5135",
+        "actor_name": "大壮",
+        "speech": "我暂时不急着站边，想再听听各位对这三条线的分析，以及后续是否有更多信息暴露。今天放逐需要慎重，信息量还不足以让我做出高置信判断。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "d711e739-dc1a-4636-8a98-38061a30aa7e",
+      "ts": 1788606580.7442043,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-6dfea9dc8994",
+        "actor_name": "南柯辞",
+        "speech": "场上三人跳预言家，我梳理一下逻辑矛盾。4号说查1号金水，那1号若是好人，1号对5号的查杀就存疑；1号若真是预言家，5号是查杀，则3号和4号中至少一狼悍跳；3号说2号金水，若3号真，则1号和4号矛盾。三条线目前都无法闭环，关键信息不足。",
+        "reasoning": "首日三人跳预言家，信息混乱但尚无决定性逻辑链。我作为村民应保持观察，先梳理矛盾点而不急于站边或放逐，避免被狼人带节奏。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "32d76cff-a273-496c-a0b8-d08860129fdf",
+      "ts": 1788606580.744211,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-6dfea9dc8994",
+        "actor_name": "南柯辞",
+        "speech": "我注意到一个细节：狼人悍跳通常会选择带节奏放逐好人的路径。1号首日直接查杀5号，若他是狼，目标指向明确；若他是真预言家，5号大概率是狼。但目前我无法仅凭这些发言做出高置信判断。今天放逐需谨慎，我倾向先听更多发言再定，不急于下结论。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "aebcd9b2-e8fc-446f-9743-1d246ad379a7",
+      "ts": 1788606580.9048657,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "3e3902a8-19c3-4273-afdc-c9a0395aa164",
+      "ts": 1788606583.2593188,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-aaf1ac681afd",
+        "voter_name": "凌战",
+        "target_id": "P5-ca9cdcee665a",
+        "target_name": "夜未央",
+        "reasoning": "查杀结果明确，且其辩解回避核心矛盾，最符合狼人抗推逻辑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "2f772138-c0a8-475c-a852-82482549173e",
+      "ts": 1788606583.2593307,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-5a152ef1453f",
+        "voter_name": "于川",
+        "target_id": "P1-aaf1ac681afd",
+        "target_name": "凌战",
+        "reasoning": "首日直接查杀节奏太强，且与3号、4号查验矛盾冲突最大，需优先验证。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "68854f05-2c8a-4f40-8e27-3b66e4271eed",
+      "ts": 1788606583.2593591,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-9b96c987091d",
+        "voter_name": "蓝知怀",
+        "target_id": "P1-aaf1ac681afd",
+        "target_name": "凌战",
+        "reasoning": "1号首日悍跳查杀5号，与4号金水结论矛盾，且我的查验2号为好人，1号行为最像狼。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "1f40c6c7-b23b-4ac7-83bc-5e88d50c4f63",
+      "ts": 1788606583.2593713,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-7d1be844e6f2",
+        "voter_name": "雷昊",
+        "target_id": "P5-ca9cdcee665a",
+        "target_name": "夜未央",
+        "reasoning": "1号查杀他后他急于否定且引导拖延，狼人首夜空刀制造平安夜，他嫌疑最大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "4f91bba2-2b53-4624-8196-5f6f20b2312d",
+      "ts": 1788606583.2593772,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-ca9cdcee665a",
+        "voter_name": "夜未央",
+        "target_id": "P1-aaf1ac681afd",
+        "target_name": "凌战",
+        "reasoning": "1号首日直接查杀我，动机过强且时机突兀，缺乏足够信息支撑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "42a0784a-845d-4f07-9860-96730fb70f0c",
+      "ts": 1788606583.2593827,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-3c6f38ff5135",
+        "voter_name": "大壮",
+        "target_id": "P1-aaf1ac681afd",
+        "target_name": "凌战",
+        "reasoning": "首日直接查杀5号，若为狼则动机最明确，且4号金水信息与其矛盾。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "aa74a064-767c-4f00-865c-2f768fdee021",
+      "ts": 1788606583.2593887,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-6dfea9dc8994",
+        "voter_name": "南柯辞",
+        "target_id": "P5-ca9cdcee665a",
+        "target_name": "夜未央",
+        "reasoning": "1号首日查杀5号，若1号为真则5号是狼，且5号急于否定查验、引导拖延，嫌疑相对集中。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "df1f5af0-2dfb-41c9-97da-e4c1da532ace",
+      "ts": 1788606583.3395472,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "286750ab-9bdf-48e8-a06f-7d1dbebfc079",
+      "ts": 1788606583.3395913,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "凌战 was voted out."
+      }
+    },
+    {
+      "id": "31fe9de6-c7ca-4261-8a43-026f9c48fd46",
+      "ts": 1788606583.3396022,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P1-aaf1ac681afd",
+        "player_name": "凌战",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "43e1c876-14d3-4440-b9fe-48fa023fc836",
+      "ts": 1788606583.3396704,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "03015858-c8bd-4175-b3b9-d605c4f41e7c",
+      "ts": 1788606583.3397107,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "917cf592-1169-4dc6-878e-869dd26dbc16",
+      "ts": 1788606583.339717,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "fa36d0a9-bdfc-400e-ad77-51a592a3f04b",
+      "ts": 1788606583.4201362,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "c975c0a2-8af2-4c20-9d69-6c4ecdf74dea",
+      "ts": 1788606583.4201512,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P4-7d1be844e6f2"
+        ],
+        "wolf_names": [
+          "雷昊"
+        ]
+      }
+    },
+    {
+      "id": "d80531da-a814-4077-bad3-3317d3e48c6c",
+      "ts": 1788606583.420178,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_discussion_turn",
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "message": "雷昊 is choosing a proposed kill target for the wolf team.",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "348db6f5-84a7-49d8-82ea-75133998a5cf",
+      "ts": 1788606586.7638223,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "action_type": "attack",
+        "target": null,
+        "reasoning": "首夜已空刀制造平安夜（实际刀5被救或未发生），1号凌战已被放逐（我的狼队友）。当前存活6人，还剩我1只狼（凌战已出局）。若再空刀会继续制造平安夜假象，但狼人已少一人，需尽快削减好人数量。刀一个身份可能较强的目标，选择3号蓝知怀，其位置和前期发言较难判断，降低被守卫守中的概率。但考虑到我白天要悍跳预言家，夜里如果刀中守卫守护的目标风险高。综合判断，继续空刀制造平安夜能让我的悍跳预言家身份更稳固（连续",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_attack_vote",
+        "target_id": null,
+        "target_name": null,
+        "current_votes": {
+          "P4-7d1be844e6f2": ""
+        }
+      }
+    },
+    {
+      "id": "580a2416-3164-4632-b367-e421faae4565",
+      "ts": 1788606586.763836,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-7d1be844e6f2"
+      ],
+      "payload": {
+        "kind": "wolf_attack_tally",
+        "message": "狼队 unanimous 空刀：今晚不袭击任何人（空刀战术，制造平安夜）。",
+        "target_id": null,
+        "target_name": null,
+        "votes": {
+          "P4-7d1be844e6f2": ""
+        }
+      }
+    },
+    {
+      "id": "bdcacf2e-d2f0-4134-96fe-553618a09412",
+      "ts": 1788606586.7638652,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "58618de2-66c4-44d1-9e14-9ec6720fb8c2",
+      "ts": 1788606589.1966925,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9b96c987091d"
+      ],
+      "payload": {
+        "actor_id": "P3-9b96c987091d",
+        "actor_name": "蓝知怀",
+        "action_type": "divine",
+        "target": {
+          "id": "P5-ca9cdcee665a",
+          "seat": 5,
+          "name": "夜未央",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "D1票型中5号夜未央被多人投票，而1号凌战被投出。我需要查验尚未验证的存活玩家中嫌疑最大者。4号雷昊、5号夜未央、6号大壮、7号南柯辞均未被查。从票型看，投夜未央的有1号、4号、7号，而投凌战的有2号、3号、5号、6号。1号是悍跳狼的话，投1号的更可能为好人方，但需进一步确认。先查验5号夜未央，作为被1号查杀的对象，验证1号是否狼踩好人还是狼踩狼。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P5-ca9cdcee665a"
+      }
+    },
+    {
+      "id": "7a364fbf-7682-4938-a86f-d4515b77f420",
+      "ts": 1788606589.1966991,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9b96c987091d"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P5-ca9cdcee665a",
+        "target_name": "夜未央",
+        "is_wolf": false,
+        "message": "Seer check: 夜未央 is not wolf."
+      }
+    },
+    {
+      "id": "661d92a5-de2f-4eb3-bd81-af8b4a71d7fa",
+      "ts": 1788606589.2770162,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "3175ad53-445d-4b48-9f6c-ae735043f67a",
+      "ts": 1788606590.431851,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-ca9cdcee665a"
+      ],
+      "payload": {
+        "actor_id": "P5-ca9cdcee665a",
+        "actor_name": "夜未央",
+        "action_type": "skip",
+        "target": null,
+        "reasoning": "昨夜无人死亡，说明守卫守对了刀口或狼人空刀。解药已用，毒药是唯一武器。目前场上信息不足，没有明确狼人目标，贸然毒人风险太大，选择保留毒药等待更多信息。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "skipped": true
+      }
+    },
+    {
+      "id": "6a88d155-6be9-4e0e-a5f0-82d7a2bafba9",
+      "ts": 1788606590.512022,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "ade11efa-d5a2-4d39-a791-92fa36e0c702",
+      "ts": 1788606593.1941388,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-5a152ef1453f"
+      ],
+      "payload": {
+        "actor_id": "P2-5a152ef1453f",
+        "actor_name": "于川",
+        "action_type": "guard",
+        "target": {
+          "id": "P4-7d1be844e6f2",
+          "seat": 4,
+          "name": "雷昊",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜无人死亡，说明狼刀可能被女巫救或守卫挡。第一晚无历史限制，需要选择一个最可能被狼刀的目标进行守护。1号凌战被投票出局，其票型指向夜未央，而凌战跳预言家查杀5号夜未央。如果凌战是真预言家，夜未央是狼，那么狼队今晚可能刀向对狼威胁最大的牌。但凌战已死，夜未央作为焦点牌不太可能成为狼刀首选。我选择守护一个中间位置的玩家，暂守4号雷昊作为保险。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-7d1be844e6f2"
+      }
+    },
+    {
+      "id": "cb0cd994-e90f-41b7-98fd-f32a97a5ae52",
+      "ts": 1788606593.2746906,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "97670fbd-cfef-42e2-bebf-6cee8ec97c6a",
+      "ts": 1788606593.2747154,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "ec968aa5-5c4b-4acd-a4d8-f07d7d430f7d",
+      "ts": 1788606593.2749,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "e6dea71b-8f72-443c-b661-c70966e470a0",
+      "ts": 1788606593.2749166,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "8572181e-7901-4a6f-8db7-155efce02085",
+      "ts": 1788606593.5964715,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "1b2548d6-8b54-47dc-8148-fc3c97540051",
+      "ts": 1788606596.2533157,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-5a152ef1453f",
+        "actor_name": "于川",
+        "speech": "首夜平安夜，说明狼刀被守卫或女巫挡住。1号昨天跳预言家查杀5号，但最终被投出局，票型上投1号的有我、蓝知怀、夜未央、大壮，投5号的有雷昊和南柯辞。1号如果是真预言家被投出，那狼就在投1号的人里；如果1号是狼悍跳，那投5号的雷昊和南柯辞需要关注。",
+        "reasoning": "首夜无人死亡，1号凌战被投出局。我需要梳理票型：凌战和另外4人投了夜未央，5人投了凌战。凌战第一天跳预言家查杀5号但被投出局，需要谨慎分析局势。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "96ca6c05-ece4-409a-bdca-a95ee249d48e",
+      "ts": 1788606596.2533226,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-5a152ef1453f",
+        "actor_name": "于川",
+        "speech": "昨晚无人死亡，信息有限，我想先听听大家怎么说。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "9fe7ecb9-bc57-4b64-993d-0530fcec8c11",
+      "ts": 1788606599.5666769,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9b96c987091d",
+        "actor_name": "蓝知怀",
+        "speech": "我是3号蓝知怀，真预言家。昨天我已明确跳身份：首夜查验2号于川为好人。昨晚继续查验5号夜未央，结果也是好人。连续两晚两个金水，信息很干净。",
+        "reasoning": "作为预言家，按战术指令必须如实公布身份与查验结果。我已查验于川和夜未央均为好人，需要公开跳预言家并报出查验结果，帮助好人阵营理清局势。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 5,
+        "claim_result": "good",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "04f5bf79-de40-45ef-80d6-c8d653fd9ab9",
+      "ts": 1788606599.5666864,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9b96c987091d",
+        "actor_name": "蓝知怀",
+        "speech": "昨天1号凌战悍跳预言家查杀5号夜未央，实际夜未央是好人，1号是狼悍跳。票型上，投1号的有我、于川、夜未央、大壮；投5号的有雷昊和南柯辞。投5号的人是在跟1号的悍跳走，雷昊和南柯辞嫌疑最大。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "8ad38357-0884-4eb5-8914-1674b1e6c980",
+      "ts": 1788606599.5666904,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9b96c987091d",
+        "actor_name": "蓝知怀",
+        "speech": "目前场上存活6人，已知1号是狼，于川和夜未央是金水，我自己是预言家。那么狼坑就集中在雷昊、大壮、南柯辞三人中的两人。我建议今天重点盘这三人。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "15d5a92a-3519-417b-a8a6-821289c7cc61",
+      "ts": 1788606602.65014,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "speech": "我是4号雷昊，真预言家，昨天已经跳过预言家身份。昨天我查验1号凌战为金水，1号却悍跳预言家查杀5号，这本身就矛盾——如果1号是狼，为什么我一个真预言家查他是金水？这说明1号是乱跳的好人或者另有隐情，但更关键的是昨晚我查验了3号蓝知怀，结果是狼。",
+        "reasoning": "3号蓝知怀已经跳真预言家，且声称查验2号和5号都是金水。作为后置位狼人，我必须悍跳并与之对跳，编造查验结果搅乱好人信息。我昨天已经跳过预言家说1号是金水，现在需要延续这个身份。我应该声称查验了3号蓝知怀为狼，否定他的预言家身份。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 3,
+        "claim_result": "wolf",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "abb0f41b-adae-4901-991f-7654e34f932f",
+      "ts": 1788606602.6501534,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-7d1be844e6f2",
+        "actor_name": "雷昊",
+        "speech": "蓝知怀今天跳出来说自己是预言家、给2号和5号双金水，这完全是编造的。我才是真预言家，3号蓝知怀是悍跳狼。现在狼坑就是3号和另一个人，我建议今天先投3号。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "41c1dde7-19eb-42c7-9be1-80bac265b1d6",
+      "ts": 1788606606.854158,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-ca9cdcee665a",
+        "actor_name": "夜未央",
+        "speech": "我理一下事实。昨天1号跳预言家查杀我，我明确表态我不是狼。最终1号被投出，如果1号是狼，那投1号的于川、蓝知怀、大壮和我相对干净；投我的雷昊和南柯辞有问题。但今天3号和4号互跳预言家，3号给我金水，4号说3号是狼。我作为被查杀的对象，最清楚自己不是狼。1号查杀我大概率是悍跳狼。",
+        "reasoning": "作为女巫，我清楚自己不是狼，1号凌战查杀我说明他是狼悍跳。现在3号和4号互跳预言家互相查杀。3号蓝知怀给我金水，4号雷昊说3号是狼。我需要基于事实判断。首夜平安夜，我用了解药（save_used=True），说明狼刀被我挡住了。1号查杀我，投1号的人包括我、于川、蓝知怀、大壮；投我（5号）的是雷昊和南柯辞。我关注投我的雷昊和南柯辞，但雷昊又跳预言家说3号是狼。情况复杂，我需要谨慎表达判断。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "e4f88903-ba4b-439f-b2c6-38f8a8cbc009",
+      "ts": 1788606606.8541656,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-ca9cdcee665a",
+        "actor_name": "夜未央",
+        "speech": "现在我需要分辨3号和4号谁是真预言家。先听大家继续发言，我再判断。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "38608af6-5f23-4250-85fa-3133921164f4",
+      "ts": 1788606611.8187401,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-3c6f38ff5135",
+        "actor_name": "大壮",
+        "speech": "我盘一下逻辑。昨天1号跳预言家查杀5号，最终被投出。如果1号是狼悍跳，那今天3号和4号互跳，4号昨天说查1号为金水——一个真预言家查悍跳狼出金水，这本身就矛盾。4号要么昨天在说谎，要么1号不是狼。",
+        "reasoning": "作为平民，我需要理清逻辑。3号和4号互跳预言家，但3号昨天已经跳过预言家并给2号金水，4号今天才跳出来说查验1号为金水、昨晚查3号为狼。关键矛盾：如果1号是狼悍跳，那4号给1号金水就站不住脚；如果1号是好人大跳，那4号查金水合理。但1号查杀5号且被投出，若1号是好人乱跳则投1号的我们都有问题。更合理的推断是1号是狼悍跳，4号在帮狼圆场。我倾向支持3号，质疑4号。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "accusation",
+        "target_seat": 4
+      }
+    },
+    {
+      "id": "c4161518-ba1d-4652-83e3-6ab5a5417587",
+      "ts": 1788606611.8187478,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-3c6f38ff5135",
+        "actor_name": "大壮",
+        "speech": "但1号被投出是事实，若1号是好人乱跳，那投1号的包括我在内都有问题，4号为何不盘这个方向？",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "b499334d-7254-4af1-b7a7-ec234438d9c0",
+      "ts": 1788606611.818752,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-3c6f38ff5135",
+        "actor_name": "大壮",
+        "speech": "更可能的情况：1号是狼悍跳，4号是1号的狼队友，昨天给1号发金水试图保他，今天又编查验说3号是狼来延续悍跳。3号连报两晚查验（2号、5号金水），逻辑连贯。我倾向投4号。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "7b9b8031-2f02-4bde-8dc6-79777684d4c6",
+      "ts": 1788606616.0527692,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-6dfea9dc8994",
+        "actor_name": "南柯辞",
+        "speech": "我整理一下关键矛盾。昨天我投了5号，因为1号查杀5号。但1号被投出后，今天3号和4号互跳预言家。",
+        "reasoning": "我作为村民，需要梳理预言家对跳的逻辑。4号昨天查1号为金水，但1号被投出若为狼，则4号查金水矛盾；若1号为好人，则5号的查杀存疑。3号跳预言家给2、5双金水。我需要分析谁更可信，先baseline陈述判断不急于站边。",
+        "segment_index": 0,
+        "segment_total": 5,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "ce90e90a-df7e-422d-b30f-91ae71e2e431",
+      "ts": 1788606616.0527773,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-6dfea9dc8994",
+        "actor_name": "南柯辞",
+        "speech": "4号说昨天查1号是金水，今天查3号是狼。如果1号真是狼，4号查1号出金水就矛盾——除非4号在撒谎。如果1号是好人乱跳，那昨天投1号的于川、蓝知怀、夜未央、大壮都有狼嫌疑，4号为什么不盘这条线？",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 5,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "a502608d-e845-4beb-a267-137218dbc73a",
+      "ts": 1788606616.0527813,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-6dfea9dc8994",
+        "actor_name": "南柯辞",
+        "speech": "3号说自己是预言家，给2号和5号双金水。但3号昨天投了1号，如果3号是真预言家且没查验过1号，他凭什么跟票投1号？除非他昨天查验过1号但没报——这不合逻辑。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 5,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "c57fa61c-b724-4ab4-be2e-cf1f5971f106",
+      "ts": 1788606616.0527887,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-6dfea9dc8994",
+        "actor_name": "南柯辞",
+        "speech": "关键疑点：昨天1号跳预言家查杀5号时，3号没有跳出来对跳，而是直接投了1号。如果是真预言家见到悍跳，通常会当场跳出来报查验。3号昨天沉默、今天才跳，这个时机很可疑。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 5,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "a6c183fc-ed9e-4ac8-8f3d-97fa2435f2f5",
+      "ts": 1788606616.0527925,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-6dfea9dc8994",
+        "actor_name": "南柯辞",
+        "speech": "我倾向认为3号和4号中必有一狼，另一个狼大概率在投1号的人群中。我需要更多信息来判断3、4谁真谁假。",
+        "reasoning": "",
+        "segment_index": 4,
+        "segment_total": 5,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "86ea1043-af42-4968-a6c4-77c4bb7dad20",
+      "ts": 1788606616.2137144,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "aa3ce80c-36e7-49d5-8d3f-0bfc11c4b850",
+      "ts": 1788606619.0213325,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-5a152ef1453f",
+        "voter_name": "于川",
+        "target_id": "P4-7d1be844e6f2",
+        "target_name": "雷昊",
+        "reasoning": "4号昨天查1号金水与1号被投矛盾，今天又跳查杀3号，逻辑自冲突。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "276dfb02-f256-44b5-ad27-9d06a242da06",
+      "ts": 1788606619.0213823,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-9b96c987091d",
+        "voter_name": "蓝知怀",
+        "target_id": "P4-7d1be844e6f2",
+        "target_name": "雷昊",
+        "reasoning": "4号给被投出的悍跳狼发金水，逻辑矛盾且查验链条不可信。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "d15fe4a5-711f-4c44-8e17-0141e644ac75",
+      "ts": 1788606619.02139,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-7d1be844e6f2",
+        "voter_name": "雷昊",
+        "target_id": "P3-9b96c987091d",
+        "target_name": "蓝知怀",
+        "reasoning": "蓝知怀昨天沉默今天才跳预言家，时机可疑且逻辑漏洞明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "73e5749f-3829-4309-96ce-15f66cb697f4",
+      "ts": 1788606619.0213969,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-ca9cdcee665a",
+        "voter_name": "夜未央",
+        "target_id": "P4-7d1be844e6f2",
+        "target_name": "雷昊",
+        "reasoning": "雷昊，理由是他说昨天查1号为金水，与1号大概率是狼的矛盾，延续队友悍跳。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "d74fae96-deb8-4e96-8c9b-80f945058c1e",
+      "ts": 1788606619.0214038,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-3c6f38ff5135",
+        "voter_name": "大壮",
+        "target_id": "P4-7d1be844e6f2",
+        "target_name": "雷昊",
+        "reasoning": "1号若为狼，4号昨报其金水逻辑矛盾，且今日查验链不连贯，狼面更大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e7dc7c97-4993-4654-af1b-d023521effc5",
+      "ts": 1788606619.0214107,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-6dfea9dc8994",
+        "voter_name": "南柯辞",
+        "target_id": "P4-7d1be844e6f2",
+        "target_name": "雷昊",
+        "reasoning": "4号给被投出的1号发金水与1号查杀5号的逻辑矛盾，且其跳预言家时机可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "b712d06e-ed95-4c0c-af6d-3497614d2806",
+      "ts": 1788606619.101686,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "38e97fa9-3a5d-47a6-9f1b-40595f4e34dd",
+      "ts": 1788606619.101728,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "雷昊 was voted out."
+      }
+    },
+    {
+      "id": "9a1bf2cf-2ab8-4fbd-82ad-140f8db85eec",
+      "ts": 1788606619.101739,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P4-7d1be844e6f2",
+        "player_name": "雷昊",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "07c548df-fb92-4496-befa-b189bf9e5970",
+      "ts": 1788606619.1017518,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "village",
+        "reason": "all_wolves_dead"
+      }
+    },
+    {
+      "id": "8a36a60f-46f2-4f7f-8763-e868210194eb",
+      "ts": 1788606619.1018186,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P2-5a152ef1453f": "P4-7d1be844e6f2",
+    "P3-9b96c987091d": "P4-7d1be844e6f2",
+    "P4-7d1be844e6f2": "P3-9b96c987091d",
+    "P5-ca9cdcee665a": "P4-7d1be844e6f2",
+    "P6-3c6f38ff5135": "P4-7d1be844e6f2",
+    "P7-6dfea9dc8994": "P4-7d1be844e6f2"
+  },
+  "vote_history": {
+    "1": {
+      "P1-aaf1ac681afd": "P5-ca9cdcee665a",
+      "P2-5a152ef1453f": "P1-aaf1ac681afd",
+      "P3-9b96c987091d": "P1-aaf1ac681afd",
+      "P4-7d1be844e6f2": "P5-ca9cdcee665a",
+      "P5-ca9cdcee665a": "P1-aaf1ac681afd",
+      "P6-3c6f38ff5135": "P1-aaf1ac681afd",
+      "P7-6dfea9dc8994": "P5-ca9cdcee665a"
+    },
+    "2": {
+      "P2-5a152ef1453f": "P4-7d1be844e6f2",
+      "P3-9b96c987091d": "P4-7d1be844e6f2",
+      "P4-7d1be844e6f2": "P3-9b96c987091d",
+      "P5-ca9cdcee665a": "P4-7d1be844e6f2",
+      "P6-3c6f38ff5135": "P4-7d1be844e6f2",
+      "P7-6dfea9dc8994": "P4-7d1be844e6f2"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P1-aaf1ac681afd",
+        "seat": 1,
+        "votes": 4.0
+      }
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "凌战: 我是预言家。昨晚查了5号夜未央，查杀，狼人。我首夜选择查5号是有原因的，居中位置通常信息量大，值得优先确认。这个查验结果我确认无误，今天建议直接放逐5号。后面如果有对跳，我会用我的查验逻辑来分辨。夜未央，你有什么要说的吗？",
+      "于川: 首夜无人死亡。1号直接跳预言家查杀5号，这个信息分量很重。但第一天就出查杀，我需要听听5号怎么回应，也想看看后面有没有对跳。先不急着站边，听完整场再说。",
+      "蓝知怀: 我是3号蓝知怀，真预言家。昨晚查验了2号于川，结果是好人。1号凌战跳预言家查杀5号，这是悍跳。场上只有两名狼人，1号作为狼人跳预言家试图带节奏放逐好人。我的查验信息是真实的：2号于川是金水。请大家理性站边——真预言家第一天就出查杀的概率和收益都不合理，而我的查验结果清晰可验证。",
+      "蓝知怀: 建议今天先听5号发言，但核心是分辨谁才是真预言家。我投1号凌战。",
+      "雷昊: 我是4号雷昊，真预言家。昨晚查验了1号凌战，结果是好人。我不清楚1号为什么跳预言家，但我的查验结果不会错——1号是金水。这意味着1号不是狼。那么场上的狼就在其他人中。3号蓝知怀跳预言家说查了2号是金水，如果1号是真预言家或者另有身份，那3号的身份就很可疑。",
+      "雷昊: 现在场上已经有三个人在跳预言家——1号、3号和我。真预言家只有一个。我的查验是1号金水，如果1号是真预言家，那他的查杀5号可信；如果我是真预言家，那3号大概率是狼。无论哪条线，3号蓝知怀的嫌疑都很大。建议今天先放逐3号。",
+      "夜未央: 1号说我被查杀，但我明确说：我不是狼。我没有任何理由第一天就被查杀，这个查验本身就是问题。场上三个人跳预言家，1号查杀我、3号查2号金水、4号查1号金水——三个人互相矛盾，真预言家只有一个。我的判断是：先不要急着放逐任何人，把三人的发言和逻辑摊开来看。",
+      "夜未央: 1号查杀一个居中人，动机可疑；3号和4号互相矛盾。我建议今天先听清所有人的完整发言再投票。",
+      "大壮: 场上三人跳预言家：1号查杀5号，3号查2号金水，4号查1号金水。这三人必有一真，也可能有狼悍跳。",
+      "大壮: 先看矛盾点：1号说5号是狼，4号说1号是金水（好人）。如果4号是真预言家，那么1号就是好人，1号的查杀就存疑，3号说2号金水则可能是狼跳。如果1号是真预言家，5号是查杀，那3号和4号中至少一个悍跳。如果3号是真预言家，2号金水，那1号查杀5号就是悍跳。",
+      "大壮: 三条线里，关键不在查谁，而在于狼人悍跳的动机。狼人跳预言家通常是为了带节奏放逐好人或保护狼队友。1号首日直接查杀5号，如果他是狼，那5号大概率是好人；如果他是真预言家，5号就是狼。",
+      "大壮: 我暂时不急着站边，想再听听各位对这三条线的分析，以及后续是否有更多信息暴露。今天放逐需要慎重，信息量还不足以让我做出高置信判断。",
+      "南柯辞: 场上三人跳预言家，我梳理一下逻辑矛盾。4号说查1号金水，那1号若是好人，1号对5号的查杀就存疑；1号若真是预言家，5号是查杀，则3号和4号中至少一狼悍跳；3号说2号金水，若3号真，则1号和4号矛盾。三条线目前都无法闭环，关键信息不足。",
+      "南柯辞: 我注意到一个细节：狼人悍跳通常会选择带节奏放逐好人的路径。1号首日直接查杀5号，若他是狼，目标指向明确；若他是真预言家，5号大概率是狼。但目前我无法仅凭这些发言做出高置信判断。今天放逐需谨慎，我倾向先听更多发言再定，不急于下结论。",
+      "凌战 voted for 夜未央 (查杀结果明确，且其辩解回避核心矛盾，最符合狼人抗推逻辑。)",
+      "于川 voted for 凌战 (首日直接查杀节奏太强，且与3号、4号查验矛盾冲突最大，需优先验证。)",
+      "蓝知怀 voted for 凌战 (1号首日悍跳查杀5号，与4号金水结论矛盾，且我的查验2号为好人，1号行为最像狼。)",
+      "雷昊 voted for 夜未央 (1号查杀他后他急于否定且引导拖延，狼人首夜空刀制造平安夜，他嫌疑最大。)",
+      "夜未央 voted for 凌战 (1号首日直接查杀我，动机过强且时机突兀，缺乏足够信息支撑。)",
+      "大壮 voted for 凌战 (首日直接查杀5号，若为狼则动机最明确，且4号金水信息与其矛盾。)",
+      "南柯辞 voted for 夜未央 (1号首日查杀5号，若1号为真则5号是狼，且5号急于否定查验、引导拖延，嫌疑相对集中。)",
+      "凌战 died by voted_out"
+    ],
+    "2": [
+      "于川: 首夜平安夜，说明狼刀被守卫或女巫挡住。1号昨天跳预言家查杀5号，但最终被投出局，票型上投1号的有我、蓝知怀、夜未央、大壮，投5号的有雷昊和南柯辞。1号如果是真预言家被投出，那狼就在投1号的人里；如果1号是狼悍跳，那投5号的雷昊和南柯辞需要关注。",
+      "于川: 昨晚无人死亡，信息有限，我想先听听大家怎么说。",
+      "蓝知怀: 我是3号蓝知怀，真预言家。昨天我已明确跳身份：首夜查验2号于川为好人。昨晚继续查验5号夜未央，结果也是好人。连续两晚两个金水，信息很干净。",
+      "蓝知怀: 昨天1号凌战悍跳预言家查杀5号夜未央，实际夜未央是好人，1号是狼悍跳。票型上，投1号的有我、于川、夜未央、大壮；投5号的有雷昊和南柯辞。投5号的人是在跟1号的悍跳走，雷昊和南柯辞嫌疑最大。",
+      "蓝知怀: 目前场上存活6人，已知1号是狼，于川和夜未央是金水，我自己是预言家。那么狼坑就集中在雷昊、大壮、南柯辞三人中的两人。我建议今天重点盘这三人。",
+      "雷昊: 我是4号雷昊，真预言家，昨天已经跳过预言家身份。昨天我查验1号凌战为金水，1号却悍跳预言家查杀5号，这本身就矛盾——如果1号是狼，为什么我一个真预言家查他是金水？这说明1号是乱跳的好人或者另有隐情，但更关键的是昨晚我查验了3号蓝知怀，结果是狼。",
+      "雷昊: 蓝知怀今天跳出来说自己是预言家、给2号和5号双金水，这完全是编造的。我才是真预言家，3号蓝知怀是悍跳狼。现在狼坑就是3号和另一个人，我建议今天先投3号。",
+      "夜未央: 我理一下事实。昨天1号跳预言家查杀我，我明确表态我不是狼。最终1号被投出，如果1号是狼，那投1号的于川、蓝知怀、大壮和我相对干净；投我的雷昊和南柯辞有问题。但今天3号和4号互跳预言家，3号给我金水，4号说3号是狼。我作为被查杀的对象，最清楚自己不是狼。1号查杀我大概率是悍跳狼。",
+      "夜未央: 现在我需要分辨3号和4号谁是真预言家。先听大家继续发言，我再判断。",
+      "大壮: 我盘一下逻辑。昨天1号跳预言家查杀5号，最终被投出。如果1号是狼悍跳，那今天3号和4号互跳，4号昨天说查1号为金水——一个真预言家查悍跳狼出金水，这本身就矛盾。4号要么昨天在说谎，要么1号不是狼。",
+      "大壮: 但1号被投出是事实，若1号是好人乱跳，那投1号的包括我在内都有问题，4号为何不盘这个方向？",
+      "大壮: 更可能的情况：1号是狼悍跳，4号是1号的狼队友，昨天给1号发金水试图保他，今天又编查验说3号是狼来延续悍跳。3号连报两晚查验（2号、5号金水），逻辑连贯。我倾向投4号。",
+      "南柯辞: 我整理一下关键矛盾。昨天我投了5号，因为1号查杀5号。但1号被投出后，今天3号和4号互跳预言家。",
+      "南柯辞: 4号说昨天查1号是金水，今天查3号是狼。如果1号真是狼，4号查1号出金水就矛盾——除非4号在撒谎。如果1号是好人乱跳，那昨天投1号的于川、蓝知怀、夜未央、大壮都有狼嫌疑，4号为什么不盘这条线？",
+      "南柯辞: 3号说自己是预言家，给2号和5号双金水。但3号昨天投了1号，如果3号是真预言家且没查验过1号，他凭什么跟票投1号？除非他昨天查验过1号但没报——这不合逻辑。",
+      "南柯辞: 关键疑点：昨天1号跳预言家查杀5号时，3号没有跳出来对跳，而是直接投了1号。如果是真预言家见到悍跳，通常会当场跳出来报查验。3号昨天沉默、今天才跳，这个时机很可疑。",
+      "南柯辞: 我倾向认为3号和4号中必有一狼，另一个狼大概率在投1号的人群中。我需要更多信息来判断3、4谁真谁假。",
+      "于川 voted for 雷昊 (4号昨天查1号金水与1号被投矛盾，今天又跳查杀3号，逻辑自冲突。)",
+      "蓝知怀 voted for 雷昊 (4号给被投出的悍跳狼发金水，逻辑矛盾且查验链条不可信。)",
+      "雷昊 voted for 蓝知怀 (蓝知怀昨天沉默今天才跳预言家，时机可疑且逻辑漏洞明显。)",
+      "夜未央 voted for 雷昊 (雷昊，理由是他说昨天查1号为金水，与1号大概率是狼的矛盾，延续队友悍跳。)",
+      "大壮 voted for 雷昊 (1号若为狼，4号昨报其金水逻辑矛盾，且今日查验链不连贯，狼面更大。)",
+      "南柯辞 voted for 雷昊 (4号给被投出的1号发金水与1号查杀5号的逻辑矛盾，且其跳预言家时机可疑。)",
+      "雷昊 died by voted_out",
+      "Game ended: village (all_wolves_dead)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "凌战",
+        "speaker_id": "P1-aaf1ac681afd",
+        "content": "我是预言家。昨晚查了5号夜未央，查杀，狼人。我首夜选择查5号是有原因的，居中位置通常信息量大，值得优先确认。这个查验结果我确认无误，今天建议直接放逐5号。后面如果有对跳，我会用我的查验逻辑来分辨。夜未央，你有什么要说的吗？"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "于川",
+        "speaker_id": "P2-5a152ef1453f",
+        "content": "首夜无人死亡。1号直接跳预言家查杀5号，这个信息分量很重。但第一天就出查杀，我需要听听5号怎么回应，也想看看后面有没有对跳。先不急着站边，听完整场再说。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9b96c987091d",
+        "content": "我是3号蓝知怀，真预言家。昨晚查验了2号于川，结果是好人。1号凌战跳预言家查杀5号，这是悍跳。场上只有两名狼人，1号作为狼人跳预言家试图带节奏放逐好人。我的查验信息是真实的：2号于川是金水。请大家理性站边——真预言家第一天就出查杀的概率和收益都不合理，而我的查验结果清晰可验证。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9b96c987091d",
+        "content": "建议今天先听5号发言，但核心是分辨谁才是真预言家。我投1号凌战。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "雷昊",
+        "speaker_id": "P4-7d1be844e6f2",
+        "content": "我是4号雷昊，真预言家。昨晚查验了1号凌战，结果是好人。我不清楚1号为什么跳预言家，但我的查验结果不会错——1号是金水。这意味着1号不是狼。那么场上的狼就在其他人中。3号蓝知怀跳预言家说查了2号是金水，如果1号是真预言家或者另有身份，那3号的身份就很可疑。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "雷昊",
+        "speaker_id": "P4-7d1be844e6f2",
+        "content": "现在场上已经有三个人在跳预言家——1号、3号和我。真预言家只有一个。我的查验是1号金水，如果1号是真预言家，那他的查杀5号可信；如果我是真预言家，那3号大概率是狼。无论哪条线，3号蓝知怀的嫌疑都很大。建议今天先放逐3号。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "夜未央",
+        "speaker_id": "P5-ca9cdcee665a",
+        "content": "1号说我被查杀，但我明确说：我不是狼。我没有任何理由第一天就被查杀，这个查验本身就是问题。场上三个人跳预言家，1号查杀我、3号查2号金水、4号查1号金水——三个人互相矛盾，真预言家只有一个。我的判断是：先不要急着放逐任何人，把三人的发言和逻辑摊开来看。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "夜未央",
+        "speaker_id": "P5-ca9cdcee665a",
+        "content": "1号查杀一个居中人，动机可疑；3号和4号互相矛盾。我建议今天先听清所有人的完整发言再投票。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "大壮",
+        "speaker_id": "P6-3c6f38ff5135",
+        "content": "场上三人跳预言家：1号查杀5号，3号查2号金水，4号查1号金水。这三人必有一真，也可能有狼悍跳。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "大壮",
+        "speaker_id": "P6-3c6f38ff5135",
+        "content": "先看矛盾点：1号说5号是狼，4号说1号是金水（好人）。如果4号是真预言家，那么1号就是好人，1号的查杀就存疑，3号说2号金水则可能是狼跳。如果1号是真预言家，5号是查杀，那3号和4号中至少一个悍跳。如果3号是真预言家，2号金水，那1号查杀5号就是悍跳。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "大壮",
+        "speaker_id": "P6-3c6f38ff5135",
+        "content": "三条线里，关键不在查谁，而在于狼人悍跳的动机。狼人跳预言家通常是为了带节奏放逐好人或保护狼队友。1号首日直接查杀5号，如果他是狼，那5号大概率是好人；如果他是真预言家，5号就是狼。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "大壮",
+        "speaker_id": "P6-3c6f38ff5135",
+        "content": "我暂时不急着站边，想再听听各位对这三条线的分析，以及后续是否有更多信息暴露。今天放逐需要慎重，信息量还不足以让我做出高置信判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-6dfea9dc8994",
+        "content": "场上三人跳预言家，我梳理一下逻辑矛盾。4号说查1号金水，那1号若是好人，1号对5号的查杀就存疑；1号若真是预言家，5号是查杀，则3号和4号中至少一狼悍跳；3号说2号金水，若3号真，则1号和4号矛盾。三条线目前都无法闭环，关键信息不足。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-6dfea9dc8994",
+        "content": "我注意到一个细节：狼人悍跳通常会选择带节奏放逐好人的路径。1号首日直接查杀5号，若他是狼，目标指向明确；若他是真预言家，5号大概率是狼。但目前我无法仅凭这些发言做出高置信判断。今天放逐需谨慎，我倾向先听更多发言再定，不急于下结论。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "凌战",
+        "voter_id": "P1-aaf1ac681afd",
+        "target_name": "夜未央",
+        "target_id": "P5-ca9cdcee665a",
+        "reasoning": "查杀结果明确，且其辩解回避核心矛盾，最符合狼人抗推逻辑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "于川",
+        "voter_id": "P2-5a152ef1453f",
+        "target_name": "凌战",
+        "target_id": "P1-aaf1ac681afd",
+        "reasoning": "首日直接查杀节奏太强，且与3号、4号查验矛盾冲突最大，需优先验证。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "蓝知怀",
+        "voter_id": "P3-9b96c987091d",
+        "target_name": "凌战",
+        "target_id": "P1-aaf1ac681afd",
+        "reasoning": "1号首日悍跳查杀5号，与4号金水结论矛盾，且我的查验2号为好人，1号行为最像狼。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "雷昊",
+        "voter_id": "P4-7d1be844e6f2",
+        "target_name": "夜未央",
+        "target_id": "P5-ca9cdcee665a",
+        "reasoning": "1号查杀他后他急于否定且引导拖延，狼人首夜空刀制造平安夜，他嫌疑最大。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "夜未央",
+        "voter_id": "P5-ca9cdcee665a",
+        "target_name": "凌战",
+        "target_id": "P1-aaf1ac681afd",
+        "reasoning": "1号首日直接查杀我，动机过强且时机突兀，缺乏足够信息支撑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "大壮",
+        "voter_id": "P6-3c6f38ff5135",
+        "target_name": "凌战",
+        "target_id": "P1-aaf1ac681afd",
+        "reasoning": "首日直接查杀5号，若为狼则动机最明确，且4号金水信息与其矛盾。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "南柯辞",
+        "voter_id": "P7-6dfea9dc8994",
+        "target_name": "夜未央",
+        "target_id": "P5-ca9cdcee665a",
+        "reasoning": "1号首日查杀5号，若1号为真则5号是狼，且5号急于否定查验、引导拖延，嫌疑相对集中。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "凌战",
+        "player_id": "P1-aaf1ac681afd",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "于川",
+        "speaker_id": "P2-5a152ef1453f",
+        "content": "首夜平安夜，说明狼刀被守卫或女巫挡住。1号昨天跳预言家查杀5号，但最终被投出局，票型上投1号的有我、蓝知怀、夜未央、大壮，投5号的有雷昊和南柯辞。1号如果是真预言家被投出，那狼就在投1号的人里；如果1号是狼悍跳，那投5号的雷昊和南柯辞需要关注。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "于川",
+        "speaker_id": "P2-5a152ef1453f",
+        "content": "昨晚无人死亡，信息有限，我想先听听大家怎么说。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9b96c987091d",
+        "content": "我是3号蓝知怀，真预言家。昨天我已明确跳身份：首夜查验2号于川为好人。昨晚继续查验5号夜未央，结果也是好人。连续两晚两个金水，信息很干净。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9b96c987091d",
+        "content": "昨天1号凌战悍跳预言家查杀5号夜未央，实际夜未央是好人，1号是狼悍跳。票型上，投1号的有我、于川、夜未央、大壮；投5号的有雷昊和南柯辞。投5号的人是在跟1号的悍跳走，雷昊和南柯辞嫌疑最大。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9b96c987091d",
+        "content": "目前场上存活6人，已知1号是狼，于川和夜未央是金水，我自己是预言家。那么狼坑就集中在雷昊、大壮、南柯辞三人中的两人。我建议今天重点盘这三人。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "雷昊",
+        "speaker_id": "P4-7d1be844e6f2",
+        "content": "我是4号雷昊，真预言家，昨天已经跳过预言家身份。昨天我查验1号凌战为金水，1号却悍跳预言家查杀5号，这本身就矛盾——如果1号是狼，为什么我一个真预言家查他是金水？这说明1号是乱跳的好人或者另有隐情，但更关键的是昨晚我查验了3号蓝知怀，结果是狼。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "雷昊",
+        "speaker_id": "P4-7d1be844e6f2",
+        "content": "蓝知怀今天跳出来说自己是预言家、给2号和5号双金水，这完全是编造的。我才是真预言家，3号蓝知怀是悍跳狼。现在狼坑就是3号和另一个人，我建议今天先投3号。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "夜未央",
+        "speaker_id": "P5-ca9cdcee665a",
+        "content": "我理一下事实。昨天1号跳预言家查杀我，我明确表态我不是狼。最终1号被投出，如果1号是狼，那投1号的于川、蓝知怀、大壮和我相对干净；投我的雷昊和南柯辞有问题。但今天3号和4号互跳预言家，3号给我金水，4号说3号是狼。我作为被查杀的对象，最清楚自己不是狼。1号查杀我大概率是悍跳狼。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "夜未央",
+        "speaker_id": "P5-ca9cdcee665a",
+        "content": "现在我需要分辨3号和4号谁是真预言家。先听大家继续发言，我再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "大壮",
+        "speaker_id": "P6-3c6f38ff5135",
+        "content": "我盘一下逻辑。昨天1号跳预言家查杀5号，最终被投出。如果1号是狼悍跳，那今天3号和4号互跳，4号昨天说查1号为金水——一个真预言家查悍跳狼出金水，这本身就矛盾。4号要么昨天在说谎，要么1号不是狼。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "大壮",
+        "speaker_id": "P6-3c6f38ff5135",
+        "content": "但1号被投出是事实，若1号是好人乱跳，那投1号的包括我在内都有问题，4号为何不盘这个方向？"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "大壮",
+        "speaker_id": "P6-3c6f38ff5135",
+        "content": "更可能的情况：1号是狼悍跳，4号是1号的狼队友，昨天给1号发金水试图保他，今天又编查验说3号是狼来延续悍跳。3号连报两晚查验（2号、5号金水），逻辑连贯。我倾向投4号。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-6dfea9dc8994",
+        "content": "我整理一下关键矛盾。昨天我投了5号，因为1号查杀5号。但1号被投出后，今天3号和4号互跳预言家。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-6dfea9dc8994",
+        "content": "4号说昨天查1号是金水，今天查3号是狼。如果1号真是狼，4号查1号出金水就矛盾——除非4号在撒谎。如果1号是好人乱跳，那昨天投1号的于川、蓝知怀、夜未央、大壮都有狼嫌疑，4号为什么不盘这条线？"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-6dfea9dc8994",
+        "content": "3号说自己是预言家，给2号和5号双金水。但3号昨天投了1号，如果3号是真预言家且没查验过1号，他凭什么跟票投1号？除非他昨天查验过1号但没报——这不合逻辑。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-6dfea9dc8994",
+        "content": "关键疑点：昨天1号跳预言家查杀5号时，3号没有跳出来对跳，而是直接投了1号。如果是真预言家见到悍跳，通常会当场跳出来报查验。3号昨天沉默、今天才跳，这个时机很可疑。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P7-6dfea9dc8994",
+        "content": "我倾向认为3号和4号中必有一狼，另一个狼大概率在投1号的人群中。我需要更多信息来判断3、4谁真谁假。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "于川",
+        "voter_id": "P2-5a152ef1453f",
+        "target_name": "雷昊",
+        "target_id": "P4-7d1be844e6f2",
+        "reasoning": "4号昨天查1号金水与1号被投矛盾，今天又跳查杀3号，逻辑自冲突。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "蓝知怀",
+        "voter_id": "P3-9b96c987091d",
+        "target_name": "雷昊",
+        "target_id": "P4-7d1be844e6f2",
+        "reasoning": "4号给被投出的悍跳狼发金水，逻辑矛盾且查验链条不可信。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "雷昊",
+        "voter_id": "P4-7d1be844e6f2",
+        "target_name": "蓝知怀",
+        "target_id": "P3-9b96c987091d",
+        "reasoning": "蓝知怀昨天沉默今天才跳预言家，时机可疑且逻辑漏洞明显。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "夜未央",
+        "voter_id": "P5-ca9cdcee665a",
+        "target_name": "雷昊",
+        "target_id": "P4-7d1be844e6f2",
+        "reasoning": "雷昊，理由是他说昨天查1号为金水，与1号大概率是狼的矛盾，延续队友悍跳。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "大壮",
+        "voter_id": "P6-3c6f38ff5135",
+        "target_name": "雷昊",
+        "target_id": "P4-7d1be844e6f2",
+        "reasoning": "1号若为狼，4号昨报其金水逻辑矛盾，且今日查验链不连贯，狼面更大。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "南柯辞",
+        "voter_id": "P7-6dfea9dc8994",
+        "target_name": "雷昊",
+        "target_id": "P4-7d1be844e6f2",
+        "reasoning": "4号给被投出的1号发金水与1号查杀5号的逻辑矛盾，且其跳预言家时机可疑。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "雷昊",
+        "player_id": "P4-7d1be844e6f2",
+        "reason": "voted_out"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "village",
+        "reason": "all_wolves_dead"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "village",
+  "night_actions": {
+    "guard_target_id": "P4-7d1be844e6f2",
+    "last_guard_target_id": "P4-7d1be844e6f2",
+    "wolf_votes": {
+      "P4-7d1be844e6f2": ""
+    },
+    "wolf_target_id": null,
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": "P5-ca9cdcee665a",
+    "seer_result": {
+      "kind": "seer_result",
+      "target_id": "P5-ca9cdcee665a",
+      "target_name": "夜未央",
+      "is_wolf": false,
+      "message": "Seer check: 夜未央 is not wolf."
+    },
+    "deaths": []
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

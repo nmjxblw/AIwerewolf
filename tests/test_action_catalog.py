@@ -158,7 +158,26 @@ def test_wolf_seer_claim_allows_any_alive_and_either_result() -> None:
 
 
 def test_identity_only_seer_claim_strips_check_fields() -> None:
-    for role in ("Villager", "Witch", "Guard"):
+    # 对局日志审计 P1-12：Villager 在廉价磋商组（honesty off）需要可编造查验（VJ 挡刀战术），
+    # 与狼人同规格；Witch/Guard 等神职保持仅声明身份。
+    villager_catalog = ActionCatalog.for_turn(_obs("Villager"))
+    villager_spec = villager_catalog.get("seer_claim")
+    assert villager_spec is not None
+    assert villager_spec.claim_mode == CLAIM_FAKE
+    assert villager_spec.claim_results == ("good", "wolf")
+    ok, err = validate_payload(
+        {
+            "action": "seer_claim",
+            "claim_seat": 3,
+            "claim_result": "good",
+            "speech": "我是预言家，3号金水。",
+            "reasoning": "假跳挡刀",
+        },
+        villager_catalog,
+    )
+    assert err == ""
+    assert ok["claim_mode"] == CLAIM_FAKE
+    for role in ("Witch", "Guard"):
         catalog = ActionCatalog.for_turn(_obs(role))
         spec = catalog.get("seer_claim")
         assert spec is not None

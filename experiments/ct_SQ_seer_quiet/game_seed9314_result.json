@@ -1,0 +1,44 @@
+{
+  "label": "SQ",
+  "seed": 9314,
+  "winner": "wolf",
+  "end_reason": "wolves_reached_parity",
+  "days": 2,
+  "elapsed": 35.0,
+  "day1_vote_pattern": {
+    "1号:穆冬青": 2,
+    "2号:齐慕白": 1,
+    "3号:南柯辞": 1,
+    "6号:大壮": 1,
+    "7号:林思远": 1
+  },
+  "day1_pattern_detail": {
+    "2号:齐慕白": [
+      "1号:穆冬青"
+    ],
+    "1号:穆冬青": [
+      "2号:齐慕白",
+      "7号:林思远"
+    ],
+    "6号:大壮": [
+      "3号:南柯辞"
+    ],
+    "7号:林思远": [
+      "5号:霁川"
+    ],
+    "3号:南柯辞": [
+      "6号:大壮"
+    ]
+  },
+  "day1_seer_claims": [],
+  "day1_nonseer_claims": 0,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 4,
+  "llm_calls": 24,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": false
+}

@@ -298,17 +298,8 @@ class BeliefTracker:
         """Format tracker state as prompt text."""
         parts = []
 
-        if self.claims:
-            lines = ["=== 角色声称 ==="]
-            for c in self.claims[-8:]:
-                lines.append(f"  {c.seat}号:{c.player_name} 声称是 {c.claimed_role} (D{c.day}, {c.context})")
-            parts.append("\n".join(lines))
-
-        if self.contradictions:
-            lines = ["=== 矛盾 ==="]
-            for c in self.contradictions:
-                lines.append(f"  {c.description}")
-            parts.append("\n".join(lines))
+        # 对局日志审计 P1-6：声称/矛盾段落已下线（见 format_observation 内注释），
+        # tracker 仅保留事实性记录（历史票型）。
 
         if self.votes:
             lines = ["=== 历史票型 ==="]
@@ -578,15 +569,10 @@ def format_observation(obs: Observation) -> str:
     if obs.last_night_summary:
         lines.append(f"\n=== 昨夜结算（系统公告）===\n  {obs.last_night_summary}")
 
-    if obs.role_claims:
-        lines.append("\n=== 角色声称 ===")
-        for c in obs.role_claims[-6:]:
-            lines.append(f"  {c.seat}号:{c.player_name} -> {c.claimed_role} (D{c.day})")
-
-    if obs.contradictions:
-        lines.append("\n=== 矛盾 ===")
-        for c in obs.contradictions:
-            lines.append(f"  {c.description}")
+    # 对局日志审计 P1-6：不再把"角色声称/矛盾"注入 observation。
+    # 声称信息本质是公开发言的重复；虚拟语气误报会污染全部玩家的
+    # 结构化事实（历史 seed 9004 曾引发"多人对跳"混乱）。声称内容
+    # 已完整存在于发言文本中，由模型自行消化。
 
     if obs.mentioned_by:
         lines.append(f"\n你被 {', '.join(obs.mentioned_by)} 点名提到")

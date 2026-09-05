@@ -43,7 +43,6 @@ from backend.agents.cognitive.profiles import Profile
 from backend.agents.cognitive.profiles import get_profile
 from backend.agents.cognitive.prompts import build_strategy_bias_block
 from backend.agents.cognitive.prompts import build_system_prompt
-from backend.agents.cognitive.social_model import DeceptionSignal
 from backend.engine.models import ActionType
 from backend.engine.models import Decision
 from backend.engine.visibility import PlayerView
@@ -248,7 +247,7 @@ class CognitiveAgent:
         catalog = self._catalog_for_obs(obs)
         try:
             parsed = self._pipeline.run_structured(
-                obs, catalog, extra="\n".join(extra_parts), bias_action="talk"
+                obs, catalog, extra="\n".join(extra_parts), bias_action="talk", memory=self.memory
             )
         except Exception as exc:
             import logging as _logging
@@ -329,29 +328,17 @@ class CognitiveAgent:
             self._record_vote_followups(only_target_id, only_target_id, reasoning)
             return self._decision(ActionType.VOTE, target_id=only_target_id, reasoning=reasoning)
 
-        # ── Optimisation: reuse tentative_vote from speech if nothing changed ──
-        if self._skip_optimisations_enabled():
-            tentative = self._pipeline.get_tentative_vote()
-            if tentative and tentative.get("raw"):
-                tentative_target = self._resolve_target(tentative["raw"])
-                if tentative_target and tentative_target in legal_target_ids:
-                    if not self._has_meaningful_new_info_since_speech(obs):
-                        reasoning = f"发言立场未变: 投{tentative_target}（" + tentative["raw"] + "）"
-                        self._record_vote_followups(tentative_target, tentative_target, reasoning)
-                        return self._decision(
-                            ActionType.VOTE,
-                            target_id=tentative_target,
-                            reasoning=reasoning,
-                        )
-
+        # ── 对局日志审计：不再复用发言阶段的投票意向跳过 LLM 投票 ──
+        # 该优化会产出引擎拼装的模板理由（"发言立场未变: 投P2-xxx（2号）"）并泄漏
+        # 内部玩家 ID；每票都走严格单行文本，理由才是玩家自己的话。
         phase = str(getattr(self._view, "phase", "") or "")
         if "VOTE" in phase.upper() and "BADGE" not in phase.upper():
-            catalog = self._catalog_for_obs(obs)
-            parsed = self._pipeline.run_structured(
+            # 对局日志审计 P0-3：投票改走严格单行文本「我投给X号，理由是……」，
+            # 目标只从该句的 X 解析，杜绝理由与目标分叉。
+            parsed = self._pipeline.run_vote_line(
                 obs,
-                catalog,
+                memory=self.memory,
                 extra="白天投票不能弃票，必须选择一名存活他人。",
-                bias_action="vote",
                 temperature=self._humanization.vote_temperature,
             )
             target_id = self._id_for_seat(parsed.get("target_seat"))
@@ -432,8 +419,16 @@ class CognitiveAgent:
             return self._night_decision({"target": only_target.id, "reasoning": reasoning}, ActionType.ATTACK)
 
         extra = self._build_wolf_extra() + self._wolf_night_options_text()
+        # 对局日志审计 P1-7：第一夜不存在任何白天发言，禁止引用"发言表现"
+        if int(getattr(obs, "day", 0) or 0) <= 1:
+            extra += (
+                "\n现在是第一夜，此前没有任何白天发言。"
+                "不要在理由中引用任何玩家的发言表现；可按座位位置或威胁假设选择刀口。"
+            )
         try:
-            parsed = self._pipeline.run_structured(obs, catalog, extra=extra, bias_action="attack")
+            parsed = self._pipeline.run_structured(
+                obs, catalog, extra=extra, bias_action="attack", memory=self.memory
+            )
         except RuntimeError as exc:
             raise RuntimeError(f"LLM returned illegal attack target for {self.player_name}") from exc
         self._mark_active_intent_executed_if_target_phase_contains("NIGHT", "WOLF")
@@ -494,12 +489,18 @@ class CognitiveAgent:
             + "\n\n你是狼人，现在是夜晚狼队私聊环节（仅狼队可见，好人看不到）。"
             + f"\n狼队成员: {', '.join(teammates) if teammates else '仅剩你一人'}"
             + prev
+            + (
+                "\n注意：现在是第一夜，此前没有任何白天发言，"
+                "不要在私聊和理由中引用任何玩家的发言表现，可按座位位置或威胁假设选择刀口。"
+                if int(getattr(self._view, "day", 0) or 0) <= 1
+                else ""
+            )
             + "\n请明确提出唯一一个今晚刀口，再用 1-3 句话说明归票建议（"
             + options_line
             + "）。私聊内容必须明确写出该目标，不能只分析候选人。"
             + '\n只输出 JSON：{"target": "X号:名字或空刀", "reasoning": "一句话理由", "message": "明确刀口的私聊内容"}'
         )
-        raw = self._pipeline.direct_call(prompt, max_tokens=300)
+        raw = self._pipeline.direct_call(prompt)
         message, reasoning, target_text = "", "", ""
         try:
             data = json.loads(raw[raw.index("{") : raw.rindex("}") + 1])
@@ -534,7 +535,9 @@ class CognitiveAgent:
     def divine(self) -> Decision:
         obs = self._observe()
         catalog = self._catalog_for_obs(obs)
-        parsed = self._pipeline.run_structured(obs, catalog, bias_action="divine")
+        parsed = self._pipeline.run_structured(
+            obs, catalog, bias_action="divine", memory=self.memory
+        )
         return self._decision_from_catalog(parsed, default_type=ActionType.DIVINE)
 
     def guard(self) -> Decision:
@@ -545,7 +548,9 @@ class CognitiveAgent:
             extra = "第一晚守护，没有历史限制。"
         obs = self._observe()
         catalog = self._catalog_for_obs(obs)
-        parsed = self._pipeline.run_structured(obs, catalog, extra=extra, bias_action="guard")
+        parsed = self._pipeline.run_structured(
+            obs, catalog, extra=extra, bias_action="guard", memory=self.memory
+        )
         decision = self._decision_from_catalog(parsed, default_type=ActionType.GUARD)
         if decision.target_id:
             self._record_guard_protection(decision.target_id)
@@ -564,7 +569,9 @@ class CognitiveAgent:
         obs = self._observe()
         catalog = self._catalog_for_obs(obs, witch_victim_id=victim_id)
         extra = "\n".join(lines) + "\n规则：一晚最多使用一瓶药；已用的药不能再用。"
-        parsed = self._pipeline.run_structured(obs, catalog, extra=extra, bias_action="witch_act")
+        parsed = self._pipeline.run_structured(
+            obs, catalog, extra=extra, bias_action="witch_act", memory=self.memory
+        )
         decision = self._decision_from_catalog(parsed, default_type=ActionType.SKIP)
         if decision.action_type == ActionType.WITCH_SAVE:
             if not victim_id:
@@ -609,7 +616,7 @@ class CognitiveAgent:
                 + f"\n可毒目标: {', '.join(poison_targets) if poison_targets else '无'}"
                 + '\n请重新只输出 JSON 对象：{"reasoning": "理由", "save": false, "poison_target": null}'
             )
-            raw = self._pipeline.direct_call(repair_prompt, max_tokens=300)
+            raw = self._pipeline.direct_call(repair_prompt)
             data = self._parse_witch_json(raw)
             error = self._witch_decision_error(data, victim_id)
         return data
@@ -884,7 +891,8 @@ class CognitiveAgent:
                 )
                 for check in seer_checks
             ]
-        self._sync_social_from_tracker(obs)
+        # 对局日志审计 P1-6：contradictions→SocialModel 同步已下线
+        #（声称误报会把无辜玩家标记为欺骗信号）。
         self._update_trust_from_events(obs)
         return obs
 
@@ -897,26 +905,6 @@ class CognitiveAgent:
         return build_strategy_bias_block(self._strategy_bias, action_map.get(action, action))
 
     # ---- Social Model Feeds ----
-
-    def _sync_social_from_tracker(self, obs: Observation) -> None:
-        """Feed 1: BeliefTracker contradictions → SocialModel deception signals.
-
-        When multiple players claim the same unique role, all claimants
-        get flagged for potential deception.
-        """
-        for c in obs.contradictions:
-            for claimant_name in c.claimants:
-                # Don't flag self
-                if claimant_name == self.player_name:
-                    continue
-                signal = DeceptionSignal(
-                    player_id=claimant_name,
-                    signal_type="role_contradiction",
-                    description=f"与{', '.join(c.claimants)}冲突声称是{c.role}",
-                    severity=0.6,
-                    day=obs.day,
-                )
-                self.memory.social_model.add_deception_signal(signal)
 
     def _update_trust_from_events(self, obs: Observation) -> None:
         """Feed 2: Vote alignment updates trust scores.
@@ -1028,10 +1016,8 @@ class CognitiveAgent:
             if self._has_keyword(content, self._MAJOR_EVENT_KEYWORDS):
                 return True
 
-        # Check for new role claims from belief tracker
-        for claim in getattr(obs, "role_claims", []) or []:
-            if self._role_claim_requires_vote_rethink(claim):
-                return True
+        # 对局日志审计 P1-6：role_claims 投票重考虑分支已下线
+        #（声称提取含虚拟语气误报，不应直接改写投票决策）。
 
         return False
 
@@ -1062,9 +1048,6 @@ class CognitiveAgent:
             and self._has_keyword(speech.content, self._SPEECH_ACCUSATION_KEYWORDS)
         )
 
-    def _role_claim_requires_vote_rethink(self, claim: Any) -> bool:
-        return claim.player_name != self.player_name and "预言家" in str(getattr(claim, "claimed_role", "") or "")
-
     def _voter_identity_matches_self(self, voter_name: Any, voter_id: Any) -> bool:
         return voter_name == self.player_name or voter_id == self.player_id
 
@@ -1093,7 +1076,7 @@ class CognitiveAgent:
             action_type=action_type,
             target_id=target_id,
             speech=speech,
-            reasoning=reasoning[:200],
+            reasoning=reasoning[:1000],
             metadata=meta,
         )
 
@@ -1670,10 +1653,7 @@ class CognitiveAgent:
             if private_event:
                 events.append(private_event)
 
-        # Belief tracker findings
-        if self._tracker.contradictions:
-            for c in self._tracker.contradictions:
-                events.append(self._contradiction_reflection_entry(c, self._view.day if self._view else 0))
+        # 对局日志审计 P1-6：矛盾反思条目已下线（与声称机制一并移除）。
 
         return events
 
@@ -1714,14 +1694,6 @@ class CognitiveAgent:
                 "description": f"解药救人: {payload.get('target_name', '?')}",
             }
         return None
-
-    @staticmethod
-    def _contradiction_reflection_entry(contradiction: Any, day: int) -> dict[str, Any]:
-        return {
-            "type": "CONTRADICTION",
-            "day": day,
-            "description": contradiction.description,
-        }
 
     def _collect_decisions(self) -> list[dict[str, Any]]:
         """Collect this agent's decisions for post-game reflection."""

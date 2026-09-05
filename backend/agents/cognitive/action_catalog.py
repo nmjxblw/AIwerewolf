@@ -428,6 +428,19 @@ def _seer_claim_spec(obs: Observation, *, honesty_rule: bool) -> ActionSpec | No
             claim_results=("good", "wolf"),
             claim_mode=CLAIM_FAKE,
         )
+    if role == "Villager":
+        # 廉价磋商 VJ 战术：平民假跳预言家需要能编造查验（与"我们的版本"自由发言行为对齐）。
+        # 诚实规则下非预言家在函数开头已返回 None，不会走到这里。
+        others = other_alive_seats(obs)
+        return ActionSpec(
+            id="seer_claim",
+            description="假跳预言家挡刀并编造一条查验（如给某人金水）。",
+            effect="必须跳预言家，并带上该假查验；不得自相矛盾。",
+            params=("claim_seat", "claim_result"),
+            legal_targets=others,
+            claim_results=("good", "wolf"),
+            claim_mode=CLAIM_FAKE,
+        )
     if role in IDENTITY_CLAIM_ROLES or role:
         return ActionSpec(
             id="seer_claim",

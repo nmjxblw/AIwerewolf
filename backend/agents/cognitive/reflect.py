@@ -336,7 +336,7 @@ class Reflector:
 
     # ---- LLM call ----
 
-    def _call_llm(self, system: str, user: str, max_tokens: int = 800) -> str:
+    def _call_llm(self, system: str, user: str, max_tokens: int = 4096) -> str:
         """Call LLM for reflection — uses DeepSeekClient with retry if available."""
         # Task 5: Prefer DeepSeekClient (has retry + backoff) over raw Runnable
         if self._client is not None:

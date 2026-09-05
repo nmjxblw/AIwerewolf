@@ -1,0 +1,39 @@
+{
+  "label": "B",
+  "seed": 9321,
+  "winner": "village",
+  "end_reason": "all_wolves_dead",
+  "days": 2,
+  "elapsed": 55.4,
+  "day1_vote_pattern": {
+    "1号:顾景行": 5,
+    "5号:韩书研": 2
+  },
+  "day1_pattern_detail": {
+    "5号:韩书研": [
+      "1号:顾景行",
+      "6号:齐慕白"
+    ],
+    "1号:顾景行": [
+      "2号:莱昂",
+      "3号:夏知白",
+      "4号:南柯辞",
+      "5号:韩书研",
+      "7号:王雅文"
+    ]
+  },
+  "day1_seer_claims": [
+    "5号:韩书研(真预言家)",
+    "5号:韩书研(真预言家)"
+  ],
+  "day1_nonseer_claims": 0,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 2,
+  "llm_calls": 37,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": true
+}

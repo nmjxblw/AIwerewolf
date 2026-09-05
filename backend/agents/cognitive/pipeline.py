@@ -128,9 +128,12 @@ class Pipeline:
         extra: str = "",
         bias_action: str = "talk",
         temperature: float | None = None,
+        memory: Memory | None = None,
     ) -> dict[str, Any]:
         """One-shot catalog decision (native FC, then text JSON; one repair)."""
-        max_tokens = 1536 if catalog.require_speech else 384
+        # 对局日志审计 P0-2：小预算会截断长理由（理由与目标错位的诱因之一）。
+        # 上限只是安全阀，模型看不到这个数值，正常回复远达不到 4096。
+        max_tokens = 4096
         result = run_structured_decision(
             self._llm,
             self._system_prompt,
@@ -141,6 +144,7 @@ class Pipeline:
             bias_action=bias_action,
             max_tokens=max_tokens,
             temperature=temperature,
+            memory=memory,
         )
         if result.get("action") == "vote_intent" and result.get("target_seat"):
             self._tentative_vote = {"raw": f"{result['target_seat']}号"}
@@ -150,7 +154,99 @@ class Pipeline:
             self._cached_analysis = str(result.get("reasoning") or "")
         return result
 
-    def direct_call(self, user_prompt: str, max_tokens: int = 500) -> str:
+    def run_vote_line(
+        self,
+        obs: Observation,
+        memory: Memory | None = None,
+        extra: str = "",
+        temperature: float | None = None,
+    ) -> dict[str, Any]:
+        """投票专用：严格单行文本「我投给X号，理由是……」。
+
+        目标只从投票声明里的 X 解析；理由文本中提及的其他玩家一律不参与
+        目标解析（对局日志审计 P0-3：structured JSON 的 reasoning 与
+        target_seat 分离，曾出现"理由说投1号、票投4号"）。解析失败重试
+        一次（附格式纠错提示），仍失败则抛错。
+        """
+        legal_entries = _normalise_legal_targets(getattr(obs, "legal_targets", None))
+        labels = [
+            f"{entry['seat']}号:{entry['name']}" for entry in legal_entries if entry["seat"] is not None
+        ]
+        legal_text = "；".join(labels) if labels else "当前合法目标"
+        instruction = (
+            "【投票输出格式（必须严格遵守）】\n"
+            "不要输出 JSON，不要调用工具，不要输出多余内容。\n"
+            "你的整个回复必须是单独一行，严格按此格式：\n"
+            "我投给X号，理由是<不超过80字的简短理由>\n"
+            f"座位号X只能从这些目标中选：{legal_text}。\n"
+            "示例：我投给5号，理由是他在发言中前后矛盾且过度引导投票方向。"
+        )
+
+        from backend.agents.cognitive.observe import format_observation
+        from backend.agents.cognitive.prompts import build_game_context
+
+        parts = [build_game_context(obs), "", format_observation(obs)]
+        if memory is not None:
+            memory_text = memory.format_for_prompt()
+            if memory_text:
+                parts.extend(["", memory_text])
+        bias = build_strategy_bias_block(self._strategy_bias or {}, "vote")
+        if bias:
+            parts.extend(["", bias])
+        if cached := getattr(self, "_cached_analysis", ""):
+            parts.extend(
+                [
+                    "",
+                    f"【上一轮分析】\n{cached}\n"
+                    "(这是你上一阶段的旧分析，仅供参考；如果此刻的判断已经变化，"
+                    "以本次投票行为准，不要照抄旧结论。",
+                ]
+            )
+        if extra.strip():
+            parts.extend(["", extra.strip()])
+        parts.extend(["", instruction])
+        messages = [
+            SystemMessage(content=self._system_prompt),
+            HumanMessage(content="\n".join(parts)),
+        ]
+
+        last_text = ""
+        for attempt in range(2):
+            kwargs: dict[str, Any] = {"max_tokens": 4096}
+            if temperature is not None:
+                kwargs["temperature"] = temperature
+            try:
+                resp = self._llm.invoke(messages, **kwargs)
+            except TypeError:
+                resp = self._llm.invoke(messages)
+            text = resp.content if hasattr(resp, "content") else str(resp)
+            last_text = str(text)[:300]
+            parsed = parse_vote_line(text, legal_entries)
+            if parsed is None:
+                # 兼容回退：老格式 JSON（{"target_seat": ...} / {"target": "X号"}），
+                # 离线测试与未按新格式作答的模型仍可产出有效投票。
+                parsed = _parse_vote_json_fallback(text, legal_entries)
+            if parsed is not None:
+                self._cached_analysis = ""
+                return parsed
+            if attempt == 0:
+                messages.append(
+                    HumanMessage(content=text if str(text).strip() else "（空回复）")
+                )
+                messages.append(
+                    HumanMessage(
+                        content=(
+                            "上一次回复格式无效：没有解析出「我投给X号，理由是……」"
+                            "且 X 是合法目标的投票行。\n" + instruction
+                        )
+                    )
+                )
+        raise RuntimeError(
+            f"LLM vote line parse failed after 2 attempts for "
+            f"{getattr(obs, 'player_id', '')}: last_response={last_text!r}"
+        )
+
+    def direct_call(self, user_prompt: str, max_tokens: int = 4096) -> str:
         """Single LLM call for special actions (shoot, boom, badge transfer)."""
         return self._call_legacy(self._system_prompt, user_prompt, max_tokens=max_tokens)
 
@@ -287,7 +383,7 @@ class Pipeline:
         return self._call_legacy(
             "你是狼人杀观察者。提取关键信号和事实，不做最终判断。用中文。",
             prompt,
-            max_tokens=400,
+            max_tokens=4096,
         )
 
     def _legacy_think(self, obs: Observation, memory: Memory, obs_result: str) -> str:
@@ -305,7 +401,7 @@ class Pipeline:
         strategy_text = format_strategies_for_prompt(strategies)
         bias_text = build_strategy_bias_block(self._strategy_bias, "talk")
         prompt = build_think_prompt(obs, memory, strategy_text, bias_text)
-        return self._call_legacy(self._system_prompt, prompt, max_tokens=600)
+        return self._call_legacy(self._system_prompt, prompt, max_tokens=4096)
 
     def _legacy_act_speech(
         self,
@@ -323,23 +419,23 @@ class Pipeline:
                 f"（原因：{rejection_note}）。重新发言时严禁自称预言家/先知、"
                 "严禁声称自己查验过任何玩家、严禁给任何人金水或查杀。"
             )
-        return self._call_legacy(self._system_prompt, prompt, max_tokens=800)
+        return self._call_legacy(self._system_prompt, prompt, max_tokens=4096)
 
     def _legacy_act_vote(self, obs: Observation, think_result: str) -> dict[str, str]:
         prompt = build_vote_prompt(obs, think_result)
-        result = self._call_legacy(self._system_prompt, prompt, max_tokens=300)
+        result = self._call_legacy(self._system_prompt, prompt, max_tokens=4096)
         return parse_json_target(result)
 
     def _legacy_act_night(self, obs: Observation, think_result: str, extra: str) -> dict[str, str]:
         prompt = build_night_prompt(obs, think_result, extra)
-        result = self._call_legacy(self._system_prompt, prompt, max_tokens=300)
+        result = self._call_legacy(self._system_prompt, prompt, max_tokens=4096)
         return parse_json_target(result)
 
     def _call_legacy(
         self,
         system: str,
         user: str,
-        max_tokens: int = 500,
+        max_tokens: int = 4096,
         max_retries: int = 0,
         request: str = "",
         day: int = 0,
@@ -417,3 +513,110 @@ def parse_json_array(text: str) -> list[str]:
         if quoted:
             return quoted
         return [text.strip()]
+
+
+# ============================================================
+# 严格单行投票解析（对局日志审计 P0-3）
+# ============================================================
+
+
+def _normalise_legal_targets(legal_targets: Any) -> list[dict[str, Any]]:
+    """Observation.legal_targets 可能是 dict 或 PlayerInfo，统一为 dict。"""
+    entries: list[dict[str, Any]] = []
+    for target in list(legal_targets or []):
+        if isinstance(target, dict):
+            entries.append(
+                {"seat": target.get("seat"), "name": str(target.get("name") or ""), "id": str(target.get("id") or "")}
+            )
+        else:
+            entries.append(
+                {
+                    "seat": getattr(target, "seat", None),
+                    "name": str(getattr(target, "name", "") or ""),
+                    "id": str(getattr(target, "id", "") or ""),
+                }
+            )
+    return entries
+
+
+def _parse_vote_json_fallback(text: str, legal_entries: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """老格式 JSON 兜底：{"target_seat": N, ...} 或 {"target": "N号"/"名字"}。"""
+    cleaned = str(text or "").strip()
+    start, end = cleaned.find("{"), cleaned.rfind("}")
+    if start < 0 or end <= start:
+        return None
+    try:
+        data = json.loads(cleaned[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    reasoning = str(data.get("reasoning") or data.get("reason") or "").strip()
+    seat = data.get("target_seat")
+    if seat is None:
+        raw_target = str(data.get("target") or "").strip()
+        m = _VOTE_LINE_ANY.search(raw_target)
+        if m:
+            seat = m.group(1)
+        else:
+            for entry in legal_entries:
+                if entry["name"] and entry["name"] in raw_target:
+                    return {"target_seat": entry["seat"], "reasoning": reasoning[:300] or "legacy_json_vote"}
+            return None
+    seat_text = str(seat).translate(_FULLWIDTH_DIGITS)
+    digits = re.sub(r"\D", "", seat_text)
+    if not digits:
+        return None
+    seat_num = int(digits)
+    for entry in legal_entries:
+        if entry["seat"] is not None and int(entry["seat"]) == seat_num:
+            return {"target_seat": seat_num, "reasoning": reasoning[:300] or "legacy_json_vote"}
+    return None
+
+
+# 投票严格行格式：模型必须输出一行「我投给X号，理由是……」，目标只从
+# 该句的 X 解析。行首锚定优先，其次取全文最后一次「投给X号」声明；
+# 理由文本中提及的其他玩家一律不参与目标解析。
+_VOTE_LINE_ANCHOR = re.compile(r"^\s*我\s*投(?:票)?给?\s*([0-9０-９]{1,2})\s*号", re.MULTILINE)
+_VOTE_LINE_ANY = re.compile(r"投(?:票)?给?\s*([0-9０-９]{1,2})\s*号")
+_FULLWIDTH_DIGITS = str.maketrans("０１２３４５６７８９", "0123456789")
+
+
+def parse_vote_line(text: str, legal_targets: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """从严格投票行解析 target_seat 与 reasoning；非法座位返回 None。
+
+    只信任「投给X号」声明中的座位号 X；reasoning 里出现的其他玩家
+    一律不参与目标解析。
+    """
+    cleaned = str(text or "").strip()
+    # 去掉常见格式噪音（DECISION: 前缀 / 代码围栏）
+    cleaned = re.sub(r"^\s*(?:DECISION|ANSWER|最终决策)\s*[:：]\s*", "", cleaned, flags=re.I)
+    cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+    if not cleaned:
+        return None
+
+    by_seat = {
+        int(str(t.get("seat")).translate(_FULLWIDTH_DIGITS)): t
+        for t in legal_targets
+        if t.get("seat") is not None and str(t.get("seat", "")).strip().isdigit()
+    }
+
+    matches: list[re.Match[str]] = []
+    anchor = _VOTE_LINE_ANCHOR.search(cleaned)
+    if anchor is not None:
+        matches.append(anchor)
+    any_matches = list(_VOTE_LINE_ANY.finditer(cleaned))
+    if any_matches:
+        matches.append(any_matches[-1])
+    for match in matches:
+        seat = int(match.group(1).translate(_FULLWIDTH_DIGITS))
+        target = by_seat.get(seat)
+        if target is None:
+            continue
+        reasoning = cleaned[match.end():].strip()
+        reasoning = re.sub(r"^[\s，。,；;：:\-—·]+", "", reasoning)
+        reasoning = re.sub(r"^(?:理由是|理由|因为)[\s：:]?", "", reasoning)
+        if not reasoning:
+            reasoning = cleaned[:300]
+        return {"target_seat": seat, "reasoning": reasoning[:300], "target": target}
+    return None

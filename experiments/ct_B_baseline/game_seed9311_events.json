@@ -1,0 +1,2432 @@
+{
+  "id": "88f35529-19cd-438b-8bda-7bc66227b93c",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-9b099cc17c3f",
+      "seat": 1,
+      "name": "卓砚",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "卓砚",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    },
+    {
+      "id": "P2-7cf3d0b703ad",
+      "seat": 2,
+      "name": "顾景行",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "顾景行",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-16d816a895ae",
+      "seat": 3,
+      "name": "大壮",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "大壮",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-b6c461b41f8a",
+      "seat": 4,
+      "name": "穆冬青",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "穆冬青",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P5-9c20988a14a3",
+      "seat": 5,
+      "name": "李默",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "李默",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P6-c16f6dc797d3",
+      "seat": 6,
+      "name": "陶若安",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "陶若安",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P7-e84172b440ca",
+      "seat": 7,
+      "name": "赵铁柱",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "赵铁柱",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    }
+  ],
+  "events": [
+    {
+      "id": "7a454634-df60-44cf-b538-b85bff9f4527",
+      "ts": 1788606489.4820495,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "88f35529-19cd-438b-8bda-7bc66227b93c",
+        "players": [
+          {
+            "id": "P1-9b099cc17c3f",
+            "seat": 1,
+            "name": "卓砚",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-7cf3d0b703ad",
+            "seat": 2,
+            "name": "顾景行",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-16d816a895ae",
+            "seat": 3,
+            "name": "大壮",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-b6c461b41f8a",
+            "seat": 4,
+            "name": "穆冬青",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-9c20988a14a3",
+            "seat": 5,
+            "name": "李默",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-c16f6dc797d3",
+            "seat": 6,
+            "name": "陶若安",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-e84172b440ca",
+            "seat": 7,
+            "name": "赵铁柱",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "97e0624a-e20d-4f39-8bc0-403ca5538898",
+      "ts": 1788606489.4820752,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "【规则公告】本局启用诚实规则：只有真正的预言家可以在发言中声称预言家身份、公布查验结果或发放金水/查杀；其他玩家发言中不得自称或暗示自己是预言家/先知、不得声称自己查验过任何玩家、不得给任何人金水或查杀。违反诚实规则的发言将被系统当场驳回。"
+      }
+    },
+    {
+      "id": "f5333eed-c058-4b02-8b06-f260439408fd",
+      "ts": 1788606489.4821725,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-9b099cc17c3f"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 卓砚, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "39f1b6b9-5136-4d80-bed6-083d092ecee6",
+      "ts": 1788606489.4822311,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-7cf3d0b703ad"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 顾景行, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "60bf8815-b27d-46c8-bb1d-9f585dab8b27",
+      "ts": 1788606489.4822772,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-16d816a895ae"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 大壮, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "99f2c442-13cf-4a80-8695-fcfa669b72c9",
+      "ts": 1788606489.4823272,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-b6c461b41f8a"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 穆冬青, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "ce44324e-8a74-4edf-9f14-67867b559bb8",
+      "ts": 1788606489.482367,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-9c20988a14a3"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 李默, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "c0b1e214-ecbc-41fe-bfbe-e8d4047142be",
+      "ts": 1788606489.4824152,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 陶若安, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "533a82a5-284a-49a4-92aa-dc55b4e026ac",
+      "ts": 1788606489.4824576,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 赵铁柱, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "c8e795d5-1d97-4bfc-abab-5276de7386c2",
+      "ts": 1788606489.4825497,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "f7b6a81d-5d4a-421c-bb2a-43efe799fe9b",
+      "ts": 1788606489.482561,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "3e3650ea-f624-4e0f-98df-efb0764b3ee1",
+      "ts": 1788606489.5632348,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "8ed92446-3efb-450b-914f-3bd8ae31b2b1",
+      "ts": 1788606489.5632617,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P6-c16f6dc797d3",
+          "P7-e84172b440ca"
+        ],
+        "wolf_names": [
+          "陶若安",
+          "赵铁柱"
+        ]
+      }
+    },
+    {
+      "id": "f77e82b1-a590-4b62-913b-d016aab00da4",
+      "ts": 1788606491.0640914,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "message": "陶若安（私聊）：今晚刀1号卓砚，边角位信息少，减少意外干扰。",
+        "speech": "今晚刀1号卓砚，边角位信息少，减少意外干扰。",
+        "proposed_target_id": "P1-9b099cc17c3f",
+        "proposed_target_name": "卓砚"
+      }
+    },
+    {
+      "id": "f4ea20c5-1040-46af-942a-2dc0a90ffd6e",
+      "ts": 1788606492.0358949,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "message": "赵铁柱（私聊）：同意刀1号卓砚，首夜无发言信息，边角位威胁可控，先清掉。",
+        "speech": "同意刀1号卓砚，首夜无发言信息，边角位威胁可控，先清掉。",
+        "proposed_target_id": "P1-9b099cc17c3f",
+        "proposed_target_name": "卓砚"
+      }
+    },
+    {
+      "id": "ac113422-76f8-4f5e-89c2-84f7b10128c6",
+      "ts": 1788606492.035938,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "7f19baed-4529-430a-aea3-6ff99b1b7c0a",
+      "ts": 1788606492.0359492,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "message": "陶若安 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "45193ad8-f9ae-4c9d-9b57-5318c2429d26",
+      "ts": 1788606493.3490882,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "action_type": "attack",
+        "target": {
+          "id": "P1-9b099cc17c3f",
+          "seat": 1,
+          "name": "卓砚",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友已达成一致，首夜刀1号卓砚，边角位信息少，减少意外干扰。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P1-9b099cc17c3f",
+        "target_name": "卓砚"
+      }
+    },
+    {
+      "id": "8e0d6183-cba4-421c-8d72-04b00a030f90",
+      "ts": 1788606493.3491018,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "message": "赵铁柱 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P6-c16f6dc797d3",
+            "wolf_name": "陶若安",
+            "target_id": "P1-9b099cc17c3f",
+            "target_name": "卓砚"
+          }
+        ]
+      }
+    },
+    {
+      "id": "db98a78f-72a2-4a69-ae74-a94d42223949",
+      "ts": 1788606494.7526698,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "action_type": "attack",
+        "target": {
+          "id": "P1-9b099cc17c3f",
+          "seat": 1,
+          "name": "卓砚",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友陶若安已达成共识，刀1号卓砚，边角位首夜信息少，威胁可控。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P1-9b099cc17c3f",
+        "target_name": "卓砚"
+      }
+    },
+    {
+      "id": "eca11bc0-d5f3-4071-a377-d1504800a8ac",
+      "ts": 1788606494.7526882,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为卓砚。",
+        "target_id": "P1-9b099cc17c3f",
+        "target_name": "卓砚",
+        "votes": {
+          "P6-c16f6dc797d3": "P1-9b099cc17c3f",
+          "P7-e84172b440ca": "P1-9b099cc17c3f"
+        }
+      }
+    },
+    {
+      "id": "cd278a9a-10af-403e-b462-0e32de3a9b61",
+      "ts": 1788606494.7527046,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "0a02bb4f-d3d9-4b03-b13d-a8f5e2e03647",
+      "ts": 1788606494.7527359,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "00834b6b-ac0d-449f-93a5-68071f12aee8",
+      "ts": 1788606495.8072782,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-b6c461b41f8a"
+      ],
+      "payload": {
+        "actor_id": "P4-b6c461b41f8a",
+        "actor_name": "穆冬青",
+        "action_type": "divine",
+        "target": {
+          "id": "P1-9b099cc17c3f",
+          "seat": 1,
+          "name": "卓砚",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜查验任意玩家获取信息，选择查验1号卓砚以获得初步线索。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-9b099cc17c3f"
+      }
+    },
+    {
+      "id": "3b748149-d44c-4b95-b7d3-ed56eb321de0",
+      "ts": 1788606495.8072867,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-b6c461b41f8a"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P1-9b099cc17c3f",
+        "target_name": "卓砚",
+        "is_wolf": false,
+        "message": "Seer check: 卓砚 is not wolf."
+      }
+    },
+    {
+      "id": "d0bce0d1-1d57-4de2-b215-41fa26db17cd",
+      "ts": 1788606495.8072999,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "21a1dff0-4df4-43a0-992e-d239e66aceb9",
+      "ts": 1788606495.887914,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "6a81dc7c-ebfa-4a3c-85b4-ed0fa944a877",
+      "ts": 1788606497.1055954,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-9b099cc17c3f"
+      ],
+      "payload": {
+        "actor_id": "P1-9b099cc17c3f",
+        "actor_name": "卓砚",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P1-9b099cc17c3f",
+          "seat": 1,
+          "name": "卓砚",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "我被刀了。首夜女巫可以自救，且作为女巫我掌握解药和毒药，救下自己能保证好人阵营有一瓶毒药可用，同时避免女巫过早出局损失关键药水。首夜自救是标准打法。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-9b099cc17c3f"
+      }
+    },
+    {
+      "id": "8f1b077f-c724-4fdb-a30f-4a98c56e4da3",
+      "ts": 1788606497.1056144,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "adcea1ac-bdcd-4b6d-944a-6f9a64b35d84",
+      "ts": 1788606497.1860743,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "cce361b3-3704-4655-bed0-22a806cd9ae0",
+      "ts": 1788606498.90493,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-16d816a895ae"
+      ],
+      "payload": {
+        "actor_id": "P3-16d816a895ae",
+        "actor_name": "大壮",
+        "action_type": "guard",
+        "target": {
+          "id": "P1-9b099cc17c3f",
+          "seat": 1,
+          "name": "卓砚",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "第一晚无任何信息，守卫应守护一名玩家以增加挡刀概率。选择守护1号卓砚作为随机保护目标。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-9b099cc17c3f"
+      }
+    },
+    {
+      "id": "22f1a4ee-f38c-44cc-acd2-7040efbbc32d",
+      "ts": 1788606498.9049623,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "71c0e7f7-b713-464a-9dbf-839220dacf19",
+      "ts": 1788606498.9853592,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "2496b983-da2f-44c8-b711-e3d90dabfd55",
+      "ts": 1788606498.985411,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P1-9b099cc17c3f",
+        "player_name": "卓砚",
+        "reason": "guard_witch_conflict"
+      }
+    },
+    {
+      "id": "7fb90565-579a-43ab-b6a9-3721737bc84f",
+      "ts": 1788606498.9854326,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜死亡：卓砚（奶穿）。"
+      }
+    },
+    {
+      "id": "a6fc7459-3142-4218-83d2-51d575907298",
+      "ts": 1788606498.9855413,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "66025ea6-3eb4-42f6-870b-ba25efaaaa0d",
+      "ts": 1788606498.9855657,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "ff43558d-cd35-4c09-9d99-1ad4661a3a69",
+      "ts": 1788606499.3073728,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "2df02e18-0b7d-4093-bf1b-9ec14b28b9d0",
+      "ts": 1788606502.4162915,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-7cf3d0b703ad",
+        "actor_name": "顾景行",
+        "speech": "首日信息有限。1号卓砚奶穿，说明守卫和女巫在同一夜作用于同一刀口。这个信息本身不指向任何人的身份，但排除了守卫和女巫在昨夜各自行动的干扰项。目前没有查验结果，建议先听各人发言，预言家若在场请适时给出信息。我暂时没有明确的怀疑对象，倾向听完一圈再判断。",
+        "reasoning": "首日首位发言，信息极少，仅知1号卓砚奶穿死亡。奶穿意味着守卫和女巫同时作用于同一刀口，但无法据此推断身份阵营。作为村民应保持开放，先平铺分析引导讨论。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "10d657a9-052f-466f-9080-cb22f73a0d88",
+      "ts": 1788606504.514963,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-16d816a895ae",
+        "actor_name": "大壮",
+        "speech": "奶穿说明守卫和女巫作用在同一刀口。这个信息本身说明狼人刀口是1号，但无法判断守卫和女巫谁先谁后。目前信息太少，先听大家发言，预言家有查验的话可以给出信息。",
+        "reasoning": "首日信息有限，昨夜奶穿说明守卫和女巫在同一刀口。我作为守卫知道昨夜我守了1号，但奶穿信息不宜过早暴露太多。首轮先平铺陈述，听大家发言再判断。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "00ba95e6-ae87-41e4-9926-885b6c32fb88",
+      "ts": 1788606506.4689379,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-b6c461b41f8a",
+        "actor_name": "穆冬青",
+        "speech": "我是预言家。昨夜查验了1号卓砚，结果为好人。虽然卓砚已因奶穿出局，但这个信息至少排除了卓砚是狼的可能。目前存活6人，狼人2名。2号和3号两位发言都集中在分析奶穿信息，逻辑上没有明显异常。目前信息有限，我建议继续听后续玩家发言，今天投票需要谨慎，不要贸然放逐。",
+        "reasoning": "我是预言家，根据规则必须如实公布身份和查验结果。我查验了1号卓砚是好人，需要公开这一信息。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_mode": "identity_only"
+      }
+    },
+    {
+      "id": "08bf959e-16d5-41fb-8a3d-bdb6fe596c00",
+      "ts": 1788606506.4689472,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-b6c461b41f8a",
+        "actor_name": "穆冬青",
+        "speech": "我会持续关注发言中的矛盾点。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "6f1fdeec-df6d-4d0a-b43f-596695da9831",
+      "ts": 1788606509.007705,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-9c20988a14a3",
+        "actor_name": "李默",
+        "speech": "4号跳预言家查验1号为好人，在诚实规则下这个信息可信。目前存活6人，狼人2名，信息仍然很少。奶穿事件说明守卫和女巫作用于同一刀口，但指向性有限。建议先听完一圈发言再判断，投票需谨慎。",
+        "reasoning": "首日信息有限，4号跳预言家并给出查验结果，在诚实规则下应作为可信信息接受。目前没有明确矛盾点，先保持观察，不做激进站边。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "bf875304-2406-406a-b55d-a08c0e08ecd8",
+      "ts": 1788606510.672448,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "speech": "首日信息确实有限。奶穿说明守卫和女巫作用在同一刀口，狼刀落在1号，但这条信息本身指向性不强。4号自称预言家查验1号为好人，在诚实规则下这个信息可信，但目前存活6人仍有2狼，信息还不足以锁定目标。建议继续听发言，谨慎投票。",
+        "reasoning": "首日信息有限，4号跳预言家称查验1号为好人。作为狼人，我需要低调观察，不轻易暴露立场，先听更多信息再判断。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "6c707458-2a39-4608-a399-8be0014882ea",
+      "ts": 1788606513.2034962,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "speech": "首日确实信息有限。奶穿说明守卫和女巫作用于同一刀口，狼刀落在1号，这个信息本身指向性不强。4号称预言家查验1号为好人，在诚实规则下可信，但1号已出局，这条信息对当前局面帮助有限。目前6存活仍有2狼，建议继续听发言，谨慎投票，不急于下结论。",
+        "reasoning": "首日信息有限，作为狼人不宜过早暴露立场。4号跳预言家查1号为好人，这个信息无法验证且不排除狼人可能。目前应保持低调，附和主流意见等待更多信息，不宜过早点名或表态。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "9ac4fc79-cb9e-4cc8-baf2-2f167a0166c0",
+      "ts": 1788606513.364023,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "1e17d1d1-f4b1-475c-8ce3-214dc7ad14c4",
+      "ts": 1788606515.4513807,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-7cf3d0b703ad",
+        "voter_name": "顾景行",
+        "target_id": "P5-9c20988a14a3",
+        "target_name": "李默",
+        "reasoning": "发言中完全复读他人观点，缺乏独立判断，倾向跟风隐藏真实立场。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "af29d24d-8c63-44fc-bf46-ef7710192b1c",
+      "ts": 1788606515.4514186,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-16d816a895ae",
+        "voter_name": "大壮",
+        "target_id": "P2-7cf3d0b703ad",
+        "target_name": "顾景行",
+        "reasoning": "顾景行只分析奶穿却对4号预言家查验1号好人无任何实质回应，主动性低且回避信息整合。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "1ec5a1c2-ebba-4232-ac8e-3270e7e89ba7",
+      "ts": 1788606515.45148,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-b6c461b41f8a",
+        "voter_name": "穆冬青",
+        "target_id": "P7-e84172b440ca",
+        "target_name": "赵铁柱",
+        "reasoning": "赵铁柱对查验结果评价消极且急于弱化信息价值，有隐藏动机的嫌疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "c68e25f1-f1ac-4c44-8ef5-9872d84d22e6",
+      "ts": 1788606515.4515016,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-9c20988a14a3",
+        "voter_name": "李默",
+        "target_id": "P4-b6c461b41f8a",
+        "target_name": "穆冬青",
+        "reasoning": "预言家查验已出局的1号，信息无法验证且对当前局面帮助有限，存在狼人跳预言家混淆视听的嫌疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "60c66a13-e8c6-46a3-9e40-e7adcc2b599d",
+      "ts": 1788606515.4515233,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-c16f6dc797d3",
+        "voter_name": "陶若安",
+        "target_id": "P4-b6c461b41f8a",
+        "target_name": "穆冬青",
+        "reasoning": "预言家首日查验已出局玩家，信息价值有限，且过早暴露身份压缩好人视角。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "f8c74a42-280c-4dfa-9fc7-78f5cf0671a4",
+      "ts": 1788606515.4515443,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-e84172b440ca",
+        "voter_name": "赵铁柱",
+        "target_id": "P4-b6c461b41f8a",
+        "target_name": "穆冬青",
+        "reasoning": "预言家查验已死之人对局面无实质帮助，首日信息有限不宜过早定论。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "aa515483-60c3-4144-8264-716e2db32f8a",
+      "ts": 1788606515.5322938,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "2c246545-24f3-400f-aab6-35ace1f168e1",
+      "ts": 1788606515.5323718,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "穆冬青 was voted out."
+      }
+    },
+    {
+      "id": "93ced5ff-f200-4ed4-a744-cb3595eb77a0",
+      "ts": 1788606515.5323958,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P4-b6c461b41f8a",
+        "player_name": "穆冬青",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "8cfb0287-86ef-4d4f-9d6c-3063a023308c",
+      "ts": 1788606515.5325243,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "c7ac67f6-edc7-4a89-a104-a9723949b3d8",
+      "ts": 1788606515.532584,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "10876664-e202-4d70-b23f-0aac7bcdc27f",
+      "ts": 1788606515.532593,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "958c2d97-1f6f-4096-8c25-3cbc378151e9",
+      "ts": 1788606515.613401,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "68775d43-7f23-439e-8284-e88eba1d0aff",
+      "ts": 1788606515.6134112,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P6-c16f6dc797d3",
+          "P7-e84172b440ca"
+        ],
+        "wolf_names": [
+          "陶若安",
+          "赵铁柱"
+        ]
+      }
+    },
+    {
+      "id": "6d6823d9-62aa-4920-9154-9055304dfab2",
+      "ts": 1788606517.5086324,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "message": "陶若安（私聊）：刀2号顾景行。他首日带节奏投李默，留他活到明天会引导好人归票。明早我们继续控场，先让3号和5号互踩。",
+        "speech": "刀2号顾景行。他首日带节奏投李默，留他活到明天会引导好人归票。明早我们继续控场，先让3号和5号互踩。",
+        "proposed_target_id": "P2-7cf3d0b703ad",
+        "proposed_target_name": "顾景行"
+      }
+    },
+    {
+      "id": "4041580a-4dec-47ed-9af6-b66f0ff64d2a",
+      "ts": 1788606518.9970202,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "message": "赵铁柱（私聊）：同意刀2号顾景行。他逻辑清晰且已有引导倾向，留到明天对我们威胁最大。明早我负责制造3号和5号的矛盾，你保持低调观察。",
+        "speech": "同意刀2号顾景行。他逻辑清晰且已有引导倾向，留到明天对我们威胁最大。明早我负责制造3号和5号的矛盾，你保持低调观察。",
+        "proposed_target_id": "P2-7cf3d0b703ad",
+        "proposed_target_name": "顾景行"
+      }
+    },
+    {
+      "id": "fa5b2c93-177d-4599-83e7-9eced1fc403c",
+      "ts": 1788606518.9971144,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "189b1959-b716-4783-b942-e0ee0cc82d74",
+      "ts": 1788606518.9971392,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "message": "陶若安 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "558268cb-3b07-4b5c-a2e7-dee31768fc8b",
+      "ts": 1788606520.209243,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "action_type": "attack",
+        "target": {
+          "id": "P2-7cf3d0b703ad",
+          "seat": 2,
+          "name": "顾景行",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "按狼队共识，刀2号顾景行。他首日带节奏投李默，逻辑清晰且有引导倾向，留到明天对狼队威胁最大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P2-7cf3d0b703ad",
+        "target_name": "顾景行"
+      }
+    },
+    {
+      "id": "627c27da-8d9b-4e46-9d6a-58eac1f5bcb0",
+      "ts": 1788606520.2092686,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "message": "赵铁柱 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P6-c16f6dc797d3",
+            "wolf_name": "陶若安",
+            "target_id": "P2-7cf3d0b703ad",
+            "target_name": "顾景行"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f015140a-2295-484e-8abb-cc6a12f43916",
+      "ts": 1788606521.7639756,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "action_type": "attack",
+        "target": {
+          "id": "P2-7cf3d0b703ad",
+          "seat": 2,
+          "name": "顾景行",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友陶若安达成共识，刀2号顾景行。他逻辑清晰且有引导倾向，对狼队威胁最大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P2-7cf3d0b703ad",
+        "target_name": "顾景行"
+      }
+    },
+    {
+      "id": "910a3454-b94e-47c7-bc69-38a929681138",
+      "ts": 1788606521.763993,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c16f6dc797d3",
+        "P7-e84172b440ca"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为顾景行。",
+        "target_id": "P2-7cf3d0b703ad",
+        "target_name": "顾景行",
+        "votes": {
+          "P6-c16f6dc797d3": "P2-7cf3d0b703ad",
+          "P7-e84172b440ca": "P2-7cf3d0b703ad"
+        }
+      }
+    },
+    {
+      "id": "fe4fde88-43e1-4c61-89c0-08251fd900e3",
+      "ts": 1788606521.7640254,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "16eecc86-3f39-44aa-98ca-63058c21d2a0",
+      "ts": 1788606521.764031,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "private",
+      "visible_to": [],
+      "payload": {
+        "message": "预言家已出局，无法行动。"
+      }
+    },
+    {
+      "id": "3ad095f4-fb0a-4b18-b137-331520d23295",
+      "ts": 1788606521.8446012,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "59203f8c-5783-4f45-8492-8360ffaa4175",
+      "ts": 1788606521.844617,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "private",
+      "visible_to": [],
+      "payload": {
+        "message": "女巫已出局，无法行动。"
+      }
+    },
+    {
+      "id": "5123b09d-3881-443e-8a78-5b31b235a371",
+      "ts": 1788606521.9251654,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "b42132f5-eb51-4f9b-a722-3257d3bca85a",
+      "ts": 1788606524.1597066,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-16d816a895ae"
+      ],
+      "payload": {
+        "actor_id": "P3-16d816a895ae",
+        "actor_name": "大壮",
+        "action_type": "guard",
+        "target": {
+          "id": "P2-7cf3d0b703ad",
+          "seat": 2,
+          "name": "顾景行",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "上一晚守护了1号（奶穿），不能连守同一人。存活玩家中需要判断狼刀可能目标。目前信息有限，选择守护较难被怀疑的2号，或者考虑狼人可能刀向发言突出的玩家。我选择守护2号顾景行进行保护。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-7cf3d0b703ad"
+      }
+    },
+    {
+      "id": "f50ccea9-09de-412b-bfc2-df65fd3e29ca",
+      "ts": 1788606524.2405107,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "413b62d4-dfe8-4d59-bb58-d8ae255c44d0",
+      "ts": 1788606524.240548,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "e0250f5e-1bfd-424f-b256-59f4f99c8a4d",
+      "ts": 1788606524.2406592,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "86511cd6-8f4c-46d6-924b-892e201b5b7b",
+      "ts": 1788606524.2406902,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "f4edf9d1-77a7-4f69-be55-05baa43b0aeb",
+      "ts": 1788606524.5621068,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "810d4d9b-b102-45e1-9fa4-49fabad9691d",
+      "ts": 1788606527.8327787,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-7cf3d0b703ad",
+        "actor_name": "顾景行",
+        "speech": "梳理一下首日信息。1号卓砚奶穿出局，说明守卫和女巫在同一夜守/救了同一刀口，这排除了守卫和女巫在狼刀判断上的干扰，但不确定谁是守卫谁是女巫。4号穆冬青被票出，投他的有5号李默、6号陶若安、7号赵铁柱；投我的有3号大壮；我投了5号李默。",
+        "reasoning": "首日穆冬青被票出局，其票型投给赵铁柱，而李默、陶若安投给穆冬青。我需要先陈述分析框架，不急于点名。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "0284c2f5-593f-494c-9041-35f97b93398c",
+      "ts": 1788606527.8327878,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-7cf3d0b703ad",
+        "actor_name": "顾景行",
+        "speech": "昨夜无人死亡，可能狼刀被守卫守住或女巫救了，也可能狼人选择空刀——但规则上狼人不能空刀，所以更可能是被守或救。这个信息本身不指向具体身份。我目前没有足够依据锁定某人，倾向继续观察发言。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "81208906-6338-48ac-ba35-6bfc00972e0b",
+      "ts": 1788606529.5909796,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-16d816a895ae",
+        "actor_name": "大壮",
+        "speech": "昨夜无人死亡，结合首日奶穿，狼刀确实存在。目前存活5人，狼还有2个。首日投票穆冬青的有5、6、7三人，投顾景行的是我。穆冬青被票出后是狼还是好人还不确定，需要更多信息来判断。",
+        "reasoning": "作为守卫，我昨晚守了5号（P2-7cf3d0b703ad），昨夜无人死亡可能是我守住了狼刀。目前信息有限，先听大家发言，不急于点名。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "4506939c-8fe5-49e2-abf6-6000bb4af99f",
+      "ts": 1788606533.673394,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-9c20988a14a3",
+        "actor_name": "李默",
+        "speech": "梳理一下现有信息。4号穆冬青首日跳预言家查1号卓砚为好人，在诚实规则下4号确为真预言家，1号为好人。那么穆冬青作为预言家被票出，狼人成功藏住了自己。昨天投穆冬青的有我、6号、7号三人，另外大壮投了顾景行，顾景行投了我。",
+        "reasoning": "作为平民，我需要基于公开信息梳理逻辑。首日穆冬青被票出，投他的有5、6、7三人。穆冬青的真实身份未知。首日4号跳预言家查1号为好人，在诚实规则下这意味着4号是真预言家，1号是好人，而穆冬青本人（预言家）被投票出局。这意味着场上狼人仍在暗处。我需要观察谁在引导票型。目前信息不足，先做平铺陈述分析。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "1633efef-2370-4843-8338-fd795a7fe435",
+      "ts": 1788606533.673414,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-9c20988a14a3",
+        "actor_name": "李默",
+        "speech": "问题在于：狼人2名必定参与了投票，投穆冬青的三票里可能有狼，也可能狼人分票投了别人。目前存活5人含2狼，形势不乐观。昨夜无人死亡说明守卫或女巫发挥了作用，狼刀存在。我暂时没有足够依据锁定具体某一人，倾向继续听大家发言后再判断。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "7a3852bc-228d-4b01-87fc-8eb9f9d50072",
+      "ts": 1788606537.3818355,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "speech": "首日穆冬青跳预言家查1号为好人，在诚实规则下这个信息可信度高。但4号被票出后，场上谁在推票、谁在跟票值得复盘。昨天投4号的有我、5号、7号，大壮投了顾景行，顾景行投了5号。现在存活5人含2狼，形势紧张。昨夜无人死亡说明守卫或女巫还有牌，好人阵营仍有防御能力。",
+        "reasoning": "作为狼人，我需要引导场上焦点。首日投穆冬青的三票（5、6、7）中我已知7号是队友，5号李默在梳理信息时把矛头引向投穆的三票，这对我们不利。我需要把视线引向其他人，比如模糊焦点或弱化对投穆票的怀疑。选择baseline保持低姿态，先观察大家反应。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "13b41424-4668-400a-b2a5-a2ac0217dae5",
+      "ts": 1788606537.381873,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c16f6dc797d3",
+        "actor_name": "陶若安",
+        "speech": "我倾向再听一轮，看谁急于定票、谁在冷静分析。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "88f8cf9b-c959-487f-af59-4c0ec1194751",
+      "ts": 1788606541.0708623,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "speech": "我梳理一下。首日奶穿说明狼刀落在1号，4号穆冬青跳预言家查1号为好人，在诚实规则下4号确为真预言家。那么问题来了——4号作为预言家被票出，是狼人藏住了。",
+        "reasoning": "场上局势：穆冬青（真预言家）被票出后，狼人形势有利。存活5人含2狼（我和6号陶若安）。需要引导局势，制造3号和5号的矛盾，同时避免暴露自己。选择点3号大壮——他首日投了顾景行，与其他人的投票方向不同，可以以此为切入点制造怀疑。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "accusation",
+        "target_seat": 3
+      }
+    },
+    {
+      "id": "f9a37cbb-7461-4883-8378-8696280ff5dd",
+      "ts": 1788606541.0708714,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "speech": "回头看票型：投4号的有我、5号、6号三人。如果狼在投4号的三票里，那说明狼人跟票投了预言家来隐藏自己；如果狼不在其中，那狼更可能在投顾景行的3号，或者投5号的2号身上。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "32efd8e8-abcf-4545-a4c1-561ee6d51610",
+      "ts": 1788606541.070876,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-e84172b440ca",
+        "actor_name": "赵铁柱",
+        "speech": "我注意到3号大壮首日投了顾景行，这个选择很特别——当时场上焦点明显在4号身上，3号却避开焦点去投了顾景行。如果3号是好人，他为什么在预言家已被跳出的情况下不去投这个预言家阵营的人，反而投了顾景行？这个投票逻辑不太自然。我倾向先观察3号，请他解释首日为何投顾景行而非其他方向。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "b501a1c3-1257-4b31-947f-c018fefa987e",
+      "ts": 1788606541.231623,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "63986d0d-7ee7-4467-94be-75b014b7d86f",
+      "ts": 1788606542.6549864,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-7cf3d0b703ad",
+        "voter_name": "顾景行",
+        "target_id": "P3-16d816a895ae",
+        "target_name": "大壮",
+        "reasoning": "首日预言家已明跳时他避开焦点投我，投票逻辑不自然，且后续解释不足。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "75e51809-8d49-4e41-ac7f-d6633c7e9489",
+      "ts": 1788606542.6549995,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-16d816a895ae",
+        "voter_name": "大壮",
+        "target_id": "P7-e84172b440ca",
+        "target_name": "赵铁柱",
+        "reasoning": "4号真预言家被票出，7号在投4号且转嫁焦点至3号，逻辑突兀存在狼性。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e2fc9e1c-7059-4a5e-9039-d55ae257b7e4",
+      "ts": 1788606542.655007,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-9c20988a14a3",
+        "voter_name": "李默",
+        "target_id": "P3-16d816a895ae",
+        "target_name": "大壮",
+        "reasoning": "首日避开焦点投顾景行的投票逻辑不自然，需重点观察。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "868b9b3e-ba0b-4358-b4bb-89cb3a838f5a",
+      "ts": 1788606542.655015,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-c16f6dc797d3",
+        "voter_name": "陶若安",
+        "target_id": "P3-16d816a895ae",
+        "target_name": "大壮",
+        "reasoning": "首日避开焦点投顾景行，投票逻辑不自然且急于转移视线。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "a09e3932-9588-4f3b-b933-d45a8e30ba94",
+      "ts": 1788606542.655022,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-e84172b440ca",
+        "voter_name": "赵铁柱",
+        "target_id": "P3-16d816a895ae",
+        "target_name": "大壮",
+        "reasoning": "首日避开焦点投顾景行，投票逻辑不自然且缺乏合理解释。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "2dae0d34-78b1-4d9b-a7af-62d79acffc18",
+      "ts": 1788606542.735466,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "440025cb-ca28-4e1a-8257-001aa9907f09",
+      "ts": 1788606542.7355242,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "大壮 was voted out."
+      }
+    },
+    {
+      "id": "ce53c8a3-45dc-420b-868f-bc32e6b9db35",
+      "ts": 1788606542.7355382,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P3-16d816a895ae",
+        "player_name": "大壮",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "fce29c68-c194-4b0a-9f8a-ee5770cd34b3",
+      "ts": 1788606542.7355566,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    },
+    {
+      "id": "a8651004-ece4-46e4-92d2-95dc03217422",
+      "ts": 1788606542.7356334,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P2-7cf3d0b703ad": "P3-16d816a895ae",
+    "P3-16d816a895ae": "P7-e84172b440ca",
+    "P5-9c20988a14a3": "P3-16d816a895ae",
+    "P6-c16f6dc797d3": "P3-16d816a895ae",
+    "P7-e84172b440ca": "P3-16d816a895ae"
+  },
+  "vote_history": {
+    "1": {
+      "P2-7cf3d0b703ad": "P5-9c20988a14a3",
+      "P3-16d816a895ae": "P2-7cf3d0b703ad",
+      "P4-b6c461b41f8a": "P7-e84172b440ca",
+      "P5-9c20988a14a3": "P4-b6c461b41f8a",
+      "P6-c16f6dc797d3": "P4-b6c461b41f8a",
+      "P7-e84172b440ca": "P4-b6c461b41f8a"
+    },
+    "2": {
+      "P2-7cf3d0b703ad": "P3-16d816a895ae",
+      "P3-16d816a895ae": "P7-e84172b440ca",
+      "P5-9c20988a14a3": "P3-16d816a895ae",
+      "P6-c16f6dc797d3": "P3-16d816a895ae",
+      "P7-e84172b440ca": "P3-16d816a895ae"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P4-b6c461b41f8a",
+        "seat": 4,
+        "votes": 3.0
+      }
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "卓砚 died by guard_witch_conflict",
+      "顾景行: 首日信息有限。1号卓砚奶穿，说明守卫和女巫在同一夜作用于同一刀口。这个信息本身不指向任何人的身份，但排除了守卫和女巫在昨夜各自行动的干扰项。目前没有查验结果，建议先听各人发言，预言家若在场请适时给出信息。我暂时没有明确的怀疑对象，倾向听完一圈再判断。",
+      "大壮: 奶穿说明守卫和女巫作用在同一刀口。这个信息本身说明狼人刀口是1号，但无法判断守卫和女巫谁先谁后。目前信息太少，先听大家发言，预言家有查验的话可以给出信息。",
+      "穆冬青: 我是预言家。昨夜查验了1号卓砚，结果为好人。虽然卓砚已因奶穿出局，但这个信息至少排除了卓砚是狼的可能。目前存活6人，狼人2名。2号和3号两位发言都集中在分析奶穿信息，逻辑上没有明显异常。目前信息有限，我建议继续听后续玩家发言，今天投票需要谨慎，不要贸然放逐。",
+      "穆冬青: 我会持续关注发言中的矛盾点。",
+      "李默: 4号跳预言家查验1号为好人，在诚实规则下这个信息可信。目前存活6人，狼人2名，信息仍然很少。奶穿事件说明守卫和女巫作用于同一刀口，但指向性有限。建议先听完一圈发言再判断，投票需谨慎。",
+      "陶若安: 首日信息确实有限。奶穿说明守卫和女巫作用在同一刀口，狼刀落在1号，但这条信息本身指向性不强。4号自称预言家查验1号为好人，在诚实规则下这个信息可信，但目前存活6人仍有2狼，信息还不足以锁定目标。建议继续听发言，谨慎投票。",
+      "赵铁柱: 首日确实信息有限。奶穿说明守卫和女巫作用于同一刀口，狼刀落在1号，这个信息本身指向性不强。4号称预言家查验1号为好人，在诚实规则下可信，但1号已出局，这条信息对当前局面帮助有限。目前6存活仍有2狼，建议继续听发言，谨慎投票，不急于下结论。",
+      "顾景行 voted for 李默 (发言中完全复读他人观点，缺乏独立判断，倾向跟风隐藏真实立场。)",
+      "大壮 voted for 顾景行 (顾景行只分析奶穿却对4号预言家查验1号好人无任何实质回应，主动性低且回避信息整合。)",
+      "穆冬青 voted for 赵铁柱 (赵铁柱对查验结果评价消极且急于弱化信息价值，有隐藏动机的嫌疑。)",
+      "李默 voted for 穆冬青 (预言家查验已出局的1号，信息无法验证且对当前局面帮助有限，存在狼人跳预言家混淆视听的嫌疑。)",
+      "陶若安 voted for 穆冬青 (预言家首日查验已出局玩家，信息价值有限，且过早暴露身份压缩好人视角。)",
+      "赵铁柱 voted for 穆冬青 (预言家查验已死之人对局面无实质帮助，首日信息有限不宜过早定论。)",
+      "穆冬青 died by voted_out"
+    ],
+    "2": [
+      "顾景行: 梳理一下首日信息。1号卓砚奶穿出局，说明守卫和女巫在同一夜守/救了同一刀口，这排除了守卫和女巫在狼刀判断上的干扰，但不确定谁是守卫谁是女巫。4号穆冬青被票出，投他的有5号李默、6号陶若安、7号赵铁柱；投我的有3号大壮；我投了5号李默。",
+      "顾景行: 昨夜无人死亡，可能狼刀被守卫守住或女巫救了，也可能狼人选择空刀——但规则上狼人不能空刀，所以更可能是被守或救。这个信息本身不指向具体身份。我目前没有足够依据锁定某人，倾向继续观察发言。",
+      "大壮: 昨夜无人死亡，结合首日奶穿，狼刀确实存在。目前存活5人，狼还有2个。首日投票穆冬青的有5、6、7三人，投顾景行的是我。穆冬青被票出后是狼还是好人还不确定，需要更多信息来判断。",
+      "李默: 梳理一下现有信息。4号穆冬青首日跳预言家查1号卓砚为好人，在诚实规则下4号确为真预言家，1号为好人。那么穆冬青作为预言家被票出，狼人成功藏住了自己。昨天投穆冬青的有我、6号、7号三人，另外大壮投了顾景行，顾景行投了我。",
+      "李默: 问题在于：狼人2名必定参与了投票，投穆冬青的三票里可能有狼，也可能狼人分票投了别人。目前存活5人含2狼，形势不乐观。昨夜无人死亡说明守卫或女巫发挥了作用，狼刀存在。我暂时没有足够依据锁定具体某一人，倾向继续听大家发言后再判断。",
+      "陶若安: 首日穆冬青跳预言家查1号为好人，在诚实规则下这个信息可信度高。但4号被票出后，场上谁在推票、谁在跟票值得复盘。昨天投4号的有我、5号、7号，大壮投了顾景行，顾景行投了5号。现在存活5人含2狼，形势紧张。昨夜无人死亡说明守卫或女巫还有牌，好人阵营仍有防御能力。",
+      "陶若安: 我倾向再听一轮，看谁急于定票、谁在冷静分析。",
+      "赵铁柱: 我梳理一下。首日奶穿说明狼刀落在1号，4号穆冬青跳预言家查1号为好人，在诚实规则下4号确为真预言家。那么问题来了——4号作为预言家被票出，是狼人藏住了。",
+      "赵铁柱: 回头看票型：投4号的有我、5号、6号三人。如果狼在投4号的三票里，那说明狼人跟票投了预言家来隐藏自己；如果狼不在其中，那狼更可能在投顾景行的3号，或者投5号的2号身上。",
+      "赵铁柱: 我注意到3号大壮首日投了顾景行，这个选择很特别——当时场上焦点明显在4号身上，3号却避开焦点去投了顾景行。如果3号是好人，他为什么在预言家已被跳出的情况下不去投这个预言家阵营的人，反而投了顾景行？这个投票逻辑不太自然。我倾向先观察3号，请他解释首日为何投顾景行而非其他方向。",
+      "顾景行 voted for 大壮 (首日预言家已明跳时他避开焦点投我，投票逻辑不自然，且后续解释不足。)",
+      "大壮 voted for 赵铁柱 (4号真预言家被票出，7号在投4号且转嫁焦点至3号，逻辑突兀存在狼性。)",
+      "李默 voted for 大壮 (首日避开焦点投顾景行的投票逻辑不自然，需重点观察。)",
+      "陶若安 voted for 大壮 (首日避开焦点投顾景行，投票逻辑不自然且急于转移视线。)",
+      "赵铁柱 voted for 大壮 (首日避开焦点投顾景行，投票逻辑不自然且缺乏合理解释。)",
+      "大壮 died by voted_out",
+      "Game ended: wolf (wolves_reached_parity)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "卓砚",
+        "player_id": "P1-9b099cc17c3f",
+        "reason": "guard_witch_conflict"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "顾景行",
+        "speaker_id": "P2-7cf3d0b703ad",
+        "content": "首日信息有限。1号卓砚奶穿，说明守卫和女巫在同一夜作用于同一刀口。这个信息本身不指向任何人的身份，但排除了守卫和女巫在昨夜各自行动的干扰项。目前没有查验结果，建议先听各人发言，预言家若在场请适时给出信息。我暂时没有明确的怀疑对象，倾向听完一圈再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "大壮",
+        "speaker_id": "P3-16d816a895ae",
+        "content": "奶穿说明守卫和女巫作用在同一刀口。这个信息本身说明狼人刀口是1号，但无法判断守卫和女巫谁先谁后。目前信息太少，先听大家发言，预言家有查验的话可以给出信息。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P4-b6c461b41f8a",
+        "content": "我是预言家。昨夜查验了1号卓砚，结果为好人。虽然卓砚已因奶穿出局，但这个信息至少排除了卓砚是狼的可能。目前存活6人，狼人2名。2号和3号两位发言都集中在分析奶穿信息，逻辑上没有明显异常。目前信息有限，我建议继续听后续玩家发言，今天投票需要谨慎，不要贸然放逐。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P4-b6c461b41f8a",
+        "content": "我会持续关注发言中的矛盾点。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "李默",
+        "speaker_id": "P5-9c20988a14a3",
+        "content": "4号跳预言家查验1号为好人，在诚实规则下这个信息可信。目前存活6人，狼人2名，信息仍然很少。奶穿事件说明守卫和女巫作用于同一刀口，但指向性有限。建议先听完一圈发言再判断，投票需谨慎。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "陶若安",
+        "speaker_id": "P6-c16f6dc797d3",
+        "content": "首日信息确实有限。奶穿说明守卫和女巫作用在同一刀口，狼刀落在1号，但这条信息本身指向性不强。4号自称预言家查验1号为好人，在诚实规则下这个信息可信，但目前存活6人仍有2狼，信息还不足以锁定目标。建议继续听发言，谨慎投票。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "赵铁柱",
+        "speaker_id": "P7-e84172b440ca",
+        "content": "首日确实信息有限。奶穿说明守卫和女巫作用于同一刀口，狼刀落在1号，这个信息本身指向性不强。4号称预言家查验1号为好人，在诚实规则下可信，但1号已出局，这条信息对当前局面帮助有限。目前6存活仍有2狼，建议继续听发言，谨慎投票，不急于下结论。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "顾景行",
+        "voter_id": "P2-7cf3d0b703ad",
+        "target_name": "李默",
+        "target_id": "P5-9c20988a14a3",
+        "reasoning": "发言中完全复读他人观点，缺乏独立判断，倾向跟风隐藏真实立场。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "大壮",
+        "voter_id": "P3-16d816a895ae",
+        "target_name": "顾景行",
+        "target_id": "P2-7cf3d0b703ad",
+        "reasoning": "顾景行只分析奶穿却对4号预言家查验1号好人无任何实质回应，主动性低且回避信息整合。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "穆冬青",
+        "voter_id": "P4-b6c461b41f8a",
+        "target_name": "赵铁柱",
+        "target_id": "P7-e84172b440ca",
+        "reasoning": "赵铁柱对查验结果评价消极且急于弱化信息价值，有隐藏动机的嫌疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "李默",
+        "voter_id": "P5-9c20988a14a3",
+        "target_name": "穆冬青",
+        "target_id": "P4-b6c461b41f8a",
+        "reasoning": "预言家查验已出局的1号，信息无法验证且对当前局面帮助有限，存在狼人跳预言家混淆视听的嫌疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "陶若安",
+        "voter_id": "P6-c16f6dc797d3",
+        "target_name": "穆冬青",
+        "target_id": "P4-b6c461b41f8a",
+        "reasoning": "预言家首日查验已出局玩家，信息价值有限，且过早暴露身份压缩好人视角。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "赵铁柱",
+        "voter_id": "P7-e84172b440ca",
+        "target_name": "穆冬青",
+        "target_id": "P4-b6c461b41f8a",
+        "reasoning": "预言家查验已死之人对局面无实质帮助，首日信息有限不宜过早定论。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "穆冬青",
+        "player_id": "P4-b6c461b41f8a",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "顾景行",
+        "speaker_id": "P2-7cf3d0b703ad",
+        "content": "梳理一下首日信息。1号卓砚奶穿出局，说明守卫和女巫在同一夜守/救了同一刀口，这排除了守卫和女巫在狼刀判断上的干扰，但不确定谁是守卫谁是女巫。4号穆冬青被票出，投他的有5号李默、6号陶若安、7号赵铁柱；投我的有3号大壮；我投了5号李默。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "顾景行",
+        "speaker_id": "P2-7cf3d0b703ad",
+        "content": "昨夜无人死亡，可能狼刀被守卫守住或女巫救了，也可能狼人选择空刀——但规则上狼人不能空刀，所以更可能是被守或救。这个信息本身不指向具体身份。我目前没有足够依据锁定某人，倾向继续观察发言。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "大壮",
+        "speaker_id": "P3-16d816a895ae",
+        "content": "昨夜无人死亡，结合首日奶穿，狼刀确实存在。目前存活5人，狼还有2个。首日投票穆冬青的有5、6、7三人，投顾景行的是我。穆冬青被票出后是狼还是好人还不确定，需要更多信息来判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "李默",
+        "speaker_id": "P5-9c20988a14a3",
+        "content": "梳理一下现有信息。4号穆冬青首日跳预言家查1号卓砚为好人，在诚实规则下4号确为真预言家，1号为好人。那么穆冬青作为预言家被票出，狼人成功藏住了自己。昨天投穆冬青的有我、6号、7号三人，另外大壮投了顾景行，顾景行投了我。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "李默",
+        "speaker_id": "P5-9c20988a14a3",
+        "content": "问题在于：狼人2名必定参与了投票，投穆冬青的三票里可能有狼，也可能狼人分票投了别人。目前存活5人含2狼，形势不乐观。昨夜无人死亡说明守卫或女巫发挥了作用，狼刀存在。我暂时没有足够依据锁定具体某一人，倾向继续听大家发言后再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "陶若安",
+        "speaker_id": "P6-c16f6dc797d3",
+        "content": "首日穆冬青跳预言家查1号为好人，在诚实规则下这个信息可信度高。但4号被票出后，场上谁在推票、谁在跟票值得复盘。昨天投4号的有我、5号、7号，大壮投了顾景行，顾景行投了5号。现在存活5人含2狼，形势紧张。昨夜无人死亡说明守卫或女巫还有牌，好人阵营仍有防御能力。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "陶若安",
+        "speaker_id": "P6-c16f6dc797d3",
+        "content": "我倾向再听一轮，看谁急于定票、谁在冷静分析。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "赵铁柱",
+        "speaker_id": "P7-e84172b440ca",
+        "content": "我梳理一下。首日奶穿说明狼刀落在1号，4号穆冬青跳预言家查1号为好人，在诚实规则下4号确为真预言家。那么问题来了——4号作为预言家被票出，是狼人藏住了。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "赵铁柱",
+        "speaker_id": "P7-e84172b440ca",
+        "content": "回头看票型：投4号的有我、5号、6号三人。如果狼在投4号的三票里，那说明狼人跟票投了预言家来隐藏自己；如果狼不在其中，那狼更可能在投顾景行的3号，或者投5号的2号身上。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "赵铁柱",
+        "speaker_id": "P7-e84172b440ca",
+        "content": "我注意到3号大壮首日投了顾景行，这个选择很特别——当时场上焦点明显在4号身上，3号却避开焦点去投了顾景行。如果3号是好人，他为什么在预言家已被跳出的情况下不去投这个预言家阵营的人，反而投了顾景行？这个投票逻辑不太自然。我倾向先观察3号，请他解释首日为何投顾景行而非其他方向。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "顾景行",
+        "voter_id": "P2-7cf3d0b703ad",
+        "target_name": "大壮",
+        "target_id": "P3-16d816a895ae",
+        "reasoning": "首日预言家已明跳时他避开焦点投我，投票逻辑不自然，且后续解释不足。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "大壮",
+        "voter_id": "P3-16d816a895ae",
+        "target_name": "赵铁柱",
+        "target_id": "P7-e84172b440ca",
+        "reasoning": "4号真预言家被票出，7号在投4号且转嫁焦点至3号，逻辑突兀存在狼性。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "李默",
+        "voter_id": "P5-9c20988a14a3",
+        "target_name": "大壮",
+        "target_id": "P3-16d816a895ae",
+        "reasoning": "首日避开焦点投顾景行的投票逻辑不自然，需重点观察。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "陶若安",
+        "voter_id": "P6-c16f6dc797d3",
+        "target_name": "大壮",
+        "target_id": "P3-16d816a895ae",
+        "reasoning": "首日避开焦点投顾景行，投票逻辑不自然且急于转移视线。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "赵铁柱",
+        "voter_id": "P7-e84172b440ca",
+        "target_name": "大壮",
+        "target_id": "P3-16d816a895ae",
+        "reasoning": "首日避开焦点投顾景行，投票逻辑不自然且缺乏合理解释。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "大壮",
+        "player_id": "P3-16d816a895ae",
+        "reason": "voted_out"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "wolf",
+  "night_actions": {
+    "guard_target_id": "P2-7cf3d0b703ad",
+    "last_guard_target_id": "P2-7cf3d0b703ad",
+    "wolf_votes": {
+      "P6-c16f6dc797d3": "P2-7cf3d0b703ad",
+      "P7-e84172b440ca": "P2-7cf3d0b703ad"
+    },
+    "wolf_target_id": "P2-7cf3d0b703ad",
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": null,
+    "seer_result": null,
+    "deaths": []
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

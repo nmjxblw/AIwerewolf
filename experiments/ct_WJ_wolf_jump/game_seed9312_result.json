@@ -1,0 +1,49 @@
+{
+  "label": "WJ",
+  "seed": 9312,
+  "winner": "village",
+  "end_reason": "all_wolves_dead",
+  "days": 2,
+  "elapsed": 71.9,
+  "day1_vote_pattern": {
+    "1号:凌战": 4,
+    "5号:夜未央": 3
+  },
+  "day1_pattern_detail": {
+    "5号:夜未央": [
+      "1号:凌战",
+      "4号:雷昊",
+      "7号:南柯辞"
+    ],
+    "1号:凌战": [
+      "2号:于川",
+      "3号:蓝知怀",
+      "5号:夜未央",
+      "6号:大壮"
+    ]
+  },
+  "day1_seer_claims": [
+    "1号:凌战(狼人)",
+    "2号:于川(守卫)",
+    "3号:蓝知怀(真预言家)",
+    "4号:雷昊(狼人)",
+    "4号:雷昊(狼人)",
+    "5号:夜未央(女巫)",
+    "5号:夜未央(女巫)",
+    "6号:大壮(平民)",
+    "6号:大壮(平民)",
+    "6号:大壮(平民)",
+    "7号:南柯辞(平民)",
+    "7号:南柯辞(平民)"
+  ],
+  "day1_nonseer_claims": 11,
+  "empty_knife_nights": 1,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 2,
+  "llm_calls": 37,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": true
+}

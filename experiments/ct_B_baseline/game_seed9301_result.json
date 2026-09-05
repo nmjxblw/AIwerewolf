@@ -1,0 +1,47 @@
+{
+  "label": "B",
+  "seed": 9301,
+  "winner": "wolf",
+  "end_reason": "wolves_reached_parity",
+  "days": 2,
+  "elapsed": 32.3,
+  "day1_vote_pattern": {
+    "1号:王雅文": 1,
+    "2号:夏知白": 1,
+    "3号:苏晓晓": 1,
+    "4号:李默": 1,
+    "6号:凌战": 1,
+    "7号:舒朗": 1
+  },
+  "day1_pattern_detail": {
+    "4号:李默": [
+      "1号:王雅文"
+    ],
+    "1号:王雅文": [
+      "2号:夏知白"
+    ],
+    "2号:夏知白": [
+      "3号:苏晓晓"
+    ],
+    "3号:苏晓晓": [
+      "4号:李默"
+    ],
+    "7号:舒朗": [
+      "6号:凌战"
+    ],
+    "6号:凌战": [
+      "7号:舒朗"
+    ]
+  },
+  "day1_seer_claims": [],
+  "day1_nonseer_claims": 0,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 4,
+  "llm_calls": 25,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": false
+}

@@ -1,0 +1,2539 @@
+{
+  "id": "1c2348c9-545e-4941-bb61-9a84e38ceafd",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-a896d6cf0767",
+      "seat": 1,
+      "name": "李默",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "李默",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P2-ea043771511e",
+      "seat": 2,
+      "name": "甘骁",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "甘骁",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-03e89ae8bdd3",
+      "seat": 3,
+      "name": "司南",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "司南",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P4-f7a1c2c01040",
+      "seat": 4,
+      "name": "云锦",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "云锦",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P5-4debc9a1d516",
+      "seat": 5,
+      "name": "袁汐",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "袁汐",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P6-972bae2c4115",
+      "seat": 6,
+      "name": "莫离",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "莫离",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P7-20e63d2424c0",
+      "seat": 7,
+      "name": "宋知野",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "宋知野",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    }
+  ],
+  "events": [
+    {
+      "id": "34863465-ca9c-41bc-967b-9c00a81345fe",
+      "ts": 1788608093.131129,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "1c2348c9-545e-4941-bb61-9a84e38ceafd",
+        "players": [
+          {
+            "id": "P1-a896d6cf0767",
+            "seat": 1,
+            "name": "李默",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-ea043771511e",
+            "seat": 2,
+            "name": "甘骁",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-03e89ae8bdd3",
+            "seat": 3,
+            "name": "司南",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-f7a1c2c01040",
+            "seat": 4,
+            "name": "云锦",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-4debc9a1d516",
+            "seat": 5,
+            "name": "袁汐",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-972bae2c4115",
+            "seat": 6,
+            "name": "莫离",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-20e63d2424c0",
+            "seat": 7,
+            "name": "宋知野",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "0cce217c-ef06-4189-8d1b-25b5245d4a08",
+      "ts": 1788608093.131222,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-a896d6cf0767"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 李默, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "c218e19e-4600-417d-ab39-56ae1e2a77df",
+      "ts": 1788608093.1312652,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-ea043771511e"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 甘骁, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "b37528b4-df41-44cd-bd5c-b247c40733ef",
+      "ts": 1788608093.1313133,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 司南, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "2383d4ad-b9b4-45fb-b14c-e83696415051",
+      "ts": 1788608093.1313527,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-f7a1c2c01040"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 云锦, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "899d01c3-d6da-48f4-9753-48828ec1540d",
+      "ts": 1788608093.1313963,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 袁汐, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "f005209a-ac06-42d2-b5d3-8ef713e8440b",
+      "ts": 1788608093.1314337,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-972bae2c4115"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 莫离, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "b29eb95b-f75a-4ae2-9051-e34b8d147295",
+      "ts": 1788608093.1314692,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-20e63d2424c0"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 宋知野, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "e2884d13-ac5d-4315-b5ee-61c0090a5688",
+      "ts": 1788608093.13152,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "187f0671-f887-4c63-864e-f84b480ff12a",
+      "ts": 1788608093.1315303,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "68176363-12c1-4975-ad3d-ca1d84aa0a60",
+      "ts": 1788608093.212099,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "091b7ddb-7e44-4c0b-8779-c257c656bce8",
+      "ts": 1788608093.2121215,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P3-03e89ae8bdd3",
+          "P5-4debc9a1d516"
+        ],
+        "wolf_names": [
+          "司南",
+          "袁汐"
+        ]
+      }
+    },
+    {
+      "id": "7b2e3bd0-7fa9-4822-a959-e56b3c8560d4",
+      "ts": 1788608094.4636602,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "message": "司南（私聊）：今晚刀2号甘骁，先清掉一个中间位置的威胁，后续再根据情况调整。",
+        "speech": "今晚刀2号甘骁，先清掉一个中间位置的威胁，后续再根据情况调整。",
+        "proposed_target_id": "P2-ea043771511e",
+        "proposed_target_name": "甘骁"
+      }
+    },
+    {
+      "id": "630fdca7-cfbe-4e02-8a65-5dd449d7b933",
+      "ts": 1788608095.2331054,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "message": "袁汐（私聊）：同意，今晚刀2号甘骁，先削弱中间位置的潜在威胁。",
+        "speech": "同意，今晚刀2号甘骁，先削弱中间位置的潜在威胁。",
+        "proposed_target_id": "P2-ea043771511e",
+        "proposed_target_name": "甘骁"
+      }
+    },
+    {
+      "id": "15440bb7-28ef-45bd-8404-a125acffcf1b",
+      "ts": 1788608095.2331538,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "b206bb7f-119e-4fda-9456-44e430746c0f",
+      "ts": 1788608095.233166,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "message": "司南 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "fbfa3d30-9915-47eb-86c9-cf9c7165f1b6",
+      "ts": 1788608096.3288677,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "action_type": "attack",
+        "target": {
+          "id": "P2-ea043771511e",
+          "seat": 2,
+          "name": "甘骁",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队已达成共识，刀2号甘骁，清理中间位置潜在威胁。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P2-ea043771511e",
+        "target_name": "甘骁"
+      }
+    },
+    {
+      "id": "d00b05dd-fa1f-4b07-bc64-aae0cdfe17a8",
+      "ts": 1788608096.3288946,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "message": "袁汐 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P3-03e89ae8bdd3",
+            "wolf_name": "司南",
+            "target_id": "P2-ea043771511e",
+            "target_name": "甘骁"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c91c1d4a-d85c-4e81-9eed-a6bd13445047",
+      "ts": 1788608097.0991113,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "action_type": "attack",
+        "target": {
+          "id": "P2-ea043771511e",
+          "seat": 2,
+          "name": "甘骁",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友司南达成共识，刀2号甘骁，削弱中间位置的潜在威胁。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P2-ea043771511e",
+        "target_name": "甘骁"
+      }
+    },
+    {
+      "id": "3a0422cb-f3a4-4155-9592-e4fb33174b80",
+      "ts": 1788608097.0991294,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为甘骁。",
+        "target_id": "P2-ea043771511e",
+        "target_name": "甘骁",
+        "votes": {
+          "P3-03e89ae8bdd3": "P2-ea043771511e",
+          "P5-4debc9a1d516": "P2-ea043771511e"
+        }
+      }
+    },
+    {
+      "id": "9870c932-bc9a-40a6-9474-44abd98a8641",
+      "ts": 1788608097.0991457,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "d45bb4d2-0272-4d27-92ed-690fde40f51b",
+      "ts": 1788608097.0991724,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "92b8d475-0a0f-4657-8da2-f63708c5ade6",
+      "ts": 1788608098.4279158,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-f7a1c2c01040"
+      ],
+      "payload": {
+        "actor_id": "P4-f7a1c2c01040",
+        "actor_name": "云锦",
+        "action_type": "divine",
+        "target": {
+          "id": "P2-ea043771511e",
+          "seat": 2,
+          "name": "甘骁",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜需要获取信息，查验一名玩家以建立逻辑基础。选择查验一个中间位置的玩家，先随机选取一名进行查验。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-ea043771511e"
+      }
+    },
+    {
+      "id": "b4314ed3-34fe-433b-8a7f-68cce617dbf4",
+      "ts": 1788608098.427924,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-f7a1c2c01040"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P2-ea043771511e",
+        "target_name": "甘骁",
+        "is_wolf": false,
+        "message": "Seer check: 甘骁 is not wolf."
+      }
+    },
+    {
+      "id": "89efe153-1674-4a5c-8861-550a0c3df705",
+      "ts": 1788608098.4279358,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "adb1b324-16b0-4746-9b94-f1930d65b8ac",
+      "ts": 1788608098.5082793,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "e564ee80-5129-4436-a361-331d6210328b",
+      "ts": 1788608099.534329,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-ea043771511e"
+      ],
+      "payload": {
+        "actor_id": "P2-ea043771511e",
+        "actor_name": "甘骁",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P2-ea043771511e",
+          "seat": 2,
+          "name": "甘骁",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜我被刀，且女巫首夜可自救。保存自己确保存活，保留毒药后续使用更有利。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-ea043771511e"
+      }
+    },
+    {
+      "id": "600ec6ca-8a62-477c-84e3-a70e1d240460",
+      "ts": 1788608099.5343528,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "cc1fef86-ff43-4b66-ab20-795930e2627c",
+      "ts": 1788608099.6150043,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "8d125676-e060-444d-83d9-926d7617ed7f",
+      "ts": 1788608100.9681418,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-972bae2c4115"
+      ],
+      "payload": {
+        "actor_id": "P6-972bae2c4115",
+        "actor_name": "莫离",
+        "action_type": "guard",
+        "target": {
+          "id": "P4-f7a1c2c01040",
+          "seat": 4,
+          "name": "云锦",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "第一晚没有信息，守卫应尽量守护可能被狼人首刀的玩家。选择守护一个随机但合理的对象，通常可考虑守护预言家或中位玩家。选择守护4号云锦作为首夜守护。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-f7a1c2c01040"
+      }
+    },
+    {
+      "id": "fa70f0d0-a385-4350-a7a1-5c0ae745f57b",
+      "ts": 1788608100.9681582,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "5856d8e8-4876-4e97-a187-62e24a7d484a",
+      "ts": 1788608101.048772,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "f0205477-bc7c-436b-9cf8-144aee949ea9",
+      "ts": 1788608101.0487893,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "7e2013fb-21bb-4d86-901d-11fe93544a06",
+      "ts": 1788608101.0488532,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "239a130f-d057-4cd7-ab8e-5ad95ebe47d3",
+      "ts": 1788608101.0488682,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "fa441e1f-ce2e-476b-8723-1d14c24b3c44",
+      "ts": 1788608101.3699167,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "228c28ab-c821-4666-9884-2fff949dbb39",
+      "ts": 1788608103.0412884,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-a896d6cf0767",
+        "actor_name": "李默",
+        "speech": "我是预言家，昨晚查验了4号云锦，是好人。今天先听大家发言，后面有对跳再说。",
+        "reasoning": "我作为1号（前置位），按战术指令起身假跳预言家挡刀。编造一个查验结果，给后置位某玩家金水，吸引狼人夜晚刀我，保护真预言家。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 4,
+        "claim_result": "good",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "eb907819-25eb-4157-b334-976cdfa20394",
+      "ts": 1788608105.1688082,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-ea043771511e",
+        "actor_name": "甘骁",
+        "speech": "首夜平安，先听。1号报验4号金水，信息先记下。等对跳或更多发言再判断。",
+        "reasoning": "首夜无人死亡，我的解药已用。1号跳预言家查4号好人，目前只有单边预言家发言，信息不足，不宜过早站边或点名，先保持低调听后续发言。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "782f3db9-05e2-41a0-822a-9d7ebd4e8df0",
+      "ts": 1788608108.3601708,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "speech": "首夜平安，信息有限。1号跳预言家报4号金水，先记下。我暂时没有太多判断，听听后面几位的发言再综合分析。",
+        "reasoning": "首日平安夜，1号跳预言家报4号金水。作为狼人，先保持低调听发言，不急于站边或跳身份，观察后续是否有对跳。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "9cef42a2-8a5b-4b45-aa01-1b86497ee954",
+      "ts": 1788608110.6831117,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-f7a1c2c01040",
+        "actor_name": "云锦",
+        "speech": "我是4号云锦，真预言家。昨晚查验了2号甘骁，是好人。1号李默跳预言家报我4号金水——这很有问题：如果他是真预言家，验我出金水，那我不可能是预言家；但我确实查验过2号是好人。场上配置只有一名预言家，1号与我必然只有一人为真。我报出的查验是真实可查的，请各位基于此判断谁在说谎。",
+        "reasoning": "我是真预言家，1号李默抢先跳预言家报我金水。按战术指令我必须如实公布身份与查验。我查验2号甘骁为好人。需要跳出来对跳，公布真实查验信息。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 2,
+        "claim_result": "good",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "120cfd0a-4bbe-42d5-af8e-83c38469188a",
+      "ts": 1788608112.8950663,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "speech": "首夜平安，场上1号跳预言家报4号金水，4号又跳预言家报2号金水。两人对跳，但都没有验出狼人，信息量其实不大。我倾向再等等，听后续发言和投票倾向再判断谁更可信。",
+        "reasoning": "场上1号和4号对跳预言家，但两人都互报金水且没有验出狼，信息并不致命。作为狼人，我应先保持低调观察，不急于站边，避免过早暴露立场。发言偏向引导思考，既不完全站边也不点人。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "64040322-c473-452d-bd4f-a0190caa9f9e",
+      "ts": 1788608114.347414,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-972bae2c4115",
+        "actor_name": "莫离",
+        "speech": "首夜平安，1号与4号对跳预言家，各自都报了金水。目前两人都没有验出狼人，信息量有限，先不急着站边。我想听听后面的发言和投票倾向再判断。",
+        "reasoning": "首夜平安，1号与4号对跳预言家，信息尚不充分。作为守卫，我倾向先保持低调，听更多发言再做判断，不急于站边。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "145daf07-8a8e-4619-a104-6034c5d04c59",
+      "ts": 1788608118.101671,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-20e63d2424c0",
+        "actor_name": "宋知野",
+        "speech": "1号与4号对跳，我倾向站4号。逻辑上，1号验4号是金水，如果1号是真预言家，那4号必然不是预言家；但4号主动跳出来报2号金水，且4号的查验无法被1号直接推翻。反观1号，他验4号金水却不能解释4号为何跳预言家。",
+        "reasoning": "后置位，场上已有1号和4号对跳预言家。按战术指令，后置位若已有跳者应配合保持平民视角。我作为平民，若再跳预言家会造成三方对跳混乱，反而干扰好人判断真预言家。当前1、4对跳，4号逻辑更自洽（1号验4金水与4号自称预言家直接矛盾，而4号报2金水无法被1号反驳），我倾向站4号，但先表态支持并观望后续投票。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "support",
+        "target_seat": 4
+      }
+    },
+    {
+      "id": "95338a2d-49db-46ad-9cbc-0cc9a6440d81",
+      "ts": 1788608118.101683,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-20e63d2424c0",
+        "actor_name": "宋知野",
+        "speech": "如果4号是狼悍跳，他没必要在第一轮就正面撞上1号的金水查验——这暴露风险太高。我暂时认为4号可信度更高，但也会继续听后续发言再定论。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "d51f322d-d283-4e73-985f-5c6b518a8195",
+      "ts": 1788608118.2620323,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "d91cebe6-4c06-4d02-9237-5c9d8dc68461",
+      "ts": 1788608119.8936384,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-a896d6cf0767",
+        "voter_name": "李默",
+        "target_id": "P4-f7a1c2c01040",
+        "target_name": "云锦",
+        "reasoning": "4号跳预言家报2号金水，但1号先验4号金水，若1号为真则4号必假，4号反应过激反而可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "8658f4c5-ee3a-40cb-a7f9-59258f9c06ba",
+      "ts": 1788608119.8936577,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-ea043771511e",
+        "voter_name": "甘骁",
+        "target_id": "P1-a896d6cf0767",
+        "target_name": "李默",
+        "reasoning": "若1号真验4号金水却无法解释4号悍跳，逻辑漏洞明显，信息上站4号。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "1bc470e1-b217-4ae1-9fa2-ecedf0da45de",
+      "ts": 1788608119.8936703,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-03e89ae8bdd3",
+        "voter_name": "司南",
+        "target_id": "P1-a896d6cf0767",
+        "target_name": "李默",
+        "reasoning": "1号先跳预言家却验出4号金水，逻辑上无法解释4号反跳，站边4号更合理。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e1226924-e094-41f6-b146-01f217e40394",
+      "ts": 1788608119.8937132,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-f7a1c2c01040",
+        "voter_name": "云锦",
+        "target_id": "P1-a896d6cf0767",
+        "target_name": "李默",
+        "reasoning": "1号悍跳预言家报我金水，逻辑上无法解释我为何跳预言家，其发言矛盾明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "4f1f515e-7848-4865-8f1c-4a9340050f81",
+      "ts": 1788608119.8937256,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-4debc9a1d516",
+        "voter_name": "袁汐",
+        "target_id": "P1-a896d6cf0767",
+        "target_name": "李默",
+        "reasoning": "1号验4号金水却无法解释4号跳预言家，逻辑上更可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "295f8077-ba41-42ba-8c8b-7101f3534317",
+      "ts": 1788608119.8937411,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-972bae2c4115",
+        "voter_name": "莫离",
+        "target_id": "P1-a896d6cf0767",
+        "target_name": "李默",
+        "reasoning": "1号在无压力首日悍跳预言家验4号金水，反而促使真预言家4号被迫起跳，逻辑风险不符预言家最优打法。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "2b7ce8be-62b8-4939-ad30-b0a8e2cb949e",
+      "ts": 1788608119.8937526,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-20e63d2424c0",
+        "voter_name": "宋知野",
+        "target_id": "P1-a896d6cf0767",
+        "target_name": "李默",
+        "reasoning": "1号验4号金水却无法解释4号为何跳预言家，悍跳风险过高，逻辑上4号可信度更强。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "14ba1de5-1c8e-4f45-90ec-52fe6cba7f85",
+      "ts": 1788608119.9739912,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "23b2b76d-7ed9-4c10-b610-787aa1166999",
+      "ts": 1788608119.9740338,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "李默 was voted out."
+      }
+    },
+    {
+      "id": "f9ec8186-5e74-4040-a36e-4e36483ec9d7",
+      "ts": 1788608119.974044,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P1-a896d6cf0767",
+        "player_name": "李默",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "e8c90311-9592-4e17-ae48-fd68fe2ec390",
+      "ts": 1788608119.9741063,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "615284e7-7aa7-4a1b-8277-92b866d41c62",
+      "ts": 1788608119.9741468,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "cbec430d-9b05-4872-aaa4-59f303490ce1",
+      "ts": 1788608119.9741526,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "907dae4f-45ad-4ffa-9c82-ec1dcf31a257",
+      "ts": 1788608120.054841,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "c11670ad-e256-4925-8dfc-2422a1d90fa0",
+      "ts": 1788608120.0548718,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P3-03e89ae8bdd3",
+          "P5-4debc9a1d516"
+        ],
+        "wolf_names": [
+          "司南",
+          "袁汐"
+        ]
+      }
+    },
+    {
+      "id": "f2be6d19-e90c-4267-aa30-aa5f2479defd",
+      "ts": 1788608121.3825912,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "message": "司南（私聊）：今晚刀4号云锦，她发言稳健但缺乏信息，留她容易在后期带节奏。白天我们继续低调，引导投票给2号或6号，制造混乱。",
+        "speech": "今晚刀4号云锦，她发言稳健但缺乏信息，留她容易在后期带节奏。白天我们继续低调，引导投票给2号或6号，制造混乱。",
+        "proposed_target_id": "P4-f7a1c2c01040",
+        "proposed_target_name": "云锦"
+      }
+    },
+    {
+      "id": "988358d4-da4b-43b4-af8f-7a262837bf5b",
+      "ts": 1788608122.5628653,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "message": "袁汐（私聊）：今晚刀4号云锦，她发言稳健但缺乏信息，留她后期会主导风向。白天我们继续低调，引导投票给2号或6号，制造混乱。",
+        "speech": "今晚刀4号云锦，她发言稳健但缺乏信息，留她后期会主导风向。白天我们继续低调，引导投票给2号或6号，制造混乱。",
+        "proposed_target_id": "P4-f7a1c2c01040",
+        "proposed_target_name": "云锦"
+      }
+    },
+    {
+      "id": "0ac758e2-5272-4f22-83f2-8f920abb0e12",
+      "ts": 1788608122.5628922,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "6c3b5251-dc12-4b4e-aceb-b78582b40ee7",
+      "ts": 1788608122.5628984,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "message": "司南 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "67b45863-1730-4e6e-88bf-f824cdad60f6",
+      "ts": 1788608123.503809,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-f7a1c2c01040",
+          "seat": 4,
+          "name": "云锦",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "延续狼队共识，刀4号云锦。她发言稳健但信息少，留她后期易主导风向，先清除这个潜在威胁。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-f7a1c2c01040",
+        "target_name": "云锦"
+      }
+    },
+    {
+      "id": "65a0f28a-9f31-4a5c-9d9f-eeaeea2a9d49",
+      "ts": 1788608123.503827,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "message": "袁汐 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P3-03e89ae8bdd3",
+            "wolf_name": "司南",
+            "target_id": "P4-f7a1c2c01040",
+            "target_name": "云锦"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cf3d525b-8207-4fcf-9beb-c69c2206cb86",
+      "ts": 1788608124.8397276,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-f7a1c2c01040",
+          "seat": 4,
+          "name": "云锦",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友司南达成共识，今夜刀4号云锦。她发言稳健但缺乏信息，留她容易在后期主导风向，属于潜在威胁。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-f7a1c2c01040",
+        "target_name": "云锦"
+      }
+    },
+    {
+      "id": "08584e86-1a56-4056-bb49-5244402bba7b",
+      "ts": 1788608124.8397415,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-03e89ae8bdd3",
+        "P5-4debc9a1d516"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为云锦。",
+        "target_id": "P4-f7a1c2c01040",
+        "target_name": "云锦",
+        "votes": {
+          "P3-03e89ae8bdd3": "P4-f7a1c2c01040",
+          "P5-4debc9a1d516": "P4-f7a1c2c01040"
+        }
+      }
+    },
+    {
+      "id": "145a899e-f443-4793-8226-acccca75fa26",
+      "ts": 1788608124.8397696,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "b83ff3c3-3580-4d0d-b971-4f620468eee3",
+      "ts": 1788608126.7272844,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-f7a1c2c01040"
+      ],
+      "payload": {
+        "actor_id": "P4-f7a1c2c01040",
+        "actor_name": "云锦",
+        "action_type": "divine",
+        "target": {
+          "id": "P7-20e63d2424c0",
+          "seat": 7,
+          "name": "宋知野",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜查验甘骁为好人。现在需要继续查验更多玩家来锁定狼人。存活玩家中，司南、袁汐、莫离、宋知野都未查验过。我需要优先查验可能在狼人阵营的玩家。从票型看，所有人第一轮都投了李默，没有明显分化。我选择查验7号宋知野，扩大信息面以构建完整好人框架。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P7-20e63d2424c0"
+      }
+    },
+    {
+      "id": "3953ca71-0a41-4f21-9a27-dc079e321309",
+      "ts": 1788608126.7273054,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-f7a1c2c01040"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P7-20e63d2424c0",
+        "target_name": "宋知野",
+        "is_wolf": false,
+        "message": "Seer check: 宋知野 is not wolf."
+      }
+    },
+    {
+      "id": "0cbd8635-0857-427e-b539-b1bec8c9db67",
+      "ts": 1788608126.8079872,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "537e3ae8-04c3-48dc-851c-a7ee5f4ef304",
+      "ts": 1788608128.7367373,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-ea043771511e"
+      ],
+      "payload": {
+        "actor_id": "P2-ea043771511e",
+        "actor_name": "甘骁",
+        "action_type": "skip",
+        "target": null,
+        "reasoning": "首夜平安，解药已用。1号李默被投票放逐，昨夜无人死亡说明狼刀被守卫守住或狼人空刀。目前信息不足，不宜贸然用毒。4号云锦昨夜被刀但无人死亡，说明4号可能是被守卫保护的好人，也可能是狼人自刀未遂。但毒药是宝贵资源，当前存活6人中狼人仅2人，信息不足时用毒容易误伤好人。选择保留毒药继续观察。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "skipped": true
+      }
+    },
+    {
+      "id": "287d571a-0faa-48c6-923a-b11180986180",
+      "ts": 1788608128.8171508,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "c11d8ef6-1e91-4a1e-90a0-3a740c749243",
+      "ts": 1788608130.56438,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-972bae2c4115"
+      ],
+      "payload": {
+        "actor_id": "P6-972bae2c4115",
+        "actor_name": "莫离",
+        "action_type": "guard",
+        "target": {
+          "id": "P5-4debc9a1d516",
+          "seat": 5,
+          "name": "袁汐",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜平安，说明狼刀可能被女巫救或守卫挡。我上一晚守了4号，不能连守。昨夜无人死亡，狼人可能刀了被女巫救的玩家，或者刀中了我的守护目标以外的位置。考虑到首日票型，李默被集体放逐，狼人可能在2、3、5、7中。选择守护5号袁汐，分散保护风险。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P5-4debc9a1d516"
+      }
+    },
+    {
+      "id": "7a9f957c-dbec-4a04-949e-640c211b0660",
+      "ts": 1788608130.6448164,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "9de96eb5-9230-4a31-8eec-a51ad0617b88",
+      "ts": 1788608130.6448438,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P4-f7a1c2c01040",
+        "player_name": "云锦",
+        "reason": "werewolf_killed"
+      }
+    },
+    {
+      "id": "eb88e497-7436-4863-bb89-16bc5ebf57ca",
+      "ts": 1788608130.6448572,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜死亡：云锦（狼刀）。"
+      }
+    },
+    {
+      "id": "839e7927-3db3-427a-94d3-58c914e839ca",
+      "ts": 1788608130.6449103,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "d570510d-6494-4e56-9521-322f06a44ab5",
+      "ts": 1788608130.6449234,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "388c9c10-5731-4549-af71-50c2e9a8fb91",
+      "ts": 1788608130.9662125,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "a29456d0-18b6-457f-abaf-00258e18eb08",
+      "ts": 1788608133.4479272,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-ea043771511e",
+        "actor_name": "甘骁",
+        "speech": "首夜平安我用了药，救的是1号李默。1号报验4号金水后被投出，4号昨夜被刀。现在剩5人，狼还剩2。1号的查验可信度需要重新审视——如果1号真是预言家，4号金水被狼刀说明4号大概率是好人。但如果1号是狼，那4号金水就是被狼保护的狼同伴。大家先发言，我听完再判断。",
+        "reasoning": "作为女巫，我首夜用药救了人（save_used: True），昨夜云锦被狼刀死亡。需要先梳理信息，不宜过早暴露身份或站边。先听发言再判断。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "94a589d6-557a-4783-b13d-c226ae9fa9ef",
+      "ts": 1788608136.5689175,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "speech": "甘骁说自己是女巫救了1号，这个信息值得推敲。但更关键的问题是：1号到底是不是真预言家？如果1号真是预言家，4号金水被刀，那现在场上还有2狼，好人只剩3个。但如果1号是狼悍跳，那4号金水就可能是狼同伴，昨夜狼刀4号反而是狼队在清理自己的暴露身份。",
+        "reasoning": "作为狼人，我需要在发言中制造干扰。2号甘骁跳女巫说救了1号，但1号被投出后4号被刀。我需要引导场上对2号的预言家身份产生质疑，同时不暴露自己。我可以质疑甘骁的女巫身份，因为如果他是女巫，解药已经用了，场上局势难以控制。我选择低调观察并表达对局势的分析。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "bbec7428-d57e-4117-bbac-c242f648108a",
+      "ts": 1788608136.5689294,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-03e89ae8bdd3",
+        "actor_name": "司南",
+        "speech": "现在5人局，狼2好人3，我们容错极低。我倾向于先听大家发言，尤其想听5号、6号、7号对1号预言家身份的判断。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "0e9b8030-1492-4c9a-b8c5-b6efb3574b26",
+      "ts": 1788608142.6774023,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "speech": "昨晚云锦被刀了。结合甘骁说自己救了1号、1号报4号金水被投出这个信息链，如果1号真是预言家，那4号金水被刀说明狼在清理好人。但反过来想，如果1号是狼悍跳，4号金水是狼同伴，那狼队昨晚刀4号等于自断一臂，这不太合理。我更倾向于1号是真预言家、4号是好人的可能性大。",
+        "reasoning": "作为狼人，我需要低调引导风向。当前场上焦点在1号是否为真预言家。我可以利用这个混乱局面，模糊焦点，不急于站边或点名，先保持观察姿态。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "93e86077-e88e-41ed-9015-9115f98cbef0",
+      "ts": 1788608142.677412,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-4debc9a1d516",
+        "actor_name": "袁汐",
+        "speech": "不过现在场上还有2狼，我们必须非常谨慎。我想听听6号、7号的判断，特别是他们对1号身份的看法。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "e1c081d0-36a3-47e5-a183-900cfdaad413",
+      "ts": 1788608146.0654986,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-972bae2c4115",
+        "actor_name": "莫离",
+        "speech": "梳理一下事实。首夜平安，2号说自己用药救了1号。1号报4号金水后被投出，昨夜4号被刀。如果2号真是女巫、1号是真预言家，那4号金水被刀说明狼在清理好人。但这里有个关键问题：1号如果是真预言家，为什么会被投出？当时场上多数人投了1号，包括我。现在剩5人2狼，我们容错极低。",
+        "reasoning": "作为守卫，我需要梳理场上信息。首夜平安说明女巫用药救了1号，1号报4号金水后被投出，昨夜4号被刀。如果1号是真预言家且4号是金水好人，那狼刀4号合理（清理有身份的好人）。当前存活5人：2、3、5、6、7。2号自称女巫救了1号，需要验证。我上一轮投了1号（即P1），说明我此前认为1号是狼。现在需要重新审视。我作为守卫首夜守了4号，昨夜守了5号。需要谨慎发言，不暴露身份。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "e6b379c8-f254-46b6-a037-85afd7db19fb",
+      "ts": 1788608146.065514,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-972bae2c4115",
+        "actor_name": "莫离",
+        "speech": "5号倾向认为1号真预言家，我需要更多信息来判断。先不急着站边。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "f20cbe67-29ad-4648-95b4-ed08a2c0fccd",
+      "ts": 1788608149.5606067,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-20e63d2424c0",
+        "actor_name": "宋知野",
+        "speech": "我跳预言家。首夜我查验了2号甘骁，结果是金水，好人。昨天我没有跳是因为想观察，但今天局势已到5人2狼，容错极低，我不能再藏了。我的查验逻辑：2号是金水，那2号说自己是女巫救了1号这条信息就多了一层可信度。现在场上真正的威胁是狼队藏在我们剩下几人之间。",
+        "reasoning": "我是后置位（7号≥5），目前无人跳预言家，局势需要起身假跳预言家挡刀。根据战术指令，后置位若无跳者且局势需要可起身假跳。我编造查验给2号甘骁金水，因为2号声称女巫救1号，给女巫金水较合理且能配合信息链。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 2,
+        "claim_result": "good",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "44b00a46-faba-4442-b002-67509d165a84",
+      "ts": 1788608149.5606158,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-20e63d2424c0",
+        "actor_name": "宋知野",
+        "speech": "我建议今天从3号、5号、6号中仔细分辨。我的身份摆在这里，狼人今晚大概率会刀我，但这是我该做的。请大家认真听我的分析。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "4d9e725c-987c-4ce2-97ec-a7a435d9729d",
+      "ts": 1788608149.721531,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "bb6889c0-4481-4cec-aa09-329f7afed852",
+      "ts": 1788608151.202316,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-ea043771511e",
+        "voter_name": "甘骁",
+        "target_id": "P6-972bae2c4115",
+        "target_name": "莫离",
+        "reasoning": "他在研判预言家真实性时回避关键点且立场摇摆，发言中最少有效信息。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "318f779f-140e-4555-9161-6ff973554580",
+      "ts": 1788608151.2023277,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-03e89ae8bdd3",
+        "voter_name": "司南",
+        "target_id": "P7-20e63d2424c0",
+        "target_name": "宋知野",
+        "reasoning": "7号此时跳预言家时机可疑，且首夜查验信息无法验证，更像在转移焦点。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "ea049ca3-b1f3-4898-9b23-0a64cfab313a",
+      "ts": 1788608151.2023368,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-4debc9a1d516",
+        "voter_name": "袁汐",
+        "target_id": "P6-972bae2c4115",
+        "target_name": "莫离",
+        "reasoning": "他在信息不足时模糊站边，试图拖延决策，最符合隐藏狼人的行为模式。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "90116f81-496a-4bc5-a506-146fd74aa685",
+      "ts": 1788608151.2023444,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-972bae2c4115",
+        "voter_name": "莫离",
+        "target_id": "P7-20e63d2424c0",
+        "target_name": "宋知野",
+        "reasoning": "宋知野今天才跳预言家，时机可疑且与首日全场投1号的票型矛盾。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "0bfc45e4-a30c-404e-915a-b3e545c49444",
+      "ts": 1788608151.202352,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-20e63d2424c0",
+        "voter_name": "宋知野",
+        "target_id": "P5-4debc9a1d516",
+        "target_name": "袁汐",
+        "reasoning": "袁汐过度倾向1号真预言家且急于引导站边，在5人2狼局面下这种单边结论过于顺畅。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "ac659408-3a67-49d0-a007-8464a50345b8",
+      "ts": 1788608151.282538,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "866ce59a-bbae-4f7b-b2c2-74f07916823f",
+      "ts": 1788608151.2826304,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Vote tied among 莫离, 宋知野. Random tie-break eliminates 莫离."
+      }
+    },
+    {
+      "id": "b44b2613-e163-40cd-85ce-c11210ada08c",
+      "ts": 1788608151.28265,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "莫离 was voted out."
+      }
+    },
+    {
+      "id": "8b8dbb08-871f-4697-aa44-353e2b1b6b5a",
+      "ts": 1788608151.2826686,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P6-972bae2c4115",
+        "player_name": "莫离",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "f90a1f55-bd0e-4465-96a0-d09a8f092001",
+      "ts": 1788608151.2826958,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    },
+    {
+      "id": "fc4a7225-0c7c-4e2f-b9bf-4b7c953e8822",
+      "ts": 1788608151.2828045,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P2-ea043771511e": "P6-972bae2c4115",
+    "P3-03e89ae8bdd3": "P7-20e63d2424c0",
+    "P5-4debc9a1d516": "P6-972bae2c4115",
+    "P6-972bae2c4115": "P7-20e63d2424c0",
+    "P7-20e63d2424c0": "P5-4debc9a1d516"
+  },
+  "vote_history": {
+    "1": {
+      "P1-a896d6cf0767": "P4-f7a1c2c01040",
+      "P2-ea043771511e": "P1-a896d6cf0767",
+      "P3-03e89ae8bdd3": "P1-a896d6cf0767",
+      "P4-f7a1c2c01040": "P1-a896d6cf0767",
+      "P5-4debc9a1d516": "P1-a896d6cf0767",
+      "P6-972bae2c4115": "P1-a896d6cf0767",
+      "P7-20e63d2424c0": "P1-a896d6cf0767"
+    },
+    "2": {
+      "P2-ea043771511e": "P6-972bae2c4115",
+      "P3-03e89ae8bdd3": "P7-20e63d2424c0",
+      "P5-4debc9a1d516": "P6-972bae2c4115",
+      "P6-972bae2c4115": "P7-20e63d2424c0",
+      "P7-20e63d2424c0": "P5-4debc9a1d516"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P1-a896d6cf0767",
+        "seat": 1,
+        "votes": 6.0
+      }
+    },
+    "2": {
+      "voteTie": true
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "李默: 我是预言家，昨晚查验了4号云锦，是好人。今天先听大家发言，后面有对跳再说。",
+      "甘骁: 首夜平安，先听。1号报验4号金水，信息先记下。等对跳或更多发言再判断。",
+      "司南: 首夜平安，信息有限。1号跳预言家报4号金水，先记下。我暂时没有太多判断，听听后面几位的发言再综合分析。",
+      "云锦: 我是4号云锦，真预言家。昨晚查验了2号甘骁，是好人。1号李默跳预言家报我4号金水——这很有问题：如果他是真预言家，验我出金水，那我不可能是预言家；但我确实查验过2号是好人。场上配置只有一名预言家，1号与我必然只有一人为真。我报出的查验是真实可查的，请各位基于此判断谁在说谎。",
+      "袁汐: 首夜平安，场上1号跳预言家报4号金水，4号又跳预言家报2号金水。两人对跳，但都没有验出狼人，信息量其实不大。我倾向再等等，听后续发言和投票倾向再判断谁更可信。",
+      "莫离: 首夜平安，1号与4号对跳预言家，各自都报了金水。目前两人都没有验出狼人，信息量有限，先不急着站边。我想听听后面的发言和投票倾向再判断。",
+      "宋知野: 1号与4号对跳，我倾向站4号。逻辑上，1号验4号是金水，如果1号是真预言家，那4号必然不是预言家；但4号主动跳出来报2号金水，且4号的查验无法被1号直接推翻。反观1号，他验4号金水却不能解释4号为何跳预言家。",
+      "宋知野: 如果4号是狼悍跳，他没必要在第一轮就正面撞上1号的金水查验——这暴露风险太高。我暂时认为4号可信度更高，但也会继续听后续发言再定论。",
+      "李默 voted for 云锦 (4号跳预言家报2号金水，但1号先验4号金水，若1号为真则4号必假，4号反应过激反而可疑。)",
+      "甘骁 voted for 李默 (若1号真验4号金水却无法解释4号悍跳，逻辑漏洞明显，信息上站4号。)",
+      "司南 voted for 李默 (1号先跳预言家却验出4号金水，逻辑上无法解释4号反跳，站边4号更合理。)",
+      "云锦 voted for 李默 (1号悍跳预言家报我金水，逻辑上无法解释我为何跳预言家，其发言矛盾明显。)",
+      "袁汐 voted for 李默 (1号验4号金水却无法解释4号跳预言家，逻辑上更可疑。)",
+      "莫离 voted for 李默 (1号在无压力首日悍跳预言家验4号金水，反而促使真预言家4号被迫起跳，逻辑风险不符预言家最优打法。)",
+      "宋知野 voted for 李默 (1号验4号金水却无法解释4号为何跳预言家，悍跳风险过高，逻辑上4号可信度更强。)",
+      "李默 died by voted_out"
+    ],
+    "2": [
+      "云锦 died by werewolf_killed",
+      "甘骁: 首夜平安我用了药，救的是1号李默。1号报验4号金水后被投出，4号昨夜被刀。现在剩5人，狼还剩2。1号的查验可信度需要重新审视——如果1号真是预言家，4号金水被狼刀说明4号大概率是好人。但如果1号是狼，那4号金水就是被狼保护的狼同伴。大家先发言，我听完再判断。",
+      "司南: 甘骁说自己是女巫救了1号，这个信息值得推敲。但更关键的问题是：1号到底是不是真预言家？如果1号真是预言家，4号金水被刀，那现在场上还有2狼，好人只剩3个。但如果1号是狼悍跳，那4号金水就可能是狼同伴，昨夜狼刀4号反而是狼队在清理自己的暴露身份。",
+      "司南: 现在5人局，狼2好人3，我们容错极低。我倾向于先听大家发言，尤其想听5号、6号、7号对1号预言家身份的判断。",
+      "袁汐: 昨晚云锦被刀了。结合甘骁说自己救了1号、1号报4号金水被投出这个信息链，如果1号真是预言家，那4号金水被刀说明狼在清理好人。但反过来想，如果1号是狼悍跳，4号金水是狼同伴，那狼队昨晚刀4号等于自断一臂，这不太合理。我更倾向于1号是真预言家、4号是好人的可能性大。",
+      "袁汐: 不过现在场上还有2狼，我们必须非常谨慎。我想听听6号、7号的判断，特别是他们对1号身份的看法。",
+      "莫离: 梳理一下事实。首夜平安，2号说自己用药救了1号。1号报4号金水后被投出，昨夜4号被刀。如果2号真是女巫、1号是真预言家，那4号金水被刀说明狼在清理好人。但这里有个关键问题：1号如果是真预言家，为什么会被投出？当时场上多数人投了1号，包括我。现在剩5人2狼，我们容错极低。",
+      "莫离: 5号倾向认为1号真预言家，我需要更多信息来判断。先不急着站边。",
+      "宋知野: 我跳预言家。首夜我查验了2号甘骁，结果是金水，好人。昨天我没有跳是因为想观察，但今天局势已到5人2狼，容错极低，我不能再藏了。我的查验逻辑：2号是金水，那2号说自己是女巫救了1号这条信息就多了一层可信度。现在场上真正的威胁是狼队藏在我们剩下几人之间。",
+      "宋知野: 我建议今天从3号、5号、6号中仔细分辨。我的身份摆在这里，狼人今晚大概率会刀我，但这是我该做的。请大家认真听我的分析。",
+      "甘骁 voted for 莫离 (他在研判预言家真实性时回避关键点且立场摇摆，发言中最少有效信息。)",
+      "司南 voted for 宋知野 (7号此时跳预言家时机可疑，且首夜查验信息无法验证，更像在转移焦点。)",
+      "袁汐 voted for 莫离 (他在信息不足时模糊站边，试图拖延决策，最符合隐藏狼人的行为模式。)",
+      "莫离 voted for 宋知野 (宋知野今天才跳预言家，时机可疑且与首日全场投1号的票型矛盾。)",
+      "宋知野 voted for 袁汐 (袁汐过度倾向1号真预言家且急于引导站边，在5人2狼局面下这种单边结论过于顺畅。)",
+      "莫离 died by voted_out",
+      "Game ended: wolf (wolves_reached_parity)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "李默",
+        "speaker_id": "P1-a896d6cf0767",
+        "content": "我是预言家，昨晚查验了4号云锦，是好人。今天先听大家发言，后面有对跳再说。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "甘骁",
+        "speaker_id": "P2-ea043771511e",
+        "content": "首夜平安，先听。1号报验4号金水，信息先记下。等对跳或更多发言再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "司南",
+        "speaker_id": "P3-03e89ae8bdd3",
+        "content": "首夜平安，信息有限。1号跳预言家报4号金水，先记下。我暂时没有太多判断，听听后面几位的发言再综合分析。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "云锦",
+        "speaker_id": "P4-f7a1c2c01040",
+        "content": "我是4号云锦，真预言家。昨晚查验了2号甘骁，是好人。1号李默跳预言家报我4号金水——这很有问题：如果他是真预言家，验我出金水，那我不可能是预言家；但我确实查验过2号是好人。场上配置只有一名预言家，1号与我必然只有一人为真。我报出的查验是真实可查的，请各位基于此判断谁在说谎。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "袁汐",
+        "speaker_id": "P5-4debc9a1d516",
+        "content": "首夜平安，场上1号跳预言家报4号金水，4号又跳预言家报2号金水。两人对跳，但都没有验出狼人，信息量其实不大。我倾向再等等，听后续发言和投票倾向再判断谁更可信。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "莫离",
+        "speaker_id": "P6-972bae2c4115",
+        "content": "首夜平安，1号与4号对跳预言家，各自都报了金水。目前两人都没有验出狼人，信息量有限，先不急着站边。我想听听后面的发言和投票倾向再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "宋知野",
+        "speaker_id": "P7-20e63d2424c0",
+        "content": "1号与4号对跳，我倾向站4号。逻辑上，1号验4号是金水，如果1号是真预言家，那4号必然不是预言家；但4号主动跳出来报2号金水，且4号的查验无法被1号直接推翻。反观1号，他验4号金水却不能解释4号为何跳预言家。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "宋知野",
+        "speaker_id": "P7-20e63d2424c0",
+        "content": "如果4号是狼悍跳，他没必要在第一轮就正面撞上1号的金水查验——这暴露风险太高。我暂时认为4号可信度更高，但也会继续听后续发言再定论。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "李默",
+        "voter_id": "P1-a896d6cf0767",
+        "target_name": "云锦",
+        "target_id": "P4-f7a1c2c01040",
+        "reasoning": "4号跳预言家报2号金水，但1号先验4号金水，若1号为真则4号必假，4号反应过激反而可疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "甘骁",
+        "voter_id": "P2-ea043771511e",
+        "target_name": "李默",
+        "target_id": "P1-a896d6cf0767",
+        "reasoning": "若1号真验4号金水却无法解释4号悍跳，逻辑漏洞明显，信息上站4号。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "司南",
+        "voter_id": "P3-03e89ae8bdd3",
+        "target_name": "李默",
+        "target_id": "P1-a896d6cf0767",
+        "reasoning": "1号先跳预言家却验出4号金水，逻辑上无法解释4号反跳，站边4号更合理。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "云锦",
+        "voter_id": "P4-f7a1c2c01040",
+        "target_name": "李默",
+        "target_id": "P1-a896d6cf0767",
+        "reasoning": "1号悍跳预言家报我金水，逻辑上无法解释我为何跳预言家，其发言矛盾明显。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "袁汐",
+        "voter_id": "P5-4debc9a1d516",
+        "target_name": "李默",
+        "target_id": "P1-a896d6cf0767",
+        "reasoning": "1号验4号金水却无法解释4号跳预言家，逻辑上更可疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "莫离",
+        "voter_id": "P6-972bae2c4115",
+        "target_name": "李默",
+        "target_id": "P1-a896d6cf0767",
+        "reasoning": "1号在无压力首日悍跳预言家验4号金水，反而促使真预言家4号被迫起跳，逻辑风险不符预言家最优打法。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "宋知野",
+        "voter_id": "P7-20e63d2424c0",
+        "target_name": "李默",
+        "target_id": "P1-a896d6cf0767",
+        "reasoning": "1号验4号金水却无法解释4号为何跳预言家，悍跳风险过高，逻辑上4号可信度更强。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "李默",
+        "player_id": "P1-a896d6cf0767",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "云锦",
+        "player_id": "P4-f7a1c2c01040",
+        "reason": "werewolf_killed"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "甘骁",
+        "speaker_id": "P2-ea043771511e",
+        "content": "首夜平安我用了药，救的是1号李默。1号报验4号金水后被投出，4号昨夜被刀。现在剩5人，狼还剩2。1号的查验可信度需要重新审视——如果1号真是预言家，4号金水被狼刀说明4号大概率是好人。但如果1号是狼，那4号金水就是被狼保护的狼同伴。大家先发言，我听完再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "司南",
+        "speaker_id": "P3-03e89ae8bdd3",
+        "content": "甘骁说自己是女巫救了1号，这个信息值得推敲。但更关键的问题是：1号到底是不是真预言家？如果1号真是预言家，4号金水被刀，那现在场上还有2狼，好人只剩3个。但如果1号是狼悍跳，那4号金水就可能是狼同伴，昨夜狼刀4号反而是狼队在清理自己的暴露身份。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "司南",
+        "speaker_id": "P3-03e89ae8bdd3",
+        "content": "现在5人局，狼2好人3，我们容错极低。我倾向于先听大家发言，尤其想听5号、6号、7号对1号预言家身份的判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "袁汐",
+        "speaker_id": "P5-4debc9a1d516",
+        "content": "昨晚云锦被刀了。结合甘骁说自己救了1号、1号报4号金水被投出这个信息链，如果1号真是预言家，那4号金水被刀说明狼在清理好人。但反过来想，如果1号是狼悍跳，4号金水是狼同伴，那狼队昨晚刀4号等于自断一臂，这不太合理。我更倾向于1号是真预言家、4号是好人的可能性大。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "袁汐",
+        "speaker_id": "P5-4debc9a1d516",
+        "content": "不过现在场上还有2狼，我们必须非常谨慎。我想听听6号、7号的判断，特别是他们对1号身份的看法。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "莫离",
+        "speaker_id": "P6-972bae2c4115",
+        "content": "梳理一下事实。首夜平安，2号说自己用药救了1号。1号报4号金水后被投出，昨夜4号被刀。如果2号真是女巫、1号是真预言家，那4号金水被刀说明狼在清理好人。但这里有个关键问题：1号如果是真预言家，为什么会被投出？当时场上多数人投了1号，包括我。现在剩5人2狼，我们容错极低。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "莫离",
+        "speaker_id": "P6-972bae2c4115",
+        "content": "5号倾向认为1号真预言家，我需要更多信息来判断。先不急着站边。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "宋知野",
+        "speaker_id": "P7-20e63d2424c0",
+        "content": "我跳预言家。首夜我查验了2号甘骁，结果是金水，好人。昨天我没有跳是因为想观察，但今天局势已到5人2狼，容错极低，我不能再藏了。我的查验逻辑：2号是金水，那2号说自己是女巫救了1号这条信息就多了一层可信度。现在场上真正的威胁是狼队藏在我们剩下几人之间。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "宋知野",
+        "speaker_id": "P7-20e63d2424c0",
+        "content": "我建议今天从3号、5号、6号中仔细分辨。我的身份摆在这里，狼人今晚大概率会刀我，但这是我该做的。请大家认真听我的分析。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "甘骁",
+        "voter_id": "P2-ea043771511e",
+        "target_name": "莫离",
+        "target_id": "P6-972bae2c4115",
+        "reasoning": "他在研判预言家真实性时回避关键点且立场摇摆，发言中最少有效信息。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "司南",
+        "voter_id": "P3-03e89ae8bdd3",
+        "target_name": "宋知野",
+        "target_id": "P7-20e63d2424c0",
+        "reasoning": "7号此时跳预言家时机可疑，且首夜查验信息无法验证，更像在转移焦点。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "袁汐",
+        "voter_id": "P5-4debc9a1d516",
+        "target_name": "莫离",
+        "target_id": "P6-972bae2c4115",
+        "reasoning": "他在信息不足时模糊站边，试图拖延决策，最符合隐藏狼人的行为模式。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "莫离",
+        "voter_id": "P6-972bae2c4115",
+        "target_name": "宋知野",
+        "target_id": "P7-20e63d2424c0",
+        "reasoning": "宋知野今天才跳预言家，时机可疑且与首日全场投1号的票型矛盾。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "宋知野",
+        "voter_id": "P7-20e63d2424c0",
+        "target_name": "袁汐",
+        "target_id": "P5-4debc9a1d516",
+        "reasoning": "袁汐过度倾向1号真预言家且急于引导站边，在5人2狼局面下这种单边结论过于顺畅。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "莫离",
+        "player_id": "P6-972bae2c4115",
+        "reason": "voted_out"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "wolf",
+  "night_actions": {
+    "guard_target_id": "P5-4debc9a1d516",
+    "last_guard_target_id": "P5-4debc9a1d516",
+    "wolf_votes": {
+      "P3-03e89ae8bdd3": "P4-f7a1c2c01040",
+      "P5-4debc9a1d516": "P4-f7a1c2c01040"
+    },
+    "wolf_target_id": "P4-f7a1c2c01040",
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": "P7-20e63d2424c0",
+    "seer_result": {
+      "kind": "seer_result",
+      "target_id": "P7-20e63d2424c0",
+      "target_name": "宋知野",
+      "is_wolf": false,
+      "message": "Seer check: 宋知野 is not wolf."
+    },
+    "deaths": [
+      {
+        "player_id": "P4-f7a1c2c01040",
+        "reason": "werewolf_killed"
+      }
+    ]
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

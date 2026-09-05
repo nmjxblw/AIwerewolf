@@ -135,10 +135,11 @@ def build_game_context(obs: Observation) -> str:
 
 
 def _find_sheriff_from_obs(obs: Observation) -> str:
-    """Find the sheriff/badge holder from observation."""
-    for claim in obs.role_claims:
-        if "警长" in claim.context or "badge" in claim.context.lower():
-            return f"{claim.seat}号:{claim.player_name}"
+    """Find the sheriff/badge holder from observation.
+
+    本板子无警徽玩法；claim.context 只会是 day_speech / revealed_on_death，
+    从不含警长信息，旧循环属死逻辑，直接返回"无"。
+    """
     return "无"
 
 

@@ -73,10 +73,10 @@ def _label(index: dict[str, dict[str, Any]], player_id: Any) -> str:
 
 
 def _public_label(index: dict[str, dict[str, Any]], player_id: Any) -> str:
-    """不带角色（公开视角标签，如投票人）。"""
+    """不带角色（公开视角标签，如投票人）。空值返回空串，让调用方的「空刀」兜底生效。"""
     row = index.get(str(player_id or ""))
     if row is None:
-        return str(player_id or "?")
+        return str(player_id or "")
     return f"{row['seat']}号:{row['name']}"
 
 
@@ -141,7 +141,12 @@ def render_transcript(
                 continue
             actor = _public_label(players_index, payload.get("actor_id"))
             action = str(payload.get("action_type", ""))
-            target = _label(players_index, payload.get("target_id"))
+            # 对局日志审计 P2-8：skip/空目标不再渲染为占位符 "?"
+            target_id = payload.get("target_id")
+            if target_id:
+                target = _label(players_index, target_id)
+            else:
+                target = "（无行动）" if action == "skip" else "（无目标/空刀）"
             reason = str(payload.get("reasoning", "")).strip()
             ignored = "（无效/被忽略）" if payload.get("ignored") else ""
             extra = ""

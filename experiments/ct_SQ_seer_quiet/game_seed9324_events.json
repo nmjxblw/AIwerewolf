@@ -1,0 +1,2588 @@
+{
+  "id": "09c3098c-4403-4e89-982d-3cbb79c9ab85",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-963b3243f2c0",
+      "seat": 1,
+      "name": "司南",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "司南",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P2-5a9becf8b303",
+      "seat": 2,
+      "name": "雷昊",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "雷昊",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-9c43ce13453d",
+      "seat": 3,
+      "name": "蓝知怀",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "蓝知怀",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-a53412acc8f7",
+      "seat": 4,
+      "name": "卡卡",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "卡卡",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P5-dbc760f1d114",
+      "seat": 5,
+      "name": "霁川",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "霁川",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P6-0f14bdafb39f",
+      "seat": 6,
+      "name": "莱昂",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "莱昂",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P7-794a4fe3e31b",
+      "seat": 7,
+      "name": "顾景行",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "顾景行",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    }
+  ],
+  "events": [
+    {
+      "id": "61806bfb-3653-4fb7-9dc4-8ac610866156",
+      "ts": 1788607530.871282,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "09c3098c-4403-4e89-982d-3cbb79c9ab85",
+        "players": [
+          {
+            "id": "P1-963b3243f2c0",
+            "seat": 1,
+            "name": "司南",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-5a9becf8b303",
+            "seat": 2,
+            "name": "雷昊",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-9c43ce13453d",
+            "seat": 3,
+            "name": "蓝知怀",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-a53412acc8f7",
+            "seat": 4,
+            "name": "卡卡",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-dbc760f1d114",
+            "seat": 5,
+            "name": "霁川",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-0f14bdafb39f",
+            "seat": 6,
+            "name": "莱昂",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-794a4fe3e31b",
+            "seat": 7,
+            "name": "顾景行",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "d6bab611-4cd1-4aca-b6af-de7d15782eb1",
+      "ts": 1788607530.871391,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 司南, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "ac5fb530-e81e-4bbc-9ed3-aa2df9509406",
+      "ts": 1788607530.8714502,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-5a9becf8b303"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 雷昊, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "15e94bba-e7c3-4f95-a606-24a4298b635c",
+      "ts": 1788607530.8714964,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9c43ce13453d"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 蓝知怀, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "b7567f5b-0435-4c2b-8514-71f82956449c",
+      "ts": 1788607530.8715398,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-a53412acc8f7"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 卡卡, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "eddf0578-be40-48f9-bdf8-399ee8a6371f",
+      "ts": 1788607530.871583,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-dbc760f1d114"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 霁川, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "e287b08c-0c31-4654-9249-9f7619cc2300",
+      "ts": 1788607530.8716202,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-0f14bdafb39f"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 莱昂, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "9e0c623a-59d1-4294-9c99-efccf8ed086b",
+      "ts": 1788607530.8716667,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 顾景行, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "f050a624-1d53-4a3d-b165-2a22370ad3dc",
+      "ts": 1788607530.8717186,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "ec9e97ad-f9be-420e-be43-12afd1e3b7dc",
+      "ts": 1788607530.8717303,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "3c25df20-c1b4-456e-9749-3c822ea3880b",
+      "ts": 1788607530.952383,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "00f55ca0-6e54-4957-b3c5-b48f2a17831f",
+      "ts": 1788607530.9524057,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P1-963b3243f2c0",
+          "P7-794a4fe3e31b"
+        ],
+        "wolf_names": [
+          "司南",
+          "顾景行"
+        ]
+      }
+    },
+    {
+      "id": "934cea6c-10d2-4c3b-b36a-229060d3410c",
+      "ts": 1788607533.1318016,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "message": "司南（私聊）：今晚刀6号莱昂，避开首尾，减少被女巫或守卫针对的概率。",
+        "speech": "今晚刀6号莱昂，避开首尾，减少被女巫或守卫针对的概率。",
+        "proposed_target_id": "P6-0f14bdafb39f",
+        "proposed_target_name": "莱昂"
+      }
+    },
+    {
+      "id": "a3612dfd-d727-4904-9169-56102cda845a",
+      "ts": 1788607534.152854,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "message": "顾景行（私聊）：刀6号莱昂，中间位置威胁适中，首夜避开首尾更稳妥。",
+        "speech": "刀6号莱昂，中间位置威胁适中，首夜避开首尾更稳妥。",
+        "proposed_target_id": "P6-0f14bdafb39f",
+        "proposed_target_name": "莱昂"
+      }
+    },
+    {
+      "id": "b1075b3f-da66-4c04-8dd1-2d39ed1a2c1c",
+      "ts": 1788607534.1528823,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "2d763973-0ae1-4901-a1e1-8b89bc7637e0",
+      "ts": 1788607534.152889,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "message": "司南 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "b5138d30-dc04-4b87-aee2-1de0dbc382fd",
+      "ts": 1788607535.138674,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "action_type": "attack",
+        "target": {
+          "id": "P6-0f14bdafb39f",
+          "seat": 6,
+          "name": "莱昂",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "队友顾景行已确认刀6号，我们意见一致，执行狼队共识刀口。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P6-0f14bdafb39f",
+        "target_name": "莱昂"
+      }
+    },
+    {
+      "id": "38a0f061-fa64-41dc-b07d-e228fe049558",
+      "ts": 1788607535.1387093,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "message": "顾景行 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P1-963b3243f2c0",
+            "wolf_name": "司南",
+            "target_id": "P6-0f14bdafb39f",
+            "target_name": "莱昂"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ab0eb672-c8d7-4efb-b85a-b65eab7e140d",
+      "ts": 1788607536.0518425,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "action_type": "attack",
+        "target": {
+          "id": "P6-0f14bdafb39f",
+          "seat": 6,
+          "name": "莱昂",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友司南达成共识，刀6号莱昂。中间位置威胁适中，首夜避开首尾，减少被守卫或女巫针对的概率。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P6-0f14bdafb39f",
+        "target_name": "莱昂"
+      }
+    },
+    {
+      "id": "e2de933e-2145-4db5-83cd-cbcfea4bdfa1",
+      "ts": 1788607536.0518746,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为莱昂。",
+        "target_id": "P6-0f14bdafb39f",
+        "target_name": "莱昂",
+        "votes": {
+          "P1-963b3243f2c0": "P6-0f14bdafb39f",
+          "P7-794a4fe3e31b": "P6-0f14bdafb39f"
+        }
+      }
+    },
+    {
+      "id": "fa21ca41-a997-4213-ae06-83783218fcc7",
+      "ts": 1788607536.051903,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "7940d755-ec3d-4217-9e4e-868a1e06e5ec",
+      "ts": 1788607536.0519516,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "6b140cd8-3ed5-4e14-b6a4-2d5f5991de4f",
+      "ts": 1788607537.224011,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-a53412acc8f7"
+      ],
+      "payload": {
+        "actor_id": "P4-a53412acc8f7",
+        "actor_name": "卡卡",
+        "action_type": "divine",
+        "target": {
+          "id": "P1-963b3243f2c0",
+          "seat": 1,
+          "name": "司南",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜查验，选择1号司南获取基础信息，为后续推理建立框架。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-963b3243f2c0"
+      }
+    },
+    {
+      "id": "1423dc16-cb0e-448e-b27b-9ca0eb29ac7c",
+      "ts": 1788607537.2240372,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-a53412acc8f7"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P1-963b3243f2c0",
+        "target_name": "司南",
+        "is_wolf": true,
+        "message": "Seer check: 司南 is wolf."
+      }
+    },
+    {
+      "id": "c6fa7046-ab2e-44e7-9c9e-1d75c1bef949",
+      "ts": 1788607537.2240524,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "19d737bb-3c4f-481d-b53c-3611f4b3006e",
+      "ts": 1788607537.304298,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "a46ea705-a050-4dd5-9f9e-5290c1738abe",
+      "ts": 1788607538.6230707,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-5a9becf8b303"
+      ],
+      "payload": {
+        "actor_id": "P2-5a9becf8b303",
+        "actor_name": "雷昊",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P6-0f14bdafb39f",
+          "seat": 6,
+          "name": "莱昂",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜有人被刀，女巫解药应救下刀口以保住好人数量。虽然规则提到守救同口可能奶穿，但守卫首夜通常不会恰好守中被刀的6号，救下刀口是标准且稳妥的打法。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P6-0f14bdafb39f"
+      }
+    },
+    {
+      "id": "a6915888-f3d4-4591-b852-1000fa57beff",
+      "ts": 1788607538.623096,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "453ed940-b52f-4006-8dfd-815ef8f1c24e",
+      "ts": 1788607538.703475,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "ab2a43c6-34ea-42d4-8413-6c9913b905b1",
+      "ts": 1788607540.0205266,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9c43ce13453d"
+      ],
+      "payload": {
+        "actor_id": "P3-9c43ce13453d",
+        "actor_name": "蓝知怀",
+        "action_type": "guard",
+        "target": {
+          "id": "P2-5a9becf8b303",
+          "seat": 2,
+          "name": "雷昊",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜无任何信息，随机守护一名玩家以提供保护。选择2号作为守护目标，无历史限制。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-5a9becf8b303"
+      }
+    },
+    {
+      "id": "f8e33000-4cbc-462b-8ed5-88af672b4fd7",
+      "ts": 1788607540.0205526,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "93c74818-8802-45a2-b277-d3b27253ae44",
+      "ts": 1788607540.1012845,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "9ac42f8e-1417-4030-a878-49fc9418dc79",
+      "ts": 1788607540.1013386,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "8fbb8691-bcca-4936-9596-15f919cc8e70",
+      "ts": 1788607540.1014798,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "26bcc8a1-80fd-48e8-8164-45a8489e606d",
+      "ts": 1788607540.1015115,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "09c53cd0-0530-4d53-917e-d04315df098b",
+      "ts": 1788607540.4234245,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "23e564cb-6698-4696-90a1-4870f55f6f3f",
+      "ts": 1788607542.559329,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "speech": "首夜平安夜，没有太多信息可聊。大家先各自说说看法吧，我倾向于先听一轮再判断。这局配置是1守卫1预言家2平民2狼1女巫，好人侧信息多，狼人应该会藏得比较深。先观望，不急着下结论。",
+        "reasoning": "首日无信息，作为狼人不宜过早暴露锋芒或跳预言家。采用baseline平稳发言，观察场上反应。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "9331b94b-4893-4822-929e-85e732e2df65",
+      "ts": 1788607544.3360398,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-5a9becf8b303",
+        "actor_name": "雷昊",
+        "speech": "首夜平安夜，说明守卫守对了或是女巫用药了。目前没有额外信息，先听大家发言。我比较关注发言中前后矛盾的地方，以及投票阶段的表现。现在不急着下结论，观望为主。",
+        "reasoning": "首夜平安夜且解药已用，说明狼人刀口被我救了。作为女巫，我掌握夜间信息但不能暴露身份。第一天信息有限，先低调发言观察局势，不急于表态。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "03263bdc-5c27-4b57-928a-7b7d4d680ea9",
+      "ts": 1788607545.9769785,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9c43ce13453d",
+        "actor_name": "蓝知怀",
+        "speech": "首夜平安夜，信息确实不多。1、2号的发言都比较谨慎，没有明显矛盾。先听完整一轮，重点看发言前后是否一致，以及后面投票阶段的站边情况。暂不表态具体怀疑谁。",
+        "reasoning": "首夜平安夜，信息极少。作为守卫，我守对了2号或女巫用药都有可能。目前没有明确线索，先简单表态观望，不点人、不站边，保持低调。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "fea85eb6-eb53-4d02-b148-367584d5f34a",
+      "ts": 1788607548.7488139,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-a53412acc8f7",
+        "actor_name": "卡卡",
+        "speech": "首夜平安夜，信息确实有限。前面1、2、3号的发言都比较谨慎，没有明显矛盾或异常。我认同先听完整一轮、观察前后一致性和后续投票站边的思路。现阶段信息不足，不宜过早下结论，先观望。",
+        "reasoning": "战术指令要求不暴露预言家身份，基于公开信息像平民一样分析。首夜平安夜信息少，先保持观望，但可以轻微表达对1号司南的观察倾向。不过为遵守\"不点名不跳身份\"的baseline约束，且避免打草惊蛇，选择平铺陈述判断，不点人。\n\n实际上1号司南已被我查为狼人，但我不能暴露。本轮信息最少，所有人都观望，我用baseline保持低调即可，后续再找机会引导投票。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "1ec55540-fc2d-4f8c-8efa-3d4877ff6bd7",
+      "ts": 1788607550.95464,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-dbc760f1d114",
+        "actor_name": "霁川",
+        "speech": "首夜平安夜，确实没有太多增量信息。前面几位发言都比较谨慎，没有明显前后矛盾。平安夜本身说明守卫守对或女巫用药，狼人首夜可能选择刀了被守卫保护的目标，也可能刀空了。现阶段信息不足，我的判断是多听多观察，重点关注后续发言的逻辑一致性和投票阶段的站边行为。暂时没有明确怀疑对象。",
+        "reasoning": "首夜平安夜，信息极少，前几位发言都偏谨慎观望，没有明显矛盾可抓。作为村民此时不宜过早点人或站边，先做低信息量发言观望即可。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "53d8c6e9-5407-4df9-8d61-e31c6b27ae7f",
+      "ts": 1788607553.0688615,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-0f14bdafb39f",
+        "actor_name": "莱昂",
+        "speech": "平安夜确实没有增量信息。前面几位的发言都比较谨慎，逻辑上无明显跳跃或矛盾。我倾向认为首夜平安夜更可能是守卫守对刀口，狼人首刀被守住的概率高于女巫用药。但现阶段这只是概率倾向，不足以据此判断任何人。我会重点观察后续发言中逻辑链条是否自洽，以及投票阶段的站边和改票行为。暂不点名。",
+        "reasoning": "首夜平安夜信息极少，所有玩家发言都谨慎观望，没有明显矛盾或异常。作为村民，此时应保持观察，不急于下结论或点名。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "c49d31df-6c13-45d9-a587-51df33dfc8c6",
+      "ts": 1788607555.1226947,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "speech": "首夜平安夜，信息确实有限。前面各位发言都比较克制，没有明显破绽。平安夜的可能性无非守卫守对或女巫用药，但这对好人来说只是多了一晚信息收集时间，对判断身份帮助不大。现阶段我不急着下结论，重点看后续发言的逻辑自洽度和投票阶段的站边。先过。",
+        "reasoning": "首日平安夜信息极少，作为狼人不急于暴露，采取观望态度发言，不点名不站边，保持低信息增量，符合当前场上主流节奏。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "d0766a9a-66ea-44c7-9be4-1f87113cbc7d",
+      "ts": 1788607555.2832973,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "70f2fc69-f637-4b04-a65f-5c84801f564c",
+      "ts": 1788607557.5531526,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-963b3243f2c0",
+        "voter_name": "司南",
+        "target_id": "P6-0f14bdafb39f",
+        "target_name": "莱昂",
+        "reasoning": "首夜平安夜他过度强调守卫守对概率，有引导好人思路的倾向。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "5e226807-76df-48b8-9832-0aec701673f8",
+      "ts": 1788607557.5531785,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-5a9becf8b303",
+        "voter_name": "雷昊",
+        "target_id": "P5-dbc760f1d114",
+        "target_name": "霁川",
+        "reasoning": "霁川对平安夜归因过度发散，存在模糊焦点引导风向的嫌疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "3cd5e187-5641-4042-9718-068eaee4e0b2",
+      "ts": 1788607557.553196,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-9c43ce13453d",
+        "voter_name": "蓝知怀",
+        "target_id": "P5-dbc760f1d114",
+        "target_name": "霁川",
+        "reasoning": "霁川分析了平安夜走向却未提出任何具体关注点，发言偏保守，需后续验证。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "0cf4a7ad-656a-4177-a681-330d51e2fe19",
+      "ts": 1788607557.55324,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-a53412acc8f7",
+        "voter_name": "卡卡",
+        "target_id": "P1-963b3243f2c0",
+        "target_name": "司南",
+        "reasoning": "首夜平安夜下其发言过于中立观望，缺乏实质分析，且我的查验指向其狼人身份。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "6513a2ce-c068-489a-9e18-4ce7acb91041",
+      "ts": 1788607557.553256,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-dbc760f1d114",
+        "voter_name": "霁川",
+        "target_id": "P7-794a4fe3e31b",
+        "target_name": "顾景行",
+        "reasoning": "全场发言高度模板化，顾景行收尾最缺乏独立信息增量，仅复述他人观点，倾向隐藏真实立场。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "65427bf2-1bb7-424e-9800-36e695bd1460",
+      "ts": 1788607557.5532787,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-0f14bdafb39f",
+        "voter_name": "莱昂",
+        "target_id": "P5-dbc760f1d114",
+        "target_name": "霁川",
+        "reasoning": "首夜平安夜下发言过于强调概率分析，试图引导集体观望节奏，缺乏实质判断。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "bd6d14dc-2c6b-4c42-be6a-e8d127210d1b",
+      "ts": 1788607557.5532951,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-794a4fe3e31b",
+        "voter_name": "顾景行",
+        "target_id": "P6-0f14bdafb39f",
+        "target_name": "莱昂",
+        "reasoning": "首夜平安夜后他过度分析概率倾向，试图引导好人判断方向。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "3c91e4cc-4543-493e-ad11-9ed784aa119b",
+      "ts": 1788607557.633984,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "518df3cd-4d9a-4012-827e-6c75778d2f9f",
+      "ts": 1788607557.6340365,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "霁川 was voted out."
+      }
+    },
+    {
+      "id": "9100aeaa-dc0a-45cb-9863-05523c60a08e",
+      "ts": 1788607557.6340516,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P5-dbc760f1d114",
+        "player_name": "霁川",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "80b91944-1e3e-4040-a667-e07a18ff5cb2",
+      "ts": 1788607557.6341321,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "f1557aaf-6fc4-43ea-aad7-12e0b736ee94",
+      "ts": 1788607557.6341841,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "432f5d16-c78b-46e0-ab98-8211658328fa",
+      "ts": 1788607557.6341937,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "eb17f2b0-78e7-4725-b5d1-478b1d63260e",
+      "ts": 1788607557.7144046,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "b915f9eb-89ed-4719-b8d8-af65ac18ef92",
+      "ts": 1788607557.7144208,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P1-963b3243f2c0",
+          "P7-794a4fe3e31b"
+        ],
+        "wolf_names": [
+          "司南",
+          "顾景行"
+        ]
+      }
+    },
+    {
+      "id": "742c88b5-4d46-44a7-ae36-a51173a6a2a1",
+      "ts": 1788607558.9587507,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "message": "司南（私聊）：今晚刀2号雷昊，他首日带票投霁川，大概率有身份，先解决这个威胁。",
+        "speech": "今晚刀2号雷昊，他首日带票投霁川，大概率有身份，先解决这个威胁。",
+        "proposed_target_id": "P2-5a9becf8b303",
+        "proposed_target_name": "雷昊"
+      }
+    },
+    {
+      "id": "6d030bbf-13bb-4bd1-a5ba-6be1edfab760",
+      "ts": 1788607559.8985279,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "message": "顾景行（私聊）：刀2号雷昊，他首日带票节奏明显，留着威胁大。",
+        "speech": "刀2号雷昊，他首日带票节奏明显，留着威胁大。",
+        "proposed_target_id": "P2-5a9becf8b303",
+        "proposed_target_name": "雷昊"
+      }
+    },
+    {
+      "id": "594407b7-77ff-4f5f-95de-6c91cd51e110",
+      "ts": 1788607559.898558,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "1327e6d8-a849-4d3f-9e80-e66c83826eca",
+      "ts": 1788607559.8985646,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "message": "司南 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "d9c65b38-1785-4487-b059-fb68acad7c35",
+      "ts": 1788607561.06886,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "action_type": "attack",
+        "target": {
+          "id": "P2-5a9becf8b303",
+          "seat": 2,
+          "name": "雷昊",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队已共识刀2号雷昊，他首日带票节奏明显，大概率有身份（可能是预言家或守卫），是当前最大威胁。队友顾景行也确认同一目标，保持一致行动。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P2-5a9becf8b303",
+        "target_name": "雷昊"
+      }
+    },
+    {
+      "id": "73ca9aae-e748-4347-8d03-345698795b70",
+      "ts": 1788607561.0688913,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "message": "顾景行 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P1-963b3243f2c0",
+            "wolf_name": "司南",
+            "target_id": "P2-5a9becf8b303",
+            "target_name": "雷昊"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a1e02b2a-ea67-46a7-ac1b-1dd26be7694c",
+      "ts": 1788607562.0980608,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "action_type": "attack",
+        "target": {
+          "id": "P2-5a9becf8b303",
+          "seat": 2,
+          "name": "雷昊",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友司南达成一致，刀2号雷昊。他首日带票节奏明显，大概率有身份，且留着威胁大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P2-5a9becf8b303",
+        "target_name": "雷昊"
+      }
+    },
+    {
+      "id": "f3076621-b1da-4aff-8cc2-bf869c1772a7",
+      "ts": 1788607562.0980797,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-963b3243f2c0",
+        "P7-794a4fe3e31b"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为雷昊。",
+        "target_id": "P2-5a9becf8b303",
+        "target_name": "雷昊",
+        "votes": {
+          "P1-963b3243f2c0": "P2-5a9becf8b303",
+          "P7-794a4fe3e31b": "P2-5a9becf8b303"
+        }
+      }
+    },
+    {
+      "id": "9d6d762e-b1a2-427d-a414-2ee3bd6a02c7",
+      "ts": 1788607562.0981164,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "95c8bdd7-acb3-41bb-ac87-ba8b158f2e16",
+      "ts": 1788607563.5307484,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-a53412acc8f7"
+      ],
+      "payload": {
+        "actor_id": "P4-a53412acc8f7",
+        "actor_name": "卡卡",
+        "action_type": "divine",
+        "target": {
+          "id": "P2-5a9becf8b303",
+          "seat": 2,
+          "name": "雷昊",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "已确认1号司南是狼人。继续查验其他玩家以扩大信息面，选择尚未查验的存活玩家进行查验。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P2-5a9becf8b303"
+      }
+    },
+    {
+      "id": "f19f44e4-662e-40da-b55c-fc32a93a6f42",
+      "ts": 1788607563.5307589,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-a53412acc8f7"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P2-5a9becf8b303",
+        "target_name": "雷昊",
+        "is_wolf": false,
+        "message": "Seer check: 雷昊 is not wolf."
+      }
+    },
+    {
+      "id": "1664ecc7-1a73-4d6c-8a32-29d7803fc3ce",
+      "ts": 1788607563.611399,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "00bc45b6-a7dc-4728-939f-c1564484328a",
+      "ts": 1788607564.809671,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-5a9becf8b303"
+      ],
+      "payload": {
+        "actor_id": "P2-5a9becf8b303",
+        "actor_name": "雷昊",
+        "action_type": "skip",
+        "target": null,
+        "reasoning": "我被狼人刀了，解药已用，无法自救。今晚没有明确毒杀对象，毒药需要谨慎保留，先观察后续局势再做判断。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "skipped": true
+      }
+    },
+    {
+      "id": "851aaacd-ede7-4f57-8f36-3fecb3893d69",
+      "ts": 1788607564.8900425,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "394eab0d-44f8-47e9-ae7c-a5861a4e0b58",
+      "ts": 1788607566.6521523,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P3-9c43ce13453d"
+      ],
+      "payload": {
+        "actor_id": "P3-9c43ce13453d",
+        "actor_name": "蓝知怀",
+        "action_type": "guard",
+        "target": {
+          "id": "P1-963b3243f2c0",
+          "seat": 1,
+          "name": "司南",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "昨夜平安夜，可能是女巫救的，也可能是狼人没刀中。上一晚我守的是2号，今晚不能连续守他。根据票型，1号和7号都投了莱昂，而莱昂和4号投了霁川/司南，霁川被放逐。我选择守1号，因为1号投莱昂的票型较为积极，可能成为狼人刀口目标。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-963b3243f2c0"
+      }
+    },
+    {
+      "id": "8649acf2-5583-45f2-af1b-45a87efb30a1",
+      "ts": 1788607566.732437,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "aef37ab0-7d04-4368-87d8-6a6805dc8619",
+      "ts": 1788607566.7324667,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P2-5a9becf8b303",
+        "player_name": "雷昊",
+        "reason": "werewolf_killed"
+      }
+    },
+    {
+      "id": "1741fda7-f5a9-4396-8bba-dad622006f1f",
+      "ts": 1788607566.7324774,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜死亡：雷昊（狼刀）。"
+      }
+    },
+    {
+      "id": "37381802-f7cc-4940-a767-40868a1046d1",
+      "ts": 1788607566.7325358,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "8d055410-a7ca-4290-9b51-a23a1b51d686",
+      "ts": 1788607566.7325501,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "6868ea04-dfc0-4fa9-9159-5cfbd79f7774",
+      "ts": 1788607567.0541544,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "1196de89-f5af-4df5-8650-25f2de99b0ab",
+      "ts": 1788607569.4618068,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-963b3243f2c0",
+        "actor_name": "司南",
+        "speech": "昨晚雷昊被刀了。首日票型里，雷昊和蓝知怀都投了霁川，霁川被放逐。现在死了两个人，场上剩5人，局势比较紧张。我昨天投了莱昂，理由是当时觉得他发言偏划水。今天想先听听大家怎么说，特别是对昨天投票和死亡情况的看法。",
+        "reasoning": "作为狼人，首日我被卡卡投了，需要观察局势。目前场上存活5人，我是第一个发言。我需要引导节奏但不过度暴露。先平铺陈述，试探大家反应。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "2c8bf358-1c7f-4ef5-bd6c-60d3300ed77e",
+      "ts": 1788607572.010474,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9c43ce13453d",
+        "actor_name": "蓝知怀",
+        "speech": "简单梳理一下。首日被放逐的是霁川，昨夜狼刀了雷昊。场上还剩5人，其中2狼。看首日票型：霁川投了顾景行，雷昊和莱昂投了霁川，我投了霁川，司南投了莱昂，卡卡投了司南，顾景行投了莱昂。霁川和雷昊现在已经死了。剩下的人里，司南和顾景行投了莱昂，卡卡投了司南。",
+        "reasoning": "作为守卫，我掌握的信息有限。首夜平安，昨夜狼刀雷昊。我需要分析票型找出狼人，但目前信息不足，先做平铺陈述引导大家发言。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "3164cd06-b581-4f6c-ac37-603f1bea8bd0",
+      "ts": 1788607572.010488,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-9c43ce13453d",
+        "actor_name": "蓝知怀",
+        "speech": "我投霁川是因为当时觉得霁川发言有问题。现在雷昊夜里被刀，说明狼人认为雷昊有威胁——可能是神职也可能是好人。先听其他人怎么说。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "3293efbf-8620-4933-b0a9-aa45ae2487d7",
+      "ts": 1788607575.1342537,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-a53412acc8f7",
+        "actor_name": "卡卡",
+        "speech": "我梳理一下首日票型。被放逐的霁川投了顾景行，雷昊和莱昂投了霁川。霁川和雷昊现在都死了。剩下存活五人，其中两人投了莱昂（司南、顾景行），一人投了司南（我）。",
+        "reasoning": "作为预言家且战术要求不暴露身份，我需要基于公开信息分析。我的查验显示司南是狼人，但我不能公开此信息。基于票型逻辑推理来引导风向。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "accusation",
+        "target_seat": 1
+      }
+    },
+    {
+      "id": "f27311bf-bad2-41c5-98aa-83b3691091eb",
+      "ts": 1788607575.1342742,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-a53412acc8f7",
+        "actor_name": "卡卡",
+        "speech": "雷昊夜里被刀，说明狼人觉得他有威胁。如果雷昊是好身份，那狼人刀他可能是为了制造混乱或清除潜在威胁。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "2c638c1d-26e9-4fb4-8e11-91c287a29b50",
+      "ts": 1788607575.1342893,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-a53412acc8f7",
+        "actor_name": "卡卡",
+        "speech": "我注意到司南今天的发言比较\"引导性\"——他在引导大家回忆票型、让别人先表态。首日我投司南，是因为当时觉得他发言里有些避重就轻、想带节奏的迹象。今天他依然在引导话题而不是给出明确判断。我倾向于继续怀疑司南。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "782ce787-ea54-4e17-8436-00a0a3ca3480",
+      "ts": 1788607578.650983,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-0f14bdafb39f",
+        "actor_name": "莱昂",
+        "speech": "梳理一下当前局面。首日被放逐的霁川投了顾景行，雷昊和我投了霁川。现在霁川和雷昊都死了，雷昊是被狼刀的。狼人选择刀雷昊，说明雷昊在狼人视角里有一定威胁或身份可疑。目前存活五人中，司南和顾景行投了我，卡卡投了司南，蓝知怀投了霁川。我投了霁川。场上还有2狼，需要仔细分辨。",
+        "reasoning": "作为村民，我需要基于票型和发言逻辑分析。目前场上5人2狼。首日票型中，我投了霁川，雷昊和蓝知怀也投了霁川。霁川被放逐、雷昊被刀，这两个都是投霁川阵营的。剩下投霁川的只有我和蓝知怀。狼人刀雷昊说明雷昊对狼有威胁。我倾向先观察，但卡卡和蓝知怀都在引导怀疑司南或带节奏。需要梳理清楚谁可能是狼。先保持baseline陈述分析。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "8dfefae4-e1fe-4fae-976b-bbd25ecddb99",
+      "ts": 1788607578.6509924,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-0f14bdafb39f",
+        "actor_name": "莱昂",
+        "speech": "我暂时倾向于从投我票的人中找线索，但还需要更多信息来判断。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "fe779cd8-aa36-481a-8b9c-b5dbdf53c83e",
+      "ts": 1788607582.3820353,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "speech": "梳理一下现状。首日放逐霁川，昨夜刀了雷昊。场上剩5人，2狼3好人。关键信息是：狼人选择刀雷昊，而非其他人。雷昊首日投了霁川，和霁川没有抱团迹象，狼刀他说明雷昊大概率是好人里的关键身份或发言让狼感到威胁。",
+        "reasoning": "我是狼人，队友是1号司南。当前场上存活5人，其中2狼（我和司南）。需要引导局势。卡卡在引导怀疑司南，莱昂怀疑投他的人（司南和我）。我应该把注意力引向好人阵营，同时不暴露与司南的关联。我用baseline平铺分析，暗示莱昂和卡卡逻辑有问题，为后续投好人铺垫。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "8af9b7f2-8fc5-4360-b9ed-a2cad3e01d24",
+      "ts": 1788607582.3820426,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "speech": "再看存活五人：投莱昂的有我和司南，投司南的是卡卡，投霁川的是蓝知怀和莱昂。现在有人把矛头指向\"投莱昂的人\"，但投莱昂本身就是基于首日发言的判断，不能直接等同狼。反而应该关注：谁在刻意引导大家从票型找狼，而不是从发言找狼？",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "110d4a43-c3be-4ce8-aa06-52fb379d2eeb",
+      "ts": 1788607582.3820465,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "speech": "卡卡反复强调票型结构、把司南标记为引导话题，这本身也是一种引导。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "72873acf-af44-4272-abfe-d67f09617772",
+      "ts": 1788607582.3820503,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-794a4fe3e31b",
+        "actor_name": "顾景行",
+        "speech": "我的判断是：今天信息还不够，先听蓝知怀和莱昂进一步表态，别急着下结论。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "dcb9f7e2-6caa-4cd1-bd4e-94d77d1b5bb3",
+      "ts": 1788607582.5427616,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "96c96379-0b66-4f7c-8332-270b106db74a",
+      "ts": 1788607584.2434459,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-963b3243f2c0",
+        "voter_name": "司南",
+        "target_id": "P4-a53412acc8f7",
+        "target_name": "卡卡",
+        "reasoning": "卡卡，理由是她在票型分析上过度引导且反复针对我，逻辑闭环却缺乏实质信息。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "2be5a7cf-e546-44e6-8e72-2b11c51e8e62",
+      "ts": 1788607584.2434707,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-9c43ce13453d",
+        "voter_name": "蓝知怀",
+        "target_id": "P1-963b3243f2c0",
+        "target_name": "司南",
+        "reasoning": "司南，理由是首日他的票型和发言有割裂感，投票莱昂却今天继续模糊引导，且卡卡指认与其互动可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "b48c0f46-0f42-4001-a473-7847e1d615b1",
+      "ts": 1788607584.243554,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-a53412acc8f7",
+        "voter_name": "卡卡",
+        "target_id": "P1-963b3243f2c0",
+        "target_name": "司南",
+        "reasoning": "司南首日引导票型避重就轻，今日继续带节奏且缺乏明确判断，嫌疑最大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "b968e928-5020-4e6e-b387-3f94e690754c",
+      "ts": 1788607584.2435737,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-0f14bdafb39f",
+        "voter_name": "莱昂",
+        "target_id": "P7-794a4fe3e31b",
+        "target_name": "顾景行",
+        "reasoning": "顾景行反复强调别从票型找狼，却回避自身投我票的动机，转移焦点过于明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "07a6a24d-dd9d-4954-9a08-626baabf9acf",
+      "ts": 1788607584.2435942,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-794a4fe3e31b",
+        "voter_name": "顾景行",
+        "target_id": "P4-a53412acc8f7",
+        "target_name": "卡卡",
+        "reasoning": "卡卡，理由是他在票型上反复做文章，刻意引导大家从结构找狼而非发言逻辑，行为最像带节奏的狼。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "96e545da-970f-4254-a99a-e51292bf5cc6",
+      "ts": 1788607584.3241951,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "3be61d9e-932f-4e57-b46c-c217fd11d094",
+      "ts": 1788607584.3242793,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Vote tied among 司南, 卡卡. Random tie-break eliminates 卡卡."
+      }
+    },
+    {
+      "id": "51c067c2-23e2-452d-a986-9a111d0e0583",
+      "ts": 1788607584.3242967,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "卡卡 was voted out."
+      }
+    },
+    {
+      "id": "0798dffa-21c8-4141-af50-2d8f1e0afd73",
+      "ts": 1788607584.324312,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P4-a53412acc8f7",
+        "player_name": "卡卡",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "6e7f6c5f-29ce-4353-ab0e-cf21e809237a",
+      "ts": 1788607584.3243318,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    },
+    {
+      "id": "e3e79f88-5c4b-4d8b-b7a0-98bdcac8eb64",
+      "ts": 1788607584.3244193,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P1-963b3243f2c0": "P4-a53412acc8f7",
+    "P3-9c43ce13453d": "P1-963b3243f2c0",
+    "P4-a53412acc8f7": "P1-963b3243f2c0",
+    "P6-0f14bdafb39f": "P7-794a4fe3e31b",
+    "P7-794a4fe3e31b": "P4-a53412acc8f7"
+  },
+  "vote_history": {
+    "1": {
+      "P1-963b3243f2c0": "P6-0f14bdafb39f",
+      "P2-5a9becf8b303": "P5-dbc760f1d114",
+      "P3-9c43ce13453d": "P5-dbc760f1d114",
+      "P4-a53412acc8f7": "P1-963b3243f2c0",
+      "P5-dbc760f1d114": "P7-794a4fe3e31b",
+      "P6-0f14bdafb39f": "P5-dbc760f1d114",
+      "P7-794a4fe3e31b": "P6-0f14bdafb39f"
+    },
+    "2": {
+      "P1-963b3243f2c0": "P4-a53412acc8f7",
+      "P3-9c43ce13453d": "P1-963b3243f2c0",
+      "P4-a53412acc8f7": "P1-963b3243f2c0",
+      "P6-0f14bdafb39f": "P7-794a4fe3e31b",
+      "P7-794a4fe3e31b": "P4-a53412acc8f7"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P5-dbc760f1d114",
+        "seat": 5,
+        "votes": 3.0
+      }
+    },
+    "2": {
+      "voteTie": true
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "司南: 首夜平安夜，没有太多信息可聊。大家先各自说说看法吧，我倾向于先听一轮再判断。这局配置是1守卫1预言家2平民2狼1女巫，好人侧信息多，狼人应该会藏得比较深。先观望，不急着下结论。",
+      "雷昊: 首夜平安夜，说明守卫守对了或是女巫用药了。目前没有额外信息，先听大家发言。我比较关注发言中前后矛盾的地方，以及投票阶段的表现。现在不急着下结论，观望为主。",
+      "蓝知怀: 首夜平安夜，信息确实不多。1、2号的发言都比较谨慎，没有明显矛盾。先听完整一轮，重点看发言前后是否一致，以及后面投票阶段的站边情况。暂不表态具体怀疑谁。",
+      "卡卡: 首夜平安夜，信息确实有限。前面1、2、3号的发言都比较谨慎，没有明显矛盾或异常。我认同先听完整一轮、观察前后一致性和后续投票站边的思路。现阶段信息不足，不宜过早下结论，先观望。",
+      "霁川: 首夜平安夜，确实没有太多增量信息。前面几位发言都比较谨慎，没有明显前后矛盾。平安夜本身说明守卫守对或女巫用药，狼人首夜可能选择刀了被守卫保护的目标，也可能刀空了。现阶段信息不足，我的判断是多听多观察，重点关注后续发言的逻辑一致性和投票阶段的站边行为。暂时没有明确怀疑对象。",
+      "莱昂: 平安夜确实没有增量信息。前面几位的发言都比较谨慎，逻辑上无明显跳跃或矛盾。我倾向认为首夜平安夜更可能是守卫守对刀口，狼人首刀被守住的概率高于女巫用药。但现阶段这只是概率倾向，不足以据此判断任何人。我会重点观察后续发言中逻辑链条是否自洽，以及投票阶段的站边和改票行为。暂不点名。",
+      "顾景行: 首夜平安夜，信息确实有限。前面各位发言都比较克制，没有明显破绽。平安夜的可能性无非守卫守对或女巫用药，但这对好人来说只是多了一晚信息收集时间，对判断身份帮助不大。现阶段我不急着下结论，重点看后续发言的逻辑自洽度和投票阶段的站边。先过。",
+      "司南 voted for 莱昂 (首夜平安夜他过度强调守卫守对概率，有引导好人思路的倾向。)",
+      "雷昊 voted for 霁川 (霁川对平安夜归因过度发散，存在模糊焦点引导风向的嫌疑。)",
+      "蓝知怀 voted for 霁川 (霁川分析了平安夜走向却未提出任何具体关注点，发言偏保守，需后续验证。)",
+      "卡卡 voted for 司南 (首夜平安夜下其发言过于中立观望，缺乏实质分析，且我的查验指向其狼人身份。)",
+      "霁川 voted for 顾景行 (全场发言高度模板化，顾景行收尾最缺乏独立信息增量，仅复述他人观点，倾向隐藏真实立场。)",
+      "莱昂 voted for 霁川 (首夜平安夜下发言过于强调概率分析，试图引导集体观望节奏，缺乏实质判断。)",
+      "顾景行 voted for 莱昂 (首夜平安夜后他过度分析概率倾向，试图引导好人判断方向。)",
+      "霁川 died by voted_out"
+    ],
+    "2": [
+      "雷昊 died by werewolf_killed",
+      "司南: 昨晚雷昊被刀了。首日票型里，雷昊和蓝知怀都投了霁川，霁川被放逐。现在死了两个人，场上剩5人，局势比较紧张。我昨天投了莱昂，理由是当时觉得他发言偏划水。今天想先听听大家怎么说，特别是对昨天投票和死亡情况的看法。",
+      "蓝知怀: 简单梳理一下。首日被放逐的是霁川，昨夜狼刀了雷昊。场上还剩5人，其中2狼。看首日票型：霁川投了顾景行，雷昊和莱昂投了霁川，我投了霁川，司南投了莱昂，卡卡投了司南，顾景行投了莱昂。霁川和雷昊现在已经死了。剩下的人里，司南和顾景行投了莱昂，卡卡投了司南。",
+      "蓝知怀: 我投霁川是因为当时觉得霁川发言有问题。现在雷昊夜里被刀，说明狼人认为雷昊有威胁——可能是神职也可能是好人。先听其他人怎么说。",
+      "卡卡: 我梳理一下首日票型。被放逐的霁川投了顾景行，雷昊和莱昂投了霁川。霁川和雷昊现在都死了。剩下存活五人，其中两人投了莱昂（司南、顾景行），一人投了司南（我）。",
+      "卡卡: 雷昊夜里被刀，说明狼人觉得他有威胁。如果雷昊是好身份，那狼人刀他可能是为了制造混乱或清除潜在威胁。",
+      "卡卡: 我注意到司南今天的发言比较\"引导性\"——他在引导大家回忆票型、让别人先表态。首日我投司南，是因为当时觉得他发言里有些避重就轻、想带节奏的迹象。今天他依然在引导话题而不是给出明确判断。我倾向于继续怀疑司南。",
+      "莱昂: 梳理一下当前局面。首日被放逐的霁川投了顾景行，雷昊和我投了霁川。现在霁川和雷昊都死了，雷昊是被狼刀的。狼人选择刀雷昊，说明雷昊在狼人视角里有一定威胁或身份可疑。目前存活五人中，司南和顾景行投了我，卡卡投了司南，蓝知怀投了霁川。我投了霁川。场上还有2狼，需要仔细分辨。",
+      "莱昂: 我暂时倾向于从投我票的人中找线索，但还需要更多信息来判断。",
+      "顾景行: 梳理一下现状。首日放逐霁川，昨夜刀了雷昊。场上剩5人，2狼3好人。关键信息是：狼人选择刀雷昊，而非其他人。雷昊首日投了霁川，和霁川没有抱团迹象，狼刀他说明雷昊大概率是好人里的关键身份或发言让狼感到威胁。",
+      "顾景行: 再看存活五人：投莱昂的有我和司南，投司南的是卡卡，投霁川的是蓝知怀和莱昂。现在有人把矛头指向\"投莱昂的人\"，但投莱昂本身就是基于首日发言的判断，不能直接等同狼。反而应该关注：谁在刻意引导大家从票型找狼，而不是从发言找狼？",
+      "顾景行: 卡卡反复强调票型结构、把司南标记为引导话题，这本身也是一种引导。",
+      "顾景行: 我的判断是：今天信息还不够，先听蓝知怀和莱昂进一步表态，别急着下结论。",
+      "司南 voted for 卡卡 (卡卡，理由是她在票型分析上过度引导且反复针对我，逻辑闭环却缺乏实质信息。)",
+      "蓝知怀 voted for 司南 (司南，理由是首日他的票型和发言有割裂感，投票莱昂却今天继续模糊引导，且卡卡指认与其互动可疑。)",
+      "卡卡 voted for 司南 (司南首日引导票型避重就轻，今日继续带节奏且缺乏明确判断，嫌疑最大。)",
+      "莱昂 voted for 顾景行 (顾景行反复强调别从票型找狼，却回避自身投我票的动机，转移焦点过于明显。)",
+      "顾景行 voted for 卡卡 (卡卡，理由是他在票型上反复做文章，刻意引导大家从结构找狼而非发言逻辑，行为最像带节奏的狼。)",
+      "卡卡 died by voted_out",
+      "Game ended: wolf (wolves_reached_parity)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "司南",
+        "speaker_id": "P1-963b3243f2c0",
+        "content": "首夜平安夜，没有太多信息可聊。大家先各自说说看法吧，我倾向于先听一轮再判断。这局配置是1守卫1预言家2平民2狼1女巫，好人侧信息多，狼人应该会藏得比较深。先观望，不急着下结论。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "雷昊",
+        "speaker_id": "P2-5a9becf8b303",
+        "content": "首夜平安夜，说明守卫守对了或是女巫用药了。目前没有额外信息，先听大家发言。我比较关注发言中前后矛盾的地方，以及投票阶段的表现。现在不急着下结论，观望为主。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9c43ce13453d",
+        "content": "首夜平安夜，信息确实不多。1、2号的发言都比较谨慎，没有明显矛盾。先听完整一轮，重点看发言前后是否一致，以及后面投票阶段的站边情况。暂不表态具体怀疑谁。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "卡卡",
+        "speaker_id": "P4-a53412acc8f7",
+        "content": "首夜平安夜，信息确实有限。前面1、2、3号的发言都比较谨慎，没有明显矛盾或异常。我认同先听完整一轮、观察前后一致性和后续投票站边的思路。现阶段信息不足，不宜过早下结论，先观望。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "霁川",
+        "speaker_id": "P5-dbc760f1d114",
+        "content": "首夜平安夜，确实没有太多增量信息。前面几位发言都比较谨慎，没有明显前后矛盾。平安夜本身说明守卫守对或女巫用药，狼人首夜可能选择刀了被守卫保护的目标，也可能刀空了。现阶段信息不足，我的判断是多听多观察，重点关注后续发言的逻辑一致性和投票阶段的站边行为。暂时没有明确怀疑对象。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "莱昂",
+        "speaker_id": "P6-0f14bdafb39f",
+        "content": "平安夜确实没有增量信息。前面几位的发言都比较谨慎，逻辑上无明显跳跃或矛盾。我倾向认为首夜平安夜更可能是守卫守对刀口，狼人首刀被守住的概率高于女巫用药。但现阶段这只是概率倾向，不足以据此判断任何人。我会重点观察后续发言中逻辑链条是否自洽，以及投票阶段的站边和改票行为。暂不点名。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "顾景行",
+        "speaker_id": "P7-794a4fe3e31b",
+        "content": "首夜平安夜，信息确实有限。前面各位发言都比较克制，没有明显破绽。平安夜的可能性无非守卫守对或女巫用药，但这对好人来说只是多了一晚信息收集时间，对判断身份帮助不大。现阶段我不急着下结论，重点看后续发言的逻辑自洽度和投票阶段的站边。先过。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "司南",
+        "voter_id": "P1-963b3243f2c0",
+        "target_name": "莱昂",
+        "target_id": "P6-0f14bdafb39f",
+        "reasoning": "首夜平安夜他过度强调守卫守对概率，有引导好人思路的倾向。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "雷昊",
+        "voter_id": "P2-5a9becf8b303",
+        "target_name": "霁川",
+        "target_id": "P5-dbc760f1d114",
+        "reasoning": "霁川对平安夜归因过度发散，存在模糊焦点引导风向的嫌疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "蓝知怀",
+        "voter_id": "P3-9c43ce13453d",
+        "target_name": "霁川",
+        "target_id": "P5-dbc760f1d114",
+        "reasoning": "霁川分析了平安夜走向却未提出任何具体关注点，发言偏保守，需后续验证。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "卡卡",
+        "voter_id": "P4-a53412acc8f7",
+        "target_name": "司南",
+        "target_id": "P1-963b3243f2c0",
+        "reasoning": "首夜平安夜下其发言过于中立观望，缺乏实质分析，且我的查验指向其狼人身份。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "霁川",
+        "voter_id": "P5-dbc760f1d114",
+        "target_name": "顾景行",
+        "target_id": "P7-794a4fe3e31b",
+        "reasoning": "全场发言高度模板化，顾景行收尾最缺乏独立信息增量，仅复述他人观点，倾向隐藏真实立场。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "莱昂",
+        "voter_id": "P6-0f14bdafb39f",
+        "target_name": "霁川",
+        "target_id": "P5-dbc760f1d114",
+        "reasoning": "首夜平安夜下发言过于强调概率分析，试图引导集体观望节奏，缺乏实质判断。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "顾景行",
+        "voter_id": "P7-794a4fe3e31b",
+        "target_name": "莱昂",
+        "target_id": "P6-0f14bdafb39f",
+        "reasoning": "首夜平安夜后他过度分析概率倾向，试图引导好人判断方向。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "霁川",
+        "player_id": "P5-dbc760f1d114",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "雷昊",
+        "player_id": "P2-5a9becf8b303",
+        "reason": "werewolf_killed"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "司南",
+        "speaker_id": "P1-963b3243f2c0",
+        "content": "昨晚雷昊被刀了。首日票型里，雷昊和蓝知怀都投了霁川，霁川被放逐。现在死了两个人，场上剩5人，局势比较紧张。我昨天投了莱昂，理由是当时觉得他发言偏划水。今天想先听听大家怎么说，特别是对昨天投票和死亡情况的看法。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9c43ce13453d",
+        "content": "简单梳理一下。首日被放逐的是霁川，昨夜狼刀了雷昊。场上还剩5人，其中2狼。看首日票型：霁川投了顾景行，雷昊和莱昂投了霁川，我投了霁川，司南投了莱昂，卡卡投了司南，顾景行投了莱昂。霁川和雷昊现在已经死了。剩下的人里，司南和顾景行投了莱昂，卡卡投了司南。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P3-9c43ce13453d",
+        "content": "我投霁川是因为当时觉得霁川发言有问题。现在雷昊夜里被刀，说明狼人认为雷昊有威胁——可能是神职也可能是好人。先听其他人怎么说。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "卡卡",
+        "speaker_id": "P4-a53412acc8f7",
+        "content": "我梳理一下首日票型。被放逐的霁川投了顾景行，雷昊和莱昂投了霁川。霁川和雷昊现在都死了。剩下存活五人，其中两人投了莱昂（司南、顾景行），一人投了司南（我）。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "卡卡",
+        "speaker_id": "P4-a53412acc8f7",
+        "content": "雷昊夜里被刀，说明狼人觉得他有威胁。如果雷昊是好身份，那狼人刀他可能是为了制造混乱或清除潜在威胁。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "卡卡",
+        "speaker_id": "P4-a53412acc8f7",
+        "content": "我注意到司南今天的发言比较\"引导性\"——他在引导大家回忆票型、让别人先表态。首日我投司南，是因为当时觉得他发言里有些避重就轻、想带节奏的迹象。今天他依然在引导话题而不是给出明确判断。我倾向于继续怀疑司南。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "莱昂",
+        "speaker_id": "P6-0f14bdafb39f",
+        "content": "梳理一下当前局面。首日被放逐的霁川投了顾景行，雷昊和我投了霁川。现在霁川和雷昊都死了，雷昊是被狼刀的。狼人选择刀雷昊，说明雷昊在狼人视角里有一定威胁或身份可疑。目前存活五人中，司南和顾景行投了我，卡卡投了司南，蓝知怀投了霁川。我投了霁川。场上还有2狼，需要仔细分辨。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "莱昂",
+        "speaker_id": "P6-0f14bdafb39f",
+        "content": "我暂时倾向于从投我票的人中找线索，但还需要更多信息来判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "顾景行",
+        "speaker_id": "P7-794a4fe3e31b",
+        "content": "梳理一下现状。首日放逐霁川，昨夜刀了雷昊。场上剩5人，2狼3好人。关键信息是：狼人选择刀雷昊，而非其他人。雷昊首日投了霁川，和霁川没有抱团迹象，狼刀他说明雷昊大概率是好人里的关键身份或发言让狼感到威胁。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "顾景行",
+        "speaker_id": "P7-794a4fe3e31b",
+        "content": "再看存活五人：投莱昂的有我和司南，投司南的是卡卡，投霁川的是蓝知怀和莱昂。现在有人把矛头指向\"投莱昂的人\"，但投莱昂本身就是基于首日发言的判断，不能直接等同狼。反而应该关注：谁在刻意引导大家从票型找狼，而不是从发言找狼？"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "顾景行",
+        "speaker_id": "P7-794a4fe3e31b",
+        "content": "卡卡反复强调票型结构、把司南标记为引导话题，这本身也是一种引导。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "顾景行",
+        "speaker_id": "P7-794a4fe3e31b",
+        "content": "我的判断是：今天信息还不够，先听蓝知怀和莱昂进一步表态，别急着下结论。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "司南",
+        "voter_id": "P1-963b3243f2c0",
+        "target_name": "卡卡",
+        "target_id": "P4-a53412acc8f7",
+        "reasoning": "卡卡，理由是她在票型分析上过度引导且反复针对我，逻辑闭环却缺乏实质信息。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "蓝知怀",
+        "voter_id": "P3-9c43ce13453d",
+        "target_name": "司南",
+        "target_id": "P1-963b3243f2c0",
+        "reasoning": "司南，理由是首日他的票型和发言有割裂感，投票莱昂却今天继续模糊引导，且卡卡指认与其互动可疑。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "卡卡",
+        "voter_id": "P4-a53412acc8f7",
+        "target_name": "司南",
+        "target_id": "P1-963b3243f2c0",
+        "reasoning": "司南首日引导票型避重就轻，今日继续带节奏且缺乏明确判断，嫌疑最大。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "莱昂",
+        "voter_id": "P6-0f14bdafb39f",
+        "target_name": "顾景行",
+        "target_id": "P7-794a4fe3e31b",
+        "reasoning": "顾景行反复强调别从票型找狼，却回避自身投我票的动机，转移焦点过于明显。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "顾景行",
+        "voter_id": "P7-794a4fe3e31b",
+        "target_name": "卡卡",
+        "target_id": "P4-a53412acc8f7",
+        "reasoning": "卡卡，理由是他在票型上反复做文章，刻意引导大家从结构找狼而非发言逻辑，行为最像带节奏的狼。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "卡卡",
+        "player_id": "P4-a53412acc8f7",
+        "reason": "voted_out"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "wolf",
+  "night_actions": {
+    "guard_target_id": "P1-963b3243f2c0",
+    "last_guard_target_id": "P1-963b3243f2c0",
+    "wolf_votes": {
+      "P1-963b3243f2c0": "P2-5a9becf8b303",
+      "P7-794a4fe3e31b": "P2-5a9becf8b303"
+    },
+    "wolf_target_id": "P2-5a9becf8b303",
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": "P2-5a9becf8b303",
+    "seer_result": {
+      "kind": "seer_result",
+      "target_id": "P2-5a9becf8b303",
+      "target_name": "雷昊",
+      "is_wolf": false,
+      "message": "Seer check: 雷昊 is not wolf."
+    },
+    "deaths": [
+      {
+        "player_id": "P2-5a9becf8b303",
+        "reason": "werewolf_killed"
+      }
+    ]
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

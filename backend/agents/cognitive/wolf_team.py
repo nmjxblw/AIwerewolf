@@ -81,13 +81,8 @@ def build_wolf_team_view(
     view.alive_wolves = [w for w in wolf_ids if w not in dead_set]
     view.dead_wolves = [w for w in wolf_ids if w in dead_set]
 
-    # Extract public claims from belief tracker
-    if hasattr(belief_tracker, "claims"):
-        for claim in belief_tracker.claims:
-            pid = getattr(claim, "player_id", "")
-            role = getattr(claim, "claimed_role", "")
-            if pid and role:
-                view.public_claims_summary[pid] = role
+    # 对局日志审计 P1-6：公开声称摘要已下线（声称提取含虚拟语气误报，
+    # 不应作为狼队结构化事实；声称内容保留在公开发言文本中）。
 
     # Extract public vote patterns
     vote_map: dict[str, list[str]] = {}

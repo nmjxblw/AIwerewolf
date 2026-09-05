@@ -1,0 +1,43 @@
+{
+  "label": "VJ",
+  "seed": 9303,
+  "winner": "village",
+  "end_reason": "all_wolves_dead",
+  "days": 2,
+  "elapsed": 59.7,
+  "day1_vote_pattern": {
+    "2号:卡卡": 3,
+    "4号:莫离": 4
+  },
+  "day1_pattern_detail": {
+    "4号:莫离": [
+      "1号:李默",
+      "2号:卡卡",
+      "3号:霁川",
+      "7号:云锦"
+    ],
+    "2号:卡卡": [
+      "4号:莫离",
+      "5号:周星野",
+      "6号:凌战"
+    ]
+  },
+  "day1_seer_claims": [
+    "3号:霁川(狼人)",
+    "4号:莫离(平民)",
+    "5号:周星野(狼人)",
+    "6号:凌战(平民)",
+    "6号:凌战(平民)",
+    "7号:云锦(守卫)"
+  ],
+  "day1_nonseer_claims": 6,
+  "empty_knife_nights": 0,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 1,
+  "wolf_chat_messages": 4,
+  "llm_calls": 38,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": true
+}

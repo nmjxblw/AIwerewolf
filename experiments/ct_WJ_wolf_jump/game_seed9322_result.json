@@ -1,0 +1,40 @@
+{
+  "label": "WJ",
+  "seed": 9322,
+  "winner": "village",
+  "end_reason": "all_wolves_dead",
+  "days": 2,
+  "elapsed": 55.2,
+  "day1_vote_pattern": {
+    "4号:南柯辞": 2,
+    "5号:云锦": 5
+  },
+  "day1_pattern_detail": {
+    "5号:云锦": [
+      "1号:林思远",
+      "2号:宋知野",
+      "3号:苏晓晓",
+      "4号:南柯辞",
+      "6号:凌战"
+    ],
+    "4号:南柯辞": [
+      "5号:云锦",
+      "7号:陶若安"
+    ]
+  },
+  "day1_seer_claims": [
+    "5号:云锦(狼人)",
+    "6号:凌战(真预言家)",
+    "7号:陶若安(狼人)"
+  ],
+  "day1_nonseer_claims": 2,
+  "empty_knife_nights": 1,
+  "self_knife_nights": 0,
+  "witch_save_used": 1,
+  "witch_poison_used": 0,
+  "wolf_chat_messages": 2,
+  "llm_calls": 37,
+  "prompt_tokens": 0,
+  "completion_tokens": 0,
+  "seer_alive": true
+}

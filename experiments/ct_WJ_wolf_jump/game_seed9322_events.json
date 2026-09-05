@@ -1,0 +1,2509 @@
+{
+  "id": "f39eacb5-6ca9-4a79-98c2-b8d45d44c623",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-d4bb4464e28e",
+      "seat": 1,
+      "name": "林思远",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "林思远",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    },
+    {
+      "id": "P2-f46aad3f7f40",
+      "seat": 2,
+      "name": "宋知野",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "宋知野",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-3a6d1c780af1",
+      "seat": 3,
+      "name": "苏晓晓",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "苏晓晓",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-00d848f8e591",
+      "seat": 4,
+      "name": "南柯辞",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "南柯辞",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P5-cc66be652848",
+      "seat": 5,
+      "name": "云锦",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "云锦",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P6-c2bbce6120fe",
+      "seat": 6,
+      "name": "凌战",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "凌战",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P7-cf7b3ac32a08",
+      "seat": 7,
+      "name": "陶若安",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "陶若安",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    }
+  ],
+  "events": [
+    {
+      "id": "33d3d758-e677-463a-972f-7e379d948901",
+      "ts": 1788607402.5174794,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "f39eacb5-6ca9-4a79-98c2-b8d45d44c623",
+        "players": [
+          {
+            "id": "P1-d4bb4464e28e",
+            "seat": 1,
+            "name": "林思远",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-f46aad3f7f40",
+            "seat": 2,
+            "name": "宋知野",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-3a6d1c780af1",
+            "seat": 3,
+            "name": "苏晓晓",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-00d848f8e591",
+            "seat": 4,
+            "name": "南柯辞",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-cc66be652848",
+            "seat": 5,
+            "name": "云锦",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-c2bbce6120fe",
+            "seat": 6,
+            "name": "凌战",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-cf7b3ac32a08",
+            "seat": 7,
+            "name": "陶若安",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "6937dcfc-7da2-4dfe-9ed7-df5e44024bb4",
+      "ts": 1788607402.517547,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-d4bb4464e28e"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 林思远, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "4824851e-c802-4921-bf11-b6822075802c",
+      "ts": 1788607402.517582,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-f46aad3f7f40"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 宋知野, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "5d3c7eea-2d30-4284-b72b-9a8ed48f99b9",
+      "ts": 1788607402.5176105,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-3a6d1c780af1"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 苏晓晓, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "5bebd092-2e0a-456b-a6a8-708d888167e8",
+      "ts": 1788607402.5176344,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-00d848f8e591"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 南柯辞, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "195359ca-c61d-409e-8315-a5c6b9e53b3d",
+      "ts": 1788607402.517663,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 云锦, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "4cebafcf-6c5b-4f4d-9858-f6065f1d856f",
+      "ts": 1788607402.5176852,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c2bbce6120fe"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 凌战, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "aa777952-15cf-4279-8b89-ace35e2075bb",
+      "ts": 1788607402.5177114,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 陶若安, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "666a43bc-ac79-4082-9b5f-41b7aa54e84f",
+      "ts": 1788607402.5177436,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "aad6a976-c980-4dbf-bb9c-1ebbaa2bd69a",
+      "ts": 1788607402.5177498,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "3503a307-dd09-4446-8c34-de03e19bf9b1",
+      "ts": 1788607402.598298,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "6665e64a-2892-44f4-aa27-465de4540284",
+      "ts": 1788607402.5983117,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P5-cc66be652848",
+          "P7-cf7b3ac32a08"
+        ],
+        "wolf_names": [
+          "云锦",
+          "陶若安"
+        ]
+      }
+    },
+    {
+      "id": "bb8b4c17-69cb-4123-bec5-055d9996760b",
+      "ts": 1788607404.1329608,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-cc66be652848",
+        "actor_name": "云锦",
+        "message": "云锦（私聊）：刀4号南柯辞，先解决中间位置潜在强神，避免后期被验或毒。你保持低调，我控节奏。",
+        "speech": "刀4号南柯辞，先解决中间位置潜在强神，避免后期被验或毒。你保持低调，我控节奏。",
+        "proposed_target_id": "P4-00d848f8e591",
+        "proposed_target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "27f0df8e-b8e6-42b0-a994-43ef7d0e1ca6",
+      "ts": 1788607405.1824138,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "message": "陶若安（私聊）：刀4号南柯辞。先破中间位，避免后续被验或毒。我保持低调，你继续控场节奏。",
+        "speech": "刀4号南柯辞。先破中间位，避免后续被验或毒。我保持低调，你继续控场节奏。",
+        "proposed_target_id": "P4-00d848f8e591",
+        "proposed_target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "7b4bee89-6ea3-4752-bfa3-4e61528eb890",
+      "ts": 1788607405.1824403,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "d5a5bec4-48ca-469b-afaa-aee2ccabd252",
+      "ts": 1788607405.182446,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P5-cc66be652848",
+        "actor_name": "云锦",
+        "message": "云锦 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "cda574ed-33ce-410d-aa88-82d1460ab6ed",
+      "ts": 1788607405.9293416,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "actor_id": "P5-cc66be652848",
+        "actor_name": "云锦",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-00d848f8e591",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队已达成共识刀4号南柯辞，确认执行同一目标。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-00d848f8e591",
+        "target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "3fdae0db-c72a-463d-8920-f207446c7380",
+      "ts": 1788607405.9293547,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "message": "陶若安 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P5-cc66be652848",
+            "wolf_name": "云锦",
+            "target_id": "P4-00d848f8e591",
+            "target_name": "南柯辞"
+          }
+        ]
+      }
+    },
+    {
+      "id": "7a9070c0-066c-4358-86f7-5b06eaa96b36",
+      "ts": 1788607406.9010918,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-00d848f8e591",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队已达成共识，刀4号南柯辞，破中间位潜在强神，避免后期被验或毒。确认队友已提交的目标，保持一致。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-00d848f8e591",
+        "target_name": "南柯辞"
+      }
+    },
+    {
+      "id": "5c49f360-9acc-45ec-b5b7-be7b7c8082b4",
+      "ts": 1788607406.901108,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-cc66be652848",
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为南柯辞。",
+        "target_id": "P4-00d848f8e591",
+        "target_name": "南柯辞",
+        "votes": {
+          "P5-cc66be652848": "P4-00d848f8e591",
+          "P7-cf7b3ac32a08": "P4-00d848f8e591"
+        }
+      }
+    },
+    {
+      "id": "931e0790-7e1f-40cf-b9ba-7809c0b0d815",
+      "ts": 1788607406.9011228,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "9b17ec2a-cb82-4c2f-9257-08ad56911818",
+      "ts": 1788607406.9011493,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "6d0ecaa2-3dd6-4a14-b18b-950c6be5e2da",
+      "ts": 1788607407.7204037,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c2bbce6120fe"
+      ],
+      "payload": {
+        "actor_id": "P6-c2bbce6120fe",
+        "actor_name": "凌战",
+        "action_type": "divine",
+        "target": {
+          "id": "P1-d4bb4464e28e",
+          "seat": 1,
+          "name": "林思远",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "作为预言家，首夜应积极查验获取信息。选择查验一名玩家以建立信息优势。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-d4bb4464e28e"
+      }
+    },
+    {
+      "id": "abd3c364-1abb-480f-83a9-a1afa9469af4",
+      "ts": 1788607407.7204132,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c2bbce6120fe"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P1-d4bb4464e28e",
+        "target_name": "林思远",
+        "is_wolf": false,
+        "message": "Seer check: 林思远 is not wolf."
+      }
+    },
+    {
+      "id": "6fbb4c2d-748d-4bc1-8c17-324f2a65f351",
+      "ts": 1788607407.7204285,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "d950d697-2fba-490a-9403-858cd2a7b32e",
+      "ts": 1788607407.8008463,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "360bb4a6-f879-4442-b60f-01518b857db6",
+      "ts": 1788607409.5531547,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-d4bb4464e28e"
+      ],
+      "payload": {
+        "actor_id": "P1-d4bb4464e28e",
+        "actor_name": "林思远",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P4-00d848f8e591",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜被刀4号，女巫解药仅首夜可自救，但救人能保证好人数量。不过仍需权衡：救下4号可多一个存活好人的信息源，且守卫可能守4号造成奶穿。但当前无任何身份信息，救人更稳妥，保留好人阵营人数优势。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-00d848f8e591"
+      }
+    },
+    {
+      "id": "8f564123-962f-4f6a-82da-4afd7a857b36",
+      "ts": 1788607409.5531695,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "09ba635e-4e9f-479b-a469-e35f152f55d9",
+      "ts": 1788607409.6335094,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "37e4320e-eeef-4faa-b29a-ac13a56ec47f",
+      "ts": 1788607410.7139852,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-f46aad3f7f40"
+      ],
+      "payload": {
+        "actor_id": "P2-f46aad3f7f40",
+        "actor_name": "宋知野",
+        "action_type": "guard",
+        "target": {
+          "id": "P1-d4bb4464e28e",
+          "seat": 1,
+          "name": "林思远",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "第一晚没有信息，选择守护一位玩家。通常首夜不守或守预言家位。由于我是守卫，暂无明显目标，选择守护1号林思远作为随机但合理的保护选择。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-d4bb4464e28e"
+      }
+    },
+    {
+      "id": "de697308-931e-4d32-aadb-46ec7acb97d6",
+      "ts": 1788607410.7140026,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "d0a7268a-d89d-4783-8f83-6cd07483e7d9",
+      "ts": 1788607410.794702,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "db364a07-d4cc-4271-8473-6c2cb0539ee3",
+      "ts": 1788607410.7947524,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "1444e709-1bb9-487b-b626-8abe10e9e1f0",
+      "ts": 1788607410.794869,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "5fd14472-32f4-4a62-989c-e0cedd007f60",
+      "ts": 1788607410.7948956,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "88a6f329-d51a-4227-94a3-c5a5d6c0b42e",
+      "ts": 1788607411.117584,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "00e601fd-4d81-4027-a187-e343449c7334",
+      "ts": 1788607412.8117375,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-d4bb4464e28e",
+        "actor_name": "林思远",
+        "speech": "昨夜平安夜。1号发言，先不急着站边，听一圈各位的信息和视角再判断。大家按顺序聊吧。",
+        "reasoning": "首日无信息，昨夜平安夜，作为女巫解药已用但无人死亡（说明狼人刀口可能被守卫守住或狼人空刀）。先做平铺发言，不点名不跳身份，观察后续信息。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "73bff837-e3a7-497d-8786-f1a71bd2294e",
+      "ts": 1788607414.2692804,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-f46aad3f7f40",
+        "actor_name": "宋知野",
+        "speech": "2号发言。昨夜平安夜，说明狼刀可能被守或救，也可能空刀。信息有限，先不站边，听大家聊完再判断。",
+        "reasoning": "首日平安夜，信息量极少，作为守卫不宜过早暴露或站边。先做简短发言，听一圈再做判断。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "90f8db6a-b562-4f1e-b77b-09a7110332f1",
+      "ts": 1788607416.2125828,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-3a6d1c780af1",
+        "actor_name": "苏晓晓",
+        "speech": "3号发言。昨夜平安夜，三种可能：守卫守中刀口、女巫解药救人、或狼人空刀。目前信息量太少，硬去推谁是狼只会产生噪声。先听后面几位发言，重点观察谁在传递信息、谁在搅浑水。暂时不站边。",
+        "reasoning": "首日信息有限，平安夜可能是守卫守中、女巫救中或狼人空刀。作为村民，先做平铺陈述，不急于站边点人，符合逻辑学家型玩家的谨慎风格。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "3ecad3a8-5387-403a-812c-8460f3816a5f",
+      "ts": 1788607418.3861182,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-00d848f8e591",
+        "actor_name": "南柯辞",
+        "speech": "4号发言。平安夜本身信息有限，三种可能都存在，前三位说得比较客观。目前没有足够依据去指认谁，先听5到7号的视角。我想重点观察的是：谁在给出独立的判断逻辑，谁只是在重复别人的话。暂时不站边。",
+        "reasoning": "首日平安夜，信息量极少，前三位发言都较为中立保守。作为村民，此时不宜过早站边或点名，先做中性分析听后续发言，符合逻辑学家型谨慎推理的风格。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "6b2e9190-84c5-4484-971b-d6fb9dce3f2a",
+      "ts": 1788607423.127117,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-cc66be652848",
+        "actor_name": "云锦",
+        "speech": "5号发言。昨夜平安夜，我来给各位一个重要信息——我是预言家。昨晚我查验了4号南柯辞，结果是狼人。我确信这个结果，请大家今天跟我一起把4号投出去。前四位都在说\"信息太少不站边\"，但真正有信息的人是我。如果大家有疑虑，可以继续听后面的6、7号发言，但我建议今天就处理掉4号这个查杀。",
+        "reasoning": "我是后置位悍跳预言家，无人起跳，我起身悍跳报假查验给好人发查杀，搅乱信息。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 4,
+        "claim_result": "wolf",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "b03da462-fea0-44d7-9f24-f540d9cf44b2",
+      "ts": 1788607427.2981744,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c2bbce6120fe",
+        "actor_name": "凌战",
+        "speech": "6号凌战发言。我才是真正的预言家。昨夜我查验了1号林思远，结果是好人。5号云锦自称预言家并查杀4号，这与我的信息冲突——场上只有一个预言家，5号在撒谎，他大概率是狼人悍跳。我建议今天先处理5号云锦，而不是4号。请大家理性判断：1号我验过是好人，这是我的真实查验结果。",
+        "reasoning": "战术指令要求我必须如实公布身份与查验结果。5号云锦自称预言家并查杀4号，但我的真实查验是1号林思远为好人。我需要跳预言家公布真实查验，与5号对跳。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 1,
+        "claim_result": "good",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "10a98cbe-1e2d-425f-9d14-017a990c4b54",
+      "ts": 1788607430.4108016,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "speech": "7号陶若安发言。我才是真正的预言家。昨夜我查验了4号南柯辞，结果是狼人。这与5号云锦的查验结果完全一致——两个独立查验都指向4号是狼，这绝不是巧合。6号凌战跳出来说自己是预言家、验了1号是好人，但场上只有一个预言家，如果5号是悍跳，那我和5号怎么会出现完全相同的查验结果？",
+        "reasoning": "后置位悍跳，与5号队友配合对跳。5号已查杀4号，6号对跳保1号。我作为7号后置位，需与5号配合，跳预言家并给出一个有利于狼队的查验结果。我支持5号是真预言家，并编造查验给4号补一刀查杀，或给队友发金水强化5号的可信度。最佳策略是声称查验4号南柯辞为狼人，与5号信息一致，强化对4号的锁定，同时否定6号。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 4,
+        "claim_result": "wolf",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "a46044a7-525e-4d15-98c4-4df1984936b6",
+      "ts": 1788607430.4108098,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "speech": "这只能说明4号确实是狼，而6号才是那个试图保狼的悍跳者。今天应该处理4号南柯辞，请大家跟我一起投4号。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "5a8b38a0-970d-4803-8104-24cb49e1f3cf",
+      "ts": 1788607430.5719533,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "b7e56003-8808-4aa8-a425-afce4fb9a0c9",
+      "ts": 1788607432.4679644,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-d4bb4464e28e",
+        "voter_name": "林思远",
+        "target_id": "P5-cc66be652848",
+        "target_name": "云锦",
+        "reasoning": "5号查杀4号，但场上已有两假预言家对跳，其悍跳风险和节奏过快最为可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "bd3da056-269f-42f5-9856-25a3a7db6e6a",
+      "ts": 1788607432.46799,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-f46aad3f7f40",
+        "voter_name": "宋知野",
+        "target_id": "P5-cc66be652848",
+        "target_name": "云锦",
+        "reasoning": "场上出现双预言家时，6号有明确查验信息而5号查杀4号与7号重复，存在配合跳预言家保狼的嫌疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "eaecd2c5-da6c-478d-a65b-846dc0b68ba5",
+      "ts": 1788607432.4680057,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-3a6d1c780af1",
+        "voter_name": "苏晓晓",
+        "target_id": "P5-cc66be652848",
+        "target_name": "云锦",
+        "reasoning": "6号与5号预言家冲突，但5号查杀4号与7号重复，更像狼队配合悍跳。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "79b5e0da-eb2c-4f49-9a9f-b9914a566bc2",
+      "ts": 1788607432.46802,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-00d848f8e591",
+        "voter_name": "南柯辞",
+        "target_id": "P5-cc66be652848",
+        "target_name": "云锦",
+        "reasoning": "悍跳预言家逻辑不完整，与6号预言家身份冲突，且查杀指向过于激进。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "ae2a0b50-da04-471b-a70b-e1c1618c9286",
+      "ts": 1788607432.468034,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-cc66be652848",
+        "voter_name": "云锦",
+        "target_id": "P4-00d848f8e591",
+        "target_name": "南柯辞",
+        "reasoning": "5号和7号双查验指向同一人，逻辑链完整，6号保狼嫌疑明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "94665129-a49d-44f7-a83a-130df91240f2",
+      "ts": 1788607432.468088,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-c2bbce6120fe",
+        "voter_name": "凌战",
+        "target_id": "P5-cc66be652848",
+        "target_name": "云锦",
+        "reasoning": "5号悍跳预言家与我查验结果冲突，场上唯一真预言家是我，5号是狼人。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "14c138a9-8f80-4ca9-811b-64c02f990d76",
+      "ts": 1788607432.468102,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-cf7b3ac32a08",
+        "voter_name": "陶若安",
+        "target_id": "P4-00d848f8e591",
+        "target_name": "南柯辞",
+        "reasoning": "5号与我的查验结果一致指向4号是狼，6号保狼行为明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "154bcbca-eb2c-40fc-bb19-311480427242",
+      "ts": 1788607432.548651,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "bdf8a156-d0da-4651-bd0c-8deaf771e960",
+      "ts": 1788607432.5487227,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "云锦 was voted out."
+      }
+    },
+    {
+      "id": "e13c3fed-fc9a-4487-9a29-52c0313ae976",
+      "ts": 1788607432.5487456,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P5-cc66be652848",
+        "player_name": "云锦",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "7c726bea-bb1f-4bb4-8723-aa1be45c1bcd",
+      "ts": 1788607432.5488586,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "ab5bf40b-7b1e-4c5c-afa8-79e77d5f5f32",
+      "ts": 1788607432.5489275,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "5b8c31cf-2414-41e9-842c-9501a6640012",
+      "ts": 1788607432.54894,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "ac94656c-93e3-4e9f-a7a4-4713d5d799ab",
+      "ts": 1788607432.6292117,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "ef2cc919-1c3a-406b-9814-13307722c87d",
+      "ts": 1788607432.6292374,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P7-cf7b3ac32a08"
+        ],
+        "wolf_names": [
+          "陶若安"
+        ]
+      }
+    },
+    {
+      "id": "43fa3d10-7b87-42e6-941f-4046e50a917e",
+      "ts": 1788607432.6292777,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_discussion_turn",
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "message": "陶若安 is choosing a proposed kill target for the wolf team.",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "903bc786-80bf-4e70-8c6a-8d502f647b06",
+      "ts": 1788607434.2752936,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "action_type": "attack",
+        "target": null,
+        "reasoning": "狼队友云锦已被放逐，我是唯一存活的狼。昨夜空刀制造平安夜，今晨场上信息更混乱。我已在白天悍跳预言家并给4号发查杀。今夜继续空刀制造平安夜，让好人误判守卫/女巫存在，同时观察谁在找狼节奏。若连续平安夜，能强化我作为\"真预言家\"的可信度并消耗好人信任。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_attack_vote",
+        "target_id": null,
+        "target_name": null,
+        "current_votes": {
+          "P7-cf7b3ac32a08": ""
+        }
+      }
+    },
+    {
+      "id": "47cd5e75-b064-4fb4-b3b6-e163261db0b7",
+      "ts": 1788607434.27531,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-cf7b3ac32a08"
+      ],
+      "payload": {
+        "kind": "wolf_attack_tally",
+        "message": "狼队 unanimous 空刀：今晚不袭击任何人（空刀战术，制造平安夜）。",
+        "target_id": null,
+        "target_name": null,
+        "votes": {
+          "P7-cf7b3ac32a08": ""
+        }
+      }
+    },
+    {
+      "id": "015da15f-5e69-4f25-a417-dc684949189e",
+      "ts": 1788607434.275341,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "6493208b-5887-48b4-99f0-299ce6fbb18d",
+      "ts": 1788607435.413994,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c2bbce6120fe"
+      ],
+      "payload": {
+        "actor_id": "P6-c2bbce6120fe",
+        "actor_name": "凌战",
+        "action_type": "divine",
+        "target": {
+          "id": "P4-00d848f8e591",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "查验4号南柯辞，因为D1云锦（被放逐者）曾查杀4号，且陶若安也投了南柯辞，需要确认4号身份来验证场上信息链。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-00d848f8e591"
+      }
+    },
+    {
+      "id": "32b215db-7f32-4a43-acfd-b11a31fc4754",
+      "ts": 1788607435.4140093,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-c2bbce6120fe"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P4-00d848f8e591",
+        "target_name": "南柯辞",
+        "is_wolf": false,
+        "message": "Seer check: 南柯辞 is not wolf."
+      }
+    },
+    {
+      "id": "e5db51f6-7a3b-4ebd-866e-53ddcba198a0",
+      "ts": 1788607435.49461,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "e1084e8b-4036-41f1-aab3-56d6c977868a",
+      "ts": 1788607436.566591,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-d4bb4464e28e"
+      ],
+      "payload": {
+        "actor_id": "P1-d4bb4464e28e",
+        "actor_name": "林思远",
+        "action_type": "skip",
+        "target": null,
+        "reasoning": "目前信息不足，昨夜无人死亡说明守卫可能守中了刀口或狼人未出刀。毒药是宝贵资源，在没有明确狼人目标前不应贸然下毒，保留毒药等待更多信息。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "skipped": true
+      }
+    },
+    {
+      "id": "c7ab7b21-2dda-4bf9-9449-38e54fa24201",
+      "ts": 1788607436.6471152,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "801344dc-15f9-4b12-b445-268aa33217ae",
+      "ts": 1788607438.697845,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-f46aad3f7f40"
+      ],
+      "payload": {
+        "actor_id": "P2-f46aad3f7f40",
+        "actor_name": "宋知野",
+        "action_type": "guard",
+        "target": {
+          "id": "P4-00d848f8e591",
+          "seat": 4,
+          "name": "南柯辞",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "上一晚守护了1号，本晚不能连守。昨夜平安夜，女巫可能用药或狼刀被守。6人中需判断狼刀目标。1号昨日带票投云锦，狼人大概率不会刀他，但也不能排除。综合信息有限，4号南柯辞昨天被云锦反投，且陶若安也投了南柯辞，南柯辞可能是焦点位，狼人可能刀他来制造混乱。选择守护4号南柯辞。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-00d848f8e591"
+      }
+    },
+    {
+      "id": "71a83cc7-2de9-4511-8244-6bfa7cbaf6e7",
+      "ts": 1788607438.7780764,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "d672b64f-aa1a-4ebb-8fbd-e211f17abd4c",
+      "ts": 1788607438.7781088,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "9207ae95-c445-4334-b176-1d7ecd784025",
+      "ts": 1788607438.7781713,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "8866ca5f-cbc6-45ce-8cfc-b61b015730bd",
+      "ts": 1788607438.7781827,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "90af7865-df0a-4b0b-943b-bcd3eadaf996",
+      "ts": 1788607439.099925,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "9b69c297-980e-4016-a07e-df30e9fe8017",
+      "ts": 1788607441.6344426,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-d4bb4464e28e",
+        "actor_name": "林思远",
+        "speech": "1号发言。昨夜又是平安夜，连续两天无人死亡。我注意到D1票型很集中，5号云锦被六票放逐。现在剩6人，场上应该有2狼。既然连续两天平安夜，要么狼人空刀，要么守卫守中了，或者有解药在起作用。先听各位聊聊视角和判断，我暂时不急着点人。",
+        "reasoning": "我是女巫，首夜用了药救了刀口（save_used=True），昨夜无人死亡说明狼人可能刀到了守卫守护的人，或者狼人空刀。我需要先听大家发言收集信息，不宜过早表态。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "19858466-caf7-4d4b-8dfd-6ceea2d5ccd6",
+      "ts": 1788607443.7445621,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-f46aad3f7f40",
+        "actor_name": "宋知野",
+        "speech": "2号发言。连续两夜平安夜，信息很关键。我作为守卫，第一晚守了1号，第二晚守了4号，两次都没被狼刀命中。如果狼人两晚都出刀，那很可能是刀口正好落在我守的人身上，或者狼人空刀了。目前6人里2狼，4个好人。我个人觉得1号发言还算合理，先不急着点人，听大家各自报视角再判断。",
+        "reasoning": "连续两天平安夜，我需要基于事实信息梳理局面。我作为守卫，第一夜守了1号，第二夜守了4号。现在6人存活，需要找出2狼。先听听大家发言，不急着点名。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "092a69a8-dc11-48f0-b4ed-5615f2cc3dc5",
+      "ts": 1788607446.386265,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-3a6d1c780af1",
+        "actor_name": "苏晓晓",
+        "speech": "3号发言。连续两夜平安夜，2号跳守卫报了两晚守人信息。我先不质疑真伪，但想指出一点：如果2号真是守卫，第一晚守1号、第二晚守4号，那两晚平安夜意味着狼刀恰好都落在守卫的守口上，这个概率存在但不算高。另一种可能是狼人在空刀或刀口被女巫解药救了。",
+        "reasoning": "目前信息有限，2号跳守卫给出明确视角，1号发言中性。连续两夜平安夜有多种解释，我需要更多信息来判断。作为平民不宜过早站边或点人，先保持观察。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "e08033d9-dcfd-47de-9f2d-5273fd89605f",
+      "ts": 1788607446.3862727,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-3a6d1c780af1",
+        "actor_name": "苏晓晓",
+        "speech": "目前场上2狼4好人，各位的发言视角还太少，我倾向于先听4、6、7号各自报一下视角再判断。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "0039c44f-6db0-4a67-b22f-4a6d7c68ff14",
+      "ts": 1788607449.009133,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-00d848f8e591",
+        "actor_name": "南柯辞",
+        "speech": "4号发言。连续两夜平安夜，场上6人2狼。2号跳守卫报了两晚守人信息，这个信息我先保留判断。我注意到D1票型非常集中，5号被六票放逐，但5号投票时投了我和7号。既然5号被放逐，说明当时多数人认为5号是狼，那5号的同伴视角值得关注——5号投谁，可能指向其对立面或混淆视线。",
+        "reasoning": "连续两夜平安夜，2号跳守卫报了两晚守人信息。D1票型高度集中放逐了5号，但5号D1投了我和7号各一票，说明5号视角可能有异常。目前信息不足，我先平铺分析，不急于点人，等待6、7号发言后再判断。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "9f29737c-2f45-4a8b-a28a-b6376fefe3b2",
+      "ts": 1788607449.0091412,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-00d848f8e591",
+        "actor_name": "南柯辞",
+        "speech": "目前6、7号还没发言，我先听完再判断，暂不点人。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "77345ef6-617a-4980-9051-7debfec8cc5e",
+      "ts": 1788607452.6825044,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c2bbce6120fe",
+        "actor_name": "凌战",
+        "speech": "6号凌战发言。我再次明确身份：我是预言家。查验记录如下——D1查验1号林思远，结果好人；D2查验4号南柯辞，结果好人。这两条信息是真实的。",
+        "reasoning": "我是预言家，按战术指令必须如实公布身份与查验结果。我D1查了1号林思远为好人，D2查了4号南柯辞为好人。必须公开跳预言家并公布查验记录。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 4,
+        "claim_result": "good",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "1f8b2f11-7291-4b9e-8b1a-a6a2943c98a9",
+      "ts": 1788607452.6825244,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c2bbce6120fe",
+        "actor_name": "凌战",
+        "speech": "现在梳理场上逻辑。D1时5号云锦自称预言家并查杀4号，最终被六票放逐。如果5号是狼，它临死前查杀4号很可能是为了栽赃好人、制造混乱。我D2亲验4号是好人的结果，恰好印证了这个判断——4号是好人，5号当时在说谎。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "f2cf5b4c-82e6-4a68-981b-4244c0308109",
+      "ts": 1788607452.6825385,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c2bbce6120fe",
+        "actor_name": "凌战",
+        "speech": "再看昨晚，2号跳守卫报守了4号。如果2号真守卫且守对了，说明狼刀确实落在4号身上，这与我验4号为好人并不冲突，反而说明狼人在针对我验过的好人下手。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "2ada0856-1bb3-47be-9367-c67d66786d30",
+      "ts": 1788607452.6825519,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-c2bbce6120fe",
+        "actor_name": "凌战",
+        "speech": "目前存活6人中，我验过1号和4号都是好人。那么狼人集中在2、3、7号中的可能性最高。但我不急着下结论，先听2、3、7号进一步发言，同时我倾向投出剩余狼坑中的可疑对象。今天必须放逐一只狼，不能继续让平安夜拖延下去。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "3d747fe7-fbb5-4231-9cf9-ef498085dd3f",
+      "ts": 1788607456.0528083,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "speech": "7号陶若安发言。6号凌战，你在说谎。我才是真正的预言家。我D1查验了4号南柯辞，结果是狼人——这和5号云锦的查验结果完全一致。两个独立查验都指向4号是狼，这绝不是巧合。",
+        "reasoning": "6号凌战已经跳了预言家并报出了查验记录，我是后置位必须与之对跳。我方队友5号云锦D1已被放逐，我需要悍跳预言家与6号对跳，编造查验搅乱好人信息。我D1已声称验4号南柯辞为狼，需延续这个说法并否定6号的预言家身份。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 4,
+        "claim_result": "wolf",
+        "claim_mode": "fake_check"
+      }
+    },
+    {
+      "id": "50d3e04f-2a30-4ada-ade1-eafbcbee9e7b",
+      "ts": 1788607456.0528228,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "speech": "6号你声称D1验1号好人、D2验4号好人？你的逻辑完全站不住。如果4号真是好人，为什么5号临死前要查杀4号？为什么5号被放逐时投的是4号？更关键的是——为什么两个不同的人（我和5号）都验出4号是狼？你编造查验说4号好人，恰恰暴露了你在保狼队友。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "2384d57f-71d2-4040-849b-4c5d88fc709c",
+      "ts": 1788607456.052831,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-cf7b3ac32a08",
+        "actor_name": "陶若安",
+        "speech": "我怀疑6号凌战就是4号的狼同伴，两人配合想洗白4号。今天应该放逐4号南柯辞，或者放逐跳出来保狼的6号。我坚持我的查验结果，4号是狼。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "f8fb586d-c3d6-4d3b-bcb2-64291e273f10",
+      "ts": 1788607456.2138417,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "b58e79f5-411e-4768-8e18-3fffbeb25318",
+      "ts": 1788607457.5957842,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-d4bb4464e28e",
+        "voter_name": "林思远",
+        "target_id": "P6-c2bbce6120fe",
+        "target_name": "凌战",
+        "reasoning": "两名预言家对跳中，你编造对4号的好人查验与5、7号结果冲突，且在保狼队友。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "9772fb5e-bb9a-4ab5-a8f1-e7047d3290ae",
+      "ts": 1788607457.5958123,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-f46aad3f7f40",
+        "voter_name": "宋知野",
+        "target_id": "P7-cf7b3ac32a08",
+        "target_name": "陶若安",
+        "reasoning": "他是跳预言家与5号查杀一致却和6号正面冲突的最可疑者。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "07156dcd-a7a1-42d5-84de-c284c8cc1b74",
+      "ts": 1788607457.5958347,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-3a6d1c780af1",
+        "voter_name": "苏晓晓",
+        "target_id": "P4-00d848f8e591",
+        "target_name": "南柯辞",
+        "reasoning": "5号和7号独立查验均指认4号为狼，且6号保4号的逻辑存在明显矛盾。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "ad0e53b3-4ce9-4078-b082-0c1884be445d",
+      "ts": 1788607457.5958555,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-00d848f8e591",
+        "voter_name": "南柯辞",
+        "target_id": "P7-cf7b3ac32a08",
+        "target_name": "陶若安",
+        "reasoning": "7号声称两验都指向我，但5号被放逐时7号投我而非5号，逻辑矛盾且更像嫁祸。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "8d9f3bee-8ad8-4f43-8d2b-c0373dc3d749",
+      "ts": 1788607457.5959346,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-c2bbce6120fe",
+        "voter_name": "凌战",
+        "target_id": "P7-cf7b3ac32a08",
+        "target_name": "陶若安",
+        "reasoning": "7号与5号查验结果完全一致且力保5号，极可能是狼队配合栽赃4号。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "aa323a86-118c-4682-8f33-7645d443ffd2",
+      "ts": 1788607457.5959551,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-cf7b3ac32a08",
+        "voter_name": "陶若安",
+        "target_id": "P6-c2bbce6120fe",
+        "target_name": "凌战",
+        "reasoning": "凌战编造查验保4号，与我和5号的双重查杀矛盾，狼队配合洗白意图明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "1d0383c6-2e8d-499b-8aab-a5bf9d92d28c",
+      "ts": 1788607457.676471,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "a25eeae6-e11b-49a7-8b8c-528f007c41bb",
+      "ts": 1788607457.676513,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "陶若安 was voted out."
+      }
+    },
+    {
+      "id": "dbab1ca4-c3ba-47a8-985e-752fd3fc56fb",
+      "ts": 1788607457.676524,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P7-cf7b3ac32a08",
+        "player_name": "陶若安",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "e089f1b2-821a-442c-9a6d-246d49d34d82",
+      "ts": 1788607457.6765363,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "village",
+        "reason": "all_wolves_dead"
+      }
+    },
+    {
+      "id": "f67ff23f-20ab-464a-a79f-441044239da9",
+      "ts": 1788607457.676592,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P1-d4bb4464e28e": "P6-c2bbce6120fe",
+    "P2-f46aad3f7f40": "P7-cf7b3ac32a08",
+    "P3-3a6d1c780af1": "P4-00d848f8e591",
+    "P4-00d848f8e591": "P7-cf7b3ac32a08",
+    "P6-c2bbce6120fe": "P7-cf7b3ac32a08",
+    "P7-cf7b3ac32a08": "P6-c2bbce6120fe"
+  },
+  "vote_history": {
+    "1": {
+      "P1-d4bb4464e28e": "P5-cc66be652848",
+      "P2-f46aad3f7f40": "P5-cc66be652848",
+      "P3-3a6d1c780af1": "P5-cc66be652848",
+      "P4-00d848f8e591": "P5-cc66be652848",
+      "P5-cc66be652848": "P4-00d848f8e591",
+      "P6-c2bbce6120fe": "P5-cc66be652848",
+      "P7-cf7b3ac32a08": "P4-00d848f8e591"
+    },
+    "2": {
+      "P1-d4bb4464e28e": "P6-c2bbce6120fe",
+      "P2-f46aad3f7f40": "P7-cf7b3ac32a08",
+      "P3-3a6d1c780af1": "P4-00d848f8e591",
+      "P4-00d848f8e591": "P7-cf7b3ac32a08",
+      "P6-c2bbce6120fe": "P7-cf7b3ac32a08",
+      "P7-cf7b3ac32a08": "P6-c2bbce6120fe"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P5-cc66be652848",
+        "seat": 5,
+        "votes": 5.0
+      }
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "林思远: 昨夜平安夜。1号发言，先不急着站边，听一圈各位的信息和视角再判断。大家按顺序聊吧。",
+      "宋知野: 2号发言。昨夜平安夜，说明狼刀可能被守或救，也可能空刀。信息有限，先不站边，听大家聊完再判断。",
+      "苏晓晓: 3号发言。昨夜平安夜，三种可能：守卫守中刀口、女巫解药救人、或狼人空刀。目前信息量太少，硬去推谁是狼只会产生噪声。先听后面几位发言，重点观察谁在传递信息、谁在搅浑水。暂时不站边。",
+      "南柯辞: 4号发言。平安夜本身信息有限，三种可能都存在，前三位说得比较客观。目前没有足够依据去指认谁，先听5到7号的视角。我想重点观察的是：谁在给出独立的判断逻辑，谁只是在重复别人的话。暂时不站边。",
+      "云锦: 5号发言。昨夜平安夜，我来给各位一个重要信息——我是预言家。昨晚我查验了4号南柯辞，结果是狼人。我确信这个结果，请大家今天跟我一起把4号投出去。前四位都在说\"信息太少不站边\"，但真正有信息的人是我。如果大家有疑虑，可以继续听后面的6、7号发言，但我建议今天就处理掉4号这个查杀。",
+      "凌战: 6号凌战发言。我才是真正的预言家。昨夜我查验了1号林思远，结果是好人。5号云锦自称预言家并查杀4号，这与我的信息冲突——场上只有一个预言家，5号在撒谎，他大概率是狼人悍跳。我建议今天先处理5号云锦，而不是4号。请大家理性判断：1号我验过是好人，这是我的真实查验结果。",
+      "陶若安: 7号陶若安发言。我才是真正的预言家。昨夜我查验了4号南柯辞，结果是狼人。这与5号云锦的查验结果完全一致——两个独立查验都指向4号是狼，这绝不是巧合。6号凌战跳出来说自己是预言家、验了1号是好人，但场上只有一个预言家，如果5号是悍跳，那我和5号怎么会出现完全相同的查验结果？",
+      "陶若安: 这只能说明4号确实是狼，而6号才是那个试图保狼的悍跳者。今天应该处理4号南柯辞，请大家跟我一起投4号。",
+      "林思远 voted for 云锦 (5号查杀4号，但场上已有两假预言家对跳，其悍跳风险和节奏过快最为可疑。)",
+      "宋知野 voted for 云锦 (场上出现双预言家时，6号有明确查验信息而5号查杀4号与7号重复，存在配合跳预言家保狼的嫌疑。)",
+      "苏晓晓 voted for 云锦 (6号与5号预言家冲突，但5号查杀4号与7号重复，更像狼队配合悍跳。)",
+      "南柯辞 voted for 云锦 (悍跳预言家逻辑不完整，与6号预言家身份冲突，且查杀指向过于激进。)",
+      "云锦 voted for 南柯辞 (5号和7号双查验指向同一人，逻辑链完整，6号保狼嫌疑明显。)",
+      "凌战 voted for 云锦 (5号悍跳预言家与我查验结果冲突，场上唯一真预言家是我，5号是狼人。)",
+      "陶若安 voted for 南柯辞 (5号与我的查验结果一致指向4号是狼，6号保狼行为明显。)",
+      "云锦 died by voted_out"
+    ],
+    "2": [
+      "林思远: 1号发言。昨夜又是平安夜，连续两天无人死亡。我注意到D1票型很集中，5号云锦被六票放逐。现在剩6人，场上应该有2狼。既然连续两天平安夜，要么狼人空刀，要么守卫守中了，或者有解药在起作用。先听各位聊聊视角和判断，我暂时不急着点人。",
+      "宋知野: 2号发言。连续两夜平安夜，信息很关键。我作为守卫，第一晚守了1号，第二晚守了4号，两次都没被狼刀命中。如果狼人两晚都出刀，那很可能是刀口正好落在我守的人身上，或者狼人空刀了。目前6人里2狼，4个好人。我个人觉得1号发言还算合理，先不急着点人，听大家各自报视角再判断。",
+      "苏晓晓: 3号发言。连续两夜平安夜，2号跳守卫报了两晚守人信息。我先不质疑真伪，但想指出一点：如果2号真是守卫，第一晚守1号、第二晚守4号，那两晚平安夜意味着狼刀恰好都落在守卫的守口上，这个概率存在但不算高。另一种可能是狼人在空刀或刀口被女巫解药救了。",
+      "苏晓晓: 目前场上2狼4好人，各位的发言视角还太少，我倾向于先听4、6、7号各自报一下视角再判断。",
+      "南柯辞: 4号发言。连续两夜平安夜，场上6人2狼。2号跳守卫报了两晚守人信息，这个信息我先保留判断。我注意到D1票型非常集中，5号被六票放逐，但5号投票时投了我和7号。既然5号被放逐，说明当时多数人认为5号是狼，那5号的同伴视角值得关注——5号投谁，可能指向其对立面或混淆视线。",
+      "南柯辞: 目前6、7号还没发言，我先听完再判断，暂不点人。",
+      "凌战: 6号凌战发言。我再次明确身份：我是预言家。查验记录如下——D1查验1号林思远，结果好人；D2查验4号南柯辞，结果好人。这两条信息是真实的。",
+      "凌战: 现在梳理场上逻辑。D1时5号云锦自称预言家并查杀4号，最终被六票放逐。如果5号是狼，它临死前查杀4号很可能是为了栽赃好人、制造混乱。我D2亲验4号是好人的结果，恰好印证了这个判断——4号是好人，5号当时在说谎。",
+      "凌战: 再看昨晚，2号跳守卫报守了4号。如果2号真守卫且守对了，说明狼刀确实落在4号身上，这与我验4号为好人并不冲突，反而说明狼人在针对我验过的好人下手。",
+      "凌战: 目前存活6人中，我验过1号和4号都是好人。那么狼人集中在2、3、7号中的可能性最高。但我不急着下结论，先听2、3、7号进一步发言，同时我倾向投出剩余狼坑中的可疑对象。今天必须放逐一只狼，不能继续让平安夜拖延下去。",
+      "陶若安: 7号陶若安发言。6号凌战，你在说谎。我才是真正的预言家。我D1查验了4号南柯辞，结果是狼人——这和5号云锦的查验结果完全一致。两个独立查验都指向4号是狼，这绝不是巧合。",
+      "陶若安: 6号你声称D1验1号好人、D2验4号好人？你的逻辑完全站不住。如果4号真是好人，为什么5号临死前要查杀4号？为什么5号被放逐时投的是4号？更关键的是——为什么两个不同的人（我和5号）都验出4号是狼？你编造查验说4号好人，恰恰暴露了你在保狼队友。",
+      "陶若安: 我怀疑6号凌战就是4号的狼同伴，两人配合想洗白4号。今天应该放逐4号南柯辞，或者放逐跳出来保狼的6号。我坚持我的查验结果，4号是狼。",
+      "林思远 voted for 凌战 (两名预言家对跳中，你编造对4号的好人查验与5、7号结果冲突，且在保狼队友。)",
+      "宋知野 voted for 陶若安 (他是跳预言家与5号查杀一致却和6号正面冲突的最可疑者。)",
+      "苏晓晓 voted for 南柯辞 (5号和7号独立查验均指认4号为狼，且6号保4号的逻辑存在明显矛盾。)",
+      "南柯辞 voted for 陶若安 (7号声称两验都指向我，但5号被放逐时7号投我而非5号，逻辑矛盾且更像嫁祸。)",
+      "凌战 voted for 陶若安 (7号与5号查验结果完全一致且力保5号，极可能是狼队配合栽赃4号。)",
+      "陶若安 voted for 凌战 (凌战编造查验保4号，与我和5号的双重查杀矛盾，狼队配合洗白意图明显。)",
+      "陶若安 died by voted_out",
+      "Game ended: village (all_wolves_dead)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "林思远",
+        "speaker_id": "P1-d4bb4464e28e",
+        "content": "昨夜平安夜。1号发言，先不急着站边，听一圈各位的信息和视角再判断。大家按顺序聊吧。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "宋知野",
+        "speaker_id": "P2-f46aad3f7f40",
+        "content": "2号发言。昨夜平安夜，说明狼刀可能被守或救，也可能空刀。信息有限，先不站边，听大家聊完再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "苏晓晓",
+        "speaker_id": "P3-3a6d1c780af1",
+        "content": "3号发言。昨夜平安夜，三种可能：守卫守中刀口、女巫解药救人、或狼人空刀。目前信息量太少，硬去推谁是狼只会产生噪声。先听后面几位发言，重点观察谁在传递信息、谁在搅浑水。暂时不站边。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P4-00d848f8e591",
+        "content": "4号发言。平安夜本身信息有限，三种可能都存在，前三位说得比较客观。目前没有足够依据去指认谁，先听5到7号的视角。我想重点观察的是：谁在给出独立的判断逻辑，谁只是在重复别人的话。暂时不站边。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "云锦",
+        "speaker_id": "P5-cc66be652848",
+        "content": "5号发言。昨夜平安夜，我来给各位一个重要信息——我是预言家。昨晚我查验了4号南柯辞，结果是狼人。我确信这个结果，请大家今天跟我一起把4号投出去。前四位都在说\"信息太少不站边\"，但真正有信息的人是我。如果大家有疑虑，可以继续听后面的6、7号发言，但我建议今天就处理掉4号这个查杀。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "凌战",
+        "speaker_id": "P6-c2bbce6120fe",
+        "content": "6号凌战发言。我才是真正的预言家。昨夜我查验了1号林思远，结果是好人。5号云锦自称预言家并查杀4号，这与我的信息冲突——场上只有一个预言家，5号在撒谎，他大概率是狼人悍跳。我建议今天先处理5号云锦，而不是4号。请大家理性判断：1号我验过是好人，这是我的真实查验结果。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "陶若安",
+        "speaker_id": "P7-cf7b3ac32a08",
+        "content": "7号陶若安发言。我才是真正的预言家。昨夜我查验了4号南柯辞，结果是狼人。这与5号云锦的查验结果完全一致——两个独立查验都指向4号是狼，这绝不是巧合。6号凌战跳出来说自己是预言家、验了1号是好人，但场上只有一个预言家，如果5号是悍跳，那我和5号怎么会出现完全相同的查验结果？"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "陶若安",
+        "speaker_id": "P7-cf7b3ac32a08",
+        "content": "这只能说明4号确实是狼，而6号才是那个试图保狼的悍跳者。今天应该处理4号南柯辞，请大家跟我一起投4号。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "林思远",
+        "voter_id": "P1-d4bb4464e28e",
+        "target_name": "云锦",
+        "target_id": "P5-cc66be652848",
+        "reasoning": "5号查杀4号，但场上已有两假预言家对跳，其悍跳风险和节奏过快最为可疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "宋知野",
+        "voter_id": "P2-f46aad3f7f40",
+        "target_name": "云锦",
+        "target_id": "P5-cc66be652848",
+        "reasoning": "场上出现双预言家时，6号有明确查验信息而5号查杀4号与7号重复，存在配合跳预言家保狼的嫌疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "苏晓晓",
+        "voter_id": "P3-3a6d1c780af1",
+        "target_name": "云锦",
+        "target_id": "P5-cc66be652848",
+        "reasoning": "6号与5号预言家冲突，但5号查杀4号与7号重复，更像狼队配合悍跳。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "南柯辞",
+        "voter_id": "P4-00d848f8e591",
+        "target_name": "云锦",
+        "target_id": "P5-cc66be652848",
+        "reasoning": "悍跳预言家逻辑不完整，与6号预言家身份冲突，且查杀指向过于激进。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "云锦",
+        "voter_id": "P5-cc66be652848",
+        "target_name": "南柯辞",
+        "target_id": "P4-00d848f8e591",
+        "reasoning": "5号和7号双查验指向同一人，逻辑链完整，6号保狼嫌疑明显。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "凌战",
+        "voter_id": "P6-c2bbce6120fe",
+        "target_name": "云锦",
+        "target_id": "P5-cc66be652848",
+        "reasoning": "5号悍跳预言家与我查验结果冲突，场上唯一真预言家是我，5号是狼人。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "陶若安",
+        "voter_id": "P7-cf7b3ac32a08",
+        "target_name": "南柯辞",
+        "target_id": "P4-00d848f8e591",
+        "reasoning": "5号与我的查验结果一致指向4号是狼，6号保狼行为明显。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "云锦",
+        "player_id": "P5-cc66be652848",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "林思远",
+        "speaker_id": "P1-d4bb4464e28e",
+        "content": "1号发言。昨夜又是平安夜，连续两天无人死亡。我注意到D1票型很集中，5号云锦被六票放逐。现在剩6人，场上应该有2狼。既然连续两天平安夜，要么狼人空刀，要么守卫守中了，或者有解药在起作用。先听各位聊聊视角和判断，我暂时不急着点人。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "宋知野",
+        "speaker_id": "P2-f46aad3f7f40",
+        "content": "2号发言。连续两夜平安夜，信息很关键。我作为守卫，第一晚守了1号，第二晚守了4号，两次都没被狼刀命中。如果狼人两晚都出刀，那很可能是刀口正好落在我守的人身上，或者狼人空刀了。目前6人里2狼，4个好人。我个人觉得1号发言还算合理，先不急着点人，听大家各自报视角再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "苏晓晓",
+        "speaker_id": "P3-3a6d1c780af1",
+        "content": "3号发言。连续两夜平安夜，2号跳守卫报了两晚守人信息。我先不质疑真伪，但想指出一点：如果2号真是守卫，第一晚守1号、第二晚守4号，那两晚平安夜意味着狼刀恰好都落在守卫的守口上，这个概率存在但不算高。另一种可能是狼人在空刀或刀口被女巫解药救了。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "苏晓晓",
+        "speaker_id": "P3-3a6d1c780af1",
+        "content": "目前场上2狼4好人，各位的发言视角还太少，我倾向于先听4、6、7号各自报一下视角再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P4-00d848f8e591",
+        "content": "4号发言。连续两夜平安夜，场上6人2狼。2号跳守卫报了两晚守人信息，这个信息我先保留判断。我注意到D1票型非常集中，5号被六票放逐，但5号投票时投了我和7号。既然5号被放逐，说明当时多数人认为5号是狼，那5号的同伴视角值得关注——5号投谁，可能指向其对立面或混淆视线。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "南柯辞",
+        "speaker_id": "P4-00d848f8e591",
+        "content": "目前6、7号还没发言，我先听完再判断，暂不点人。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "凌战",
+        "speaker_id": "P6-c2bbce6120fe",
+        "content": "6号凌战发言。我再次明确身份：我是预言家。查验记录如下——D1查验1号林思远，结果好人；D2查验4号南柯辞，结果好人。这两条信息是真实的。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "凌战",
+        "speaker_id": "P6-c2bbce6120fe",
+        "content": "现在梳理场上逻辑。D1时5号云锦自称预言家并查杀4号，最终被六票放逐。如果5号是狼，它临死前查杀4号很可能是为了栽赃好人、制造混乱。我D2亲验4号是好人的结果，恰好印证了这个判断——4号是好人，5号当时在说谎。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "凌战",
+        "speaker_id": "P6-c2bbce6120fe",
+        "content": "再看昨晚，2号跳守卫报守了4号。如果2号真守卫且守对了，说明狼刀确实落在4号身上，这与我验4号为好人并不冲突，反而说明狼人在针对我验过的好人下手。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "凌战",
+        "speaker_id": "P6-c2bbce6120fe",
+        "content": "目前存活6人中，我验过1号和4号都是好人。那么狼人集中在2、3、7号中的可能性最高。但我不急着下结论，先听2、3、7号进一步发言，同时我倾向投出剩余狼坑中的可疑对象。今天必须放逐一只狼，不能继续让平安夜拖延下去。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "陶若安",
+        "speaker_id": "P7-cf7b3ac32a08",
+        "content": "7号陶若安发言。6号凌战，你在说谎。我才是真正的预言家。我D1查验了4号南柯辞，结果是狼人——这和5号云锦的查验结果完全一致。两个独立查验都指向4号是狼，这绝不是巧合。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "陶若安",
+        "speaker_id": "P7-cf7b3ac32a08",
+        "content": "6号你声称D1验1号好人、D2验4号好人？你的逻辑完全站不住。如果4号真是好人，为什么5号临死前要查杀4号？为什么5号被放逐时投的是4号？更关键的是——为什么两个不同的人（我和5号）都验出4号是狼？你编造查验说4号好人，恰恰暴露了你在保狼队友。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "陶若安",
+        "speaker_id": "P7-cf7b3ac32a08",
+        "content": "我怀疑6号凌战就是4号的狼同伴，两人配合想洗白4号。今天应该放逐4号南柯辞，或者放逐跳出来保狼的6号。我坚持我的查验结果，4号是狼。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "林思远",
+        "voter_id": "P1-d4bb4464e28e",
+        "target_name": "凌战",
+        "target_id": "P6-c2bbce6120fe",
+        "reasoning": "两名预言家对跳中，你编造对4号的好人查验与5、7号结果冲突，且在保狼队友。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "宋知野",
+        "voter_id": "P2-f46aad3f7f40",
+        "target_name": "陶若安",
+        "target_id": "P7-cf7b3ac32a08",
+        "reasoning": "他是跳预言家与5号查杀一致却和6号正面冲突的最可疑者。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "苏晓晓",
+        "voter_id": "P3-3a6d1c780af1",
+        "target_name": "南柯辞",
+        "target_id": "P4-00d848f8e591",
+        "reasoning": "5号和7号独立查验均指认4号为狼，且6号保4号的逻辑存在明显矛盾。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "南柯辞",
+        "voter_id": "P4-00d848f8e591",
+        "target_name": "陶若安",
+        "target_id": "P7-cf7b3ac32a08",
+        "reasoning": "7号声称两验都指向我，但5号被放逐时7号投我而非5号，逻辑矛盾且更像嫁祸。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "凌战",
+        "voter_id": "P6-c2bbce6120fe",
+        "target_name": "陶若安",
+        "target_id": "P7-cf7b3ac32a08",
+        "reasoning": "7号与5号查验结果完全一致且力保5号，极可能是狼队配合栽赃4号。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "陶若安",
+        "voter_id": "P7-cf7b3ac32a08",
+        "target_name": "凌战",
+        "target_id": "P6-c2bbce6120fe",
+        "reasoning": "凌战编造查验保4号，与我和5号的双重查杀矛盾，狼队配合洗白意图明显。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "陶若安",
+        "player_id": "P7-cf7b3ac32a08",
+        "reason": "voted_out"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "village",
+        "reason": "all_wolves_dead"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "village",
+  "night_actions": {
+    "guard_target_id": "P4-00d848f8e591",
+    "last_guard_target_id": "P4-00d848f8e591",
+    "wolf_votes": {
+      "P7-cf7b3ac32a08": ""
+    },
+    "wolf_target_id": null,
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": "P4-00d848f8e591",
+    "seer_result": {
+      "kind": "seer_result",
+      "target_id": "P4-00d848f8e591",
+      "target_name": "南柯辞",
+      "is_wolf": false,
+      "message": "Seer check: 南柯辞 is not wolf."
+    },
+    "deaths": []
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}

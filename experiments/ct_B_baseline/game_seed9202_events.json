@@ -1,0 +1,2596 @@
+{
+  "id": "44acfe9d-2824-4f50-85d9-a86b12adf75f",
+  "phase": "GAME_END",
+  "day": 2,
+  "players": [
+    {
+      "id": "P1-273f132c7ea2",
+      "seat": 1,
+      "name": "卡卡",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "卡卡",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Witch",
+      "alignment": "village"
+    },
+    {
+      "id": "P2-cc03f0ba0f1b",
+      "seat": 2,
+      "name": "凌战",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "凌战",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Guard",
+      "alignment": "village"
+    },
+    {
+      "id": "P3-74a7a00f0f9c",
+      "seat": 3,
+      "name": "穆冬青",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "穆冬青",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P4-d50ef60dfa0a",
+      "seat": 4,
+      "name": "赵铁柱",
+      "alive": false,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "赵铁柱",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Seer",
+      "alignment": "village"
+    },
+    {
+      "id": "P5-5156a99a30cd",
+      "seat": 5,
+      "name": "霁川",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "霁川",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    },
+    {
+      "id": "P6-30e4e7fc3c35",
+      "seat": 6,
+      "name": "司南",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "司南",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Villager",
+      "alignment": "village"
+    },
+    {
+      "id": "P7-560763411089",
+      "seat": 7,
+      "name": "蓝知怀",
+      "alive": true,
+      "is_ai": true,
+      "agent_type": "llm",
+      "persona": {
+        "name": "蓝知怀",
+        "mbti": "ISTJ",
+        "basic_info": "理性功利的策略玩家，只按信息、胜率与期望收益做判断。",
+        "style_label": "analytical",
+        "reasoning_style": "期望收益与信息推理",
+        "speech_length_habit": "简洁，只说与判断相关的信息",
+        "vocabulary_style": "平实精确"
+      },
+      "role": "Werewolf",
+      "alignment": "wolf"
+    }
+  ],
+  "events": [
+    {
+      "id": "39addec8-0320-46f0-ba98-d7a5ef716517",
+      "ts": 1788604856.6315591,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "GAME_START",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "game_id": "44acfe9d-2824-4f50-85d9-a86b12adf75f",
+        "players": [
+          {
+            "id": "P1-273f132c7ea2",
+            "seat": 1,
+            "name": "卡卡",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P2-cc03f0ba0f1b",
+            "seat": 2,
+            "name": "凌战",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P3-74a7a00f0f9c",
+            "seat": 3,
+            "name": "穆冬青",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P4-d50ef60dfa0a",
+            "seat": 4,
+            "name": "赵铁柱",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P5-5156a99a30cd",
+            "seat": 5,
+            "name": "霁川",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P6-30e4e7fc3c35",
+            "seat": 6,
+            "name": "司南",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          },
+          {
+            "id": "P7-560763411089",
+            "seat": 7,
+            "name": "蓝知怀",
+            "alive": true,
+            "is_ai": true,
+            "agent_type": "llm",
+            "persona": {
+              "style_label": "analytical",
+              "mbti": "ISTJ"
+            }
+          }
+        ],
+        "role_count": 7
+      }
+    },
+    {
+      "id": "99e5a118-7dfd-44c8-a90f-05328294aa27",
+      "ts": 1788604856.631571,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "【规则公告】本局启用诚实规则：只有真正的预言家可以在发言中声称预言家身份、公布查验结果或发放金水/查杀；其他玩家发言中不得自称或暗示自己是预言家/先知、不得声称自己查验过任何玩家、不得给任何人金水或查杀。违反诚实规则的发言将被系统当场驳回。"
+      }
+    },
+    {
+      "id": "69e1cd88-2c64-4948-b505-a4288bda7f55",
+      "ts": 1788604856.6316288,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P1-273f132c7ea2"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 卡卡, role=Witch, alignment=village."
+      }
+    },
+    {
+      "id": "5401f7ba-35b5-443b-a59f-2799984cf392",
+      "ts": 1788604856.631662,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P2-cc03f0ba0f1b"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 凌战, role=Guard, alignment=village."
+      }
+    },
+    {
+      "id": "3b76fcce-7bac-47af-b7fa-106f9ee54b90",
+      "ts": 1788604856.6316922,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P3-74a7a00f0f9c"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 穆冬青, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "62a1d36b-358e-4b94-8843-1eede2a3c1c1",
+      "ts": 1788604856.631723,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-d50ef60dfa0a"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 赵铁柱, role=Seer, alignment=village."
+      }
+    },
+    {
+      "id": "f98a5447-0391-4cb0-88dd-fc2c58efa42f",
+      "ts": 1788604856.6317568,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 霁川, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "d75d27dd-3080-48f2-a734-2b1b66abfdd0",
+      "ts": 1788604856.6317852,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P6-30e4e7fc3c35"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 司南, role=Villager, alignment=village."
+      }
+    },
+    {
+      "id": "033d451f-58f5-4621-bf4e-49261c721a50",
+      "ts": 1788604856.631817,
+      "day": 0,
+      "phase": "SETUP",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "role_assignment",
+        "message": "You are 蓝知怀, role=Werewolf, alignment=wolf."
+      }
+    },
+    {
+      "id": "c76bbf00-d3a6-44ea-909a-ee91f446ac17",
+      "ts": 1788604856.631848,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "b9619cf5-2d1f-4740-8a21-d83c67bcf88d",
+      "ts": 1788604856.6318562,
+      "day": 1,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 1 begins."
+      }
+    },
+    {
+      "id": "59a104cb-56a4-4d9b-b1d3-81c53fe5a43a",
+      "ts": 1788604856.7124963,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "a4fe1437-241b-42b1-931a-d27713c7cbe3",
+      "ts": 1788604856.7125523,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P5-5156a99a30cd",
+          "P7-560763411089"
+        ],
+        "wolf_names": [
+          "霁川",
+          "蓝知怀"
+        ]
+      }
+    },
+    {
+      "id": "fdfe4d72-1e8f-45d4-9915-490f8b3491f1",
+      "ts": 1788604857.615325,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "message": "霁川（私聊）：今晚刀4号赵铁柱，理由：中位威胁，先解决潜在核心。",
+        "speech": "今晚刀4号赵铁柱，理由：中位威胁，先解决潜在核心。",
+        "proposed_target_id": "P4-d50ef60dfa0a",
+        "proposed_target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "908e445d-5ae2-4138-aa66-fa1a47561578",
+      "ts": 1788604858.4238143,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "message": "蓝知怀（私聊）：同意，今晚刀4号赵铁柱，中位威胁优先处理。",
+        "speech": "同意，今晚刀4号赵铁柱，中位威胁优先处理。",
+        "proposed_target_id": "P4-d50ef60dfa0a",
+        "proposed_target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "6a20ad92-cb11-429d-9dad-fbf31a55f723",
+      "ts": 1788604858.423866,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "a865a4d4-7c09-4260-9613-bd259081ff2e",
+      "ts": 1788604858.4238858,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "message": "霁川 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "eb609dfb-fe57-45a1-a262-a6dea3b425e8",
+      "ts": 1788604859.2201412,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-d50ef60dfa0a",
+          "seat": 4,
+          "name": "赵铁柱",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友蓝知怀达成共识，刀4号赵铁柱，中位威胁优先处理。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "2b85bc1b-ccb7-4824-92ec-fb8af6aa2add",
+      "ts": 1788604859.220156,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "message": "蓝知怀 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P5-5156a99a30cd",
+            "wolf_name": "霁川",
+            "target_id": "P4-d50ef60dfa0a",
+            "target_name": "赵铁柱"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f1d7cfc0-87b4-4b6c-90e5-6fcfba2f99a3",
+      "ts": 1788604860.557099,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-d50ef60dfa0a",
+          "seat": 4,
+          "name": "赵铁柱",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友达成一致，刀4号赵铁柱，中位威胁优先处理。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "c3a92765-a5fe-433f-892e-30ab4f69d633",
+      "ts": 1788604860.5571132,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为赵铁柱。",
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱",
+        "votes": {
+          "P5-5156a99a30cd": "P4-d50ef60dfa0a",
+          "P7-560763411089": "P4-d50ef60dfa0a"
+        }
+      }
+    },
+    {
+      "id": "a110b1ee-9701-4edd-8798-76e729719945",
+      "ts": 1788604860.5571272,
+      "day": 1,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "0532cdc6-c53e-4cb0-98b6-51e35b104d6e",
+      "ts": 1788604860.557151,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "d6e59f95-1514-4e9f-9929-d5b68f287c07",
+      "ts": 1788604861.4760823,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-d50ef60dfa0a"
+      ],
+      "payload": {
+        "actor_id": "P4-d50ef60dfa0a",
+        "actor_name": "赵铁柱",
+        "action_type": "divine",
+        "target": {
+          "id": "P1-273f132c7ea2",
+          "seat": 1,
+          "name": "卡卡",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜应查验一名玩家获取信息，为白天发言提供依据。选择查验1号卡卡。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P1-273f132c7ea2"
+      }
+    },
+    {
+      "id": "079ec697-4c52-4bfd-8d39-ba06ccb21a95",
+      "ts": 1788604861.4760919,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-d50ef60dfa0a"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P1-273f132c7ea2",
+        "target_name": "卡卡",
+        "is_wolf": false,
+        "message": "Seer check: 卡卡 is not wolf."
+      }
+    },
+    {
+      "id": "983ffadf-38c9-4c4e-9447-b7e955a09ee2",
+      "ts": 1788604861.476104,
+      "day": 1,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "fb68e37e-9f08-4b08-a0e9-92ac09aa4a0f",
+      "ts": 1788604861.5566757,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "487a6b86-649c-47f9-94b8-758be7eab07b",
+      "ts": 1788604863.1597269,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-273f132c7ea2"
+      ],
+      "payload": {
+        "actor_id": "P1-273f132c7ea2",
+        "actor_name": "卡卡",
+        "action_type": "witch_save",
+        "target": {
+          "id": "P4-d50ef60dfa0a",
+          "seat": 4,
+          "name": "赵铁柱",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "首夜被刀4号，女巫解药救下能保证全场7人满员进入白天，为好人阵营保留人数优势。首夜救人是最稳妥的常规打法。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P4-d50ef60dfa0a"
+      }
+    },
+    {
+      "id": "26fb0257-7eb5-4dd2-8ff3-dfed8f4e1158",
+      "ts": 1788604863.1597486,
+      "day": 1,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "0f48188d-61e9-4fc3-919e-c6e1e15f0264",
+      "ts": 1788604863.2400503,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "cd634eab-834b-49bd-b4e0-db884af202f9",
+      "ts": 1788604864.430868,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P2-cc03f0ba0f1b"
+      ],
+      "payload": {
+        "actor_id": "P2-cc03f0ba0f1b",
+        "actor_name": "凌战",
+        "action_type": "guard",
+        "target": {
+          "id": "P3-74a7a00f0f9c",
+          "seat": 3,
+          "name": "穆冬青",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "第一晚没有信息，选择守护一名玩家以提供基本保护。随机选择守护3号，避免连续守人的限制问题，同时覆盖一个可能的刀口。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P3-74a7a00f0f9c"
+      }
+    },
+    {
+      "id": "05c50939-daff-4319-bbe9-5e4a9c05a655",
+      "ts": 1788604864.4308856,
+      "day": 1,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "行动完毕",
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "d7cb4529-a07a-40b3-8336-303823c039e6",
+      "ts": 1788604864.5110843,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "b9698581-2eac-4a4b-846e-7259713b895d",
+      "ts": 1788604864.5111017,
+      "day": 1,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜无人死亡。"
+      }
+    },
+    {
+      "id": "9d9b851a-0a47-4026-9d9a-df1a7eda3934",
+      "ts": 1788604864.5111625,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "391925fb-704c-4dbf-8876-ef2ef51a8f18",
+      "ts": 1788604864.5111752,
+      "day": 1,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 1 begins."
+      }
+    },
+    {
+      "id": "ac954d1c-ad23-4290-b65a-a6efe7d5edee",
+      "ts": 1788604864.8320928,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "136e45a8-5de4-49aa-bec6-ac19535788cc",
+      "ts": 1788604867.550791,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-273f132c7ea2",
+        "actor_name": "卡卡",
+        "speech": "首夜平安夜，无人死亡。这个信息本身值得注意——要么狼刀被守卫守住，要么有其他原因。目前场上没有任何查验信息和异常发言，我不急着下判断。先听各人发言，后续再梳理。有信息的尽早给信息，没信息的别编故事。",
+        "reasoning": "首日无人死亡，信息极少。作为女巫且已用解药（save_used: True），昨夜无人死亡说明狼人可能刀中了被守卫守护的人，或者狼人空刀。但规则禁止狼人空刀，所以可能是守卫守对了。现在信息不足，不宜过早表态或点名，先平铺发言观察后续。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "bbed52d1-e2aa-40eb-a2a1-f80bfe1d9ef9",
+      "ts": 1788604869.0949237,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P2-cc03f0ba0f1b",
+        "actor_name": "凌战",
+        "speech": "首夜平安夜，无人死亡。我昨晚守了3号，如果狼刀在3号身上，那平安夜就说得通。不过现在没有查验信息，先听大家发言，有信息尽早给。",
+        "reasoning": "首日平安夜，尚无查验信息，作为守卫不宜过早表态或站边。先以baseline平铺陈述，观察局势。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "1faec3b1-7a71-4ddc-b63d-0c492b348c48",
+      "ts": 1788604871.660342,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-74a7a00f0f9c",
+        "actor_name": "穆冬青",
+        "speech": "首夜平安夜，这个结果本身信息量有限——可能是守卫守住，可能是狼人空刀，也可能有其他情况。2号称守了我，这是一个可验证的信息点，但目前无法独立确认。如果2号真是守卫且狼刀在我身上，那平安夜合理；但也不能排除2号编造身份的可能性。目前场上没有查验信息，我不急着给结论。",
+        "reasoning": "首夜平安夜，2号自称守卫守了我。这是重要信息：如果2号是真守卫，狼刀很可能在我身上；但2号也可能是狼人编造守卫身份来洗白。目前信息不足，先做中性分析，不急于点名或站边。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "e857e216-86ca-4277-bfe4-9a53ea907971",
+      "ts": 1788604871.660356,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-74a7a00f0f9c",
+        "actor_name": "穆冬青",
+        "speech": "先听后续发言，尤其是有查验的神职尽早给信息。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "1d358787-c3a8-4ef0-a9f5-eb7449437892",
+      "ts": 1788604873.686769,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P4-d50ef60dfa0a",
+        "actor_name": "赵铁柱",
+        "speech": "我是4号预言家。昨晚查验了1号卡卡，结果是好人。目前场上平安夜，2号称守了3号。我建议：既然1号已确认好人，大家可以围绕剩余5人中找狼。2、3号的守卫/被守关系需要进一步观察，但不要过早下结论。有查验信息的神职也请尽早给出，我们共同锁定狼坑。",
+        "reasoning": "我是预言家，必须如实公布身份和查验结果。我查验了1号卡卡是好人，应尽早给出信息帮助好人阵营建立信息框架。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "seer_claim",
+        "claim_seat": 1,
+        "claim_result": "good",
+        "claim_mode": "true_check"
+      }
+    },
+    {
+      "id": "c69e87a7-8f78-4fc3-a5a4-f0524d734015",
+      "ts": 1788604886.942902,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "speech": "平安夜信息确实有限，2号守3号的说法暂时无法验证。4号给出查验结果，先记下。我目前没有更多信息，继续听大家发言。",
+        "reasoning": "4号预言家跳出来且验1号好人，狼队需隐藏身份、避免过早暴露立场，先保持低调观察局势。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "f46c6484-b9ff-49ac-a42e-e396cdbc4b5d",
+      "ts": 1788604889.4012318,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-30e4e7fc3c35",
+        "actor_name": "司南",
+        "speech": "首日平安夜，场上信息有限。4号称查验1号是好人，这条先记下。2号守卫身份和3号被守关系目前都无法独立验证，需要后续轮次观察。我倾向先听大家发言，尤其关注后续是否有其他查验信息与4号说法相互印证或矛盾。暂时不急于下结论。",
+        "reasoning": "首日信息有限，4号预言家查验1号为好人。我作为平民没有额外信息，先保持观察，不急于站边或点名。需要更多发言和后续投票来验证2号守卫身份及4号预言家可信度。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "6fdb6a86-67da-4aed-8ea0-cad0ffc915e7",
+      "ts": 1788604891.63179,
+      "day": 1,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "speech": "首夜平安夜，信息确实有限。4号称查验1号是好人，这条先记下，但目前无法独立验证。2号守卫身份和3号被守关系也需要后续观察。我暂时没有更多信息，先听大家后续发言，尤其关注后续是否有新的查验信息与4号说法形成印证或矛盾。",
+        "reasoning": "首日信息有限，4号跳预言家并给出查验1号为好人。我作为狼人需要保持低调观察，不宜过早站边或点人。4号查验1号好人，若1号真是好人则4号可能是真预言家，这对狼队不利。目前先平铺陈述，观察后续发展。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "feea5579-61b4-4a13-b9dc-3322374036c5",
+      "ts": 1788604891.7927353,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "22f70d16-67f1-4e30-881c-302c7a0b7455",
+      "ts": 1788604893.8837929,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-273f132c7ea2",
+        "voter_name": "卡卡",
+        "target_id": "P2-cc03f0ba0f1b",
+        "target_name": "凌战",
+        "reasoning": "狼人大概率不会首夜刀守卫描述的错误目标，2号抢先认守3号最可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "47ee4545-c99a-494d-80d4-558a3152bc78",
+      "ts": 1788604893.8838072,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P2-cc03f0ba0f1b",
+        "voter_name": "凌战",
+        "target_id": "P7-560763411089",
+        "target_name": "蓝知怀",
+        "reasoning": "发言跟随性过强，缺乏独立判断，倾向划水隐藏信息。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "d2416e9f-ac77-40d3-a77a-60d2fe1551c1",
+      "ts": 1788604893.8838167,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-74a7a00f0f9c",
+        "voter_name": "穆冬青",
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱",
+        "reasoning": "预言家首日跳出不排除狼人悍跳可能，查验信息无法验证，需后续观察。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "e7df01c8-ae90-46ba-8703-f9f8a9f19a1a",
+      "ts": 1788604893.883846,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P4-d50ef60dfa0a",
+        "voter_name": "赵铁柱",
+        "target_id": "P2-cc03f0ba0f1b",
+        "target_name": "凌战",
+        "reasoning": "首夜平安夜下主动声称守3号，缺乏可验证依据，存在编造身份引导节奏的嫌疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "d4bc14d8-c1ef-4de6-bbe6-7c7ac22a8958",
+      "ts": 1788604893.883855,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-5156a99a30cd",
+        "voter_name": "霁川",
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱",
+        "reasoning": "预言家身份过早暴露且查验信息无法验证，优先处理潜在核心威胁。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "f836350d-48bc-49aa-b27a-4217c8963b79",
+      "ts": 1788604893.8838642,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-30e4e7fc3c35",
+        "voter_name": "司南",
+        "target_id": "P3-74a7a00f0f9c",
+        "target_name": "穆冬青",
+        "reasoning": "2号明确守他且平安夜，若2号为真守卫，3号身份存疑需优先排坑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "9898eae7-f33b-44e7-9c5f-a7c20bf595cb",
+      "ts": 1788604893.8838744,
+      "day": 1,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-560763411089",
+        "voter_name": "蓝知怀",
+        "target_id": "P2-cc03f0ba0f1b",
+        "target_name": "凌战",
+        "reasoning": "守卫身份无法验证且过早暴露信息，值得优先排查。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "47dc2145-9b3a-4667-884a-7e80f72fee6c",
+      "ts": 1788604893.9641047,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "76a6649b-6499-4429-9dcb-10b6ef7ed70e",
+      "ts": 1788604893.964142,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "凌战 was voted out."
+      }
+    },
+    {
+      "id": "78247771-1308-4d94-bcd1-f9f0cb07a156",
+      "ts": 1788604893.9641547,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P2-cc03f0ba0f1b",
+        "player_name": "凌战",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "eb9666d1-142c-4d49-b50b-64648c932da7",
+      "ts": 1788604893.964217,
+      "day": 1,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "6dac079f-bcb0-4b40-a675-67db63da3d3e",
+      "ts": 1788604893.9642599,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_START"
+      }
+    },
+    {
+      "id": "30c95a93-60a2-411d-a1e0-86ccab92e41f",
+      "ts": 1788604893.964266,
+      "day": 2,
+      "phase": "NIGHT_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Night 2 begins."
+      }
+    },
+    {
+      "id": "b3cd2d6e-db39-4a73-b15f-31ef581ef1ff",
+      "ts": 1788604894.044592,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WOLF_ACTION"
+      }
+    },
+    {
+      "id": "6b8c0cd7-de5d-4ead-b063-75a0463ef512",
+      "ts": 1788604894.0446084,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_chat_start",
+        "message": "Wolf team discussion begins. Discuss the night kill target, then each wolf casts an internal attack vote.",
+        "wolf_ids": [
+          "P5-5156a99a30cd",
+          "P7-560763411089"
+        ],
+        "wolf_names": [
+          "霁川",
+          "蓝知怀"
+        ]
+      }
+    },
+    {
+      "id": "1fa4612a-be4f-4d11-9d2c-30e214e29615",
+      "ts": 1788604895.6817625,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "message": "霁川（私聊）：刀4号赵铁柱，他首日带动票型且思路稳定，留着是隐患。明天白天引导票型，尽量让好人内耗。",
+        "speech": "刀4号赵铁柱，他首日带动票型且思路稳定，留着是隐患。明天白天引导票型，尽量让好人内耗。",
+        "proposed_target_id": "P4-d50ef60dfa0a",
+        "proposed_target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "1a4a96ee-ec95-43bc-9d24-5a70b971b300",
+      "ts": 1788604897.0158734,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_chat_message",
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "message": "蓝知怀（私聊）：刀4号赵铁柱，同意你的判断。明天白天我们保持节奏，引导票型指向3号或6号，让好人继续内耗。",
+        "speech": "刀4号赵铁柱，同意你的判断。明天白天我们保持节奏，引导票型指向3号或6号，让好人继续内耗。",
+        "proposed_target_id": "P4-d50ef60dfa0a",
+        "proposed_target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "580a9146-0e36-4311-b501-8eb8f778ada9",
+      "ts": 1788604897.0158935,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_round",
+        "round": 1,
+        "message": "狼队共识第 1 轮：结合此前私聊明确提交同一个最终刀口；若上一轮意见不同，本轮必须协商收敛。",
+        "previous_votes": []
+      }
+    },
+    {
+      "id": "7f37453a-79fc-4cb4-a75e-9caa1d533372",
+      "ts": 1788604897.0158987,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "message": "霁川 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": []
+      }
+    },
+    {
+      "id": "92d4047b-35eb-43d5-88c6-a1f0e3f9fd93",
+      "ts": 1788604897.8457408,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-d50ef60dfa0a",
+          "seat": 4,
+          "name": "赵铁柱",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "狼队共识已明确刀4号赵铁柱，他是首日带动票型的核心威胁，与队友目标一致，确认执行。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "bbb6f63b-470c-4431-b21f-05eca9e29046",
+      "ts": 1788604897.8457496,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_turn",
+        "round": 1,
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "message": "蓝知怀 正在确认狼队最终刀口。必须参考私聊、上一轮分歧以及本轮队友已提交的目标。",
+        "current_votes": [
+          {
+            "wolf_id": "P5-5156a99a30cd",
+            "wolf_name": "霁川",
+            "target_id": "P4-d50ef60dfa0a",
+            "target_name": "赵铁柱"
+          }
+        ]
+      }
+    },
+    {
+      "id": "9ef689df-a9eb-4d02-853d-1af3f939fa7e",
+      "ts": 1788604898.6768098,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "action_type": "attack",
+        "target": {
+          "id": "P4-d50ef60dfa0a",
+          "seat": 4,
+          "name": "赵铁柱",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "与狼队友霁川达成一致，继续刀4号赵铁柱，他是首日带动票型的关键好人，威胁最大。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "kind": "wolf_consensus_vote",
+        "round": 1,
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱"
+      }
+    },
+    {
+      "id": "fc847ec0-7fe5-4918-bdd2-dbec88ff0ecd",
+      "ts": 1788604898.6768212,
+      "day": 2,
+      "phase": "NIGHT_WOLF_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P5-5156a99a30cd",
+        "P7-560763411089"
+      ],
+      "payload": {
+        "kind": "wolf_consensus_reached",
+        "round": 1,
+        "message": "狼队已达成一致：今晚目标为赵铁柱。",
+        "target_id": "P4-d50ef60dfa0a",
+        "target_name": "赵铁柱",
+        "votes": {
+          "P5-5156a99a30cd": "P4-d50ef60dfa0a",
+          "P7-560763411089": "P4-d50ef60dfa0a"
+        }
+      }
+    },
+    {
+      "id": "a6a9ca97-7d91-4ac8-81a3-6cd457ed95c0",
+      "ts": 1788604898.6768475,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_SEER_ACTION"
+      }
+    },
+    {
+      "id": "68b1cfbd-5647-42fd-adf6-8612f86951e4",
+      "ts": 1788604899.8311026,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P4-d50ef60dfa0a"
+      ],
+      "payload": {
+        "actor_id": "P4-d50ef60dfa0a",
+        "actor_name": "赵铁柱",
+        "action_type": "divine",
+        "target": {
+          "id": "P3-74a7a00f0f9c",
+          "seat": 3,
+          "name": "穆冬青",
+          "alive": true,
+          "is_ai": true,
+          "agent_type": "llm",
+          "persona": {
+            "style_label": "analytical",
+            "mbti": "ISTJ"
+          }
+        },
+        "reasoning": "我需要继续查验以获得更多信息来锁定狼人。目前已知1号卡卡是好人，应优先查验发言和投票行为可疑的玩家。3号穆冬青和5号霁川在D1投票给我（预言家），这是值得关注的信号，选择查验其中之一来获取关键信息。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "target_id": "P3-74a7a00f0f9c"
+      }
+    },
+    {
+      "id": "b47f2159-df70-4a3f-bdb6-15f4242dfad0",
+      "ts": 1788604899.8311093,
+      "day": 2,
+      "phase": "NIGHT_SEER_ACTION",
+      "type": "PRIVATE_INFO",
+      "visibility": "private",
+      "visible_to": [
+        "P4-d50ef60dfa0a"
+      ],
+      "payload": {
+        "kind": "seer_result",
+        "target_id": "P3-74a7a00f0f9c",
+        "target_name": "穆冬青",
+        "is_wolf": false,
+        "message": "Seer check: 穆冬青 is not wolf."
+      }
+    },
+    {
+      "id": "2c4971b1-ebe4-4dc1-a9ce-204402dd0b1b",
+      "ts": 1788604899.9112635,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_WITCH_ACTION"
+      }
+    },
+    {
+      "id": "244ba99d-2c6b-4d69-b3b5-8014ec47689b",
+      "ts": 1788604901.8662052,
+      "day": 2,
+      "phase": "NIGHT_WITCH_ACTION",
+      "type": "NIGHT_ACTION",
+      "visibility": "private",
+      "visible_to": [
+        "P1-273f132c7ea2"
+      ],
+      "payload": {
+        "actor_id": "P1-273f132c7ea2",
+        "actor_name": "卡卡",
+        "action_type": "skip",
+        "target": null,
+        "reasoning": "昨夜无人死亡，说明狼刀被守卫守住或平安夜。今夜我被刀的目标是4号赵铁柱，但我解药已用，无法救人。目前场上信息不足，毒药需要谨慎使用。赵铁柱在D1投票中投了凌战（已被放逐），而凌战投的是蓝知怀。我目前没有足够证据确定谁是狼人，贸然用毒可能误杀好人。选择保留毒药等待更多信息。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "skipped": true
+      }
+    },
+    {
+      "id": "3432c6bc-a11c-408c-9a10-e753ca18030e",
+      "ts": 1788604901.9468522,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_GUARD_ACTION"
+      }
+    },
+    {
+      "id": "c042c2f6-2fef-4803-86b3-f8910f23a612",
+      "ts": 1788604901.9468615,
+      "day": 2,
+      "phase": "NIGHT_GUARD_ACTION",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "private",
+      "visible_to": [],
+      "payload": {
+        "message": "守卫已出局，无法行动。"
+      }
+    },
+    {
+      "id": "0228f583-28ed-4e95-b61b-14b385949aca",
+      "ts": 1788604902.0271847,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "NIGHT_RESOLVE"
+      }
+    },
+    {
+      "id": "ca926732-4f3f-4f1d-97e3-279d40ddfe60",
+      "ts": 1788604902.027215,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P4-d50ef60dfa0a",
+        "player_name": "赵铁柱",
+        "reason": "werewolf_killed"
+      }
+    },
+    {
+      "id": "22b710fb-e814-4d53-af97-c1d3afbddb94",
+      "ts": 1788604902.0272262,
+      "day": 2,
+      "phase": "NIGHT_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "昨夜死亡：赵铁柱（狼刀）。"
+      }
+    },
+    {
+      "id": "5417f8bc-e436-4069-b3e1-583d27616a4b",
+      "ts": 1788604902.027279,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_START"
+      }
+    },
+    {
+      "id": "21e85db7-5c25-4157-b662-b97abfe8f8e0",
+      "ts": 1788604902.0272915,
+      "day": 2,
+      "phase": "DAY_START",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "Day 2 begins."
+      }
+    },
+    {
+      "id": "613ab410-8028-4ddc-b939-6112278a5083",
+      "ts": 1788604902.3490248,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_SPEECH"
+      }
+    },
+    {
+      "id": "e5c8f17e-97ea-440b-b2bf-ec0f37a68099",
+      "ts": 1788604905.100973,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-273f132c7ea2",
+        "actor_name": "卡卡",
+        "speech": "梳理一下已知信息。首夜平安夜，昨夜赵铁柱被狼刀。D1投票：凌战和赵铁柱出局。目前存活5人：1、3、5、6、7。",
+        "reasoning": "作为女巫，昨夜赵铁柱被狼刀，我使用了救药但已用（save_used:True），说明首夜或昨夜我用了解药。目前无查验信息，需谨慎观察。先做基线发言，不点名不站边，梳理已知事实。",
+        "segment_index": 0,
+        "segment_total": 3,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "040b55ff-469e-4023-bcb7-66ba572bdc29",
+      "ts": 1788604905.1009994,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-273f132c7ea2",
+        "actor_name": "卡卡",
+        "speech": "凌战是被票出去的，赵铁柱是被狼刀的。场上最多2狼，现在还活着。我需要关注D1票型中投凌战和投赵铁柱的人，以及昨夜狼刀赵铁柱背后的逻辑。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "d74634b4-9801-41b8-86db-8704c0def837",
+      "ts": 1788604905.1010184,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P1-273f132c7ea2",
+        "actor_name": "卡卡",
+        "speech": "赵铁柱D1投的是凌战，凌战投的是蓝知怀。狼刀赵铁柱可能是灭口，也可能有其他考虑。先听大家发言再判断。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 3,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "1aa12743-e4ad-4906-abc3-925aa45b9e14",
+      "ts": 1788604908.2942977,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-74a7a00f0f9c",
+        "actor_name": "穆冬青",
+        "speech": "梳理一下票型。D1投凌战的有1、4、7号，投赵铁柱的有我和5号，投我的是6号。凌战被票出局，赵铁柱昨夜被狼刀。",
+        "reasoning": "作为村民，我需要梳理当前局面。D1票型：投凌战的有卡卡、赵铁柱、蓝知怀；投赵铁柱的有我和霁川；投我的是司南。凌战被票出，赵铁柱被狼刀。场上存活5人，2狼仍在。先做信息梳理，不急于点名。",
+        "segment_index": 0,
+        "segment_total": 4,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "d7fec027-b9a4-430c-a1a7-cd23fff0edc3",
+      "ts": 1788604908.2943058,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-74a7a00f0f9c",
+        "actor_name": "穆冬青",
+        "speech": "一个关键点：狼刀赵铁柱的动机。赵铁柱D1投了凌战，如果他是狼，狼队没理由刀自己人灭口；如果他是好人，狼刀他可能是为了制造信息差或清理威胁。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "39f93ab6-a42a-4f29-96fb-7d12db23c62c",
+      "ts": 1788604908.2943096,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-74a7a00f0f9c",
+        "actor_name": "穆冬青",
+        "speech": "我D1投了赵铁柱，我的判断依据当时可能有偏差。现在需要重新审视：如果赵铁柱是好人被刀，那D1投他的我和5号中可能有狼；如果赵铁柱是狼被刀（不太可能，狼刀一般不会刀自己人），那另当别论。",
+        "reasoning": "",
+        "segment_index": 2,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "06e34fd3-ff08-4adb-b3c2-79c15f945268",
+      "ts": 1788604908.2943134,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P3-74a7a00f0f9c",
+        "actor_name": "穆冬青",
+        "speech": "目前信息还不够充分，先听几位的发言再下判断。",
+        "reasoning": "",
+        "segment_index": 3,
+        "segment_total": 4,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "b4958938-59fd-4192-80bd-ed57d0d848c5",
+      "ts": 1788604911.3520215,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "speech": "3号，你反复强调\"投赵铁柱的人里可能有狼\"，但你自己D1也投了赵铁柱。这个说法既想撇清自己又想带节奏指向我，逻辑上站不住。反过来看，首夜平安夜，如果赵铁柱是狼刀目标，说明狼队觉得他威胁大——一个D1投凌战的人被刀，更像是在灭口好人的关键票。",
+        "reasoning": "作为狼人，我需要引导局势。赵铁柱被刀，3号怀疑投赵铁柱的我和他之间有狼。我需要把焦点引向其他人。卡卡和凌战等都投了凌战，而凌战投了蓝知怀（我的狼队友）。我应该把怀疑导向3号或6号，避免引火烧身。考虑到3号已经在暗示投赵铁柱的人中有狼，我转而质疑3号的逻辑更合理。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "accusation",
+        "target_seat": 3
+      }
+    },
+    {
+      "id": "8a1c5ed7-bce4-4ddc-8a57-1c6b75821ffd",
+      "ts": 1788604911.3520303,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P5-5156a99a30cd",
+        "actor_name": "霁川",
+        "speech": "3号你今天发言一直在往我和赵铁柱的关系上带，我觉得你才是更需要被审视的。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "0b85a286-cddb-4a91-aa00-a501db7ef3fb",
+      "ts": 1788604914.549502,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P6-30e4e7fc3c35",
+        "actor_name": "司南",
+        "speech": "梳理一下：赵铁柱被狼刀，狼队不会刀自己人，所以赵铁柱大概率是好人。D1投赵铁柱的是3号和5号，这两人中至少需要审视。3号反复强调\"投赵铁柱的人中可能有狼\"，但自己也在其中，这个表述方式有些微妙。霁川对3号的质疑逻辑上成立。目前先听7号发言，再做更完整判断。",
+        "reasoning": "信息梳理：D1票型中，1、4、7投凌战，3、5投赵铁柱，我投3，2投7。凌战被票出（可能是狼或好人），赵铁柱昨夜被狼刀。狼刀赵铁柱说明他不是狼（狼不会刀自己人），那么赵铁柱大概率是好人。投赵铁柱的3号和5号中可能有狼，而3号今天反复强调这一点但自己也在其中，逻辑上3号的发言有转移焦点嫌疑。霁川也注意到了这点。我倾向于先观察，不急于下结论，但霁川对3号的反驳逻辑合理，值得关注3号。",
+        "segment_index": 0,
+        "segment_total": 1,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "baseline"
+      }
+    },
+    {
+      "id": "b4a9c0d0-4e94-4f05-9d92-e1f811365752",
+      "ts": 1788604917.361341,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "speech": "我认同霁川和司南对3号的审视逻辑。赵铁柱被狼刀，说明狼队认为他是威胁，大概率是好人。D1投赵铁柱的正是3号和5号。3号反复强调\"投赵铁柱的人中可能有狼\"，既想把自己摘出去，又想引导焦点指向霁川，这个做法本身就很可疑。霁川的质疑是有力的，3号今天的发言节奏确实有问题。",
+        "reasoning": "作为狼人，我需要引导场上焦点远离我和队友霁川。当前3号和5号（我的狼队友）在互相质疑，这其实对狼队有利。我应该把焦点引向3号，因为霁川已经质疑3号，我顺势支持这个方向，同时不直接暴露与霁川的关联。投3号是合理的——3号D1投了赵铁柱，而赵铁柱被刀是好人，投赵铁柱的人需要审视。",
+        "segment_index": 0,
+        "segment_total": 2,
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "speech_action": "accusation",
+        "target_seat": 3
+      }
+    },
+    {
+      "id": "0de082cd-1159-4196-8cab-0cd91aa6eb19",
+      "ts": 1788604917.3613503,
+      "day": 2,
+      "phase": "DAY_SPEECH",
+      "type": "CHAT_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "actor_id": "P7-560763411089",
+        "actor_name": "蓝知怀",
+        "speech": "我倾向今天投3号。",
+        "reasoning": "",
+        "segment_index": 1,
+        "segment_total": 2,
+        "agent_source": "",
+        "agent_model": "",
+        "agent_provider": "",
+        "agent_fallback": false
+      }
+    },
+    {
+      "id": "75923f2e-adee-4de4-af61-8568ccc200b4",
+      "ts": 1788604917.521997,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_VOTE"
+      }
+    },
+    {
+      "id": "422a0ce8-65fa-4f52-8063-26d22b3d6c45",
+      "ts": 1788604918.8811035,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P1-273f132c7ea2",
+        "voter_name": "卡卡",
+        "target_id": "P3-74a7a00f0f9c",
+        "target_name": "穆冬青",
+        "reasoning": "3号反复引导指向投赵铁柱的人，但自身也在其中且发言自相矛盾，节奏明显有问题。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "f99beb7d-df3e-432c-bc15-601ce3972ecf",
+      "ts": 1788604918.8811176,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P3-74a7a00f0f9c",
+        "voter_name": "穆冬青",
+        "target_id": "P5-5156a99a30cd",
+        "target_name": "霁川",
+        "reasoning": "霁川D1也投了赵铁柱，却只攻击我而回避自身嫌疑，引导焦点过于刻意。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "092611a5-f2b0-47fb-aad3-7bdb320fef44",
+      "ts": 1788604918.8811278,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P5-5156a99a30cd",
+        "voter_name": "霁川",
+        "target_id": "P3-74a7a00f0f9c",
+        "target_name": "穆冬青",
+        "reasoning": "穆冬青反复引导焦点指向投赵铁柱的人，自身却也在其中，发言逻辑自相矛盾且带节奏明显。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "92694e58-bd55-4f0f-8985-def305991ce5",
+      "ts": 1788604918.8811364,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P6-30e4e7fc3c35",
+        "voter_name": "司南",
+        "target_id": "P3-74a7a00f0f9c",
+        "target_name": "穆冬青",
+        "reasoning": "赵铁柱被刀大概率好人，D1投他的3号反复引导焦点却撇清自己，发言节奏可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "09c5c8dd-b2ed-464b-a641-5de9f862a4a6",
+      "ts": 1788604918.8811448,
+      "day": 2,
+      "phase": "DAY_VOTE",
+      "type": "VOTE_CAST",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "voter_id": "P7-560763411089",
+        "voter_name": "蓝知怀",
+        "target_id": "P3-74a7a00f0f9c",
+        "target_name": "穆冬青",
+        "reasoning": "穆冬青反复引导焦点指向霁川，自身D1投赵铁柱却试图撇清，节奏可疑。",
+        "agent_source": "llm",
+        "agent_model": "deepseek-v4-flash",
+        "agent_provider": "deepseek",
+        "agent_fallback": false,
+        "vote_weight": 1.0,
+        "is_pk_vote": false
+      }
+    },
+    {
+      "id": "0e12085b-c841-4e74-b635-448f96701e06",
+      "ts": 1788604918.9614,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "DAY_RESOLVE"
+      }
+    },
+    {
+      "id": "a34de51d-0b28-4531-91ca-7f61ed1e3593",
+      "ts": 1788604918.9614372,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "SYSTEM_MESSAGE",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "message": "穆冬青 was voted out."
+      }
+    },
+    {
+      "id": "c57792ff-a518-4f42-8ffc-eda4ffeb1a29",
+      "ts": 1788604918.961448,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "PLAYER_DIED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "player_id": "P3-74a7a00f0f9c",
+        "player_name": "穆冬青",
+        "reason": "voted_out"
+      }
+    },
+    {
+      "id": "f0405e1c-ea24-4718-aa71-683e139976d9",
+      "ts": 1788604918.9614644,
+      "day": 2,
+      "phase": "DAY_RESOLVE",
+      "type": "GAME_END",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    },
+    {
+      "id": "922af443-f7ed-4556-91e9-047ebc9a630d",
+      "ts": 1788604918.961523,
+      "day": 2,
+      "phase": "GAME_END",
+      "type": "PHASE_CHANGED",
+      "visibility": "public",
+      "visible_to": [],
+      "payload": {
+        "phase": "GAME_END"
+      }
+    }
+  ],
+  "votes": {
+    "P1-273f132c7ea2": "P3-74a7a00f0f9c",
+    "P3-74a7a00f0f9c": "P5-5156a99a30cd",
+    "P5-5156a99a30cd": "P3-74a7a00f0f9c",
+    "P6-30e4e7fc3c35": "P3-74a7a00f0f9c",
+    "P7-560763411089": "P3-74a7a00f0f9c"
+  },
+  "vote_history": {
+    "1": {
+      "P1-273f132c7ea2": "P2-cc03f0ba0f1b",
+      "P2-cc03f0ba0f1b": "P7-560763411089",
+      "P3-74a7a00f0f9c": "P4-d50ef60dfa0a",
+      "P4-d50ef60dfa0a": "P2-cc03f0ba0f1b",
+      "P5-5156a99a30cd": "P4-d50ef60dfa0a",
+      "P6-30e4e7fc3c35": "P3-74a7a00f0f9c",
+      "P7-560763411089": "P2-cc03f0ba0f1b"
+    },
+    "2": {
+      "P1-273f132c7ea2": "P3-74a7a00f0f9c",
+      "P3-74a7a00f0f9c": "P5-5156a99a30cd",
+      "P5-5156a99a30cd": "P3-74a7a00f0f9c",
+      "P6-30e4e7fc3c35": "P3-74a7a00f0f9c",
+      "P7-560763411089": "P3-74a7a00f0f9c"
+    }
+  },
+  "day_history": {
+    "1": {
+      "executed": {
+        "player_id": "P2-cc03f0ba0f1b",
+        "seat": 2,
+        "votes": 3.0
+      }
+    }
+  },
+  "badge": {
+    "holder_id": null,
+    "candidates": [],
+    "signup": {},
+    "votes": {},
+    "history": {},
+    "revote_count": 0
+  },
+  "daily_summaries": {
+    "1": [
+      "卡卡: 首夜平安夜，无人死亡。这个信息本身值得注意——要么狼刀被守卫守住，要么有其他原因。目前场上没有任何查验信息和异常发言，我不急着下判断。先听各人发言，后续再梳理。有信息的尽早给信息，没信息的别编故事。",
+      "凌战: 首夜平安夜，无人死亡。我昨晚守了3号，如果狼刀在3号身上，那平安夜就说得通。不过现在没有查验信息，先听大家发言，有信息尽早给。",
+      "穆冬青: 首夜平安夜，这个结果本身信息量有限——可能是守卫守住，可能是狼人空刀，也可能有其他情况。2号称守了我，这是一个可验证的信息点，但目前无法独立确认。如果2号真是守卫且狼刀在我身上，那平安夜合理；但也不能排除2号编造身份的可能性。目前场上没有查验信息，我不急着给结论。",
+      "穆冬青: 先听后续发言，尤其是有查验的神职尽早给信息。",
+      "赵铁柱: 我是4号预言家。昨晚查验了1号卡卡，结果是好人。目前场上平安夜，2号称守了3号。我建议：既然1号已确认好人，大家可以围绕剩余5人中找狼。2、3号的守卫/被守关系需要进一步观察，但不要过早下结论。有查验信息的神职也请尽早给出，我们共同锁定狼坑。",
+      "霁川: 平安夜信息确实有限，2号守3号的说法暂时无法验证。4号给出查验结果，先记下。我目前没有更多信息，继续听大家发言。",
+      "司南: 首日平安夜，场上信息有限。4号称查验1号是好人，这条先记下。2号守卫身份和3号被守关系目前都无法独立验证，需要后续轮次观察。我倾向先听大家发言，尤其关注后续是否有其他查验信息与4号说法相互印证或矛盾。暂时不急于下结论。",
+      "蓝知怀: 首夜平安夜，信息确实有限。4号称查验1号是好人，这条先记下，但目前无法独立验证。2号守卫身份和3号被守关系也需要后续观察。我暂时没有更多信息，先听大家后续发言，尤其关注后续是否有新的查验信息与4号说法形成印证或矛盾。",
+      "卡卡 voted for 凌战 (狼人大概率不会首夜刀守卫描述的错误目标，2号抢先认守3号最可疑。)",
+      "凌战 voted for 蓝知怀 (发言跟随性过强，缺乏独立判断，倾向划水隐藏信息。)",
+      "穆冬青 voted for 赵铁柱 (预言家首日跳出不排除狼人悍跳可能，查验信息无法验证，需后续观察。)",
+      "赵铁柱 voted for 凌战 (首夜平安夜下主动声称守3号，缺乏可验证依据，存在编造身份引导节奏的嫌疑。)",
+      "霁川 voted for 赵铁柱 (预言家身份过早暴露且查验信息无法验证，优先处理潜在核心威胁。)",
+      "司南 voted for 穆冬青 (2号明确守他且平安夜，若2号为真守卫，3号身份存疑需优先排坑。)",
+      "蓝知怀 voted for 凌战 (守卫身份无法验证且过早暴露信息，值得优先排查。)",
+      "凌战 died by voted_out"
+    ],
+    "2": [
+      "赵铁柱 died by werewolf_killed",
+      "卡卡: 梳理一下已知信息。首夜平安夜，昨夜赵铁柱被狼刀。D1投票：凌战和赵铁柱出局。目前存活5人：1、3、5、6、7。",
+      "卡卡: 凌战是被票出去的，赵铁柱是被狼刀的。场上最多2狼，现在还活着。我需要关注D1票型中投凌战和投赵铁柱的人，以及昨夜狼刀赵铁柱背后的逻辑。",
+      "卡卡: 赵铁柱D1投的是凌战，凌战投的是蓝知怀。狼刀赵铁柱可能是灭口，也可能有其他考虑。先听大家发言再判断。",
+      "穆冬青: 梳理一下票型。D1投凌战的有1、4、7号，投赵铁柱的有我和5号，投我的是6号。凌战被票出局，赵铁柱昨夜被狼刀。",
+      "穆冬青: 一个关键点：狼刀赵铁柱的动机。赵铁柱D1投了凌战，如果他是狼，狼队没理由刀自己人灭口；如果他是好人，狼刀他可能是为了制造信息差或清理威胁。",
+      "穆冬青: 我D1投了赵铁柱，我的判断依据当时可能有偏差。现在需要重新审视：如果赵铁柱是好人被刀，那D1投他的我和5号中可能有狼；如果赵铁柱是狼被刀（不太可能，狼刀一般不会刀自己人），那另当别论。",
+      "穆冬青: 目前信息还不够充分，先听几位的发言再下判断。",
+      "霁川: 3号，你反复强调\"投赵铁柱的人里可能有狼\"，但你自己D1也投了赵铁柱。这个说法既想撇清自己又想带节奏指向我，逻辑上站不住。反过来看，首夜平安夜，如果赵铁柱是狼刀目标，说明狼队觉得他威胁大——一个D1投凌战的人被刀，更像是在灭口好人的关键票。",
+      "霁川: 3号你今天发言一直在往我和赵铁柱的关系上带，我觉得你才是更需要被审视的。",
+      "司南: 梳理一下：赵铁柱被狼刀，狼队不会刀自己人，所以赵铁柱大概率是好人。D1投赵铁柱的是3号和5号，这两人中至少需要审视。3号反复强调\"投赵铁柱的人中可能有狼\"，但自己也在其中，这个表述方式有些微妙。霁川对3号的质疑逻辑上成立。目前先听7号发言，再做更完整判断。",
+      "蓝知怀: 我认同霁川和司南对3号的审视逻辑。赵铁柱被狼刀，说明狼队认为他是威胁，大概率是好人。D1投赵铁柱的正是3号和5号。3号反复强调\"投赵铁柱的人中可能有狼\"，既想把自己摘出去，又想引导焦点指向霁川，这个做法本身就很可疑。霁川的质疑是有力的，3号今天的发言节奏确实有问题。",
+      "蓝知怀: 我倾向今天投3号。",
+      "卡卡 voted for 穆冬青 (3号反复引导指向投赵铁柱的人，但自身也在其中且发言自相矛盾，节奏明显有问题。)",
+      "穆冬青 voted for 霁川 (霁川D1也投了赵铁柱，却只攻击我而回避自身嫌疑，引导焦点过于刻意。)",
+      "霁川 voted for 穆冬青 (穆冬青反复引导焦点指向投赵铁柱的人，自身却也在其中，发言逻辑自相矛盾且带节奏明显。)",
+      "司南 voted for 穆冬青 (赵铁柱被刀大概率好人，D1投他的3号反复引导焦点却撇清自己，发言节奏可疑。)",
+      "蓝知怀 voted for 穆冬青 (穆冬青反复引导焦点指向霁川，自身D1投赵铁柱却试图撇清，节奏可疑。)",
+      "穆冬青 died by voted_out",
+      "Game ended: wolf (wolves_reached_parity)"
+    ]
+  },
+  "daily_summary_facts": {
+    "1": [
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "卡卡",
+        "speaker_id": "P1-273f132c7ea2",
+        "content": "首夜平安夜，无人死亡。这个信息本身值得注意——要么狼刀被守卫守住，要么有其他原因。目前场上没有任何查验信息和异常发言，我不急着下判断。先听各人发言，后续再梳理。有信息的尽早给信息，没信息的别编故事。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "凌战",
+        "speaker_id": "P2-cc03f0ba0f1b",
+        "content": "首夜平安夜，无人死亡。我昨晚守了3号，如果狼刀在3号身上，那平安夜就说得通。不过现在没有查验信息，先听大家发言，有信息尽早给。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P3-74a7a00f0f9c",
+        "content": "首夜平安夜，这个结果本身信息量有限——可能是守卫守住，可能是狼人空刀，也可能有其他情况。2号称守了我，这是一个可验证的信息点，但目前无法独立确认。如果2号真是守卫且狼刀在我身上，那平安夜合理；但也不能排除2号编造身份的可能性。目前场上没有查验信息，我不急着给结论。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P3-74a7a00f0f9c",
+        "content": "先听后续发言，尤其是有查验的神职尽早给信息。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "赵铁柱",
+        "speaker_id": "P4-d50ef60dfa0a",
+        "content": "我是4号预言家。昨晚查验了1号卡卡，结果是好人。目前场上平安夜，2号称守了3号。我建议：既然1号已确认好人，大家可以围绕剩余5人中找狼。2、3号的守卫/被守关系需要进一步观察，但不要过早下结论。有查验信息的神职也请尽早给出，我们共同锁定狼坑。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "霁川",
+        "speaker_id": "P5-5156a99a30cd",
+        "content": "平安夜信息确实有限，2号守3号的说法暂时无法验证。4号给出查验结果，先记下。我目前没有更多信息，继续听大家发言。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "司南",
+        "speaker_id": "P6-30e4e7fc3c35",
+        "content": "首日平安夜，场上信息有限。4号称查验1号是好人，这条先记下。2号守卫身份和3号被守关系目前都无法独立验证，需要后续轮次观察。我倾向先听大家发言，尤其关注后续是否有其他查验信息与4号说法相互印证或矛盾。暂时不急于下结论。"
+      },
+      {
+        "type": "speech",
+        "day": 1,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P7-560763411089",
+        "content": "首夜平安夜，信息确实有限。4号称查验1号是好人，这条先记下，但目前无法独立验证。2号守卫身份和3号被守关系也需要后续观察。我暂时没有更多信息，先听大家后续发言，尤其关注后续是否有新的查验信息与4号说法形成印证或矛盾。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "卡卡",
+        "voter_id": "P1-273f132c7ea2",
+        "target_name": "凌战",
+        "target_id": "P2-cc03f0ba0f1b",
+        "reasoning": "狼人大概率不会首夜刀守卫描述的错误目标，2号抢先认守3号最可疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "凌战",
+        "voter_id": "P2-cc03f0ba0f1b",
+        "target_name": "蓝知怀",
+        "target_id": "P7-560763411089",
+        "reasoning": "发言跟随性过强，缺乏独立判断，倾向划水隐藏信息。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "穆冬青",
+        "voter_id": "P3-74a7a00f0f9c",
+        "target_name": "赵铁柱",
+        "target_id": "P4-d50ef60dfa0a",
+        "reasoning": "预言家首日跳出不排除狼人悍跳可能，查验信息无法验证，需后续观察。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "赵铁柱",
+        "voter_id": "P4-d50ef60dfa0a",
+        "target_name": "凌战",
+        "target_id": "P2-cc03f0ba0f1b",
+        "reasoning": "首夜平安夜下主动声称守3号，缺乏可验证依据，存在编造身份引导节奏的嫌疑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "霁川",
+        "voter_id": "P5-5156a99a30cd",
+        "target_name": "赵铁柱",
+        "target_id": "P4-d50ef60dfa0a",
+        "reasoning": "预言家身份过早暴露且查验信息无法验证，优先处理潜在核心威胁。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "司南",
+        "voter_id": "P6-30e4e7fc3c35",
+        "target_name": "穆冬青",
+        "target_id": "P3-74a7a00f0f9c",
+        "reasoning": "2号明确守他且平安夜，若2号为真守卫，3号身份存疑需优先排坑。"
+      },
+      {
+        "type": "vote",
+        "day": 1,
+        "voter_name": "蓝知怀",
+        "voter_id": "P7-560763411089",
+        "target_name": "凌战",
+        "target_id": "P2-cc03f0ba0f1b",
+        "reasoning": "守卫身份无法验证且过早暴露信息，值得优先排查。"
+      },
+      {
+        "type": "death",
+        "day": 1,
+        "player_name": "凌战",
+        "player_id": "P2-cc03f0ba0f1b",
+        "reason": "voted_out"
+      }
+    ],
+    "2": [
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "赵铁柱",
+        "player_id": "P4-d50ef60dfa0a",
+        "reason": "werewolf_killed"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "卡卡",
+        "speaker_id": "P1-273f132c7ea2",
+        "content": "梳理一下已知信息。首夜平安夜，昨夜赵铁柱被狼刀。D1投票：凌战和赵铁柱出局。目前存活5人：1、3、5、6、7。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "卡卡",
+        "speaker_id": "P1-273f132c7ea2",
+        "content": "凌战是被票出去的，赵铁柱是被狼刀的。场上最多2狼，现在还活着。我需要关注D1票型中投凌战和投赵铁柱的人，以及昨夜狼刀赵铁柱背后的逻辑。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "卡卡",
+        "speaker_id": "P1-273f132c7ea2",
+        "content": "赵铁柱D1投的是凌战，凌战投的是蓝知怀。狼刀赵铁柱可能是灭口，也可能有其他考虑。先听大家发言再判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P3-74a7a00f0f9c",
+        "content": "梳理一下票型。D1投凌战的有1、4、7号，投赵铁柱的有我和5号，投我的是6号。凌战被票出局，赵铁柱昨夜被狼刀。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P3-74a7a00f0f9c",
+        "content": "一个关键点：狼刀赵铁柱的动机。赵铁柱D1投了凌战，如果他是狼，狼队没理由刀自己人灭口；如果他是好人，狼刀他可能是为了制造信息差或清理威胁。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P3-74a7a00f0f9c",
+        "content": "我D1投了赵铁柱，我的判断依据当时可能有偏差。现在需要重新审视：如果赵铁柱是好人被刀，那D1投他的我和5号中可能有狼；如果赵铁柱是狼被刀（不太可能，狼刀一般不会刀自己人），那另当别论。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "穆冬青",
+        "speaker_id": "P3-74a7a00f0f9c",
+        "content": "目前信息还不够充分，先听几位的发言再下判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "霁川",
+        "speaker_id": "P5-5156a99a30cd",
+        "content": "3号，你反复强调\"投赵铁柱的人里可能有狼\"，但你自己D1也投了赵铁柱。这个说法既想撇清自己又想带节奏指向我，逻辑上站不住。反过来看，首夜平安夜，如果赵铁柱是狼刀目标，说明狼队觉得他威胁大——一个D1投凌战的人被刀，更像是在灭口好人的关键票。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "霁川",
+        "speaker_id": "P5-5156a99a30cd",
+        "content": "3号你今天发言一直在往我和赵铁柱的关系上带，我觉得你才是更需要被审视的。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "司南",
+        "speaker_id": "P6-30e4e7fc3c35",
+        "content": "梳理一下：赵铁柱被狼刀，狼队不会刀自己人，所以赵铁柱大概率是好人。D1投赵铁柱的是3号和5号，这两人中至少需要审视。3号反复强调\"投赵铁柱的人中可能有狼\"，但自己也在其中，这个表述方式有些微妙。霁川对3号的质疑逻辑上成立。目前先听7号发言，再做更完整判断。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P7-560763411089",
+        "content": "我认同霁川和司南对3号的审视逻辑。赵铁柱被狼刀，说明狼队认为他是威胁，大概率是好人。D1投赵铁柱的正是3号和5号。3号反复强调\"投赵铁柱的人中可能有狼\"，既想把自己摘出去，又想引导焦点指向霁川，这个做法本身就很可疑。霁川的质疑是有力的，3号今天的发言节奏确实有问题。"
+      },
+      {
+        "type": "speech",
+        "day": 2,
+        "speaker_name": "蓝知怀",
+        "speaker_id": "P7-560763411089",
+        "content": "我倾向今天投3号。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "卡卡",
+        "voter_id": "P1-273f132c7ea2",
+        "target_name": "穆冬青",
+        "target_id": "P3-74a7a00f0f9c",
+        "reasoning": "3号反复引导指向投赵铁柱的人，但自身也在其中且发言自相矛盾，节奏明显有问题。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "穆冬青",
+        "voter_id": "P3-74a7a00f0f9c",
+        "target_name": "霁川",
+        "target_id": "P5-5156a99a30cd",
+        "reasoning": "霁川D1也投了赵铁柱，却只攻击我而回避自身嫌疑，引导焦点过于刻意。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "霁川",
+        "voter_id": "P5-5156a99a30cd",
+        "target_name": "穆冬青",
+        "target_id": "P3-74a7a00f0f9c",
+        "reasoning": "穆冬青反复引导焦点指向投赵铁柱的人，自身却也在其中，发言逻辑自相矛盾且带节奏明显。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "司南",
+        "voter_id": "P6-30e4e7fc3c35",
+        "target_name": "穆冬青",
+        "target_id": "P3-74a7a00f0f9c",
+        "reasoning": "赵铁柱被刀大概率好人，D1投他的3号反复引导焦点却撇清自己，发言节奏可疑。"
+      },
+      {
+        "type": "vote",
+        "day": 2,
+        "voter_name": "蓝知怀",
+        "voter_id": "P7-560763411089",
+        "target_name": "穆冬青",
+        "target_id": "P3-74a7a00f0f9c",
+        "reasoning": "穆冬青反复引导焦点指向霁川，自身D1投赵铁柱却试图撇清，节奏可疑。"
+      },
+      {
+        "type": "death",
+        "day": 2,
+        "player_name": "穆冬青",
+        "player_id": "P3-74a7a00f0f9c",
+        "reason": "voted_out"
+      },
+      {
+        "type": "game_end",
+        "day": 2,
+        "winner": "wolf",
+        "reason": "wolves_reached_parity"
+      }
+    ]
+  },
+  "current_speaker_id": null,
+  "pk_targets": [],
+  "pk_source": null,
+  "pending_input": null,
+  "winner": "wolf",
+  "night_actions": {
+    "guard_target_id": null,
+    "last_guard_target_id": "P3-74a7a00f0f9c",
+    "wolf_votes": {
+      "P5-5156a99a30cd": "P4-d50ef60dfa0a",
+      "P7-560763411089": "P4-d50ef60dfa0a"
+    },
+    "wolf_target_id": "P4-d50ef60dfa0a",
+    "witch_save": false,
+    "witch_poison_target_id": null,
+    "seer_target_id": "P3-74a7a00f0f9c",
+    "seer_result": {
+      "kind": "seer_result",
+      "target_id": "P3-74a7a00f0f9c",
+      "target_name": "穆冬青",
+      "is_wolf": false,
+      "message": "Seer check: 穆冬青 is not wolf."
+    },
+    "deaths": [
+      {
+        "player_id": "P4-d50ef60dfa0a",
+        "reason": "werewolf_killed"
+      }
+    ]
+  },
+  "role_abilities": {
+    "witch_heal_used": true,
+    "witch_poison_used": false,
+    "hunter_can_shoot": true,
+    "idiot_revealed": false,
+    "white_wolf_king_boom_used": false
+  },
+  "phase_cursor": {}
+}
